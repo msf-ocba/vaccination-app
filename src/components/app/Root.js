@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Switch, Route } from "react-router-dom";
 import CampaignConfigurator from "../campaign-configurator/CampaignConfigurator";
 import LandingPage from "./LandingPage";
+import CampaignWizard from "../campaign-wizard/CampaignWizard";
 
 class Root extends React.Component {
     static propTypes = {
@@ -15,9 +16,15 @@ class Root extends React.Component {
         return (
             <Switch>
                 <Route
-                    path="/campaign-configurator"
-                    render={() => <CampaignConfigurator d2={d2} />}
+                    path="/campaign-configurator/new"
+                    render={props => <CampaignWizard d2={d2} {...props} />}
                 />
+
+                <Route
+                    path="/campaign-configurator"
+                    render={props => <CampaignConfigurator d2={d2} {...props} />}
+                />
+
                 <Route render={() => <LandingPage d2={d2} />} />
             </Switch>
         );

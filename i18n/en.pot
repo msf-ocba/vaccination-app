@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-01-31T13:53:04.402Z\n"
-"PO-Revision-Date: 2019-01-31T13:53:04.402Z\n"
+"POT-Creation-Date: 2019-02-04T12:47:23.899Z\n"
+"PO-Revision-Date: 2019-02-04T12:47:23.899Z\n"
 
 msgid "Campaign Configurator"
 msgstr ""
@@ -18,6 +18,29 @@ msgid "Dashboard"
 msgstr ""
 
 msgid "Maintenance"
+msgstr ""
+
+msgid "Organisation Units"
+msgstr ""
+
+msgid ""
+"Select organisation units assigned to this campaign.\n"
+"At least one must be selected.\n"
+"Only organisation units of level 6 (service) can be selected"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid ""
+"Press the button to create the dataset and all the metadata associated with "
+"this vaccination campaign"
+msgstr ""
+
+msgid "New vaccination campaign"
+msgstr ""
+
+msgid "Back"
 msgstr ""
 
 msgid "View/edit"
@@ -59,6 +82,9 @@ msgstr ""
 msgid "API link"
 msgstr ""
 
+msgid "Close"
+msgstr ""
+
 msgid "Public access"
 msgstr ""
 
@@ -89,5 +115,65 @@ msgstr ""
 msgid "Download data"
 msgstr ""
 
+msgid "For organisation units within"
+msgstr ""
+
+msgid "For all organisation units"
+msgstr ""
+
 msgid "Search by name"
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "[None]"
+msgstr ""
+
+msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
+msgstr ""
+
+msgid "Setup is finished. Press the button Save to save the data"
+msgstr ""
+
+msgid "Help"
+msgstr ""
+
+msgid "Previous"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "Search apps"
+msgstr ""
+
+msgid "Manage my apps"
+msgstr ""
+
+msgid "No results found"
+msgstr ""
+
+msgid "Select"
+msgstr ""
+
+msgid "Unselect"
+msgstr ""
+
+msgid "Select all"
+msgstr ""
+
+msgid "Unselect all"
+msgstr ""
+
+msgid "Organisation Unit Level"
+msgstr ""
+
+msgid "Organisation Unit Group"
+msgstr ""
+
+msgid "Select at least one organisation unit"
+msgstr ""
+
+msgid "Only organisation units of level {{levels}} can be selected"
 msgstr ""

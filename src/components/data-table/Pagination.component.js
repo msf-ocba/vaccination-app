@@ -1,12 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 import classes from "classnames";
-import { config } from "d2/lib/d2";
 import i18n from "@dhis2/d2-i18n";
 
 const noop = () => {};
-
-config.i18n.strings.add("of_page");
 
 class Pagination extends React.Component {
     static propTypes = {

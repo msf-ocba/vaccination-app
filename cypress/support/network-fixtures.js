@@ -9,6 +9,11 @@ export const e2e = Cypress.env("E2E");
 export const generateFixtures = Cypress.env("GEN_FIXTURES");
 export const stubBackend = !e2e && !generateFixtures;
 
+const baseUrl = Cypress.env("ROOT_URL");
+if (baseUrl) {
+    Cypress.config("baseUrl", baseUrl);
+}
+
 export const stubFetch = win => {
     // From https://github.com/cypress-io/cypress-example-recipes/blob/master/examples/stubbing-spying__window-fetch/cypress/integration/polyfill-fetch-from-tests-spec.js
     // The application should polyfill window.fetch to use XHR, so we can inspect network requests and easily stub responses using cy.server

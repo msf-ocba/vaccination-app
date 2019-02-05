@@ -2,12 +2,12 @@
 
 context("Landing page", () => {
     before(() => {
-        cy.login("admin", "district");
+        cy.login("admin");
         cy.loadPage();
     });
 
     beforeEach(() => {
-        cy.login("admin", "district");
+        cy.login("admin");
     });
 
     it("has page title", () => {

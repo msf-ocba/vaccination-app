@@ -57,8 +57,9 @@ class MultipleDataTable extends React.Component {
 
     renderContextMenu() {
         const { contextMenuActions, isContextActionAllowed } = this.props;
-        const actionsToShow = contextMenuActions
-            .filter(action => isContextActionAllowed(this.state.activeRows, action.name));
+        const actionsToShow = contextMenuActions.filter(action =>
+            isContextActionAllowed(this.state.activeRows, action.name)
+        );
 
         return (
             <MultipleDataTableContextMenu

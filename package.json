@@ -1,27 +1,31 @@
 {
   "name": "vaccination-app",
-  "description": "Vaccination App",
+  "description": "DHIS2 Vaccination",
   "version": "0.0.1",
   "license": "GPL-3.0",
   "author": "EyeSeeTea team",
   "homepage": "./",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EyeSeeTea/vaccination-app.git"
+    "url": "git+https://github.com/eyeseetea/vaccination-app.git"
   },
   "dependencies": {
     "@dhis2/d2-i18n": "^1.0.4",
     "@dhis2/d2-i18n-extract": "^1.0.7",
     "@dhis2/d2-i18n-generate": "^1.0.19",
     "@dhis2/d2-ui-core": "^1.3.5",
-    "@dhis2/d2-ui-header-bar": "^1.1.10",
-    "@material-ui/core": "^3.3.1",
+    "@dhis2/d2-ui-header-bar": "5.1.0",
+    "@dhis2/d2-ui-org-unit-dialog": "^5.1.0",
+    "@dhis2/d2-ui-org-unit-select": "^5.1.0",
+    "@material-ui/core": "^3.9.1",
     "@material-ui/icons": "^3.0.1",
-    "d2": "^30.0.2",
+    "babel-eslint": "9.x",
+    "d2": "^31",
     "d2-manifest": "^1.0.0",
     "enzyme": "^3.7.0",
     "enzyme-adapter-react-16": "^1.6.0",
     "enzyme-to-json": "^3.3.4",
+    "eslint-config-react-app": "^3.0.6",
     "font-awesome": "^4.7.0",
     "husky": "^1.1.2",
     "immutability-helper": "^2.9.0",
@@ -33,8 +37,9 @@
     "postcss-rtl": "^1.3.2",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
+    "react-jss": "^8.6.1",
     "react-router-dom": "^4.3.1",
-    "react-scripts": "2.0.5",
+    "react-scripts": "2.0.6-next.c662dfb0",
     "throttle-debounce": "^2.1.0"
   },
   "scripts": {
@@ -44,8 +49,6 @@
     "build": "rm -rf build/ && yarn localize && d2-manifest package.json manifest.webapp && react-scripts build && yarn run manifest && cp -r i18n icon.png build",
     "build-webapp": "yarn build && rm -f $npm_package_name.zip && cd build && zip -r ../$npm_package_name.zip *",
     "test": "jest",
-    "test:integration": "jest -c integration/jest.config.js",
-    "test:all": "yarn test && yarn test:integration",
     "lint": "eslint ./src",
     "eject": "react-scripts eject",
     "prettify": "prettier \"{src,config,cypress}/**/*.{js,jsx,json,css}\" --write",
@@ -55,12 +58,8 @@
     "manifest": "d2-manifest package.json build/manifest.webapp",
     "format": "code-style",
     "cy:verify": "cypress verify",
-    "cy:stub:run": "cypress run",
-    "cy:stub:open": "cypress open",
     "cy:e2e:open": "CYPRESS_E2E=true cypress open",
-    "cy:e2e:run": "CYPRESS_E2E=true cypress run",
-    "cy:e2e:update": "CYPRESS_GEN_FIXTURES=true cypress run --config video=false",
-    "cy:e2e:open:update": "CYPRESS_GEN_FIXTURES=true cypress open"
+    "cy:e2e:run": "CYPRESS_E2E=true cypress run"
   },
   "husky": {
     "hooks": {
@@ -69,16 +68,26 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-0",
+    "@types/jest": "^23.3.13",
+    "@types/node": "^10.12.19",
+    "@types/react": "^16.7.22",
+    "@types/react-dom": "^16.0.11",
     "babel-core": "7.0.0-bridge.0",
     "cypress": "^3.1.4",
     "eslint": "^5.12.1",
     "eslint-config-prettier": "^3.6.0",
+    "eslint-plugin-flowtype": "2.x",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-jsx-a11y": "^6.2.0",
+    "eslint-plugin-react": "^7.12.4",
     "sinon": "^7.1.1",
+    "ts-jest": "^23.10.5",
+    "typescript": "3.2.2",
     "wait-on": "^3.2.0"
   },
   "manifest.webapp": {
     "name": "vaccination-app",
-    "description": "Vaccination App",
+    "description": "DHIS2 Vaccination",
     "icons": {
       "48": "icon.png"
     },

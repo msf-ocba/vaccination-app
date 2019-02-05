@@ -1,12 +1,23 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { init, config, getUserSettings, getManifest } from "d2/lib/d2";
+import { init, config, getUserSettings, getManifest } from "d2";
 import "font-awesome/css/font-awesome.min.css";
-import _ from "lodash";
 import { BrowserRouter } from "react-router-dom";
+import i18n from "@dhis2/d2-i18n";
 
 import App from "./components/app/App";
-import i18n from "./locales";
+
+const d2UiTranslations = {
+    app_search_placeholder: i18n.t("Search apps"),
+    manage_my_apps: i18n.t("Manage my apps"),
+    no_results_found: i18n.t("No results found"),
+    select: i18n.t("Select"),
+    deselect: i18n.t("Unselect"),
+    select_all: i18n.t("Select all"),
+    deselect_all: i18n.t("Unselect all"),
+    organisation_unit_level: i18n.t("Organisation Unit Level"),
+    organisation_unit_group: i18n.t("Organisation Unit Group"),
+};
 
 function isLangRTL(code) {
     const langs = ["ar", "fa", "ur"];
@@ -40,10 +51,8 @@ async function getBaseUrl() {
     }
 }
 
-function loadHeaderBarTranslations(d2) {
-    const keys = _(["app_search_placeholder", "manage_my_apps", "no_results_found"]);
-    keys.each(s => d2.i18n.strings.add(s));
-    d2.i18n.load();
+function setD2UiTranslations(d2) {
+    Object.assign(d2.i18n.translations, d2UiTranslations);
 }
 
 async function main() {
@@ -52,7 +61,7 @@ async function main() {
     try {
         const d2 = await init({ baseUrl: apiUrl });
         window.d2 = d2; // Make d2 available in the console
-        await loadHeaderBarTranslations(d2);
+        await setD2UiTranslations(d2);
         const userSettings = await getUserSettings();
         configI18n(userSettings);
         const appConfig = await fetch("app-config.json", {
