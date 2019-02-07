@@ -17,7 +17,6 @@ const dhis2Auth = _(dhis2AuthEnvValue)
 
 Cypress.Commands.add("login", (username, _password = null) => {
     const password = _password || dhis2Auth[username];
-    console.log("LOGIN", { username, password });
     if (stubBackend) {
         cy.log(
             "Stubbing all backend network requests - unmatched requests will automatically fail"
@@ -52,7 +51,7 @@ Cypress.Commands.add("loadPage", (path = "/") => {
     cy.get("#app", { log: false, timeout: 10000 }); // Waits for the page to fully load
     if (generateFixtures) {
         //Make sure all the delayed network requests get captured
-        cy.wait(1000);
+        //cy.wait(1000);
     }
 });
 

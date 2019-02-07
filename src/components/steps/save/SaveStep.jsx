@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import _ from "lodash";
+import moment from "moment";
 import { withStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 
@@ -56,20 +57,48 @@ class SaveStep extends React.Component {
         }
     }
 
+    renderLiEntry = ({ label, value }) => {
+        return (
+            <li key={label}>
+                <b>{label}</b>: {value || "-"}
+            </li>
+        );
+    };
+
+    getCampaignPeriodDateString = () => {
+        const { campaign } = this.props;
+        const { startDate, endDate } = campaign;
+
+        if (startDate && endDate) {
+            return [
+                moment(campaign.startDate).format("LL"),
+                "->",
+                moment(campaign.endDate).format("LL"),
+            ].join(" ");
+        } else {
+            return "-";
+        }
+    };
+
     render() {
-        const { classes } = this.props;
+        const { classes, campaign } = this.props;
         const { orgUnitNames } = this.state;
+        const LiEntry = this.renderLiEntry;
 
         return (
             <div className={classes.wrapper}>
                 <h3>{i18n.t("Setup is finished. Press the button Save to save the data")}</h3>
 
                 <ul>
-                    <li>
-                        <b>{i18n.t("Organisation Units")}</b>
-                        :&nbsp;
-                        {this.getMessageFromPaginated(orgUnitNames)}
-                    </li>
+                    <LiEntry label={i18n.t("Name")} value={campaign.name} />
+                    <LiEntry
+                        label={i18n.t("Period dates")}
+                        value={this.getCampaignPeriodDateString()}
+                    />
+                    <LiEntry
+                        label={i18n.t("Organisation Units")}
+                        value={this.getMessageFromPaginated(orgUnitNames)}
+                    />
                 </ul>
 
                 <Button className={classes.saveButton} onClick={this.save} variant="contained">

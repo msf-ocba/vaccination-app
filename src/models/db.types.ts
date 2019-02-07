@@ -1,7 +1,10 @@
 import { string, number } from "prop-types";
 
+type Maybe<T> = T | undefined;
+
 export interface Db {
-    getOrganisationUnitsFromIds(ids: string[]): Promise<PaginatedObjects<OrganisationUnit>>;
+    getOrganisationUnitsFromIds(ids: string[]):
+        Promise<PaginatedObjects<OrganisationUnit>>;
 }
 
 export interface Pager {
@@ -17,15 +20,15 @@ export interface PaginatedObjects<T> {
 }
 
 export interface OrganisationUnitPathOnly {
-    id: string,
-    path: string,
+    id: string;
+    path: string;
 };
 
 
 export interface OrganisationUnit {
-    id: string,
+    id: string;
     displayName: string;
     level: number;
-    path: string,
-    ancestors: OrganisationUnit[] | undefined,
+    path: string;
+    ancestors: Maybe<OrganisationUnit[]>;
 };

@@ -2,8 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { init, config, getUserSettings, getManifest } from "d2";
 import "font-awesome/css/font-awesome.min.css";
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import i18n from "@dhis2/d2-i18n";
+import moment from "moment";
 
 import App from "./components/app/App";
 
@@ -36,6 +37,7 @@ function configI18n(userSettings) {
     document.documentElement.setAttribute("dir", isLangRTL(uiLocale) ? "rtl" : "ltr");
 
     i18n.changeLanguage(uiLocale);
+    moment.locale(uiLocale);
 }
 
 async function getBaseUrl() {
@@ -51,7 +53,16 @@ async function getBaseUrl() {
     }
 }
 
+const i18nKeys = [
+    "app_search_placeholder",
+    "manage_my_apps",
+    "no_results_found",
+    "settings",
+];
+
 function setD2UiTranslations(d2) {
+    i18nKeys.forEach(s => d2.i18n.strings.add(s));
+    d2.i18n.load();
     Object.assign(d2.i18n.translations, d2UiTranslations);
 }
 
@@ -61,16 +72,16 @@ async function main() {
     try {
         const d2 = await init({ baseUrl: apiUrl });
         window.d2 = d2; // Make d2 available in the console
-        await setD2UiTranslations(d2);
+        setD2UiTranslations(d2);
         const userSettings = await getUserSettings();
         configI18n(userSettings);
         const appConfig = await fetch("app-config.json", {
             credentials: "same-origin",
         }).then(res => res.json());
         ReactDOM.render(
-            <BrowserRouter>
+            <HashRouter>
                 <App d2={d2} appConfig={appConfig} />
-            </BrowserRouter>,
+            </HashRouter>,
             document.getElementById("root")
         );
     } catch (err) {

@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { withRouter } from "react-router";
+import _ from "lodash";
 
 import Wizard from "../wizard/Wizard";
 import FormHeading from "./FormHeading";
@@ -10,6 +11,7 @@ import DbD2 from "models/db-d2";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
 import SaveStep from "../steps/save/SaveStep";
 import { getValidationMessages } from "../../utils/validations";
+import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 
 const stepsBaseInfo = [
     {
@@ -20,6 +22,13 @@ const stepsBaseInfo = [
         help: i18n.t(`Select organisation units assigned to this campaign.
 At least one must be selected.
 Only organisation units of level 6 (service) can be selected`),
+    },
+    {
+        key: "general-info",
+        label: i18n.t("General info"),
+        component: GeneralInfoStep,
+        validationKeys: ["name", "startDate", "endDate"],
+        help: i18n.t(`Set the name of the campaign and the period in which data entry will be enabled`),
     },
     {
         key: "save",
@@ -58,7 +67,7 @@ class CampaignWizard extends React.Component {
     };
 
     render() {
-        const { d2 } = this.props;
+        const { d2, location } = this.props;
         const { campaign } = this.state;
 
         const steps = stepsBaseInfo.map(step => ({
@@ -70,6 +79,15 @@ class CampaignWizard extends React.Component {
             },
         }));
 
+        const urlHash = location.hash.slice(1);
+        const initialStepKey = _(steps)
+            .map("key")
+            .includes(urlHash)
+            ? urlHash
+            : _(steps)
+                  .map("key")
+                  .first();
+
         return (
             <div>
                 <FormHeading
@@ -79,8 +97,7 @@ class CampaignWizard extends React.Component {
 
                 <Wizard
                     steps={steps}
-                    initialStepKey="organisation-units"
-                    //initialStepKey="save"
+                    initialStepKey={initialStepKey}
                     useSnackFeedback={true}
                     onStepChangeRequest={this.onStepChangeRequest}
                 />

@@ -82,7 +82,9 @@ class Wizard extends React.Component {
             this.setStep(nextStepKey);
         } else {
             if (this.props.useSnackFeedback) {
-                this.props.feedback(levels.ERROR, errorMessages.join("\n"));
+                this.props.feedback(levels.ERROR, errorMessages.join("\n"), {
+                    autoHideDuration: null,
+                });
             } else {
                 this.setState({ messages: errorMessages });
             }
@@ -94,7 +96,7 @@ class Wizard extends React.Component {
         this.setStep(prevStepKey);
     };
 
-    renderNavigationButton({ stepKey, onClick, label }) {
+    renderNavigationButton = ({ stepKey, onClick, label }) => {
         return (
             <Button
                 variant="contained"
@@ -106,7 +108,7 @@ class Wizard extends React.Component {
                 {label}
             </Button>
         );
-    }
+    };
 
     setStep = stepKey => {
         this.setState({ currentStepKey: stepKey, messages: [] });
@@ -139,7 +141,7 @@ class Wizard extends React.Component {
         const currentStepIndex = index >= 0 ? index : 0;
         const currentStep = steps[currentStepIndex];
         const { prevStepKey, nextStepKey } = this.getAdjacentSteps();
-        const NavigationButton = this.renderNavigationButton.bind(this);
+        const NavigationButton = this.renderNavigationButton;
         const Help = this.renderHelp;
 
         return (

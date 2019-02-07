@@ -14,11 +14,12 @@ export default class SnackbarProvider extends Component {
     }
 
     // level : "success" | "info" | "warning" | "error"
-    openSnackbar = (level, message) => {
+    openSnackbar = (level, message, { autoHideDuration = 2000 } = {}) => {
         this.setState({
             message,
             isOpen: true,
             variant: level,
+            autoHideDuration,
         });
     };
 
@@ -38,6 +39,7 @@ export default class SnackbarProvider extends Component {
             snackbarIsOpen: this.state.isOpen,
             message: this.state.message,
             variant: this.state.variant,
+            autoHideDuration: this.state.autoHideDuration,
         };
 
         return (

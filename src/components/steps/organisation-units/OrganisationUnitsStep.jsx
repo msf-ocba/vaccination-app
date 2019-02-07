@@ -36,7 +36,7 @@ class OrganisationUnitsStep extends React.Component {
             <OrgUnitsSelector
                 d2={d2}
                 onChange={this.setOrgUnits}
-                selected={campaign.getOrganisationUnits().map(ou => ou.path)}
+                selected={campaign.organisationUnits.map(ou => ou.path)}
             />
         );
     }

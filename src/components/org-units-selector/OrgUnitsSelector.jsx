@@ -101,10 +101,6 @@ export default class OrgUnitsSelector extends React.Component {
                 groups,
             });
         });
-
-        this.handleSelectionUpdate = this.handleSelectionUpdate.bind(this);
-        this.handleOrgUnitClick = this.handleOrgUnitClick.bind(this);
-        this.handleChildrenLoaded = this.handleChildrenLoaded.bind(this);
     }
 
     getChildContext() {
@@ -113,11 +109,11 @@ export default class OrgUnitsSelector extends React.Component {
         };
     }
 
-    handleSelectionUpdate(newSelection) {
+    handleSelectionUpdate = newSelection => {
         this.props.onChange(newSelection);
-    }
+    };
 
-    handleOrgUnitClick(event, orgUnit) {
+    handleOrgUnitClick = (event, orgUnit) => {
         if (this.props.selected.includes(orgUnit.path)) {
             const newSelected = [...this.props.selected];
             newSelected.splice(this.props.selected.indexOf(orgUnit.path), 1);
@@ -128,13 +124,13 @@ export default class OrgUnitsSelector extends React.Component {
             const newSelected = this.props.selected.concat(orgUnit.path);
             this.props.onChange(newSelected);
         }
-    }
+    };
 
-    handleChildrenLoaded(children) {
+    handleChildrenLoaded = children => {
         this.setState(state => ({
             rootWithMembers: mergeChildren(state.rootWithMembers, children),
         }));
-    }
+    };
 
     render() {
         const changeRoot = currentRoot => {

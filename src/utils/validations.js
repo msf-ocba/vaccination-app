@@ -5,6 +5,9 @@ const translations = {
     no_organisation_units_selected: () => i18n.t("Select at least one organisation unit"),
     organisation_units_only_of_levels: namespace =>
         i18n.t("Only organisation units of level {{levels}} can be selected", namespace),
+    cannot_be_blank: namespace => i18n.t("Field {{field}} cannot be blank", namespace),
+    cannot_be_blank_if_other_set: namespace =>
+        i18n.t("Field {{field}} cannot be blank if field {{other}} is set", namespace),
 };
 
 export function getValidationMessages(campaign, validationKeys) {

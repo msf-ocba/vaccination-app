@@ -5,10 +5,12 @@
 
 # testing
 /coverage
+/bak
 
 # production
 manifest.webapp
 /build
+vaccination-app.zip
 
 # misc
 .DS_Store
@@ -29,3 +31,4 @@ src/locales/
 # cypress
 cypress/screenshots/
 cypress/videos/
+cypress/fixtures

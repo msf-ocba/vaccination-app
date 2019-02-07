@@ -51,6 +51,7 @@ const styles = theme => ({
     message: {
         display: "flex",
         alignItems: "center",
+        whiteSpace: "pre-wrap",
     },
 });
 
@@ -59,7 +60,7 @@ const SnackbarConsumer = props => {
 
     return (
         <SnackbarContext.Consumer>
-            {({ snackbarIsOpen, message, variant, closeSnackbar }) => {
+            {({ snackbarIsOpen, message, variant, closeSnackbar, autoHideDuration }) => {
                 const Icon = variantIcon[variant];
                 if (!Icon) {
                     throw new Error(`Unknown variant: ${variant}`);
@@ -69,7 +70,7 @@ const SnackbarConsumer = props => {
                     <Snackbar
                         anchorOrigin={anchorOrigin}
                         open={snackbarIsOpen}
-                        autoHideDuration={2000}
+                        autoHideDuration={autoHideDuration}
                         onClose={closeSnackbar}
                     >
                         <SnackbarContent
