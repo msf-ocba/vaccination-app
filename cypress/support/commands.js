@@ -6,7 +6,7 @@ import _ from "lodash";
 
 const dhis2AuthEnvValue = Cypress.env("DHIS2_AUTH");
 if (!dhis2AuthEnvValue) {
-    throw new Error("CYPRESS_DHIS2_AUTH=user1:pass1,user2:pass2 not set");
+    throw new Error("CYPRESS_DHIS2_AUTH=user1:pass1[,user2:pass2,...] not set");
 }
 
 const dhis2Auth = _(dhis2AuthEnvValue)
@@ -48,7 +48,7 @@ Cypress.Commands.add("persistLogin", () => {
 
 Cypress.Commands.add("loadPage", (path = "/") => {
     cy.visit(path, { onBeforeLoad: stubFetch });
-    cy.get("#app", { log: false, timeout: 10000 }); // Waits for the page to fully load
+    cy.get("#app", { log: false, timeout: 20000 }); // Waits for the page to fully load
     if (generateFixtures) {
         //Make sure all the delayed network requests get captured
         //cy.wait(1000);

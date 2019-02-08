@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-06T10:05:07.032Z\n"
-"PO-Revision-Date: 2019-02-06T10:05:07.032Z\n"
+"POT-Creation-Date: 2019-02-08T12:27:03.678Z\n"
+"PO-Revision-Date: 2019-02-08T12:27:03.678Z\n"
 
 msgid "Campaign Configurator"
 msgstr ""
@@ -30,6 +30,12 @@ msgid ""
 msgstr ""
 
 msgid "General info"
+msgstr ""
+
+msgid "Antigen selection"
+msgstr ""
+
+msgid "Select the antigens included in the campaign"
 msgstr ""
 
 msgid "Save"
@@ -148,6 +154,9 @@ msgstr ""
 msgid "Setup is finished. Press the button Save to save the data"
 msgstr ""
 
+msgid "Antigens"
+msgstr ""
+
 msgid "Period dates"
 msgstr ""
 
@@ -187,6 +196,18 @@ msgstr ""
 msgid "Organisation Unit Group"
 msgstr ""
 
+msgid "Assign all"
+msgstr ""
+
+msgid "Remove all"
+msgstr ""
+
+msgid "Hidden by filters"
+msgstr ""
+
+msgid "selected"
+msgstr ""
+
 msgid "Select at least one organisation unit"
 msgstr ""
 
@@ -197,4 +218,7 @@ msgid "Field {{field}} cannot be blank"
 msgstr ""
 
 msgid "Field {{field}} cannot be blank if field {{other}} is set"
+msgstr ""
+
+msgid "Select at least one antigen"
 msgstr ""

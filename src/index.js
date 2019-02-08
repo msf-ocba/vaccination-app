@@ -18,6 +18,10 @@ const d2UiTranslations = {
     deselect_all: i18n.t("Unselect all"),
     organisation_unit_level: i18n.t("Organisation Unit Level"),
     organisation_unit_group: i18n.t("Organisation Unit Group"),
+    assign_all: i18n.t("Assign all"),
+    remove_all: i18n.t("Remove all"),
+    hidden_by_filters: i18n.t("Hidden by filters"),
+    selected: i18n.t("selected"),
 };
 
 function isLangRTL(code) {

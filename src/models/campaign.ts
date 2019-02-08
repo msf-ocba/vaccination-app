@@ -1,31 +1,46 @@
-import { Db, OrganisationUnit, PaginatedObjects, OrganisationUnitPathOnly } from "./db.types";
-import _ from 'lodash';
+import { MetadataResponse, Section } from './db.types';
+///<reference path="../types/d2.d.ts" />
+
+import { Dictionary } from 'lodash';
+import { CategoryCombo, DataSet, Response } from './db.types';
+import _ from '../utils/lodash';
+import { generateUid } from "d2/uid";
+import { PaginatedObjects, OrganisationUnitPathOnly, CategoryOption } from "./db.types";
+import DbD2 from './db-d2';
+import { getDaysRange } from '../utils/date';
+
+const metadataConfig = {
+    categoryCodeForAntigens: "RVC_ANTIGENS",
+    categoryComboCodeForTeams: "RVC_TEAMS"
+};
 
 export interface Data {
     name: string;
     organisationUnits: OrganisationUnitPathOnly[];
     startDate: Date | null;
     endDate: Date | null;
+    antigens: CategoryOption[];
 }
 
 export default class Campaign {
     selectableLevels: number[] = [6];
 
-    constructor(private db: Db, private data: Data) {
+    constructor(private db: DbD2, private data: Data) {
     }
 
-    public static create(db: Db): Campaign {
+    public static create(db: DbD2): Campaign {
         const initialData = {
             name: "",
             organisationUnits: [],
             startDate: null,
             endDate: null,
+            antigens: [],
         };
         return new Campaign(db, initialData);
     }
 
     public validate() {
-        const { organisationUnits, name, startDate, endDate } = this.data;
+        const { organisationUnits, name, startDate, endDate, antigens } = this.data;
 
         const allOrgUnitsInAcceptedLevels = _(organisationUnits).every(ou =>
             _(this.selectableLevels).includes(_(ou.path).countBy().get("/") || 0));
@@ -51,10 +66,18 @@ export default class Campaign {
                     key: "organisation_units_only_of_levels",
                     namespace: {levels: this.selectableLevels.join("/")},
                 } : null,
-                _(organisationUnits).isEmpty() ? {key: "no_organisation_units_selected"} : null,
+                _(organisationUnits).isEmpty() ? {
+                    key: "no_organisation_units_selected"
+                } : null,
             ]),
+
+            antigens: _(antigens).isEmpty() ? {
+                key: "no_antigens_selected"
+            } : null,
         });
     }
+
+    /* Organisation units */
 
     public async getOrganisationUnitsFullName(): Promise<PaginatedObjects<string>> {
         const ids = this.data.organisationUnits.map(ou => ou.id);
@@ -73,6 +96,8 @@ export default class Campaign {
         return this.data.organisationUnits;
     }
 
+    /* Name */
+
     public setName(name: string): Campaign {
         return new Campaign(this.db, {...this.data, name});
     }
@@ -80,6 +105,8 @@ export default class Campaign {
     public get name(): string {
         return this.data.name;
     }
+
+    /* Period dates */
 
     public setStartDate(startDate: Date | null): Campaign {
         return new Campaign(this.db, {...this.data, startDate});
@@ -95,5 +122,92 @@ export default class Campaign {
 
     public get endDate(): Date | null {
         return this.data.endDate;
+    }
+
+    /* Antigens */
+
+    public setAntigens(antigens: CategoryOption[]): Campaign {
+        return new Campaign(this.db, {...this.data, antigens});
+    }
+
+    public get antigens(): CategoryOption[] {
+        return this.data.antigens;
+    }
+
+    public async getAvailableAntigens(): Promise<CategoryOption[]> {
+        return this.db.getCategoryOptionsByCategoryCode(metadataConfig.categoryCodeForAntigens);
+    }
+
+    /* Save */
+
+    public async save(): Promise<Response<string>> {
+        const teamsCode = metadataConfig.categoryComboCodeForTeams;
+        const antigenCodes = this.antigens.map(antigen => antigen.code);
+        const categoryCombos = await this.db.getCategoryCombosByCode([teamsCode]);
+        const categoryCombosByCode = _(categoryCombos).keyBy("code").value();
+        const categoryComboTeams = _(categoryCombosByCode).get(teamsCode);
+        const dataElementsGroups = await this.db.getDataElementGroupsByCodes(antigenCodes);
+
+        const dataElementsByAntigenCode = _(dataElementsGroups)
+            .keyBy("code")
+            .mapValues("dataElements")
+            .value();
+
+        if (!categoryComboTeams) {
+            return {status: false, error: `Metadata not found: teamsCode=${teamsCode}`};
+        } else {
+            const dataSetId = generateUid();
+            const dataSetElements = _(this.antigens)
+                    .flatMap(antigen => {
+                        return _(dataElementsByAntigenCode).get(antigen.code).map(dataElement => {
+                            return {
+                                dataSet: {id: dataSetId},
+                                dataElement: {id: dataElement.id},
+                                categoryCombo: {id: dataElement.categoryCombo.id},
+                            };
+                        });
+                    })
+                    .value();
+
+            const sections: Section[] = this.antigens.map(antigen => {
+                return {
+                    name: antigen.displayName,
+                    showRowTotals: false,
+                    showColumnTotals: false,
+                    dataSet: {id: dataSetId},
+                    dataElements: _(dataElementsByAntigenCode).get(antigen.code),
+                    //greyedFields: [],
+                }
+            })
+
+            const dataInputPeriods = getDaysRange(this.startDate, this.endDate)
+                .map(date => ({period: {id: date.format("YYYYMMDD")}}));
+
+            const dataSet: DataSet = {
+                id: dataSetId,
+                name: this.name,
+                publicAccess: "--------",
+                periodType: "Daily",
+                categoryCombo: {id: categoryComboTeams.id},
+                dataElementDecoration: true,
+                renderAsTabs: true,
+                organisationUnits: this.organisationUnits.map(ou => ({id: ou.id})),
+                dataSetElements,
+                openFuturePeriods: 0,
+                timelyDays: 15,
+                expiryDays: 0,
+                dataInputPeriods,
+            }
+
+            const result: MetadataResponse =
+                await this.db.postMetadata({
+                    dataSets: [dataSet],
+                    sections: sections,
+                });
+
+            return result.status === "OK"
+                ? {status: true}
+                : {status: false, error: JSON.stringify(result.typeReports, null, 2)};
+        }
     }
 }

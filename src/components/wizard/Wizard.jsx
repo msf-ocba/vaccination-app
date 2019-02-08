@@ -28,7 +28,7 @@ const styles = theme => ({
     },
     contents: {
         margin: 10,
-        padding: 0,
+        padding: 20,
     },
     messages: {
         padding: 0,
@@ -41,6 +41,7 @@ class Wizard extends React.Component {
     state = {
         currentStepKey: this.props.initialStepKey,
         messages: [],
+        lastClickableStepIndex: 0,
     };
 
     static propTypes = {
@@ -111,7 +112,9 @@ class Wizard extends React.Component {
     };
 
     setStep = stepKey => {
-        this.setState({ currentStepKey: stepKey, messages: [] });
+        const index = _(this.props.steps).findIndex(step => step.key === stepKey);
+        const lastClickableStepIndex = Math.max(this.state.lastClickableStepIndex, index);
+        this.setState({ currentStepKey: stepKey, lastClickableStepIndex, messages: [] });
     };
 
     onStepClicked = memoize(stepKey => () => {
@@ -134,21 +137,45 @@ class Wizard extends React.Component {
         );
     };
 
+    renderFeedbackMessages = () => {
+        const { classes, useSnackFeedback } = this.props;
+        const { messages } = this.state;
+
+        if (useSnackFeedback || messages.length === 0) {
+            return null;
+        } else {
+            return (
+                <div className="messages">
+                    <ul className={classes.messages}>
+                        {messages.map((message, index) => (
+                            <li key={index}>{message}</li>
+                        ))}
+                    </ul>
+                </div>
+            );
+        }
+    };
+
     render() {
-        const { classes, steps, useSnackFeedback } = this.props;
-        const { currentStepKey, messages } = this.state;
+        const { classes, steps } = this.props;
+        const { currentStepKey, lastClickableStepIndex } = this.state;
         const index = _(steps).findIndex(step => step.key === currentStepKey);
         const currentStepIndex = index >= 0 ? index : 0;
         const currentStep = steps[currentStepIndex];
         const { prevStepKey, nextStepKey } = this.getAdjacentSteps();
         const NavigationButton = this.renderNavigationButton;
         const Help = this.renderHelp;
+        const FeedbackMessages = this.renderFeedbackMessages;
 
         return (
             <div className={classes.root}>
-                <Stepper nonLinear={false} activeStep={currentStepIndex}>
-                    {steps.map(step => (
-                        <Step key={step.key}>
+                <Stepper nonLinear={true} activeStep={currentStepIndex}>
+                    {steps.map((step, index) => (
+                        <Step
+                            key={step.key}
+                            completed={false}
+                            disabled={index > lastClickableStepIndex}
+                        >
                             <StepButton
                                 key={step.key}
                                 data-test-current={currentStep === step}
@@ -176,19 +203,10 @@ class Wizard extends React.Component {
                     {currentStep.help ? <Help step={currentStep} /> : null}
                 </div>
 
-                {!useSnackFeedback &&
-                    messages.length > 0 && (
-                        <div className="messages">
-                            <ul className={classes.messages}>
-                                {messages.map((message, index) => (
-                                    <li key={index}>{message}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
+                <FeedbackMessages />
 
                 <Paper className={classes.contents}>
-                    <currentStep.component {...currentStep.props} />
+                    {<currentStep.component {...currentStep.props} />}
                 </Paper>
             </div>
         );
