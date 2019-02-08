@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-08T12:27:03.678Z\n"
-"PO-Revision-Date: 2019-02-08T12:27:03.678Z\n"
+"POT-Creation-Date: 2019-02-08T12:38:40.940Z\n"
+"PO-Revision-Date: 2019-02-08T12:38:40.940Z\n"
 
 msgid "Campaign Configurator"
 msgstr ""
@@ -32,16 +32,15 @@ msgstr ""
 msgid "General info"
 msgstr ""
 
-<<<<<<< HEAD
+msgid ""
+"Set the name of the campaign and the period in which data entry will be "
+"enabled"
+msgstr ""
+
 msgid "Antigen selection"
 msgstr ""
 
 msgid "Select the antigens included in the campaign"
-=======
-msgid ""
-"Set the name of the campaign and the period in which data entry will be "
-"enabled"
->>>>>>> origin/development
 msgstr ""
 
 msgid "Save"

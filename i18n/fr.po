@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-08T12:27:03.678Z\n"
+"POT-Creation-Date: 2019-02-08T12:38:40.940Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -32,16 +32,15 @@ msgstr ""
 msgid "General info"
 msgstr ""
 
-<<<<<<< HEAD
+msgid ""
+"Set the name of the campaign and the period in which data entry will be "
+"enabled"
+msgstr ""
+
 msgid "Antigen selection"
 msgstr ""
 
 msgid "Select the antigens included in the campaign"
-=======
-msgid ""
-"Set the name of the campaign and the period in which data entry will be "
-"enabled"
->>>>>>> origin/development
 msgstr ""
 
 msgid "Save"
