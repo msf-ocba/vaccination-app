@@ -35,11 +35,20 @@ msgstr ""
 msgid "General info"
 msgstr "Información general"
 
+<<<<<<< HEAD
 msgid "Antigen selection"
 msgstr "Antígenos"
 
 msgid "Select the antigens included in the campaign"
 msgstr "Selecciones los antígenos incluídos en la campaña"
+=======
+msgid ""
+"Set the name of the campaign and the period in which data entry will be "
+"enabled"
+msgstr ""
+"Establezca el nombre de la campaña y el periodo de tiempo en el cual será"
+"posible añadir datos"
+>>>>>>> origin/development
 
 msgid "Save"
 msgstr "Guardar"

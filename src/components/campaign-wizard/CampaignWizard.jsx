@@ -29,6 +29,7 @@ Only organisation units of level 6 (service) can be selected`),
         label: i18n.t("General info"),
         component: GeneralInfoStep,
         validationKeys: ["name", "startDate", "endDate"],
+        help: i18n.t(`Set the name of the campaign and the period in which data entry will be enabled`),
     },
     {
         key: "antigen-selection",

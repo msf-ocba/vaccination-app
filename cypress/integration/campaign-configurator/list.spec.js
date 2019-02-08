@@ -1,7 +1,8 @@
 describe("Campaign configurator - List page", () => {
     beforeEach(() => {
         cy.login("admin");
-        cy.loadPage("/campaign-configurator");
+        cy.loadPage();
+        cy.contains("Campaign Configurator").click();
     });
 
     it("should have the filter only my campaign set by default", () => {
@@ -40,64 +41,58 @@ describe("Campaign configurator - List page", () => {
         cy.contains("Details").click();
     });
 
-    context("Unset filter only-my-campaigns", () => {
-        it("shows list of user dataset sorted alphabetically", () => {
-            cy.get("[data-test='only-my-campaigns']").uncheck();
+    it("shows list of user dataset sorted alphabetically", () => {
+        cy.get("[data-test='only-my-campaigns']").uncheck();
 
-            cy.get(".data-table__rows__row").should("have.length", 10);
+        cy.get(".data-table__rows__row").should("have.length", 10);
 
-            cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
-                "have.text",
-                "Cholera Outbreak - Daily "
-            );
+        cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
+            "have.text",
+            "Cholera Outbreak - Daily "
+        );
 
-            cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").should(
-                "not.have.text",
-                "Community-based Activities - Weekly"
-            );
-        });
+        cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").should(
+            "not.have.text",
+            "Community-based Activities - Weekly"
+        );
+    });
 
-        context("Use filter box", () => {
-            it("can filter datasets by name (case insensitive)", () => {
-                cy.get("[data-test='only-my-campaigns']").uncheck();
+    it("can filter datasets by name (case insensitive)", () => {
+        cy.get("[data-test='only-my-campaigns']").uncheck();
 
-                cy.server()
-                    .route("GET", "/api/dataSets**")
-                    .as("getDataSets");
-                cy.get("[data-test='search']")
-                    .clear()
-                    .type("meningitis");
-                cy.wait("@getDataSets");
-                cy.get(".data-table__rows__row").should("have.length", 2);
+        cy.server()
+            .route("GET", "/api/dataSets**")
+            .as("getDataSets");
+        cy.get("[data-test='search']")
+            .clear()
+            .type("meningitis");
+        cy.wait("@getDataSets");
+        cy.get(".data-table__rows__row").should("have.length", 2);
 
-                cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
-                    "have.text",
-                    "Meningitis Outbreak - Daily"
-                );
+        cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
+            "have.text",
+            "Meningitis Outbreak - Daily"
+        );
 
-                cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").should(
-                    "have.text",
-                    "Meningitis Outbreak - Weekly"
-                );
-            });
-        });
+        cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").should(
+            "have.text",
+            "Meningitis Outbreak - Weekly"
+        );
+    });
 
-        context("Click name column", () => {
-            it("shows list of user dataset sorted alphabetically desc", () => {
-                cy.get("[data-test='search']").clear();
-                cy.server()
-                    .route("GET", "/api/dataSets*")
-                    .as("getDataSets");
-                cy.contains("Name").click();
-                cy.wait("@getDataSets");
+    it("shows list of user dataset sorted alphabetically desc", () => {
+        cy.get("[data-test='search']").clear();
+        cy.server()
+            .route("GET", "/api/dataSets*")
+            .as("getDataSets");
+        cy.contains("Name").click();
+        cy.wait("@getDataSets");
 
-                cy.get(".data-table__rows__row").should("have.length", 10);
+        cy.get(".data-table__rows__row").should("have.length", 10);
 
-                cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
-                    "have.text",
-                    "Vaccination Women - Weekly"
-                );
-            });
-        });
+        cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
+            "have.text",
+            "Vaccination Women - Weekly"
+        );
     });
 });
