@@ -7,7 +7,7 @@ import AddIcon from "@material-ui/icons/Add";
 const styles = theme => ({
     fab: {
         margin: theme.spacing.unit,
-        position: "absolute",
+        position: "fixed",
         bottom: theme.spacing.unit * 5,
         right: theme.spacing.unit * 5,
     },
