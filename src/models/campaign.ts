@@ -180,8 +180,11 @@ export default class Campaign {
                 }
             })
 
-            const dataInputPeriods = getDaysRange(this.startDate, this.endDate)
-                .map(date => ({period: {id: date.format("YYYYMMDD")}}));
+            const dataInputPeriods = getDaysRange(this.startDate, this.endDate).map(date => ({
+                openingDate: this.startDate ? this.startDate.toISOString() : undefined,
+                closingDate: this.endDate ? this.endDate.toISOString() : undefined,
+                period: {id: date.format("YYYYMMDD")}
+            }));
 
             const dataSet: DataSet = {
                 id: dataSetId,
@@ -194,7 +197,7 @@ export default class Campaign {
                 organisationUnits: this.organisationUnits.map(ou => ({id: ou.id})),
                 dataSetElements,
                 openFuturePeriods: 0,
-                timelyDays: 15,
+                timelyDays: 0,
                 expiryDays: 0,
                 dataInputPeriods,
             }
