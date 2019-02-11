@@ -20,40 +20,8 @@ import { formatDateLong } from "utils/date.js";
 import { canCreate } from "../../utils/auth";
 import ListActionBar from "./ListActionBar.component";
 
-function calculatePageValue(pager) {
-    const { total, pageCount, page, query } = pager;
-    const pageSize = query ? query.pageSize : 10;
-    const pageCalculationValue = total - (total - (pageCount - (pageCount - page)) * pageSize);
-    const startItem = 1 + pageCalculationValue - pageSize;
-    const endItem = pageCalculationValue;
-
-    return `${startItem} - ${endItem > total ? total : endItem}`;
-}
-
-const styles = {
-    dataTableWrap: {
-        display: "flex",
-        flexDirection: "column",
-        flex: 2,
-    },
-
-    detailsBoxWrap: {
-        flex: 1,
-        marginLeft: "1rem",
-        marginRight: "1rem",
-        opacity: 1,
-        flexGrow: 0,
-    },
-
-    listDetailsWrap: {
-        flex: 1,
-        display: "flex",
-        flexOrientation: "row",
-    },
-};
-
 class ObjectsTable extends React.Component {
-    pageSize = 10;
+    pageSize = 20;
 
     static propTypes = {
         d2: PropTypes.object.isRequired,
@@ -176,7 +144,7 @@ class ObjectsTable extends React.Component {
     };
 
     _getPaginationProps() {
-        const currentlyShown = calculatePageValue(this.state.pager);
+        const currentlyShown = calculatePageValue(this.state.pager, this.pageSize);
         const { pager } = this.state;
 
         return {
@@ -315,5 +283,37 @@ class ObjectsTable extends React.Component {
         );
     }
 }
+
+function calculatePageValue(pager, defaultPerPage) {
+    const { total, pageCount, page, query } = pager;
+    const pageSize = query ? query.pageSize : defaultPerPage;
+    const pageCalculationValue = total - (total - (pageCount - (pageCount - page)) * pageSize);
+    const startItem = 1 + pageCalculationValue - pageSize;
+    const endItem = pageCalculationValue;
+
+    return `${startItem} - ${endItem > total ? total : endItem}`;
+}
+
+const styles = {
+    dataTableWrap: {
+        display: "flex",
+        flexDirection: "column",
+        flex: 2,
+    },
+
+    detailsBoxWrap: {
+        flex: 1,
+        marginLeft: "1rem",
+        marginRight: "1rem",
+        opacity: 1,
+        flexGrow: 0,
+    },
+
+    listDetailsWrap: {
+        flex: 1,
+        display: "flex",
+        flexOrientation: "row",
+    },
+};
 
 export default withRouter(ObjectsTable);

@@ -26,6 +26,9 @@ const styles = theme => ({
     buttonDisabled: {
         color: "grey !important",
     },
+    stepButton: {
+        width: "auto",
+    },
     contents: {
         margin: 10,
         padding: 20,
@@ -180,12 +183,21 @@ class Wizard extends React.Component {
                                 key={step.key}
                                 data-test-current={currentStep === step}
                                 onClick={this.onStepClicked(step.key)}
+                                classes={{root: classes.stepButton}}
                             >
                                 {step.label}
                             </StepButton>
+
+                            {step.help && step === currentStep ? <Help step={step} /> : null}
                         </Step>
                     ))}
                 </Stepper>
+
+                <FeedbackMessages />
+
+                <Paper className={classes.contents} data-wizard-contents={true}>
+                    {<currentStep.component {...currentStep.props} />}
+                </Paper>
 
                 <div>
                     <NavigationButton
@@ -199,15 +211,7 @@ class Wizard extends React.Component {
                         onClick={this.nextStep}
                         label={i18n.t("Next") + " →"}
                     />
-
-                    {currentStep.help ? <Help step={currentStep} /> : null}
                 </div>
-
-                <FeedbackMessages />
-
-                <Paper className={classes.contents} data-wizard-contents={true}>
-                    {<currentStep.component {...currentStep.props} />}
-                </Paper>
             </div>
         );
     }

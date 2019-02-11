@@ -59,8 +59,7 @@ class CampaignWizard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            campaign: Campaign.create(new DbD2(props.d2))
-
+            campaign: Campaign.create(new DbD2(props.d2)),
         };
     }
 
