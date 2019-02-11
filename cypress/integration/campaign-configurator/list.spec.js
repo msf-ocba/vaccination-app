@@ -10,7 +10,7 @@ describe("Campaign configurator - List page", () => {
     });
 
     it("shows list of user campaigns", () => {
-        cy.get(".data-table__rows__row").should("have.length", 10);
+        cy.get(".data-table__rows__row").should("have.length", 20);
 
         cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
             "have.text",
@@ -44,7 +44,7 @@ describe("Campaign configurator - List page", () => {
     it("shows list of user dataset sorted alphabetically", () => {
         cy.get("[data-test='only-my-campaigns']").uncheck();
 
-        cy.get(".data-table__rows__row").should("have.length", 10);
+        cy.get(".data-table__rows__row").should("have.length", 20);
 
         cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
             "have.text",
@@ -88,7 +88,7 @@ describe("Campaign configurator - List page", () => {
         cy.contains("Name").click();
         cy.wait("@getDataSets");
 
-        cy.get(".data-table__rows__row").should("have.length", 10);
+        cy.get(".data-table__rows__row").should("have.length", 20);
 
         cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
             "have.text",
