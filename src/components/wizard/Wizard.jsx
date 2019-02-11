@@ -182,6 +182,7 @@ class Wizard extends React.Component {
                                 onClick={this.onStepClicked(step.key)}
                             >
                                 {step.label}
+                                {step.help && step == currentStep ? <Help step={step} /> : null}
                             </StepButton>
                         </Step>
                     ))}
@@ -199,8 +200,6 @@ class Wizard extends React.Component {
                         onClick={this.nextStep}
                         label={i18n.t("Next") + " →"}
                     />
-
-                    {currentStep.help ? <Help step={currentStep} /> : null}
                 </div>
 
                 <FeedbackMessages />
