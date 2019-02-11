@@ -188,6 +188,12 @@ class Wizard extends React.Component {
                     ))}
                 </Stepper>
 
+                <FeedbackMessages />
+
+                <Paper className={classes.contents} data-wizard-contents={true}>
+                    {<currentStep.component {...currentStep.props} />}
+                </Paper>
+
                 <div>
                     <NavigationButton
                         stepKey={prevStepKey}
@@ -201,12 +207,6 @@ class Wizard extends React.Component {
                         label={i18n.t("Next") + " →"}
                     />
                 </div>
-
-                <FeedbackMessages />
-
-                <Paper className={classes.contents} data-wizard-contents={true}>
-                    {<currentStep.component {...currentStep.props} />}
-                </Paper>
             </div>
         );
     }
