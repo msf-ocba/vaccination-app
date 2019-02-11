@@ -26,6 +26,9 @@ const styles = theme => ({
     buttonDisabled: {
         color: "grey !important",
     },
+    stepButton: {
+        width: "auto",
+    },
     contents: {
         margin: 10,
         padding: 20,
@@ -180,10 +183,12 @@ class Wizard extends React.Component {
                                 key={step.key}
                                 data-test-current={currentStep === step}
                                 onClick={this.onStepClicked(step.key)}
+                                classes={{root: classes.stepButton}}
                             >
                                 {step.label}
-                                {step.help && step === currentStep ? <Help step={step} /> : null}
                             </StepButton>
+
+                            {step.help && step === currentStep ? <Help step={step} /> : null}
                         </Step>
                     ))}
                 </Stepper>
