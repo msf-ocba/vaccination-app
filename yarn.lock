@@ -843,6 +843,16 @@
     lodash "^4.17.10"
     material-ui "^0.20.0"
 
+"@dhis2/d2-ui-core@5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-core/-/d2-ui-core-5.1.1.tgz#627760e2dfcaea4ea35f93ee883907b5007e27c2"
+  integrity sha512-Q/3YXpHEHtUp6VKkXJQIBRb3ycBf5ohabKKHLgnXFImYKo/dHIBQoKgW+t57+GYfr8NeOMx70YSOVn7gu6P8vQ==
+  dependencies:
+    babel-runtime "^6.26.0"
+    d2 "~31.1"
+    lodash "^4.17.10"
+    material-ui "^0.20.0"
+
 "@dhis2/d2-ui-core@^1.3.5":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-core/-/d2-ui-core-1.4.0.tgz#123d071e507c862f2c0c316ff0bda052a676c262"
@@ -865,6 +875,18 @@
     lodash "^4.17.10"
     loglevel "^1.6.1"
     material-ui "^0.20.0"
+    rxjs "^5.5.7"
+
+"@dhis2/d2-ui-group-editor@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-group-editor/-/d2-ui-group-editor-5.1.1.tgz#c9dec3fd3ab9493e7745b02f03c63b9db3d0b534"
+  integrity sha512-d9F38yXiFcq5biTSBYmeoIuA6A20BAXztsHpd2PJE1o+WenBu/edfKG/WzbKVW2b4qY//xzgjiyhMS5AVjwoNA==
+  dependencies:
+    "@dhis2/d2-ui-core" "5.1.1"
+    babel-runtime "^6.26.0"
+    material-ui "^0.20.0"
+    prop-types "^15.5.10"
+    recompose "^0.26.0"
     rxjs "^5.5.7"
 
 "@dhis2/d2-ui-header-bar@5.1.0":

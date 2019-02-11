@@ -5,43 +5,6 @@ import MomentUtils from "@date-io/moment";
 import { MuiPickersUtilsProvider, DatePicker as MuiDatePicker } from "material-ui-pickers";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core";
 import cyan from "@material-ui/core/colors/cyan";
-import { muiTheme } from "themes/dhis2.theme";
-
-const grey = "#0000004d";
-
-const materialTheme = createMuiTheme({
-    ...muiTheme,
-    overrides: {
-        MuiFormLabel: {
-            root: {
-                color: grey,
-            },
-        },
-        MuiInput: {
-            root: {
-                color: grey,
-            },
-            input: {
-                color: "#000000de",
-            },
-            underline: {
-                color: grey,
-                "&&&&:hover:before": {
-                    borderBottom: `3px solid ${cyan}`,
-                },
-                "&:hover:not($disabled):before": {
-                    borderBottom: `1px solid ${grey}`,
-                },
-                "&:after": {
-                    borderBottom: `1px solid ${cyan}`,
-                },
-                "&:before": {
-                    borderBottom: `1px solid ${grey}`,
-                },
-            },
-        },
-    },
-});
 
 class DatePicker extends React.PureComponent {
     static propTypes = {
@@ -71,5 +34,45 @@ class DatePicker extends React.PureComponent {
         );
     }
 }
+
+const grey = "#0000004d";
+
+const materialTheme = createMuiTheme({
+    typography: {
+        useNextVariants: true,
+    },
+    overrides: {
+        MuiFormLabel: {
+            root: {
+                color: grey,
+                "&$focused": {
+                    color: cyan["500"],
+                },
+            },
+        },
+        MuiInput: {
+            root: {
+                color: grey,
+            },
+            input: {
+                color: "#000000de",
+            },
+            underline: {
+                "&&&&:hover:before": {
+                    borderBottom: `1px solid #bdbdbd`,
+                },
+                "&:hover:not($disabled):before": {
+                    borderBottom: `1px solid ${grey}`,
+                },
+                "&:after": {
+                    borderBottom: `2px solid ${cyan["500"]}`,
+                },
+                "&:before": {
+                    borderBottom: `1px solid #bdbdbd`,
+                },
+            },
+        },
+    },
+});
 
 export default DatePicker;

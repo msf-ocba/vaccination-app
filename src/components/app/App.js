@@ -8,6 +8,7 @@ import OldMuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import _ from "lodash";
 
 import { muiTheme } from "themes/dhis2.theme";
+import muiThemeLegacy from "themes/dhis2-legacy.theme";
 import "./App.css";
 import SnackbarProvider from "../feedback/SnackbarProvider";
 import Root from "./Root";
@@ -45,7 +46,7 @@ class App extends Component {
             <React.Fragment>
                 <JssProvider generateClassName={generateClassName}>
                     <MuiThemeProvider theme={muiTheme}>
-                        <OldMuiThemeProvider>
+                        <OldMuiThemeProvider muiTheme={muiThemeLegacy}>
                             <React.Fragment>
                                 <HeaderBar d2={d2} />
 

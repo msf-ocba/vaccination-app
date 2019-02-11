@@ -2,16 +2,17 @@ import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { withRouter } from "react-router";
-import _ from "lodash";
+
+import Campaign from "models/campaign";
+import DbD2 from "models/db-d2";
 
 import Wizard from "../wizard/Wizard";
 import FormHeading from "./FormHeading";
-import Campaign from "models/campaign";
-import DbD2 from "models/db-d2";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
 import SaveStep from "../steps/save/SaveStep";
 import { getValidationMessages } from "../../utils/validations";
 import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
+import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
 
 const stepsBaseInfo = [
     {
@@ -28,7 +29,16 @@ Only organisation units of level 6 (service) can be selected`),
         label: i18n.t("General info"),
         component: GeneralInfoStep,
         validationKeys: ["name", "startDate", "endDate"],
-        help: i18n.t(`Set the name of the campaign and the period in which data entry will be enabled`),
+        help: i18n.t(
+            `Set the name of the campaign and the period in which data entry will be enabled`
+        ),
+    },
+    {
+        key: "antigen-selection",
+        label: i18n.t("Antigen selection"),
+        component: AntigenSelectionStep,
+        validationKeys: ["antigens"],
+        help: i18n.t(`Select the antigens included in the campaign`),
     },
     {
         key: "save",
@@ -49,7 +59,8 @@ class CampaignWizard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            campaign: Campaign.create(new DbD2(props.d2)),
+            campaign: Campaign.create(new DbD2(props.d2))
+
         };
     }
 
@@ -58,7 +69,6 @@ class CampaignWizard extends React.Component {
     };
 
     onChange = campaign => {
-        window.campaign = campaign;
         this.setState({ campaign });
     };
 
@@ -69,6 +79,7 @@ class CampaignWizard extends React.Component {
     render() {
         const { d2, location } = this.props;
         const { campaign } = this.state;
+        window.campaign = campaign;
 
         const steps = stepsBaseInfo.map(step => ({
             ...step,
@@ -80,16 +91,12 @@ class CampaignWizard extends React.Component {
         }));
 
         const urlHash = location.hash.slice(1);
-        const initialStepKey = _(steps)
-            .map("key")
-            .includes(urlHash)
-            ? urlHash
-            : _(steps)
-                  .map("key")
-                  .first();
+        const stepExists = steps.find(step => step.key === urlHash);
+        const firstStepKey = steps.map(step => step.key)[0];
+        const initialStepKey = stepExists ? urlHash : firstStepKey;
 
         return (
-            <div>
+            <React.Fragment>
                 <FormHeading
                     title={i18n.t("New vaccination campaign")}
                     onBackClick={this.goToList}
@@ -101,7 +108,7 @@ class CampaignWizard extends React.Component {
                     useSnackFeedback={true}
                     onStepChangeRequest={this.onStepChangeRequest}
                 />
-            </div>
+            </React.Fragment>
         );
     }
 }

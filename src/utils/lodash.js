@@ -52,6 +52,15 @@ function groupByKeys(objs, keys, thruFn = _.identity) {
     }
 }
 
+function getOrFail(obj, key) {
+    const value = _.get(obj, key);
+    if (_.isNull(value) || _.isUndefined(value)) {
+        throw new Error(`Key ${key} not found in object ${obj}`);
+    } else {
+        return value;
+    }
+}
+
 _.mixin({
     imerge,
     deepMerge,
@@ -59,6 +68,7 @@ _.mixin({
     groupConsecutiveBy,
     transpose,
     groupByKeys,
+    getOrFail,
 });
 
 export default _;

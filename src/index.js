@@ -18,6 +18,10 @@ const d2UiTranslations = {
     deselect_all: i18n.t("Unselect all"),
     organisation_unit_level: i18n.t("Organisation Unit Level"),
     organisation_unit_group: i18n.t("Organisation Unit Group"),
+    assign_all: i18n.t("Assign all"),
+    remove_all: i18n.t("Remove all"),
+    hidden_by_filters: i18n.t("Hidden by filters"),
+    selected: i18n.t("selected"),
 };
 
 function isLangRTL(code) {
@@ -53,12 +57,7 @@ async function getBaseUrl() {
     }
 }
 
-const i18nKeys = [
-    "app_search_placeholder",
-    "manage_my_apps",
-    "no_results_found",
-    "settings",
-];
+const i18nKeys = ["app_search_placeholder", "manage_my_apps", "no_results_found", "settings"];
 
 function setD2UiTranslations(d2) {
     i18nKeys.forEach(s => d2.i18n.strings.add(s));
