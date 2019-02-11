@@ -1,7 +1,7 @@
 {
     "appKey": "vaccination-app",
     "appearance": {
-        "showShareButton": true
+        "showShareButton": false
     },
     "feedback": null
 }
