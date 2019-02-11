@@ -24,7 +24,9 @@ function cleanOptions(options) {
 export async function get(d2, filters, pagination) {
     const { searchValue, showOnlyUserCampaigns } = filters || {};
     const { page, pageSize = 20, sorting } = pagination || {};
-    const order = sorting ? sorting.join(":") : null;
+    // order=FIELD:DIRECTION where direction = "iasc" | "idesc" (insensitive ASC, DESC)
+    const [field, direction] = sorting || [];
+    const order = field && direction ? `${field}:i${direction}` : undefined;
     const filter = _.compact([
         searchValue ? `displayName:ilike:${searchValue}` : null,
         showOnlyUserCampaigns ? `user.id:eq:${d2.currentUser.id}` : null,
