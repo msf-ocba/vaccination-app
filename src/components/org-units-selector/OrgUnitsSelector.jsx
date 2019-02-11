@@ -56,6 +56,13 @@ const styles = {
         padding: "1px 6px 1px 3px",
         fontStyle: "italic",
     },
+    selectByLevel: {
+        marginBottom: -24,
+        marginTop: -16,
+    },
+    selectAll: {
+        float: "right",
+    }
 };
 styles.cardWide = Object.assign({}, styles.card, {
     width: 1052,
@@ -132,15 +139,29 @@ export default class OrgUnitsSelector extends React.Component {
         }));
     };
 
-    render() {
-        const changeRoot = currentRoot => {
-            this.setState({ currentRoot });
-        };
+    renderOrgUnitSelectTitle = () => {
+        const { currentRoot } = this.state;
 
-        const state = this.state;
-        if (!state.levels) {
-            return null;
-        }
+        return currentRoot ? (
+            <div>
+                {i18n.t("For organisation units within")}
+                <span style={styles.ouLabel}>{currentRoot.displayName}</span>:{" "}
+            </div>
+        ) : (
+            <div>{i18n.t("For all organisation units")}:</div>
+        );
+    };
+
+    changeRoot = currentRoot => {
+        this.setState({ currentRoot });
+    };
+
+    render() {
+        const { levels, currentRoot, rootWithMembers, groups } = this.state;
+        const { selected } = this.props;
+        const { renderOrgUnitSelectTitle: OrgUnitSelectTitle } = this;
+
+        if (!levels) return null;
 
         return (
             <div>
@@ -148,52 +169,42 @@ export default class OrgUnitsSelector extends React.Component {
                     <CardText style={styles.cardText}>
                         <div style={styles.left}>
                             <OrgUnitTree
-                                root={this.state.rootWithMembers}
-                                selected={this.props.selected}
-                                currentRoot={this.state.currentRoot}
-                                initiallyExpanded={[`/${this.state.rootWithMembers.id}`]}
+                                root={rootWithMembers}
+                                selected={selected}
+                                currentRoot={currentRoot}
+                                initiallyExpanded={[`/${rootWithMembers.id}`]}
                                 onSelectClick={this.handleOrgUnitClick}
-                                onChangeCurrentRoot={changeRoot}
+                                onChangeCurrentRoot={this.changeRoot}
                                 onChildrenLoaded={this.handleChildrenLoaded}
                             />
                         </div>
 
                         <div style={styles.right}>
                             <div>
-                                {this.state.currentRoot ? (
-                                    <div>
-                                        {i18n.t("For organisation units within")}
-                                        <span style={styles.ouLabel}>
-                                            {this.state.currentRoot.displayName}
-                                        </span>
-                                        :{" "}
-                                    </div>
-                                ) : (
-                                    <div>{i18n.t("For all organisation units")}:</div>
-                                )}
+                                <OrgUnitSelectTitle />
 
-                                <div style={{ marginBottom: -24, marginTop: -16 }}>
+                                <div style={styles.selectByLevel}>
                                     <OrgUnitSelectByLevel
-                                        levels={this.state.levels}
-                                        selected={this.props.selected}
-                                        currentRoot={this.state.currentRoot}
+                                        levels={levels}
+                                        selected={selected}
+                                        currentRoot={currentRoot}
                                         onUpdateSelection={this.handleSelectionUpdate}
                                     />
                                 </div>
 
                                 <div>
                                     <OrgUnitSelectByGroup
-                                        groups={this.state.groups}
-                                        selected={this.props.selected}
-                                        currentRoot={this.state.currentRoot}
+                                        groups={groups}
+                                        selected={selected}
+                                        currentRoot={currentRoot}
                                         onUpdateSelection={this.handleSelectionUpdate}
                                     />
                                 </div>
 
-                                <div style={{ float: "right" }}>
+                                <div style={styles.selectAll}>
                                     <OrgUnitSelectAll
-                                        selected={this.props.selected}
-                                        currentRoot={this.state.currentRoot}
+                                        selected={selected}
+                                        currentRoot={currentRoot}
                                         onUpdateSelection={this.handleSelectionUpdate}
                                     />
                                 </div>
