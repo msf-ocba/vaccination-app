@@ -38,6 +38,9 @@ class DatePicker extends React.PureComponent {
 const grey = "#0000004d";
 
 const materialTheme = createMuiTheme({
+    typography: {
+        useNextVariants: true,
+    },
     overrides: {
         MuiFormLabel: {
             root: {

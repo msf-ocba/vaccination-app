@@ -57,12 +57,7 @@ async function getBaseUrl() {
     }
 }
 
-const i18nKeys = [
-    "app_search_placeholder",
-    "manage_my_apps",
-    "no_results_found",
-    "settings",
-];
+const i18nKeys = ["app_search_placeholder", "manage_my_apps", "no_results_found", "settings"];
 
 function setD2UiTranslations(d2) {
     i18nKeys.forEach(s => d2.i18n.strings.add(s));

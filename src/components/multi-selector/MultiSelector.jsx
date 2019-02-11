@@ -75,7 +75,7 @@ class MultiSelector extends React.Component {
             : [GroupEditor, {}];
 
         return (
-            <div className={classes.wrapper}>
+            <div className={classes.wrapper} data-multi-selector={true}>
                 <GroupEditorComponent
                     itemStore={itemStore}
                     assignedItemStore={assignedItemStore}

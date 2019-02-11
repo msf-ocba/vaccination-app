@@ -16,7 +16,7 @@ import DialogHandler from "../dialog-handler/DialogHandler";
 
 const styles = theme => ({
     root: {
-        width: "90%",
+        width: "100%",
     },
     button: {
         margin: theme.spacing.unit,
@@ -205,7 +205,7 @@ class Wizard extends React.Component {
 
                 <FeedbackMessages />
 
-                <Paper className={classes.contents}>
+                <Paper className={classes.contents} data-wizard-contents={true}>
                     {<currentStep.component {...currentStep.props} />}
                 </Paper>
             </div>

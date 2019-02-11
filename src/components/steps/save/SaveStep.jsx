@@ -49,6 +49,7 @@ class SaveStep extends React.Component {
             this.props.history.push("/campaign-configurator");
         } else {
             this.setState({ errorMessage: saveResponse.error });
+            this.props.feedback(levels.ERROR, i18n.t("Error saving campaign"));
         }
     };
 
