@@ -23,7 +23,7 @@ export interface Data {
 }
 
 export default class Campaign {
-    selectableLevels: number[] = [6];
+    public selectableLevels: number[] = [6];
 
     constructor(private db: DbD2, private data: Data) {
     }
@@ -67,7 +67,7 @@ export default class Campaign {
                     namespace: {levels: this.selectableLevels.join("/")},
                 } : null,
                 _(organisationUnits).isEmpty() ? {
-                    key: "no_organisation_units_selected"
+                    key: "no_organisation_units_selected",
                 } : null,
             ]),
 

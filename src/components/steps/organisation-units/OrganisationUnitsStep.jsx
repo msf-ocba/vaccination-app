@@ -2,8 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import OrgUnitsSelector from "../../org-units-selector/OrgUnitsSelector";
 import _ from "lodash";
-import { withFeedback, levels } from "../../feedback";
-import { getValidationMessages } from "../../../utils/validations";
+import { withFeedback } from "../../feedback";
 
 class OrganisationUnitsStep extends React.Component {
     static propTypes = {
@@ -16,17 +15,13 @@ class OrganisationUnitsStep extends React.Component {
     setOrgUnits = orgUnitsPaths => {
         const orgUnits = orgUnitsPaths.map(path => ({
             id: _.last(path.split("/")),
+            level: path.split("/").length - 1,
             path,
         }));
-
-        const newCampaign = this.props.campaign.setOrganisationUnits(orgUnits);
-        const messages = getValidationMessages(newCampaign, ["organisationUnits"]);
-
-        if (!_(messages).isEmpty()) {
-            this.props.feedback(levels.ERROR, messages.join("\n"));
-        } else {
-            this.props.onChange(newCampaign);
-        }
+        const orgUnitsForAcceptedLevels =
+            orgUnits.filter(ou => this.props.campaign.selectableLevels.includes(ou.level));
+        const newCampaign = this.props.campaign.setOrganisationUnits(orgUnitsForAcceptedLevels);
+        this.props.onChange(newCampaign);
     };
 
     render() {
@@ -37,6 +32,7 @@ class OrganisationUnitsStep extends React.Component {
                 d2={d2}
                 onChange={this.setOrgUnits}
                 selected={campaign.organisationUnits.map(ou => ou.path)}
+                levels={campaign.selectableLevels}
             />
         );
     }
