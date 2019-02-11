@@ -50,7 +50,7 @@ describe("Campaign configurator - Create", () => {
         cy.contains("Next").click();
         cy.contains("Field name cannot be blank");
 
-        cy.get("[data-field='name']").type("My vaccination campaign");
+        cy.get("[data-field='name']").type("Test vaccination campaign");
         cy.contains("Start date").click({ force: true });
         clickDay(11);
 
@@ -59,18 +59,31 @@ describe("Campaign configurator - Create", () => {
 
         cy.contains("Next").click();
 
+        // Antigens selections
+
+        cy.contains("Next").click();
+        cy.contains("Select at least one antigen");
+
+        selectAntigen("Measles");
+        selectAntigen("Cholera");
+
+        cy.contains("Next").click();
+
         // Save step
 
         cy.get("[data-test-current=true]").contains("Save");
 
         cy.contains("Name");
-        cy.contains("My vaccination campaign");
+        cy.contains("Test vaccination campaign");
 
         cy.contains("Period dates");
         const now = moment();
         const expectedDataStart = now.set("date", 11).format("LL");
         const expectedDataEnd = now.set("date", 25).format("LL");
         cy.contains(`${expectedDataStart} -> ${expectedDataEnd}`);
+
+        cy.contains("Antigens");
+        cy.contains("Measles, Cholera");
 
         cy.contains("Organisation Units");
         cy.contains(
@@ -81,7 +94,9 @@ describe("Campaign configurator - Create", () => {
                 ].join(", ")
         );
 
-        cy.contains("Save").click();
+        cy.get("[data-wizard-contents] button").contains("Save").click();
+
+        cy.contains("Campaign created: Test vaccination campaign");
     });
 });
 
@@ -112,4 +127,9 @@ function clickDay(dayOfMonth) {
 
     /* eslint-disable cypress/no-unnecessary-waiting */
     cy.wait(100);
+}
+
+function selectAntigen(label) {
+    cy.get("[data-multi-selector] > div > div > div select:first").select(label);
+    cy.get("[data-multi-selector] > div > div > div:nth-child(2)").contains("→").click();
 }
