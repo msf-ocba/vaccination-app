@@ -59,7 +59,7 @@ const materialTheme = createMuiTheme({
             },
             underline: {
                 "&&&&:hover:before": {
-                    borderBottom: `1px solid #e0e0e0`,
+                    borderBottom: `1px solid #bdbdbd`,
                 },
                 "&:hover:not($disabled):before": {
                     borderBottom: `1px solid ${grey}`,
@@ -68,7 +68,7 @@ const materialTheme = createMuiTheme({
                     borderBottom: `2px solid ${cyan["500"]}`,
                 },
                 "&:before": {
-                    borderBottom: `1px solid #e0e0e0`,
+                    borderBottom: `1px solid #bdbdbd`,
                 },
             },
         },

@@ -94,7 +94,9 @@ describe("Campaign configurator - Create", () => {
                 ].join(", ")
         );
 
-        cy.get("[data-wizard-contents] button").contains("Save").click();
+        cy.get("[data-wizard-contents] button")
+            .contains("Save")
+            .click();
 
         cy.contains("Campaign created: Test vaccination campaign");
     });
@@ -131,5 +133,7 @@ function clickDay(dayOfMonth) {
 
 function selectAntigen(label) {
     cy.get("[data-multi-selector] > div > div > div select:first").select(label);
-    cy.get("[data-multi-selector] > div > div > div:nth-child(2)").contains("→").click();
+    cy.get("[data-multi-selector] > div > div > div:nth-child(2)")
+        .contains("→")
+        .click();
 }

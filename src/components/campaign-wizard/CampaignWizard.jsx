@@ -29,7 +29,9 @@ Only organisation units of level 6 (service) can be selected`),
         label: i18n.t("General info"),
         component: GeneralInfoStep,
         validationKeys: ["name", "startDate", "endDate"],
-        help: i18n.t(`Set the name of the campaign and the period in which data entry will be enabled`),
+        help: i18n.t(
+            `Set the name of the campaign and the period in which data entry will be enabled`
+        ),
     },
     {
         key: "antigen-selection",
@@ -58,6 +60,7 @@ class CampaignWizard extends React.Component {
         super(props);
         this.state = {
             campaign: Campaign.create(new DbD2(props.d2))
+
         };
     }
 
@@ -93,7 +96,7 @@ class CampaignWizard extends React.Component {
         const initialStepKey = stepExists ? urlHash : firstStepKey;
 
         return (
-            <div>
+            <React.Fragment>
                 <FormHeading
                     title={i18n.t("New vaccination campaign")}
                     onBackClick={this.goToList}
@@ -105,7 +108,7 @@ class CampaignWizard extends React.Component {
                     useSnackFeedback={true}
                     onStepChangeRequest={this.onStepChangeRequest}
                 />
-            </div>
+            </React.Fragment>
         );
     }
 }
