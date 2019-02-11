@@ -62,7 +62,7 @@ const styles = {
     },
     selectAll: {
         float: "right",
-    }
+    },
 };
 styles.cardWide = Object.assign({}, styles.card, {
     width: 1052,
@@ -73,6 +73,7 @@ export default class OrgUnitsSelector extends React.Component {
         d2: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
         selected: PropTypes.arrayOf(PropTypes.string).isRequired,
+        levels: PropTypes.arrayOf(PropTypes.number),
     };
 
     static childContextTypes = {
@@ -91,6 +92,14 @@ export default class OrgUnitsSelector extends React.Component {
                 paging: false,
                 fields: "id,level,displayName",
                 order: "level:asc",
+                // bug in old versions of dhis2, cannot use filter=level:in:[1,2] -> HTTP 500
+                // filter: props.levels ? `level:in:[${props.levels.join(',')}]` : undefined,
+                ...(props.levels
+                    ? {
+                          filter: props.levels.map(level => `level:eq:${level}`),
+                          rootJunction: "OR",
+                      }
+                    : {}),
             }),
             props.d2.models.organisationUnitGroups.list({
                 paging: false,
