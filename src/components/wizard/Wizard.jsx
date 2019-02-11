@@ -182,7 +182,7 @@ class Wizard extends React.Component {
                                 onClick={this.onStepClicked(step.key)}
                             >
                                 {step.label}
-                                {step.help && step == currentStep ? <Help step={step} /> : null}
+                                {step.help && step === currentStep ? <Help step={step} /> : null}
                             </StepButton>
                         </Step>
                     ))}
