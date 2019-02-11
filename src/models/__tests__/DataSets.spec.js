@@ -27,7 +27,7 @@ describe("DataSets", () => {
 
                 expect(d2.models.dataSets.list).toHaveBeenCalledWith({
                     fields: expectedFields,
-                    order: null,
+                    order: undefined,
                     page: undefined,
                     pageSize: 20,
                 });
@@ -56,7 +56,7 @@ describe("DataSets", () => {
 
                 expect(listMock).toHaveBeenCalledWith({
                     fields: expectedFields,
-                    order: "name:desc",
+                    order: "name:idesc",
                     page: 2,
                     pageSize: 10,
                     filter: ["displayName:ilike:abc", "user.id:eq:b123123123"],
