@@ -1,0 +1,27 @@
+.ou-root svg {
+    display: none;
+}
+
+.ou-root-1 .orgunit .orgunit .orgunit .orgunit .orgunit .children svg {
+    display: inline;
+}
+
+.ou-root-2 .orgunit .orgunit .orgunit .orgunit .children svg {
+    display: inline;
+}
+
+.ou-root-3 .orgunit .orgunit .orgunit .children svg {
+    display: inline;
+}
+
+.ou-root-4 .orgunit .orgunit .children svg {
+    display: inline;
+}
+
+.ou-root-5 .orgunit .children svg {
+    display: inline;
+}
+
+.ou-root-6 .orgunit svg {
+    display: inline;
+}

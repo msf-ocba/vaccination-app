@@ -1,0 +1,240 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: i18next-conv\n"
+"POT-Creation-Date: 2019-02-11T09:53:29.505Z\n"
+"PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgid "Campaign Configurator"
+msgstr "Configurador de campaña"
+
+msgid "Data Entry"
+msgstr "Entrada de datos"
+
+msgid "Dashboard"
+msgstr "Tablero"
+
+msgid "Maintenance"
+msgstr "Mantenimiento"
+
+msgid "Organisation Units"
+msgstr "Unidades organizativas"
+
+msgid ""
+"Select organisation units assigned to this campaign.\n"
+"At least one must be selected.\n"
+"Only organisation units of level 6 (service) can be selected"
+msgstr ""
+"Seleccione las unidades organizativas asignadas a esta campaña.\n"
+"Debe seleccionar al menos una unidad.\n"
+"Únicamente unidades de nivel 6 (Servicio) pueden seleccionarse"
+
+msgid "General info"
+msgstr "Información general"
+
+msgid ""
+"Set the name of the campaign and the period in which data entry will be "
+"enabled"
+msgstr ""
+"Establezca el nombre de la campaña y el periodo de tiempo en el cual "
+"seráposible añadir datos"
+
+msgid "Antigen selection"
+msgstr "Antígenos"
+
+msgid "Select the antigens included in the campaign"
+msgstr "Seleccione los antígenos incluídos en la campaña"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid ""
+"Press the button to create the dataset and all the metadata associated with "
+"this vaccination campaign"
+msgstr ""
+"Pulse el botón guardar para crear el dataset y todos los metadatos asociados "
+"con esta campaña de vacunación"
+
+msgid "New vaccination campaign"
+msgstr "Nueva campaña"
+
+msgid "Back"
+msgstr "Atrás"
+
+msgid "View/edit"
+msgstr "Ver/editar"
+
+msgid "View only"
+msgstr "Ver"
+
+msgid "Private"
+msgstr "Privado"
+
+msgid "Actions"
+msgstr "Acciones"
+
+msgid "of"
+msgstr "de"
+
+msgid "Name"
+msgstr "Nombre"
+
+msgid "Short name"
+msgstr "Nombre corto"
+
+msgid "Code"
+msgstr "Código"
+
+msgid "Display description"
+msgstr "Descripción"
+
+msgid "Created"
+msgstr "Fecha de creación"
+
+msgid "Last update"
+msgstr "Última actualización"
+
+msgid "Id"
+msgstr "Identificador"
+
+msgid "API link"
+msgstr "Link API"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "Public access"
+msgstr "Acceso público"
+
+msgid "Last updated"
+msgstr "Última actualización"
+
+msgid "Only my campaigns"
+msgstr "Solo mis campañas"
+
+msgid "Details"
+msgstr "Detalles"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "Share"
+msgstr "Compartir"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "Go to Data Entry"
+msgstr "Ir a entrada de datos"
+
+msgid "Go to Dashboard"
+msgstr "Ir a tablero"
+
+msgid "Download data"
+msgstr "Descargar datos"
+
+msgid "For organisation units within"
+msgstr "Para unidades organizativas dentro de"
+
+msgid "For all organisation units"
+msgstr "Para todas las unidades organizativas"
+
+msgid "Search by name"
+msgstr "Buscar por nombre"
+
+msgid "Field cannot be blank"
+msgstr "El campo no puede estar vacío"
+
+msgid "Start date"
+msgstr "Fecha de inicio"
+
+msgid "End Date"
+msgstr "Fecha de fin"
+
+msgid "Error saving campaign"
+msgstr "Se produjo un error al guardar la campaña"
+
+msgid "Loading..."
+msgstr "Cargando..."
+
+msgid "[None]"
+msgstr "[Vacío]"
+
+msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
+msgstr "[{{total}}] {{names}} y {{othersCount}} otros"
+
+msgid "Setup is finished. Press the button Save to save the data"
+msgstr "La configuración ha terminado. Pulse el botón para guardar los datos"
+
+msgid "Antigens"
+msgstr "Antígenos"
+
+msgid "Period dates"
+msgstr "Periodo"
+
+msgid "Help"
+msgstr "Ayuda"
+
+msgid "Previous"
+msgstr "Anterior"
+
+msgid "Next"
+msgstr "Siguiente"
+
+msgid "Search apps"
+msgstr "Buscar aplicaciones"
+
+msgid "Manage my apps"
+msgstr "Configurar"
+
+msgid "No results found"
+msgstr "No hay resultados"
+
+msgid "Select"
+msgstr "Seleccionar"
+
+msgid "Unselect"
+msgstr "Deseleccionar"
+
+msgid "Select all"
+msgstr "Selecccionar todo"
+
+msgid "Unselect all"
+msgstr "Deseleccionar todo"
+
+msgid "Organisation Unit Level"
+msgstr "Nivel de unidad organizativa"
+
+msgid "Organisation Unit Group"
+msgstr "Grupo de unidad organizativa"
+
+msgid "Assign all"
+msgstr "Asignar todos"
+
+msgid "Remove all"
+msgstr "Quitar todos"
+
+msgid "Hidden by filters"
+msgstr "Ocultos por filtro"
+
+msgid "selected"
+msgstr "seleccionados"
+
+msgid "Select at least one organisation unit"
+msgstr "Seleccione al menos una unidad organizativa"
+
+msgid "Only organisation units of level {{levels}} can be selected"
+msgstr ""
+"Puedes seleccionar únicamente unidades organizativas de nivel {{levels}}"
+
+msgid "Field {{field}} cannot be blank"
+msgstr "El campo {{field}} no puede estar vacío"
+
+msgid "Field {{field}} cannot be blank if field {{other}} is set"
+msgstr "El campo {{field}} no puede estar vacío si {{other}} tiene un valor"
+
+msgid "Select at least one antigen"
+msgstr "Seleccione al menos un antígeno"
