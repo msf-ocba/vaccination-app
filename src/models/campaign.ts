@@ -189,7 +189,7 @@ export default class Campaign {
             const dataSet: DataSet = {
                 id: dataSetId,
                 name: this.name,
-                publicAccess: "--------",
+                publicAccess: "r-r-----", // Metadata can view-only, Data can view-only
                 periodType: "Daily",
                 categoryCombo: {id: categoryComboTeams.id},
                 dataElementDecoration: true,
