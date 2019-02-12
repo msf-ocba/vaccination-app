@@ -278,7 +278,8 @@ class ObjectsTable extends React.Component {
                     ) : null}
                 </div>
 
-                {canCreate(d2) && <ListActionBar onClick={this.newDataset} />}
+                {canCreate(d2, d2.models.dataSet, "public") &&
+                    <ListActionBar onClick={this.newDataset} />}
             </div>
         );
     }
