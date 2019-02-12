@@ -133,7 +133,7 @@ class ObjectsTable extends React.Component {
     };
 
     _onColumnSort = sorting => {
-        this.setState({ sorting }, this.getDataSets);
+        this.setState({ sorting, isLoading: true }, this.getDataSets);
     };
 
     _toggleShowOnlyUserCampaigns = ev => {
