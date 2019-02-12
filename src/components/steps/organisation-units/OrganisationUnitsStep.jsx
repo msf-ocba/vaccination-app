@@ -18,8 +18,9 @@ class OrganisationUnitsStep extends React.Component {
             level: path.split("/").length - 1,
             path,
         }));
-        const orgUnitsForAcceptedLevels =
-            orgUnits.filter(ou => this.props.campaign.selectableLevels.includes(ou.level));
+        const orgUnitsForAcceptedLevels = orgUnits.filter(ou =>
+            this.props.campaign.selectableLevels.includes(ou.level)
+        );
         const newCampaign = this.props.campaign.setOrganisationUnits(orgUnitsForAcceptedLevels);
         this.props.onChange(newCampaign);
     };

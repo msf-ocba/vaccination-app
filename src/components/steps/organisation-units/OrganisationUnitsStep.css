@@ -1,0 +1,27 @@
+.ou-root svg {
+    display: none;
+}
+
+.ou-root-1 .tree-view .tree-view .tree-view .tree-view .tree-view .children svg {
+    display: inline;
+}
+
+.ou-root-2 .tree-view .tree-view .tree-view .tree-view .children svg {
+    display: inline;
+}
+
+.ou-root-3 .tree-view .tree-view .tree-view .children svg {
+    display: inline;
+}
+
+.ou-root-4 .tree-view .tree-view .children svg {
+    display: inline;
+}
+
+.ou-root-5 .tree-view .children svg {
+    display: inline;
+}
+
+.ou-root-6 .tree-view svg {
+    display: inline;
+}
