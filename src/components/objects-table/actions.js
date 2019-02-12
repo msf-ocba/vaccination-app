@@ -46,19 +46,19 @@ export function get(onClick) {
             name: "edit",
             text: i18n.t("Edit"),
             multiple: false,
-            isActive: (d2, dataset) => canUpdate(d2, [dataset]),
+            isActive: (d2, dataSet) => canUpdate(d2, d2.models.dataSet, [dataSet]),
         },
         {
             name: "share",
             text: i18n.t("Share"),
             multiple: true,
-            isActive: canManage,
+            isActive: (d2, dataSets) => canManage(d2, d2.models.dataSet, dataSets),
         },
         {
             name: "delete",
             text: i18n.t("Delete"),
             multiple: true,
-            isActive: canDelete,
+            isActive: (d2, dataSets) => canDelete(d2, d2.models.dataSet, dataSets),
         },
         {
             name: "dataEntry",
