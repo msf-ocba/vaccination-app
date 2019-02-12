@@ -10,31 +10,32 @@ class SearchBox extends React.Component {
         debounce: PropTypes.number,
     };
 
+    static defaultProps = {
+        debounce: 400,
+    };
+
     constructor(props) {
         super(props);
         this.state = { value: "" };
-        this.onChangeDebounced = debounce(500, props.onChange);
+        this.onChangeDebounced = debounce(props.debounce, props.onChange);
     }
 
     render() {
         return (
-            <div className="search-list-items">
-                <TextField
-                    className="list-search-field"
-                    value={this.state.value}
-                    fullWidth
-                    type="search"
-                    onChange={this._onKeyUp}
-                    hintText={`${i18n.t("Search by name")}`}
-                    data-test="search"
-                />
-            </div>
+            <TextField
+                value={this.state.value}
+                fullWidth
+                type="search"
+                onChange={this.onKeyUp}
+                hintText={`${i18n.t("Search by name")}`}
+                data-test="search"
+            />
         );
     }
 
-    _onKeyUp = event => {
+    onKeyUp = event => {
         const { value } = event.target;
-        this.onChangeDebounced(value);
+        this.onChangeDebounced(value.trim());
         this.setState({ value });
     };
 }

@@ -19,25 +19,9 @@ describe("Campaign configurator - Create", () => {
         cy.contains("Next").click();
         cy.contains("Select at least one organisation unit");
 
-        const onlyLevel6Msg = "Only organisation units of level 6 can be selected";
-
-        selectOrgUnit("MSF");
-        cy.contains(onlyLevel6Msg);
-
-        selectOrgUnit("OCBA");
-        cy.contains(onlyLevel6Msg);
         expandOrgUnit("OCBA");
-
-        selectOrgUnit("ANGOLA");
-        cy.contains(onlyLevel6Msg);
         expandOrgUnit("ANGOLA");
-
-        selectOrgUnit("HUAMBO");
-        cy.contains(onlyLevel6Msg);
         expandOrgUnit("HUAMBO");
-
-        selectOrgUnit("Hospital central de Huambo");
-        cy.contains(onlyLevel6Msg);
         expandOrgUnit("Hospital central de Huambo");
 
         selectOrgUnit("Emergency Room");
