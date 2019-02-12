@@ -176,8 +176,7 @@ export default class OrgUnitsSelector extends React.Component {
                       fields: "id,displayName,path",
                       filter: `displayName:ilike:${value}`,
                   })
-                  .then(collection => collection.toArray())
-        );
+                  .then(collection => collection.toArray()));
 
         this.setState({ roots });
     };
@@ -209,7 +208,10 @@ export default class OrgUnitsSelector extends React.Component {
                                         initiallyExpanded={initiallyExpanded}
                                         onSelectClick={this.handleOrgUnitClick.bind(this, root)}
                                         onChangeCurrentRoot={this.changeRoot}
-                                        onChildrenLoaded={this.handleChildrenLoaded.bind(this, root)}
+                                        onChildrenLoaded={this.handleChildrenLoaded.bind(
+                                            this,
+                                            root
+                                        )}
                                     />
                                 </div>
                             ))}
@@ -283,9 +285,11 @@ function mergeChildren(root, children) {
 }
 
 function getDefaultRoots(d2) {
-    return d2.models.organisationUnits.list({
-        paging: false,
-        level: 1,
-        fields: "id,displayName,path,children::isNotEmpty",
-    }).then(collection => collection.toArray());
+    return d2.models.organisationUnits
+        .list({
+            paging: false,
+            level: 1,
+            fields: "id,displayName,path,children::isNotEmpty",
+        })
+        .then(collection => collection.toArray());
 }

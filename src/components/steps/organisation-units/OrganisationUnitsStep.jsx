@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import OrgUnitsSelector from "../../org-units-selector/OrgUnitsSelector";
 import _ from "lodash";
 import { withFeedback } from "../../feedback";
-import './OrganisationUnitsStep.css';
+import "./OrganisationUnitsStep.css";
 
 /*
     HACK: Use css to hide all selector boxes in org tree except for those of level 6.
