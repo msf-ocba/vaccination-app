@@ -23,6 +23,7 @@ export interface Data {
 }
 
 export default class Campaign {
+    // Update OrganisationUnitStep.css accordingly if you change this value.
     public selectableLevels: number[] = [6];
 
     constructor(private db: DbD2, private data: Data) {

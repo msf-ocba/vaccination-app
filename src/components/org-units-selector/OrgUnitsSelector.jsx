@@ -189,6 +189,7 @@ export default class OrgUnitsSelector extends React.Component {
         const { selected } = this.props;
         const { renderOrgUnitSelectTitle: OrgUnitSelectTitle } = this;
         const initiallyExpanded = roots.length > 1 ? [] : roots.map(ou => ou.path);
+        const getClass = root => `ou-root-${root.path.split("/").length - 1}`;
 
         return (
             <div>
@@ -199,17 +200,18 @@ export default class OrgUnitsSelector extends React.Component {
                         </div>
 
                         <div style={styles.left}>
-                            {roots.map((root, index) => (
-                                <OrgUnitTree
-                                    key={root.path + index}
-                                    root={root}
-                                    selected={selected}
-                                    currentRoot={currentRoot}
-                                    initiallyExpanded={initiallyExpanded}
-                                    onSelectClick={this.handleOrgUnitClick.bind(this, root)}
-                                    onChangeCurrentRoot={this.changeRoot}
-                                    onChildrenLoaded={this.handleChildrenLoaded.bind(this, root)}
-                                />
+                            {roots.map(root => (
+                                <div key={root.path} className={`ou-root ${getClass(root)}`}>
+                                    <OrgUnitTree
+                                        root={root}
+                                        selected={selected}
+                                        currentRoot={currentRoot}
+                                        initiallyExpanded={initiallyExpanded}
+                                        onSelectClick={this.handleOrgUnitClick.bind(this, root)}
+                                        onChangeCurrentRoot={this.changeRoot}
+                                        onChildrenLoaded={this.handleChildrenLoaded.bind(this, root)}
+                                    />
+                                </div>
                             ))}
                         </div>
 
@@ -264,7 +266,7 @@ function mergeChildren(root, children) {
             if (nextRoot) {
                 assignChildren(nextRoot, targetPath, children);
             } else {
-                throw new Error("Cannot find root children");
+                console.error("Cannot find root children", root, targetPath);
             }
         }
         return root;

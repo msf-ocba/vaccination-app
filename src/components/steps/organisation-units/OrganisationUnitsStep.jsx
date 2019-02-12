@@ -3,6 +3,13 @@ import PropTypes from "prop-types";
 import OrgUnitsSelector from "../../org-units-selector/OrgUnitsSelector";
 import _ from "lodash";
 import { withFeedback } from "../../feedback";
+import './OrganisationUnitsStep.css';
+
+/*
+    HACK: Use css to hide all selector boxes in org tree except for those of level 6.
+    This way, we don't have to fork the @dhis2/d2-ui OrgUnitTree component. This component
+    does have a prop hideCheckboxes, but it's just a bool (ideally, should get a predicate)
+*/
 
 class OrganisationUnitsStep extends React.Component {
     static propTypes = {
