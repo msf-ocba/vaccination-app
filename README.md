@@ -4,6 +4,8 @@
 $ yarn install
 ```
 
+When using code of a not yet published d2-ui-components, you will need to link to a development branch of `d2-ui-components`. For that, run `yarn link` in d2-ui-components and `yarn link d2-ui-components` in this project.
+
 ## Development
 
 Start development server:

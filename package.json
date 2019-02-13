@@ -10,7 +10,6 @@
     "url": "git+https://github.com/eyeseetea/vaccination-app.git"
   },
   "dependencies": {
-    "@date-io/moment": "^1.0.2",
     "@dhis2/d2-i18n": "^1.0.4",
     "@dhis2/d2-i18n-extract": "^1.0.7",
     "@dhis2/d2-i18n-generate": "^1.0.19",
@@ -34,7 +33,6 @@
     "immutability-helper": "^2.9.0",
     "jest": "^23.6.0",
     "lodash": "^4.17.11",
-    "material-ui-pickers": "^2.1.2",
     "moment": "^2.22.2",
     "nano-memoize": "^1.0.0",
     "node-sass": "^4.11.0",
@@ -50,6 +48,7 @@
     "prestart": "yarn localize && d2-manifest package.json manifest.webapp",
     "start": "BROWSER=false PORT=${PORT:-8081} react-scripts start",
     "prebuild": "yarn test",
+    "code-quality": "yarn lint && yarn prettify && yarn test",
     "build": "rm -rf build/ && yarn localize && d2-manifest package.json manifest.webapp && react-scripts build && yarn run manifest && cp -r i18n icon.png build",
     "build-webapp": "yarn build && rm -f $npm_package_name.zip && cd build && zip -r ../$npm_package_name.zip *",
     "test": "jest",
@@ -66,8 +65,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn update-po",
-      "pre-push": "yarn prettify && yarn lint && yarn extract-pot && yarn jest"
+      "pre-push": "yarn code-quality"
     }
   },
   "devDependencies": {
