@@ -14,6 +14,8 @@ const styles = theme => ({
     },
     saveButton: {
         margin: 10,
+        backgroundColor: "#2b98f0",
+        color: "white",
     },
 });
 
