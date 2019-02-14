@@ -12,7 +12,7 @@ import Button from "@material-ui/core/Button";
 import { IconButton } from "@material-ui/core";
 import Icon from "@material-ui/core/Icon";
 import { withFeedback, levels } from "../feedback";
-import DialogHandler from "../dialog-handler/DialogHandler";
+import { DialogHandler } from "d2-ui-components";
 
 const styles = theme => ({
     root: {

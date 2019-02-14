@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-11T09:53:29.505Z\n"
+"POT-Creation-Date: 2019-02-14T11:13:28.456Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -102,9 +102,6 @@ msgstr "Identificador"
 
 msgid "API link"
 msgstr "Link API"
-
-msgid "Close"
-msgstr "Cerrar"
 
 msgid "Public access"
 msgstr "Acceso público"
@@ -238,3 +235,6 @@ msgstr "El campo {{field}} no puede estar vacío si {{other}} tiene un valor"
 
 msgid "Select at least one antigen"
 msgstr "Seleccione al menos un antígeno"
+
+#~ msgid "Close"
+#~ msgstr "Cerrar"
