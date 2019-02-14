@@ -20,11 +20,16 @@ const styles = theme => ({
     },
     button: {
         margin: theme.spacing.unit,
-        marginRight: 30,
+        marginRight: 5,
         padding: 10,
     },
     buttonDisabled: {
         color: "grey !important",
+    },
+    buttonContainer: {
+        display: "flex",
+        justifyContent: "flex-end",
+        paddingTop: 10,
     },
     stepButton: {
         width: "auto",
@@ -197,21 +202,20 @@ class Wizard extends React.Component {
 
                 <Paper className={classes.contents} data-wizard-contents={true}>
                     {<currentStep.component {...currentStep.props} />}
+                    <div className={classes.buttonContainer}>
+                        <NavigationButton
+                            stepKey={prevStepKey}
+                            onClick={this.prevStep}
+                            label={"← " + i18n.t("Previous")}
+                        />
+
+                        <NavigationButton
+                            stepKey={nextStepKey}
+                            onClick={this.nextStep}
+                            label={i18n.t("Next") + " →"}
+                        />
+                    </div>
                 </Paper>
-
-                <div>
-                    <NavigationButton
-                        stepKey={prevStepKey}
-                        onClick={this.prevStep}
-                        label={"← " + i18n.t("Previous")}
-                    />
-
-                    <NavigationButton
-                        stepKey={nextStepKey}
-                        onClick={this.nextStep}
-                        label={i18n.t("Next") + " →"}
-                    />
-                </div>
             </div>
         );
     }
