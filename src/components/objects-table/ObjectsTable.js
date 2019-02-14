@@ -15,7 +15,7 @@ import "components/data-table/Pagination.scss";
 import "components/data-table/DataTable.scss";
 import * as actions from "./actions";
 import * as DataSets from "models/DataSets";
-import SimpleCheckBox from "../forms/SimpleCheckBox";
+import { SimpleCheckBox } from "d2-ui-components";
 import { formatDateLong } from "utils/date.js";
 import { canCreate } from "../../utils/auth";
 import ListActionBar from "./ListActionBar.component";
