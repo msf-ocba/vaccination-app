@@ -177,7 +177,11 @@ class Wizard extends React.Component {
 
         return (
             <div className={classes.root}>
-                <Stepper nonLinear={true} activeStep={currentStepIndex} style={{ marginRight: 10, marginLeft: 10 }}>
+                <Stepper
+                    nonLinear={true}
+                    activeStep={currentStepIndex}
+                    style={{ marginRight: 10, marginLeft: 10 }}
+                >
                     {steps.map((step, index) => (
                         <Step
                             key={step.key}

@@ -55,6 +55,10 @@ class SaveStep extends React.Component {
         }
     };
 
+    cancel = () => {
+        this.props.history.push("/campaign-configurator");
+    };
+
     getMessageFromPaginated(paginatedObjects) {
         if (!paginatedObjects) {
             return i18n.t("Loading...");
@@ -125,6 +129,9 @@ class SaveStep extends React.Component {
                     />
                 </ul>
 
+                <Button onClick={this.cancel} variant="contained">
+                    {i18n.t("Cancel")}
+                </Button>
                 <Button className={classes.saveButton} onClick={this.save} variant="contained">
                     {i18n.t("Save")}
                 </Button>
