@@ -110,8 +110,8 @@ class ObjectsTable extends React.Component {
         ev.preventDefault();
         ev.stopPropagation();
         this.setState({
-            dataRows: this.state.dataRows.map(
-                dr => (dr.id === dataset.id ? _.merge(dr, { selected: !dr.selected }) : dr)
+            dataRows: this.state.dataRows.map(dr =>
+                dr.id === dataset.id ? _.merge(dr, { selected: !dr.selected }) : dr
             ),
         });
     }

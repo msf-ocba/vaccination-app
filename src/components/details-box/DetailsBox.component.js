@@ -39,22 +39,27 @@ class DetailsBox extends React.Component {
             return <div className="detail-box__status">Loading details...</div>;
         }
 
-        return this.props.fields.filter(field => this.props.source[field.key]).map(field => {
-            const fieldName = field.key;
-            const valueToRender = this.getValueToRender(fieldName, this.props.source[fieldName]);
+        return this.props.fields
+            .filter(field => this.props.source[field.key])
+            .map(field => {
+                const fieldName = field.key;
+                const valueToRender = this.getValueToRender(
+                    fieldName,
+                    this.props.source[fieldName]
+                );
 
-            return (
-                <div key={fieldName} className="detail-field">
-                    <div className={`detail-field__label detail-field__${fieldName}-label`}>
-                        {field.text}
-                    </div>
+                return (
+                    <div key={fieldName} className="detail-field">
+                        <div className={`detail-field__label detail-field__${fieldName}-label`}>
+                            {field.text}
+                        </div>
 
-                    <div className={`detail-field__value detail-field__${fieldName}`}>
-                        {valueToRender}
+                        <div className={`detail-field__value detail-field__${fieldName}`}>
+                            {valueToRender}
+                        </div>
                     </div>
-                </div>
-            );
-        });
+                );
+            });
     }
 
     getValueToRender(fieldName, value) {
