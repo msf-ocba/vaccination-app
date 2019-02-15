@@ -12,7 +12,7 @@ class Root extends React.Component {
 
     render() {
         const { d2 } = this.props;
-
+        const { REACT_APP_DHIS2_URL } = process.env;
         return (
             <Switch>
                 <Route
@@ -27,24 +27,21 @@ class Root extends React.Component {
                 <Route
                     path="/data-entry"
                     component={() => {
-                        window.location =
-                            "http://dev2.eyeseetea.com:8082/dhis-web-dataentry/index.action";
+                        window.location = `${REACT_APP_DHIS2_URL}/dhis-web-dataentry/index.action`;
                         return null;
                     }}
                 />
                 <Route
                     path="/dashboard"
                     component={() => {
-                        window.location =
-                            "http://dev2.eyeseetea.com:8082/dhis-web-dashboard/index.html#/";
+                        window.location = `${REACT_APP_DHIS2_URL}/dhis-web-dashboard/index.html#/`;
                         return null;
                     }}
                 />
                 <Route
                     path="/maintenance"
                     component={() => {
-                        window.location =
-                            "http://dev2.eyeseetea.com:8082/dhis-web-maintenance/index.html";
+                        window.location = `${REACT_APP_DHIS2_URL}/dhis-web-maintenance/index.html`;
                         return null;
                     }}
                 />
