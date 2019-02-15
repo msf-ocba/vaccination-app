@@ -39,6 +39,11 @@ const styles = theme => ({
     title: {
         fontSize: 20,
     },
+    icons: {
+        fontSize: "60px !important",
+        marginBottom: 20,
+        color: `${lightGray} !important`,
+    },
 });
 
 class LandingPage extends React.Component {
@@ -68,12 +73,7 @@ class LandingPage extends React.Component {
                 className={classes.gridTile}
             >
                 <div className={classes.tileContainer}>
-                    <FontIcon
-                        className="material-icons"
-                        style={{ fontSize: 60, marginBottom: 20, color: lightGray }}
-                    >
-                        {icon}
-                    </FontIcon>
+                    <FontIcon className={`material-icons ${classes.icons}`}>{icon}</FontIcon>
                     <div className={classes.title}>{title}</div>
                 </div>
             </GridListTile>
