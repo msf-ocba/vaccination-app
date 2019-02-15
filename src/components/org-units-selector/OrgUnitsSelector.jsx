@@ -15,59 +15,6 @@ import SearchBox from "../search-box/SearchBox.component";
 
 // Base code taken from d2-ui/examples/create-react-app/src/components/org-unit-selector.js
 
-const styles = {
-    card: {
-        display: "inline-block",
-        margin: 16,
-        width: 610,
-        transition: "all 175ms ease-out",
-    },
-    cardText: {
-        paddingTop: 10,
-        height: 420,
-        position: "relative",
-    },
-    cardHeader: {
-        padding: "16px",
-        margin: "16px -16px",
-        borderBottom: "1px solid #eeeeee",
-    },
-    searchBox: {
-        width: "33%",
-    },
-    left: {
-        display: "inline-block",
-        position: "absolute",
-        height: 350,
-        width: 500,
-        overflowY: "scroll",
-        marginBottom: 16,
-    },
-    right: {
-        display: "inline-block",
-        position: "absolute",
-        width: 500,
-        right: 16,
-    },
-    ouLabel: {
-        background: "rgba(0,0,0,0.05)",
-        borderRadius: 5,
-        border: "1px solid rgba(0,0,0,0.1)",
-        padding: "1px 6px 1px 3px",
-        fontStyle: "italic",
-    },
-    selectByLevel: {
-        marginBottom: -24,
-        marginTop: -16,
-    },
-    selectAll: {
-        float: "right",
-    },
-};
-styles.cardWide = Object.assign({}, styles.card, {
-    width: 1052,
-});
-
 export default class OrgUnitsSelector extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
@@ -90,6 +37,8 @@ export default class OrgUnitsSelector extends React.Component {
             groups: null,
             currentRoot: null,
         };
+
+        this.d2UiTranslations = d2UiTranslations();
 
         Promise.all([
             props.d2.models.organisationUnitLevels.list({
@@ -121,8 +70,14 @@ export default class OrgUnitsSelector extends React.Component {
     }
 
     getChildContext() {
+        // Override d2.i18n to use translations from our i18n infrastructure
         return {
-            d2: this.props.d2,
+            d2: {
+                ...this.props.d2,
+                i18n: {
+                    getTranslation: s => this.d2UiTranslations[s] || s,
+                },
+            }
         };
     }
 
@@ -293,3 +248,66 @@ function getDefaultRoots(d2) {
         })
         .then(collection => collection.toArray());
 }
+
+const styles = {
+    cardWide: {
+        display: "inline-block",
+        margin: 16,
+        transition: "all 175ms ease-out",
+        width: 1052,
+    },
+    cardText: {
+        paddingTop: 10,
+        height: 420,
+        position: "relative",
+    },
+    cardHeader: {
+        padding: "16px",
+        margin: "16px -16px",
+        borderBottom: "1px solid #eeeeee",
+    },
+    searchBox: {
+        width: "45%",
+    },
+    left: {
+        display: "inline-block",
+        position: "absolute",
+        height: 350,
+        width: 500,
+        overflowY: "scroll",
+        marginBottom: 16,
+    },
+    right: {
+        display: "inline-block",
+        position: "absolute",
+        width: 500,
+        right: 16,
+    },
+    ouLabel: {
+        background: "rgba(0,0,0,0.05)",
+        borderRadius: 5,
+        border: "1px solid rgba(0,0,0,0.1)",
+        padding: "1px 6px 1px 3px",
+        fontStyle: "italic",
+    },
+    selectByLevel: {
+        marginBottom: -24,
+        marginTop: -16,
+    },
+    selectAll: {
+        float: "right",
+    },
+};
+
+const d2UiTranslations = () => ({
+    select: i18n.t("Select"),
+    deselect: i18n.t("Unselect"),
+    select_all: i18n.t("Select all"),
+    deselect_all: i18n.t("Unselect all"),
+    organisation_unit_level: i18n.t("Organisation Unit Level"),
+    organisation_unit_group: i18n.t("Organisation Unit Group"),
+    assign_all: i18n.t("Assign all"),
+    remove_all: i18n.t("Remove all"),
+    hidden_by_filters: i18n.t("Hidden by filters"),
+    selected: i18n.t("selected"),
+});

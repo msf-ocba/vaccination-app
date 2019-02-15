@@ -5,23 +5,14 @@ import "font-awesome/css/font-awesome.min.css";
 import { HashRouter } from "react-router-dom";
 import i18n from "@dhis2/d2-i18n";
 import moment from "moment";
-
 import App from "./components/app/App";
+
+import "./locales";
 
 const d2UiTranslations = {
     app_search_placeholder: i18n.t("Search apps"),
     manage_my_apps: i18n.t("Manage my apps"),
     no_results_found: i18n.t("No results found"),
-    select: i18n.t("Select"),
-    deselect: i18n.t("Unselect"),
-    select_all: i18n.t("Select all"),
-    deselect_all: i18n.t("Unselect all"),
-    organisation_unit_level: i18n.t("Organisation Unit Level"),
-    organisation_unit_group: i18n.t("Organisation Unit Group"),
-    assign_all: i18n.t("Assign all"),
-    remove_all: i18n.t("Remove all"),
-    hidden_by_filters: i18n.t("Hidden by filters"),
-    selected: i18n.t("selected"),
 };
 
 function isLangRTL(code) {
