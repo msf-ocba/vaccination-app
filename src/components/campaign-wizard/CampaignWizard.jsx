@@ -14,42 +14,6 @@ import { getValidationMessages } from "../../utils/validations";
 import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
 
-const stepsBaseInfo = [
-    {
-        key: "organisation-units",
-        label: i18n.t("Organisation Units"),
-        component: OrganisationUnitsStep,
-        validationKeys: ["organisationUnits"],
-        help: i18n.t(`Select organisation units assigned to this campaign.
-At least one must be selected.
-Only organisation units of level 6 (service) can be selected`),
-    },
-    {
-        key: "general-info",
-        label: i18n.t("General info"),
-        component: GeneralInfoStep,
-        validationKeys: ["name", "startDate", "endDate"],
-        help: i18n.t(
-            `Set the name of the campaign and the period in which data entry will be enabled`
-        ),
-    },
-    {
-        key: "antigen-selection",
-        label: i18n.t("Antigen selection"),
-        component: AntigenSelectionStep,
-        validationKeys: ["antigens"],
-        help: i18n.t(`Select the antigens included in the campaign`),
-    },
-    {
-        key: "save",
-        label: i18n.t("Save"),
-        component: SaveStep,
-        validationKeys: [],
-        help: i18n.t(`Press the button to create the \
-dataset and all the metadata associated with this vaccination campaign`),
-    },
-];
-
 class CampaignWizard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
@@ -61,6 +25,44 @@ class CampaignWizard extends React.Component {
         this.state = {
             campaign: Campaign.create(new DbD2(props.d2)),
         };
+    }
+
+    getStepsBaseInfo() {
+        return [
+            {
+                key: "organisation-units",
+                label: i18n.t("Organisation Units"),
+                component: OrganisationUnitsStep,
+                validationKeys: ["organisationUnits"],
+                help: i18n.t(`Select organisation units assigned to this campaign.
+At least one must be selected.
+Only organisation units of level 6 (service) can be selected`),
+            },
+            {
+                key: "general-info",
+                label: i18n.t("General info"),
+                component: GeneralInfoStep,
+                validationKeys: ["name", "startDate", "endDate"],
+                help: i18n.t(
+                    `Set the name of the campaign and the period in which data entry will be enabled`
+                ),
+            },
+            {
+                key: "antigen-selection",
+                label: i18n.t("Antigen selection"),
+                component: AntigenSelectionStep,
+                validationKeys: ["antigens"],
+                help: i18n.t(`Select the antigens included in the campaign`),
+            },
+            {
+                key: "save",
+                label: i18n.t("Save"),
+                component: SaveStep,
+                validationKeys: [],
+                help: i18n.t(`Press the button to create the \
+dataset and all the metadata associated with this vaccination campaign`),
+            },
+        ];
     }
 
     goToList = () => {
@@ -80,7 +82,7 @@ class CampaignWizard extends React.Component {
         const { campaign } = this.state;
         window.campaign = campaign;
 
-        const steps = stepsBaseInfo.map(step => ({
+        const steps = this.getStepsBaseInfo().map(step => ({
             ...step,
             props: {
                 d2,

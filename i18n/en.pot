@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-14T11:13:28.456Z\n"
-"PO-Revision-Date: 2019-02-14T11:13:28.456Z\n"
+"POT-Creation-Date: 2019-02-15T08:14:18.723Z\n"
+"PO-Revision-Date: 2019-02-15T08:14:18.723Z\n"
 
 msgid "Campaign Configurator"
 msgstr ""
@@ -132,6 +132,36 @@ msgstr ""
 msgid "For all organisation units"
 msgstr ""
 
+msgid "Select"
+msgstr ""
+
+msgid "Unselect"
+msgstr ""
+
+msgid "Select all"
+msgstr ""
+
+msgid "Unselect all"
+msgstr ""
+
+msgid "Organisation Unit Level"
+msgstr ""
+
+msgid "Organisation Unit Group"
+msgstr ""
+
+msgid "Assign all"
+msgstr ""
+
+msgid "Remove all"
+msgstr ""
+
+msgid "Hidden by filters"
+msgstr ""
+
+msgid "selected"
+msgstr ""
+
 msgid "Search by name"
 msgstr ""
 
@@ -181,36 +211,6 @@ msgid "Manage my apps"
 msgstr ""
 
 msgid "No results found"
-msgstr ""
-
-msgid "Select"
-msgstr ""
-
-msgid "Unselect"
-msgstr ""
-
-msgid "Select all"
-msgstr ""
-
-msgid "Unselect all"
-msgstr ""
-
-msgid "Organisation Unit Level"
-msgstr ""
-
-msgid "Organisation Unit Group"
-msgstr ""
-
-msgid "Assign all"
-msgstr ""
-
-msgid "Remove all"
-msgstr ""
-
-msgid "Hidden by filters"
-msgstr ""
-
-msgid "selected"
 msgstr ""
 
 msgid "Select at least one organisation unit"

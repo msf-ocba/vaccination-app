@@ -197,7 +197,7 @@ msgid "Unselect"
 msgstr "Deseleccionar"
 
 msgid "Select all"
-msgstr "Selecccionar todo"
+msgstr "Seleccionar todo"
 
 msgid "Unselect all"
 msgstr "Deseleccionar todo"
