@@ -43,6 +43,10 @@ const styles = theme => ({
         listStyleType: "none",
         color: "red",
     },
+    stepper: {
+        marginLeft: 10,
+        marginRight: 10,
+    },
 });
 
 class Wizard extends React.Component {
@@ -177,11 +181,7 @@ class Wizard extends React.Component {
 
         return (
             <div className={classes.root}>
-                <Stepper
-                    nonLinear={true}
-                    activeStep={currentStepIndex}
-                    style={{ marginRight: 10, marginLeft: 10 }}
-                >
+                <Stepper nonLinear={true} activeStep={currentStepIndex} className={classes.stepper}>
                     {steps.map((step, index) => (
                         <Step
                             key={step.key}
