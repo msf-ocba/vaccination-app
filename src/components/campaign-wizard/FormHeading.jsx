@@ -9,7 +9,12 @@ import Icon from "@material-ui/core/Icon";
 function FormHeading({ variant, title, onBackClick }) {
     return (
         <div>
-            <IconButton onClick={onBackClick} color="secondary" aria-label={i18n.t("Back")}>
+            <IconButton
+                onClick={onBackClick}
+                color="secondary"
+                aria-label={i18n.t("Back")}
+                style={{ marginBottom: 7 }}
+            >
                 <Icon color="primary">arrow_back</Icon>
             </IconButton>
 
