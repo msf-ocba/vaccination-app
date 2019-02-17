@@ -34,7 +34,7 @@ class Root extends React.Component {
                 <Route
                     path="/dashboard"
                     component={() => {
-                        window.location = `${REACT_APP_DHIS2_URL}/dhis-web-dashboard/index.html#/`;
+                        window.location = `${REACT_APP_DHIS2_URL}/dhis-web-dashboard/index.html`;
                         return null;
                     }}
                 />
