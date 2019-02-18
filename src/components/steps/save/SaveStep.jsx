@@ -7,6 +7,7 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { Button, LinearProgress } from "@material-ui/core";
 import { withFeedback, levels } from "../../feedback";
+import ConfirmationDialog from "../../confirmation-dialog/ConfirmationDialog";
 
 const styles = theme => ({
     wrapper: {
@@ -19,11 +20,19 @@ const styles = theme => ({
     },
 });
 
+const confirmationDialogText = {
+    title: i18n.t("Cancel Campaign Creation?"),
+    content: i18n.t(
+        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
+    ),
+};
+
 class SaveStep extends React.Component {
     state = {
         isSaving: false,
         orgUnitNames: null,
         errorMessage: [],
+        dialogOpen: false,
     };
 
     static propTypes = {
@@ -56,7 +65,16 @@ class SaveStep extends React.Component {
     };
 
     cancel = () => {
+        this.setState({ dialogOpen: true });
+    };
+
+    confirmCancel = () => {
+        this.setState({ dialogOpen: false });
         this.props.history.push("/campaign-configurator");
+    };
+
+    dialogCancel = () => {
+        this.setState({ dialogOpen: false });
     };
 
     getMessageFromPaginated(paginatedObjects) {
@@ -106,40 +124,49 @@ class SaveStep extends React.Component {
 
     render() {
         const { classes, campaign } = this.props;
-        const { orgUnitNames, errorMessage, isSaving } = this.state;
+        const { orgUnitNames, errorMessage, isSaving, dialogOpen } = this.state;
         const LiEntry = this.renderLiEntry;
         const antigens = _(campaign.antigens)
             .map("displayName")
             .join(", ");
 
         return (
-            <div className={classes.wrapper}>
-                <h3>{i18n.t("Setup is finished. Press the button Save to save the data")}</h3>
+            <React.Fragment>
+                <ConfirmationDialog
+                    dialogOpen={dialogOpen}
+                    handleConfirm={this.confirmCancel}
+                    handleCancel={this.dialogCancel}
+                    title={confirmationDialogText.title}
+                    contents={confirmationDialogText.content}
+                />
+                <div className={classes.wrapper}>
+                    <h3>{i18n.t("Setup is finished. Press the button Save to save the data")}</h3>
 
-                <ul>
-                    <LiEntry label={i18n.t("Name")} value={campaign.name} />
-                    <LiEntry label={i18n.t("Antigens")} value={antigens} />
-                    <LiEntry
-                        label={i18n.t("Period dates")}
-                        value={this.getCampaignPeriodDateString()}
-                    />
-                    <LiEntry
-                        label={i18n.t("Organisation Units")}
-                        value={this.getMessageFromPaginated(orgUnitNames)}
-                    />
-                </ul>
+                    <ul>
+                        <LiEntry label={i18n.t("Name")} value={campaign.name} />
+                        <LiEntry label={i18n.t("Antigens")} value={antigens} />
+                        <LiEntry
+                            label={i18n.t("Period dates")}
+                            value={this.getCampaignPeriodDateString()}
+                        />
+                        <LiEntry
+                            label={i18n.t("Organisation Units")}
+                            value={this.getMessageFromPaginated(orgUnitNames)}
+                        />
+                    </ul>
 
-                <Button onClick={this.cancel} variant="contained">
-                    {i18n.t("Cancel")}
-                </Button>
-                <Button className={classes.saveButton} onClick={this.save} variant="contained">
-                    {i18n.t("Save")}
-                </Button>
+                    <Button onClick={this.cancel} variant="contained">
+                        {i18n.t("Cancel")}
+                    </Button>
+                    <Button className={classes.saveButton} onClick={this.save} variant="contained">
+                        {i18n.t("Save")}
+                    </Button>
 
-                {isSaving && <LinearProgress />}
+                    {isSaving && <LinearProgress />}
 
-                <pre>{errorMessage}</pre>
-            </div>
+                    <pre>{errorMessage}</pre>
+                </div>
+            </React.Fragment>
         );
     }
 }
