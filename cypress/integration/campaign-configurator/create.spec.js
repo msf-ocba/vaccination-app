@@ -90,7 +90,8 @@ function expandOrgUnit(label) {
     cy.server()
         .route("GET", "/api/organisationUnits/*")
         .as("getChildrenOrgUnits");
-    cy.contains(label)
+    cy.get("[data-wizard-contents]")
+        .contains(label)
         .parents(".label")
         .prev()
         .click();

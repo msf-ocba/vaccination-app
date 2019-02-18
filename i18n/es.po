@@ -1,12 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-18T16:49:36.243Z\n"
+"POT-Creation-Date: 2019-02-18T12:00:31.893Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgid "Vaccination"
+msgstr "Vacunación"
 
 msgid "Campaign Configurator"
 msgstr "Configurador de campaña"
