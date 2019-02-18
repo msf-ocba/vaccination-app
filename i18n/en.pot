@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-18T14:53:37.479Z\n"
-"PO-Revision-Date: 2019-02-18T14:53:37.479Z\n"
+"POT-Creation-Date: 2019-02-18T16:49:36.243Z\n"
+"PO-Revision-Date: 2019-02-18T16:49:36.243Z\n"
 
 msgid "Campaign Configurator"
 msgstr ""
@@ -65,10 +65,10 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
-msgid "Ok"
+msgid "Cancel"
 msgstr ""
 
-msgid "Cancel"
+msgid "Ok"
 msgstr ""
 
 msgid "View/edit"
