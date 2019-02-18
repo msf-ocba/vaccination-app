@@ -789,19 +789,6 @@
     recompose "^0.26.0"
     rxjs "^5.5.7"
 
-"@dhis2/d2-ui-header-bar@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-header-bar/-/d2-ui-header-bar-5.1.0.tgz#a8e9047ab9bac65ea2309c5a99794cf0315a3b98"
-  dependencies:
-    "@dhis2/d2-ui-core" "5.1.0"
-    "@material-ui/core" "^3.3.1"
-    "@material-ui/icons" "^3.0.1"
-    babel-runtime "^6.26.0"
-    d2 "~31.1"
-    d2-utilizr "^0.2.15"
-    lodash "^4.17.10"
-    rxjs "^5.5.7"
-
 "@dhis2/d2-ui-org-unit-dialog@^5.1.0":
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-org-unit-dialog/-/d2-ui-org-unit-dialog-5.1.0.tgz#d4e6e9d171bcf61573ffa7a51f09c715ee31a726"
@@ -3028,18 +3015,6 @@ d2-manifest@^1.0.0:
     loglevel "^1.4.0"
     minimist "^1.1.0"
     readline-sync "^1.4.1"
-
-d2-utilizr@^0.2.15:
-  version "0.2.16"
-  resolved "https://registry.yarnpkg.com/d2-utilizr/-/d2-utilizr-0.2.16.tgz#b71df7ca8c7ab5125ca8bdb4899611bc6782a754"
-  dependencies:
-    lodash.isboolean "^3.0.3"
-    lodash.isfunction "^3.0.8"
-    lodash.ismap "^4.3.0"
-    lodash.isnumber "^3.0.3"
-    lodash.isobject "^3.0.2"
-    lodash.isset "^4.3.0"
-    lodash.isstring "^4.0.1"
 
 d2@31.1.1, d2@~31.1:
   version "31.1.1"
@@ -6572,10 +6547,6 @@ lodash.get@^4.4.2:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
 
-lodash.isboolean@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/lodash.isboolean/-/lodash.isboolean-3.0.3.tgz#6c2e171db2a257cd96802fd43b01b20d5f5870f6"
-
 lodash.isequal@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
@@ -6584,25 +6555,9 @@ lodash.isfunction@^3.0.8:
   version "3.0.9"
   resolved "https://registry.yarnpkg.com/lodash.isfunction/-/lodash.isfunction-3.0.9.tgz#06de25df4db327ac931981d1bdb067e5af68d051"
 
-lodash.ismap@^4.3.0:
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/lodash.ismap/-/lodash.ismap-4.4.2.tgz#836bf06dee57fd3d2aa357bf6946e61d1e77e279"
-
-lodash.isnumber@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/lodash.isnumber/-/lodash.isnumber-3.0.3.tgz#3ce76810c5928d03352301ac287317f11c0b1ffc"
-
-lodash.isobject@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/lodash.isobject/-/lodash.isobject-3.0.2.tgz#3c8fb8d5b5bf4bf90ae06e14f2a530a4ed935e1d"
-
 lodash.isplainobject@^4.0.3:
   version "4.0.6"
   resolved "https://registry.yarnpkg.com/lodash.isplainobject/-/lodash.isplainobject-4.0.6.tgz#7c526a52d89b45c45cc690b88163be0497f550cb"
-
-lodash.isset@^4.3.0:
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/lodash.isset/-/lodash.isset-4.4.2.tgz#d5eecc56b7a97ab588509e4795b3541b1cdb67bb"
 
 lodash.isstring@^4.0.1:
   version "4.0.1"
