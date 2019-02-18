@@ -13,6 +13,7 @@ import SaveStep from "../steps/save/SaveStep";
 import { getValidationMessages } from "../../utils/validations";
 import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
+import ConfirmationDialog from "../confirmation-dialog/ConfirmationDialog";
 
 const stepsBaseInfo = [
     {
@@ -60,11 +61,21 @@ class CampaignWizard extends React.Component {
         super(props);
         this.state = {
             campaign: Campaign.create(new DbD2(props.d2)),
+            dialogOpen: false,
         };
     }
 
-    goToList = () => {
+    cancelSave = () => {
+        this.setState({ dialogOpen: true });
+    };
+
+    handleConfirm = () => {
+        this.setState({ dialogOpen: false });
         this.props.history.push("/campaign-configurator");
+    };
+
+    handleDialogCancel = () => {
+        this.setState({ dialogOpen: false });
     };
 
     onChange = campaign => {
@@ -77,7 +88,7 @@ class CampaignWizard extends React.Component {
 
     render() {
         const { d2, location } = this.props;
-        const { campaign } = this.state;
+        const { campaign, dialogOpen } = this.state;
         window.campaign = campaign;
 
         const steps = stepsBaseInfo.map(step => ({
@@ -96,9 +107,18 @@ class CampaignWizard extends React.Component {
 
         return (
             <React.Fragment>
+                <ConfirmationDialog
+                    dialogOpen={dialogOpen}
+                    handleConfirm={this.handleConfirm}
+                    handleCancel={this.handleDialogCancel}
+                    title={i18n.t("Cancel Campaign Creation?")}
+                    contents={i18n.t(
+                        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
+                    )}
+                />
                 <FormHeading
                     title={i18n.t("New vaccination campaign")}
-                    onBackClick={this.goToList}
+                    onBackClick={this.cancelSave}
                 />
 
                 <Wizard

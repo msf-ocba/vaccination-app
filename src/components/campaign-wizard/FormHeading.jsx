@@ -6,10 +6,17 @@ import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import Icon from "@material-ui/core/Icon";
 
+const iconStyle = { marginBottom: 7 };
+
 function FormHeading({ variant, title, onBackClick }) {
     return (
         <div>
-            <IconButton onClick={onBackClick} color="secondary" aria-label={i18n.t("Back")}>
+            <IconButton
+                onClick={onBackClick}
+                color="secondary"
+                aria-label={i18n.t("Back")}
+                style={iconStyle}
+            >
                 <Icon color="primary">arrow_back</Icon>
             </IconButton>
 

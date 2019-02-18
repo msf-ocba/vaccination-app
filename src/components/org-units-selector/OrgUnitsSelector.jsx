@@ -47,6 +47,7 @@ const styles = {
         display: "inline-block",
         position: "absolute",
         width: 500,
+        height: "100%",
         right: 16,
     },
     ouLabel: {
@@ -61,7 +62,9 @@ const styles = {
         marginTop: -16,
     },
     selectAll: {
-        float: "right",
+        position: "absolute",
+        bottom: 80,
+        right: 0,
     },
 };
 styles.cardWide = Object.assign({}, styles.card, {
@@ -238,14 +241,13 @@ export default class OrgUnitsSelector extends React.Component {
                                         onUpdateSelection={this.handleSelectionUpdate}
                                     />
                                 </div>
-
-                                <div style={styles.selectAll}>
-                                    <OrgUnitSelectAll
-                                        selected={selected}
-                                        currentRoot={currentRoot}
-                                        onUpdateSelection={this.handleSelectionUpdate}
-                                    />
-                                </div>
+                            </div>
+                            <div style={styles.selectAll}>
+                                <OrgUnitSelectAll
+                                    selected={selected}
+                                    currentRoot={currentRoot}
+                                    onUpdateSelection={this.handleSelectionUpdate}
+                                />
                             </div>
                         </div>
                     </CardText>
