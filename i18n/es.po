@@ -145,9 +145,8 @@ msgstr "Para unidades organizativas dentro de"
 msgid "For all organisation units"
 msgstr "Para todas las unidades organizativas"
 
-#, fuzzy
 msgid "Search by name"
-msgstr "Buscar aplicaciones"
+msgstr "Buscar por nombre"
 
 msgid "Field cannot be blank"
 msgstr "El campo no puede estar vacío"
@@ -233,6 +232,3 @@ msgstr "El campo {{field}} no puede estar vacío si {{other}} tiene un valor"
 
 msgid "Select at least one antigen"
 msgstr "Seleccione al menos un antígeno"
-
-#~ msgid "Search apps"
-#~ msgstr "Buscar aplicaciones"
