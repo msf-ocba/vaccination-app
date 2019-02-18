@@ -248,12 +248,3 @@ msgstr "El campo {{field}} no puede estar vacío si {{other}} tiene un valor"
 
 msgid "Select at least one antigen"
 msgstr "Seleccione al menos un antígeno"
-
-#~ msgid "Search apps"
-#~ msgstr "Buscar aplicaciones"
-
-#~ msgid "Manage my apps"
-#~ msgstr "Configurar"
-
-#~ msgid "No results found"
-#~ msgstr "No hay resultados"
