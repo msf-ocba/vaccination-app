@@ -5,8 +5,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-11T09:53:29.505Z\n"
-"PO-Revision-Date: 2019-02-11T09:53:29.505Z\n"
+"POT-Creation-Date: 2019-02-18T12:00:31.893Z\n"
+"PO-Revision-Date: 2019-02-18T12:00:31.893Z\n"
+
+msgid "Vaccination"
+msgstr ""
 
 msgid "Campaign Configurator"
 msgstr ""
@@ -175,15 +178,6 @@ msgid "Previous"
 msgstr ""
 
 msgid "Next"
-msgstr ""
-
-msgid "Search apps"
-msgstr ""
-
-msgid "Manage my apps"
-msgstr ""
-
-msgid "No results found"
 msgstr ""
 
 msgid "Select"
