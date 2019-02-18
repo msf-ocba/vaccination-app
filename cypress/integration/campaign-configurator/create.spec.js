@@ -19,7 +19,7 @@ describe("Campaign configurator - Create", () => {
         cy.contains("Next").click();
         cy.contains("Select at least one organisation unit");
 
-        expandOrgUnit("OCBA");
+        expandOrgUnit(/^OCBA$/);
         expandOrgUnit("ANGOLA");
         expandOrgUnit("HUAMBO");
         expandOrgUnit("Hospital central de Huambo");
