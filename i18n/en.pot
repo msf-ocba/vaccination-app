@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-14T12:32:23.682Z\n"
-"PO-Revision-Date: 2019-02-14T12:32:23.682Z\n"
+"POT-Creation-Date: 2019-02-18T14:53:37.479Z\n"
+"PO-Revision-Date: 2019-02-18T14:53:37.479Z\n"
 
 msgid "Campaign Configurator"
 msgstr ""
@@ -51,10 +51,24 @@ msgid ""
 "this vaccination campaign"
 msgstr ""
 
+msgid "Cancel Campaign Creation?"
+msgstr ""
+
+msgid ""
+"You are about to exit the campaign creation wizard. All your changes will "
+"be lost. Are you sure?"
+msgstr ""
+
 msgid "New vaccination campaign"
 msgstr ""
 
 msgid "Back"
+msgstr ""
+
+msgid "Ok"
+msgstr ""
+
+msgid "Cancel"
 msgstr ""
 
 msgid "View/edit"
@@ -166,9 +180,6 @@ msgid "Antigens"
 msgstr ""
 
 msgid "Period dates"
-msgstr ""
-
-msgid "Cancel"
 msgstr ""
 
 msgid "Help"

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-14T12:32:23.682Z\n"
+"POT-Creation-Date: 2019-02-18T14:53:37.479Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -51,10 +51,24 @@ msgid ""
 "this vaccination campaign"
 msgstr ""
 
+msgid "Cancel Campaign Creation?"
+msgstr ""
+
+msgid ""
+"You are about to exit the campaign creation wizard. All your changes will be "
+"lost. Are you sure?"
+msgstr ""
+
 msgid "New vaccination campaign"
 msgstr ""
 
 msgid "Back"
+msgstr ""
+
+msgid "Ok"
+msgstr ""
+
+msgid "Cancel"
 msgstr ""
 
 msgid "View/edit"
@@ -166,9 +180,6 @@ msgid "Antigens"
 msgstr ""
 
 msgid "Period dates"
-msgstr ""
-
-msgid "Cancel"
 msgstr ""
 
 msgid "Help"
