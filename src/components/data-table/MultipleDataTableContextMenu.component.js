@@ -51,7 +51,7 @@ class MultipleDataTableContextMenu extends React.Component {
                 animation={Paper}
             >
                 <Menu className="data-table__context-menu" desktop>
-                    {this.props.actions.map(action => {
+                    {actions.map(action => {
                         const iconName = icons[action.name] ? icons[action.name] : action.name;
 
                         return (

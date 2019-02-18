@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { OrgUnitsSelector, withSnackbar}  from "d2-ui-components";
+import { OrgUnitsSelector, withSnackbar } from "d2-ui-components";
 import _ from "lodash";
 import "./OrganisationUnitsStep.css";
 
