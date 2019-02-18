@@ -54,7 +54,6 @@ async function getBaseUrl() {
     }
 }
 
-
 function setD2UiTranslations(d2) {
     d2.i18n.load();
     Object.assign(d2.i18n.translations, d2UiTranslations);
