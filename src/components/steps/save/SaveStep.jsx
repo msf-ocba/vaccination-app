@@ -20,13 +20,6 @@ const styles = theme => ({
     },
 });
 
-const confirmationDialogText = {
-    title: i18n.t("Cancel Campaign Creation?"),
-    content: i18n.t(
-        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
-    ),
-};
-
 class SaveStep extends React.Component {
     state = {
         isSaving: false,
@@ -136,8 +129,8 @@ class SaveStep extends React.Component {
                     dialogOpen={dialogOpen}
                     handleConfirm={this.confirmCancel}
                     handleCancel={this.dialogCancel}
-                    title={confirmationDialogText.title}
-                    contents={confirmationDialogText.content}
+                    title={i18n.t("Cancel Campaign Creation?")}
+                    contents={i18n.t("You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?")}
                 />
                 <div className={classes.wrapper}>
                     <h3>{i18n.t("Setup is finished. Press the button Save to save the data")}</h3>

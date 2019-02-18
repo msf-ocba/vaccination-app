@@ -27,11 +27,11 @@ class ConfirmationDialog extends React.Component {
                     <DialogContent>{contents}</DialogContent>
 
                     <DialogActions>
+                        <Button onClick={handleCancel} autoFocus>
+                            {i18n.t("Cancel")}
+                        </Button>
                         <Button onClick={handleConfirm} color="primary">
                             {i18n.t("Ok")}
-                        </Button>
-                        <Button onClick={handleCancel} color="secondary" autoFocus>
-                            {i18n.t("Cancel")}
                         </Button>
                     </DialogActions>
                 </Dialog>

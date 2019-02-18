@@ -51,13 +51,6 @@ dataset and all the metadata associated with this vaccination campaign`),
     },
 ];
 
-const confirmationDialogText = {
-    title: i18n.t("Cancel Campaign Creation?"),
-    content: i18n.t(
-        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
-    ),
-};
-
 class CampaignWizard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
@@ -118,8 +111,8 @@ class CampaignWizard extends React.Component {
                     dialogOpen={dialogOpen}
                     handleConfirm={this.handleConfirm}
                     handleCancel={this.handleDialogCancel}
-                    title={confirmationDialogText.title}
-                    contents={confirmationDialogText.content}
+                    title={i18n.t("Cancel Campaign Creation?")}
+                    contents={i18n.t("You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?")}
                 />
                 <FormHeading
                     title={i18n.t("New vaccination campaign")}
