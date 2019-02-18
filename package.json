@@ -19,6 +19,7 @@
     "@dhis2/d2-ui-group-editor": "^5.1.1",
     "@dhis2/d2-ui-org-unit-dialog": "^5.1.0",
     "@dhis2/d2-ui-org-unit-select": "^5.1.0",
+    "@dhis2/ui": "https://github.com/d2-ci/ui",
     "@material-ui/core": "^3.9.1",
     "@material-ui/icons": "^3.0.1",
     "babel-eslint": "9.x",
@@ -43,8 +44,7 @@
     "react-jss": "^8.6.1",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.0.6-next.c662dfb0",
-    "throttle-debounce": "^2.1.0",
-    "ui": "github:d2-ci/ui"
+    "throttle-debounce": "^2.1.0"
   },
   "scripts": {
     "prestart": "yarn localize && d2-manifest package.json manifest.webapp",

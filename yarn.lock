@@ -821,6 +821,14 @@
     recompose "^0.26.0"
     rxjs "^5.5.7"
 
+"@dhis2/ui@https://github.com/d2-ci/ui":
+  version "1.0.0-beta.10"
+  resolved "https://github.com/d2-ci/ui#468cdc92faaa21e86419c8ab35fdae668eecffbd"
+  dependencies:
+    classnames "^2.2.6"
+    material-design-icons-iconfont "^4.0.2"
+    typeface-roboto "^0.0.54"
+
 "@material-ui/core@^3.3.1", "@material-ui/core@^3.9.1":
   version "3.9.1"
   resolved "https://registry.yarnpkg.com/@material-ui/core/-/core-3.9.1.tgz#994fa54f0936092556d231d1055b8f76b12be06e"
@@ -10371,14 +10379,6 @@ uglifyjs-webpack-plugin@^1.2.4:
     uglify-es "^3.3.4"
     webpack-sources "^1.1.0"
     worker-farm "^1.5.2"
-
-"ui@github:d2-ci/ui":
-  version "1.0.0-beta.10"
-  resolved "https://codeload.github.com/d2-ci/ui/tar.gz/468cdc92faaa21e86419c8ab35fdae668eecffbd"
-  dependencies:
-    classnames "^2.2.6"
-    material-design-icons-iconfont "^4.0.2"
-    typeface-roboto "^0.0.54"
 
 unc-path-regex@^0.1.2:
   version "0.1.2"
