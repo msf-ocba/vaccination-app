@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-14T11:13:28.456Z\n"
+"POT-Creation-Date: 2019-02-15T09:13:53.886Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -126,15 +126,6 @@ msgstr ""
 msgid "Download data"
 msgstr ""
 
-msgid "For organisation units within"
-msgstr ""
-
-msgid "For all organisation units"
-msgstr ""
-
-msgid "Search by name"
-msgstr ""
-
 msgid "Field cannot be blank"
 msgstr ""
 
@@ -181,36 +172,6 @@ msgid "Manage my apps"
 msgstr ""
 
 msgid "No results found"
-msgstr ""
-
-msgid "Select"
-msgstr ""
-
-msgid "Unselect"
-msgstr ""
-
-msgid "Select all"
-msgstr ""
-
-msgid "Unselect all"
-msgstr ""
-
-msgid "Organisation Unit Level"
-msgstr ""
-
-msgid "Organisation Unit Group"
-msgstr ""
-
-msgid "Assign all"
-msgstr ""
-
-msgid "Remove all"
-msgstr ""
-
-msgid "Hidden by filters"
-msgstr ""
-
-msgid "selected"
 msgstr ""
 
 msgid "Select at least one organisation unit"

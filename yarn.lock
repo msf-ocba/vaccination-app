@@ -982,7 +982,7 @@
     moment "^2.22.1"
     rimraf "^2.6.2"
 
-"@dhis2/d2-i18n@^1.0.3", "@dhis2/d2-i18n@^1.0.4":
+"@dhis2/d2-i18n@^1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@dhis2/d2-i18n/-/d2-i18n-1.0.4.tgz#8fbd113f56699b9832a401e1cb8f54d75bc36b9a"
   integrity sha512-xI2j69q3bwlb374JOAs3wpo47V4BqDAz4h1PfGLVhdORPLAuz0CkKuwesfpW2eunDSHiKpMbOg7goTip/5ROew==
@@ -993,16 +993,6 @@
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-core/-/d2-ui-core-5.1.0.tgz#15a127f1267c17f58b52b4aeae64cf930deac5d7"
   integrity sha512-A/Z546qgvIZsPTx5TxHcaEhTMAB5e85VyS6ZWcgYXwPTysLarTNuW8CInDH0otYot43tqw7MlhHTPMzTksJsOQ==
-  dependencies:
-    babel-runtime "^6.26.0"
-    d2 "~31.1"
-    lodash "^4.17.10"
-    material-ui "^0.20.0"
-
-"@dhis2/d2-ui-core@5.1.1":
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-core/-/d2-ui-core-5.1.1.tgz#627760e2dfcaea4ea35f93ee883907b5007e27c2"
-  integrity sha512-Q/3YXpHEHtUp6VKkXJQIBRb3ycBf5ohabKKHLgnXFImYKo/dHIBQoKgW+t57+GYfr8NeOMx70YSOVn7gu6P8vQ==
   dependencies:
     babel-runtime "^6.26.0"
     d2 "~31.1"
@@ -1033,18 +1023,6 @@
     material-ui "^0.20.0"
     rxjs "^5.5.7"
 
-"@dhis2/d2-ui-group-editor@^5.1.1":
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-group-editor/-/d2-ui-group-editor-5.1.1.tgz#c9dec3fd3ab9493e7745b02f03c63b9db3d0b534"
-  integrity sha512-d9F38yXiFcq5biTSBYmeoIuA6A20BAXztsHpd2PJE1o+WenBu/edfKG/WzbKVW2b4qY//xzgjiyhMS5AVjwoNA==
-  dependencies:
-    "@dhis2/d2-ui-core" "5.1.1"
-    babel-runtime "^6.26.0"
-    material-ui "^0.20.0"
-    prop-types "^15.5.10"
-    recompose "^0.26.0"
-    rxjs "^5.5.7"
-
 "@dhis2/d2-ui-header-bar@5.1.0":
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-header-bar/-/d2-ui-header-bar-5.1.0.tgz#a8e9047ab9bac65ea2309c5a99794cf0315a3b98"
@@ -1057,41 +1035,6 @@
     d2 "~31.1"
     d2-utilizr "^0.2.15"
     lodash "^4.17.10"
-    rxjs "^5.5.7"
-
-"@dhis2/d2-ui-org-unit-dialog@^5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-org-unit-dialog/-/d2-ui-org-unit-dialog-5.1.0.tgz#d4e6e9d171bcf61573ffa7a51f09c715ee31a726"
-  integrity sha512-LkHnMgh9ZLpNvFBtrktMxCW5MJknZbDJ2uAbzCPN0o07dK5wGh0H3WY22ZNoAyr9vF/jjuiiC3BnSTwRMq40QA==
-  dependencies:
-    "@dhis2/d2-i18n" "^1.0.3"
-    "@dhis2/d2-ui-org-unit-tree" "5.1.0"
-    "@material-ui/core" "^3.3.1"
-    "@material-ui/icons" "^3.0.1"
-    prop-types "^15.5.10"
-
-"@dhis2/d2-ui-org-unit-select@^5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-org-unit-select/-/d2-ui-org-unit-select-5.1.0.tgz#0943eeec0c019a63d51e5a53b529432b2f39d229"
-  integrity sha512-srpnD0vPYp06wxT3Psewp12jmogXdcwE8hgDyxR6gFDkMMBSwFOHadOXVbmnzBT5A9ASsjFnXrLYHmRd/vqolA==
-  dependencies:
-    "@dhis2/d2-ui-core" "5.1.0"
-    babel-runtime "^6.26.0"
-    material-ui "^0.20.0"
-    prop-types "^15.5.10"
-    recompose "^0.26.0"
-    rxjs "^5.5.7"
-
-"@dhis2/d2-ui-org-unit-tree@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@dhis2/d2-ui-org-unit-tree/-/d2-ui-org-unit-tree-5.1.0.tgz#d2e2b7e011a02cc9bc517a2ee7c62c8051c59254"
-  integrity sha512-5eJmFOxp4qEbQ6hg1kBLYeWAWh8cPJV1odFA4nRERsfn56TLNeSo8GjjPo6qRpR2JRKDrkfe2unUZGj/7VGS6A==
-  dependencies:
-    "@dhis2/d2-ui-core" "5.1.0"
-    "@material-ui/core" "^3.3.1"
-    babel-runtime "^6.26.0"
-    prop-types "^15.5.10"
-    recompose "^0.26.0"
     rxjs "^5.5.7"
 
 "@material-ui/core@^3.3.1", "@material-ui/core@^3.9.1":
@@ -10058,7 +10001,7 @@ prompts@^0.1.9:
     kleur "^2.0.1"
     sisteransi "^0.1.1"
 
-prop-types@^15.5.10, prop-types@^15.5.6, prop-types@^15.5.7, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2:
+prop-types@^15.5.6, prop-types@^15.5.7, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2:
   version "15.6.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.2.tgz#05d5ca77b4453e985d60fc7ff8c859094a497102"
   integrity sha512-3pboPvLiWD7dkI3qf3KbUe6hKFKa52w+AE0VCqECtf+QHAKgOL37tTaNCnuX1nAAQ4ZhyP+kYVKf8rLmJ/feDQ==

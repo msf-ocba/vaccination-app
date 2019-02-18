@@ -7,7 +7,7 @@ import Checkbox from "material-ui/Checkbox/Checkbox";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { withRouter } from "react-router-dom";
 
-import SearchBox from "components/search-box/SearchBox.component";
+import { SearchBox, SimpleCheckBox } from "d2-ui-components";
 import Pagination from "components/data-table/Pagination.component";
 import MultipleDataTable from "components/data-table/MultipleDataTable.component";
 import DetailsBoxWithScroll from "components/details-box/DetailsBoxWithScroll.component";
@@ -15,7 +15,6 @@ import "components/data-table/Pagination.scss";
 import "components/data-table/DataTable.scss";
 import * as actions from "./actions";
 import * as DataSets from "models/DataSets";
-import { SimpleCheckBox } from "d2-ui-components";
 import { formatDateLong } from "utils/date.js";
 import { canCreate } from "../../utils/auth";
 import ListActionBar from "./ListActionBar.component";

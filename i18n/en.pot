@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-15T08:14:18.723Z\n"
-"PO-Revision-Date: 2019-02-15T08:14:18.723Z\n"
+"POT-Creation-Date: 2019-02-15T09:13:53.886Z\n"
+"PO-Revision-Date: 2019-02-15T09:13:53.886Z\n"
 
 msgid "Campaign Configurator"
 msgstr ""
@@ -124,45 +124,6 @@ msgid "Go to Dashboard"
 msgstr ""
 
 msgid "Download data"
-msgstr ""
-
-msgid "For organisation units within"
-msgstr ""
-
-msgid "For all organisation units"
-msgstr ""
-
-msgid "Select"
-msgstr ""
-
-msgid "Unselect"
-msgstr ""
-
-msgid "Select all"
-msgstr ""
-
-msgid "Unselect all"
-msgstr ""
-
-msgid "Organisation Unit Level"
-msgstr ""
-
-msgid "Organisation Unit Group"
-msgstr ""
-
-msgid "Assign all"
-msgstr ""
-
-msgid "Remove all"
-msgstr ""
-
-msgid "Hidden by filters"
-msgstr ""
-
-msgid "selected"
-msgstr ""
-
-msgid "Search by name"
 msgstr ""
 
 msgid "Field cannot be blank"
