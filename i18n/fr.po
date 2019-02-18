@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-18T10:10:22.003Z\n"
+"POT-Creation-Date: 2019-02-18T12:00:31.893Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -178,15 +178,6 @@ msgid "Previous"
 msgstr ""
 
 msgid "Next"
-msgstr ""
-
-msgid "Search apps"
-msgstr ""
-
-msgid "Manage my apps"
-msgstr ""
-
-msgid "No results found"
 msgstr ""
 
 msgid "Select"
