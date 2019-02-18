@@ -6,9 +6,9 @@ import moment from "moment";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { Button, LinearProgress } from "@material-ui/core";
-import { withFeedback, levels } from "../../feedback";
+import { withSnackbar } from "d2-ui-components";
 
-const styles = theme => ({
+const styles = _theme => ({
     wrapper: {
         padding: 5,
     },
@@ -27,6 +27,7 @@ class SaveStep extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         campaign: PropTypes.object.isRequired,
+        snackbar: PropTypes.object.isRequired,
     };
 
     async componentDidMount() {
@@ -42,14 +43,13 @@ class SaveStep extends React.Component {
         this.setState({ isSaving: false });
 
         if (saveResponse.status) {
-            this.props.feedback(
-                levels.SUCCESS,
+            this.props.snackbar.success(
                 i18n.t("Campaign created: {{name}}", { name: campaign.name })
             );
             this.props.history.push("/campaign-configurator");
         } else {
             this.setState({ errorMessage: saveResponse.error });
-            this.props.feedback(levels.ERROR, i18n.t("Error saving campaign"));
+            this.props.snackbar.error(i18n.t("Error saving campaign"));
         }
     };
 
@@ -135,4 +135,4 @@ class SaveStep extends React.Component {
     }
 }
 
-export default withFeedback(withRouter(withStyles(styles)(SaveStep)));
+export default withSnackbar(withRouter(withStyles(styles)(SaveStep)));

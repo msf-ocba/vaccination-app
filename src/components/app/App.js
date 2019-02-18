@@ -10,7 +10,7 @@ import _ from "lodash";
 import { muiTheme } from "themes/dhis2.theme";
 import muiThemeLegacy from "themes/dhis2-legacy.theme";
 import "./App.css";
-import SnackbarProvider from "../feedback/SnackbarProvider";
+import { SnackbarProvider }  from "d2-ui-components";
 import Root from "./Root";
 import Share from "../share/Share";
 

@@ -6,8 +6,8 @@ import i18n from "@dhis2/d2-i18n";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { withRouter } from "react-router-dom";
-
 import { SearchBox, SimpleCheckBox } from "d2-ui-components";
+
 import Pagination from "components/data-table/Pagination.component";
 import MultipleDataTable from "components/data-table/MultipleDataTable.component";
 import DetailsBoxWithScroll from "components/details-box/DetailsBoxWithScroll.component";

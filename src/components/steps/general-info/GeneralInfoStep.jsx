@@ -96,6 +96,6 @@ class GeneralInfoStep extends React.Component {
     }
 }
 
-const styles = theme => ({});
+const styles = _theme => ({});
 
 export default withStyles(styles)(GeneralInfoStep);
