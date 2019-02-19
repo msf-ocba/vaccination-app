@@ -11,7 +11,8 @@ import DbD2 from './db-d2';
 
 const metadataConfig = {
     categoryCodeForAntigens: "RVC_ANTIGENS",
-    categoryComboCodeForTeams: "RVC_TEAMS"
+    categoryComboCodeForTeams: "RVC_TEAMS",
+    attibuteCodeForApp: "CREATED_BY_VACCINATION_APP",
 };
 
 export interface Data {
@@ -139,6 +140,7 @@ export default class Campaign {
     public async save(): Promise<Response<string>> {
         const teamsCode = metadataConfig.categoryComboCodeForTeams;
         const antigenCodes = this.antigens.map(antigen => antigen.code);
+        const vaccinationAttribute = await this.db.getAttributeIdByCode(metadataConfig.attibuteCodeForApp);
         const categoryCombos = await this.db.getCategoryCombosByCode([teamsCode]);
         const categoryCombosByCode = _(categoryCombos).keyBy("code").value();
         const categoryComboTeams = _(categoryCombosByCode).get(teamsCode);
@@ -197,6 +199,7 @@ export default class Campaign {
                 timelyDays: 0,
                 expiryDays: 0,
                 dataInputPeriods,
+                attributeValues: [{ value: true, attribute: { id: vaccinationAttribute.id }}],
             }
 
             const result: MetadataResponse =
