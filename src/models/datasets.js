@@ -29,11 +29,34 @@ export async function list(d2, filters, pagination) {
     // order=FIELD:DIRECTION where direction = "iasc" | "idesc" (insensitive ASC, DESC)
     const [field, direction] = sorting || [];
     const order = field && direction ? `${field}:i${direction}` : undefined;
+    const vaccinationIds = await getByAttribute(d2);
     const filter = _.compact([
         search ? `displayName:ilike:${search}` : null,
         showOnlyUserCampaigns ? `user.id:eq:${d2.currentUser.id}` : null,
+        `id:in:[${vaccinationIds.join(",")}]`,
     ]);
     const listOptions = { fields, filter, page, pageSize, order };
     const collection = await d2.models.dataSets.list(cleanOptions(listOptions));
     return { pager: collection.pager, objects: collection.toArray() };
+}
+
+async function getByAttribute(d2) {
+    const appCode = "CREATED_BY_VACCINATION_APP";
+    const filter = `attributeValues.attribute.code:eq:${appCode}`;
+    const listOptions = {
+        filter,
+        fields: ["id", "attributeValues[value, attribute[code]]"],
+        paging: false,
+    };
+    const dataSets = await d2.models.dataSets.list(listOptions);
+    const ids = dataSets
+        .toArray()
+        .filter(
+            ({ attributeValues }) =>
+                !!attributeValues.find(
+                    ({ attribute, value }) => attribute.code === appCode && value
+                )
+        )
+        .map(el => el.id);
+    return ids;
 }
