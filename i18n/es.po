@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-15T09:10:12.395Z\n"
+"POT-Creation-Date: 2019-02-19T11:17:59.721Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,6 +19,60 @@ msgstr "Tablero"
 
 msgid "Maintenance"
 msgstr "Mantenimiento"
+
+msgid "Name"
+msgstr "Nombre"
+
+msgid "Public access"
+msgstr "Acceso público"
+
+msgid "Last updated"
+msgstr "Última actualización"
+
+msgid "Short name"
+msgstr "Nombre corto"
+
+msgid "Code"
+msgstr "Código"
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "Created"
+msgstr "Fecha de creación"
+
+msgid "Last update"
+msgstr "Última actualización"
+
+msgid "Id"
+msgstr "Identificador"
+
+msgid "API link"
+msgstr "Link API"
+
+msgid "Details"
+msgstr "Detalles"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "Share"
+msgstr "Compartir"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "Go to Data Entry"
+msgstr "Ir a entrada de datos"
+
+msgid "Go to Dashboard"
+msgstr "Ir a tablero"
+
+msgid "Download data"
+msgstr "Descargar datos"
+
+msgid "Only my campaigns"
+msgstr "Solo mis campañas"
 
 msgid "Organisation Units"
 msgstr "Unidades organizativas"
@@ -63,75 +117,6 @@ msgstr "Nueva campaña"
 
 msgid "Back"
 msgstr "Atrás"
-
-msgid "View/edit"
-msgstr "Ver/editar"
-
-msgid "View only"
-msgstr "Ver"
-
-msgid "Private"
-msgstr "Privado"
-
-msgid "Actions"
-msgstr "Acciones"
-
-msgid "of"
-msgstr "de"
-
-msgid "Name"
-msgstr "Nombre"
-
-msgid "Short name"
-msgstr "Nombre corto"
-
-msgid "Code"
-msgstr "Código"
-
-msgid "Display description"
-msgstr "Descripción"
-
-msgid "Created"
-msgstr "Fecha de creación"
-
-msgid "Last update"
-msgstr "Última actualización"
-
-msgid "Id"
-msgstr "Identificador"
-
-msgid "API link"
-msgstr "Link API"
-
-msgid "Public access"
-msgstr "Acceso público"
-
-msgid "Last updated"
-msgstr "Última actualización"
-
-msgid "Only my campaigns"
-msgstr "Solo mis campañas"
-
-msgid "Details"
-msgstr "Detalles"
-
-msgid "Edit"
-msgstr "Editar"
-
-msgid "Share"
-msgstr "Compartir"
-
-msgid "Delete"
-msgstr "Eliminar"
-
-msgid "Go to Data Entry"
-msgstr "Ir a entrada de datos"
-
-msgid "Go to Dashboard"
-msgstr "Ir a tablero"
-
-msgid "Download data"
-msgstr "Descargar datos"
 
 msgid "Field cannot be blank"
 msgstr "El campo no puede estar vacío"
@@ -196,4 +181,3 @@ msgstr "El campo {{field}} no puede estar vacío si {{other}} tiene un valor"
 
 msgid "Select at least one antigen"
 msgstr "Seleccione al menos un antígeno"
-

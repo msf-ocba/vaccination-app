@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-15T09:13:53.886Z\n"
+"POT-Creation-Date: 2019-02-19T11:17:59.721Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,6 +18,60 @@ msgid "Dashboard"
 msgstr ""
 
 msgid "Maintenance"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Public access"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Short name"
+msgstr ""
+
+msgid "Code"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Last update"
+msgstr ""
+
+msgid "Id"
+msgstr ""
+
+msgid "API link"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Share"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Go to Data Entry"
+msgstr ""
+
+msgid "Go to Dashboard"
+msgstr ""
+
+msgid "Download data"
+msgstr ""
+
+msgid "Only my campaigns"
 msgstr ""
 
 msgid "Organisation Units"
@@ -55,75 +109,6 @@ msgid "New vaccination campaign"
 msgstr ""
 
 msgid "Back"
-msgstr ""
-
-msgid "View/edit"
-msgstr ""
-
-msgid "View only"
-msgstr ""
-
-msgid "Private"
-msgstr ""
-
-msgid "Actions"
-msgstr ""
-
-msgid "of"
-msgstr ""
-
-msgid "Name"
-msgstr ""
-
-msgid "Short name"
-msgstr ""
-
-msgid "Code"
-msgstr ""
-
-msgid "Display description"
-msgstr ""
-
-msgid "Created"
-msgstr ""
-
-msgid "Last update"
-msgstr ""
-
-msgid "Id"
-msgstr ""
-
-msgid "API link"
-msgstr ""
-
-msgid "Public access"
-msgstr ""
-
-msgid "Last updated"
-msgstr ""
-
-msgid "Only my campaigns"
-msgstr ""
-
-msgid "Details"
-msgstr ""
-
-msgid "Edit"
-msgstr ""
-
-msgid "Share"
-msgstr ""
-
-msgid "Delete"
-msgstr ""
-
-msgid "Go to Data Entry"
-msgstr ""
-
-msgid "Go to Dashboard"
-msgstr ""
-
-msgid "Download data"
 msgstr ""
 
 msgid "Field cannot be blank"
