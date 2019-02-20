@@ -14,7 +14,7 @@ class CampaignConfigurator extends React.Component {
 
     state = {
         filters: {
-            showOnlyUserCampaigns: false,
+            showOnlyUserCampaigns: true,
         },
     };
 
