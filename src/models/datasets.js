@@ -1,5 +1,7 @@
 import _ from "lodash";
 
+import { metadataConfig } from "./campaign";
+
 const fields = [
     "id",
     "name",
@@ -41,7 +43,7 @@ export async function list(d2, filters, pagination) {
 }
 
 async function getByAttribute(d2) {
-    const appCode = "CREATED_BY_VACCINATION_APP";
+    const appCode = metadataConfig.attibuteCodeForApp;
     const filter = `attributeValues.attribute.code:eq:${appCode}`;
     const listOptions = {
         filter,
@@ -54,7 +56,7 @@ async function getByAttribute(d2) {
         .filter(
             ({ attributeValues }) =>
                 !!attributeValues.find(
-                    ({ attribute, value }) => attribute.code === appCode && value
+                    ({ attribute, value }) => attribute.code === appCode && value === "true"
                 )
         )
         .map(el => el.id);

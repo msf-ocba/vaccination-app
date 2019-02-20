@@ -47,6 +47,11 @@ export interface Attribute {
     id: string;
 }
 
+export interface AttributeValue {
+    value: boolean;
+    attribute: Ref;
+}
+
 export interface DataElement {
     id: string;
     code: string;
@@ -91,7 +96,7 @@ export interface DataSet {
     expiryDays: number,
     sections?: Section[],
     dataInputPeriods: DataInputPeriod[],
-    attributeValues: Array<{value: boolean, attribute: Ref}>,
+    attributeValues: AttributeValue[],
 }
 
 export interface DataInputPeriod {

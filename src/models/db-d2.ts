@@ -70,9 +70,10 @@ export default class DbD2 {
 
     }
 
-    public async getAttributeIdByCode(code: string): Promise<Attribute> {
+    public async getAttributeIdByCode(code: string): Promise<Attribute | undefined> {
         const { attributes } = await this.api.get("/attributes", {
-            paging: false,
+            paging: true,
+            pageSize: 1,
             filter: [`code:eq:${code}`],
             fields: ["id"],
         });

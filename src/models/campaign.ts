@@ -9,7 +9,7 @@ import { getDaysRange } from '../utils/date';
 import DbD2 from './db-d2';
 
 
-const metadataConfig = {
+export const metadataConfig = {
     categoryCodeForAntigens: "RVC_ANTIGENS",
     categoryComboCodeForTeams: "RVC_TEAMS",
     attibuteCodeForApp: "CREATED_BY_VACCINATION_APP",
@@ -150,6 +150,8 @@ export default class Campaign {
             .keyBy("code")
             .mapValues("dataElements")
             .value();
+
+        if (!vaccinationAttribute) return { status: false, error: "Metadata not found: vaccinationAttributeId" };
 
         if (!categoryComboTeams) {
             return {status: false, error: `Metadata not found: teamsCode=${teamsCode}`};
