@@ -1,13 +1,13 @@
-import { MetadataResponse, Section } from './db.types';
 ///<reference path="../types/d2.d.ts" />
-
-import { Dictionary } from 'lodash';
-import { CategoryCombo, DataSet, Response } from './db.types';
-import _ from '../utils/lodash';
+import moment from 'moment';
 import { generateUid } from "d2/uid";
+
+import { MetadataResponse, Section, CategoryCombo, DataSet, Response } from './db.types';
 import { PaginatedObjects, OrganisationUnitPathOnly, CategoryOption } from "./db.types";
-import DbD2 from './db-d2';
+import _ from '../utils/lodash';
 import { getDaysRange } from '../utils/date';
+import DbD2 from './db-d2';
+
 
 const metadataConfig = {
     categoryCodeForAntigens: "RVC_ANTIGENS",
@@ -180,10 +180,12 @@ export default class Campaign {
                     //greyedFields: [],
                 }
             })
+            const startDate = this.startDate || moment().toDate();
+            const endDate = this.endDate || moment().endOf("year").toDate();
 
-            const dataInputPeriods = getDaysRange(this.startDate, this.endDate).map(date => ({
-                openingDate: this.startDate ? this.startDate.toISOString() : undefined,
-                closingDate: this.endDate ? this.endDate.toISOString() : undefined,
+            const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
+                openingDate: startDate.toISOString(),
+                closingDate: endDate.toISOString(),
                 period: {id: date.format("YYYYMMDD")}
             }));
 
