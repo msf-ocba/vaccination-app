@@ -4,7 +4,7 @@ import i18n from "@dhis2/d2-i18n";
 import { ObjectsTable } from "d2-ui-components";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
-import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/build/d2-auth";
+import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/auth";
 import { list } from "../../models/datasets";
 
 class CampaignConfigurator extends React.Component {
