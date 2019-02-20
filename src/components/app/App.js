@@ -1,11 +1,12 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import HeaderBar from "@dhis2/d2-ui-header-bar";
+import HeaderBar from "@dhis2/ui/widgets/HeaderBar";
 import { MuiThemeProvider } from "@material-ui/core/styles";
 import JssProvider from "react-jss/lib/JssProvider";
 import { createGenerateClassName } from "@material-ui/core/styles";
 import OldMuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import _ from "lodash";
+import i18n from "@dhis2/d2-i18n";
 
 import { muiTheme } from "themes/dhis2.theme";
 import muiThemeLegacy from "themes/dhis2-legacy.theme";
@@ -49,7 +50,7 @@ class App extends Component {
                     <MuiThemeProvider theme={muiTheme}>
                         <OldMuiThemeProvider muiTheme={muiThemeLegacy}>
                             <React.Fragment>
-                                {showHeader && <HeaderBar d2={d2} />}
+                                {showHeader && <HeaderBar appName={i18n.t("Vaccination")} />}
 
                                 <div id="app" className="content">
                                     <SnackbarProvider>

@@ -5,8 +5,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-19T11:17:59.721Z\n"
-"PO-Revision-Date: 2019-02-19T11:17:59.721Z\n"
+"POT-Creation-Date: 2019-02-20T09:18:00.494Z\n"
+"PO-Revision-Date: 2019-02-20T09:18:00.494Z\n"
+
+msgid "Vaccination"
+msgstr ""
 
 msgid "Campaign Configurator"
 msgstr ""
@@ -105,10 +108,24 @@ msgid ""
 "this vaccination campaign"
 msgstr ""
 
+msgid "Cancel Campaign Creation?"
+msgstr ""
+
+msgid ""
+"You are about to exit the campaign creation wizard. All your changes will "
+"be lost. Are you sure?"
+msgstr ""
+
 msgid "New vaccination campaign"
 msgstr ""
 
 msgid "Back"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Ok"
 msgstr ""
 
 msgid "Field cannot be blank"

@@ -9,12 +9,6 @@ import App from "./components/app/App";
 
 import "./locales";
 
-const d2UiTranslations = {
-    app_search_placeholder: i18n.t("Search apps"),
-    manage_my_apps: i18n.t("Manage my apps"),
-    no_results_found: i18n.t("No results found"),
-};
-
 function isLangRTL(code) {
     const langs = ["ar", "fa", "ur"];
     const prefixed = langs.map(c => `${c}-`);
@@ -37,7 +31,7 @@ function configI18n(userSettings) {
 
 async function getBaseUrl() {
     if (process.env.NODE_ENV === "development") {
-        const envVariable = "REACT_APP_DHIS2_URL";
+        const envVariable = "REACT_APP_DHIS2_BASE_URL";
         const defaultServer = "http://localhost:8080";
         const baseUrl = process.env[envVariable] || defaultServer;
         console.info(`[DEV] DHIS2 instance: ${baseUrl}`);
@@ -48,21 +42,12 @@ async function getBaseUrl() {
     }
 }
 
-const i18nKeys = ["app_search_placeholder", "manage_my_apps", "no_results_found", "settings"];
-
-function setD2UiTranslations(d2) {
-    i18nKeys.forEach(s => d2.i18n.strings.add(s));
-    d2.i18n.load();
-    Object.assign(d2.i18n.translations, d2UiTranslations);
-}
-
 async function main() {
     const baseUrl = await getBaseUrl();
     const apiUrl = baseUrl.replace(/\/*$/, "") + "/api";
     try {
         const d2 = await init({ baseUrl: apiUrl });
         window.d2 = d2; // Make d2 available in the console
-        setD2UiTranslations(d2);
         const userSettings = await getUserSettings();
         configI18n(userSettings);
         const appConfig = await fetch("app-config.json", {
