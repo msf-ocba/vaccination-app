@@ -79,4 +79,16 @@ export default class DbD2 {
         });
         return attributes[0];
     }
+
+    public async createDashboard(name: String) {
+        // For now, a table and a chart is created on dhis and hardcoded here
+        // Later, charts and table will be created dinamically
+        const dashboard = {
+            name: `${name}_DASHBOARD`,
+            dashboardItems: [{ id: 'N5gWzCNTKQA' }, { id: 'ykebS6y8eh5' }],
+        };
+        const result = await this.api.post("/dashboards", dashboard);
+        console.log(result);
+        return result;
+    }
 }

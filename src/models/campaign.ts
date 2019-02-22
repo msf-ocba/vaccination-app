@@ -138,6 +138,7 @@ export default class Campaign {
     /* Save */
 
     public async save(): Promise<Response<string>> {
+        const aa = await this.db.createDashboard(this.name);
         const teamsCode = metadataConfig.categoryComboCodeForTeams;
         const antigenCodes = this.antigens.map(antigen => antigen.code);
         const vaccinationAttribute = await this.db.getAttributeIdByCode(metadataConfig.attibuteCodeForApp);
