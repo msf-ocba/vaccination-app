@@ -1,10 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import _ from "lodash";
-import { withStyles } from "@material-ui/core/styles";
-import MultiSelector from "../../multi-selector/MultiSelector";
-
-const styles = theme => ({});
+import { MultiSelector } from "d2-ui-components";
 
 class AntigenSelectionStep extends React.Component {
     state = { categoryOptions: null };
@@ -18,7 +15,6 @@ class AntigenSelectionStep extends React.Component {
     async componentDidMount() {
         const { campaign } = this.props;
         const categoryOptions = await campaign.getAvailableAntigens();
-        //await new Promise(resolve => setTimeout(resolve, 2000));
         this.setState({ categoryOptions });
     }
 
@@ -55,4 +51,4 @@ class AntigenSelectionStep extends React.Component {
     }
 }
 
-export default withStyles(styles)(AntigenSelectionStep);
+export default AntigenSelectionStep;

@@ -9,7 +9,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { Link } from "react-router-dom";
 
 const lightGray = "#7a7a7a";
-const styles = theme => ({
+const styles = _theme => ({
     root: {
         display: "flex",
         justifyContent: "center",

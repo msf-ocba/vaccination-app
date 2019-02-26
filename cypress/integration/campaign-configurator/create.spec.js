@@ -5,7 +5,7 @@ describe("Campaign configurator - Create", () => {
         cy.login("admin");
         cy.loadPage();
         cy.contains("Campaign Configurator").click();
-        cy.get("[data-test=create-campaign]").click();
+        cy.get("[data-test=list-action-bar]").click();
     });
 
     beforeEach(() => {});

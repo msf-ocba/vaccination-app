@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-18T17:03:51.855Z\n"
-"PO-Revision-Date: 2019-02-18T17:03:51.855Z\n"
+"POT-Creation-Date: 2019-02-21T07:35:26.758Z\n"
+"PO-Revision-Date: 2019-02-21T07:35:26.758Z\n"
 
 msgid "Vaccination"
 msgstr ""
@@ -21,6 +21,60 @@ msgid "Dashboard"
 msgstr ""
 
 msgid "Maintenance"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Public access"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Short name"
+msgstr ""
+
+msgid "Code"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Last update"
+msgstr ""
+
+msgid "Id"
+msgstr ""
+
+msgid "API link"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Share"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Go to Data Entry"
+msgstr ""
+
+msgid "Go to Dashboard"
+msgstr ""
+
+msgid "Download data"
+msgstr ""
+
+msgid "Only my campaigns"
 msgstr ""
 
 msgid "Organisation Units"
@@ -74,87 +128,6 @@ msgstr ""
 msgid "Ok"
 msgstr ""
 
-msgid "View/edit"
-msgstr ""
-
-msgid "View only"
-msgstr ""
-
-msgid "Private"
-msgstr ""
-
-msgid "Actions"
-msgstr ""
-
-msgid "of"
-msgstr ""
-
-msgid "Name"
-msgstr ""
-
-msgid "Short name"
-msgstr ""
-
-msgid "Code"
-msgstr ""
-
-msgid "Display description"
-msgstr ""
-
-msgid "Created"
-msgstr ""
-
-msgid "Last update"
-msgstr ""
-
-msgid "Id"
-msgstr ""
-
-msgid "API link"
-msgstr ""
-
-msgid "Close"
-msgstr ""
-
-msgid "Public access"
-msgstr ""
-
-msgid "Last updated"
-msgstr ""
-
-msgid "Only my campaigns"
-msgstr ""
-
-msgid "Details"
-msgstr ""
-
-msgid "Edit"
-msgstr ""
-
-msgid "Share"
-msgstr ""
-
-msgid "Delete"
-msgstr ""
-
-msgid "Go to Data Entry"
-msgstr ""
-
-msgid "Go to Dashboard"
-msgstr ""
-
-msgid "Download data"
-msgstr ""
-
-msgid "For organisation units within"
-msgstr ""
-
-msgid "For all organisation units"
-msgstr ""
-
-msgid "Search by name"
-msgstr ""
-
 msgid "Field cannot be blank"
 msgstr ""
 
@@ -192,36 +165,6 @@ msgid "Previous"
 msgstr ""
 
 msgid "Next"
-msgstr ""
-
-msgid "Select"
-msgstr ""
-
-msgid "Unselect"
-msgstr ""
-
-msgid "Select all"
-msgstr ""
-
-msgid "Unselect all"
-msgstr ""
-
-msgid "Organisation Unit Level"
-msgstr ""
-
-msgid "Organisation Unit Group"
-msgstr ""
-
-msgid "Assign all"
-msgstr ""
-
-msgid "Remove all"
-msgstr ""
-
-msgid "Hidden by filters"
-msgstr ""
-
-msgid "selected"
 msgstr ""
 
 msgid "Select at least one organisation unit"

@@ -1,10 +1,12 @@
-import * as DataSets from "../DataSets";
-import { getD2Stub } from "utils/testing";
+import { list } from "../datasets";
+import { getD2Stub } from "../../utils/testing";
 
 const expectedFields = [
     "id",
     "name",
+    "code",
     "displayName",
+    "displayDescription",
     "shortName",
     "created",
     "lastUpdated",
@@ -18,12 +20,15 @@ const expectedFields = [
     "href",
 ];
 
+const emptyCollection = { pager: {}, toArray: () => [] };
+const listMock = jest.fn(() => Promise.resolve(emptyCollection));
+
 describe("DataSets", () => {
     describe("get", () => {
         describe("without filters nor pagination", () => {
             it("returns datasets", async () => {
-                const d2 = getD2Stub({ models: { dataSets: { list: jest.fn() } } });
-                await DataSets.get(d2, {}, {});
+                const d2 = getD2Stub({ models: { dataSets: { list: listMock } } });
+                await list(d2, {}, {});
 
                 expect(d2.models.dataSets.list).toHaveBeenCalledWith({
                     fields: expectedFields,
@@ -36,27 +41,24 @@ describe("DataSets", () => {
 
         describe("with filters and paginations", () => {
             it("returns datasets", async () => {
-                const listMock = jest.fn();
                 const d2 = getD2Stub({
                     currentUser: { id: "b123123123" },
                     models: { dataSets: { list: listMock } },
                 });
-                await DataSets.get(
-                    d2,
-                    {
-                        searchValue: "abc",
-                        showOnlyUserCampaigns: true,
-                    },
-                    {
-                        page: 2,
-                        pageSize: 10,
-                        sorting: ["name", "desc"],
-                    }
-                );
+                const filters = {
+                    search: "abc",
+                    showOnlyUserCampaigns: true,
+                };
+                const pagination = {
+                    page: 2,
+                    pageSize: 10,
+                    sorting: ["displayName", "desc"],
+                };
+                await list(d2, filters, pagination);
 
-                expect(listMock).toHaveBeenCalledWith({
+                expect(d2.models.dataSets.list).toHaveBeenCalledWith({
                     fields: expectedFields,
-                    order: "name:idesc",
+                    order: "displayName:idesc",
                     page: 2,
                     pageSize: 10,
                     filter: ["displayName:ilike:abc", "user.id:eq:b123123123"],

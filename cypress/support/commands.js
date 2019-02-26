@@ -55,7 +55,7 @@ Cypress.Commands.add("loadPage", (path = "/") => {
     }
 });
 
-Cypress.on("uncaught:exception", (err, runnable) => {
+Cypress.on("uncaught:exception", (_err, _runnable) => {
     // returning false here prevents Cypress from failing the test
     //console.log("uncaught:exception", {err, runnable});
     return false;

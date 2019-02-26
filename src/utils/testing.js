@@ -8,7 +8,7 @@ import OldMuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { MuiThemeProvider } from "@material-ui/core/styles";
 
 import { muiTheme } from "themes/dhis2.theme";
-import SnackbarProvider from "components/feedback/SnackbarProvider";
+import { SnackbarProvider } from "d2-ui-components";
 
 // DHIS2 expects a browser environment, add some required keys to the global node namespace
 Object.assign(global, {

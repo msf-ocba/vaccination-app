@@ -11,8 +11,7 @@ import StepButton from "@material-ui/core/StepButton";
 import Button from "@material-ui/core/Button";
 import { IconButton } from "@material-ui/core";
 import Icon from "@material-ui/core/Icon";
-import { withFeedback, levels } from "../feedback";
-import DialogHandler from "../dialog-handler/DialogHandler";
+import { DialogHandler, withSnackbar } from "d2-ui-components";
 
 const styles = theme => ({
     root: {
@@ -60,7 +59,7 @@ class Wizard extends React.Component {
         initialStepKey: PropTypes.string.isRequired,
         onStepChangeRequest: PropTypes.func.isRequired,
         useSnackFeedback: PropTypes.bool,
-        feedback: PropTypes.func,
+        snackbar: PropTypes.object.isRequired,
         steps: PropTypes.arrayOf(
             PropTypes.shape({
                 key: PropTypes.string.isRequired,
@@ -95,7 +94,7 @@ class Wizard extends React.Component {
             this.setStep(nextStepKey);
         } else {
             if (this.props.useSnackFeedback) {
-                this.props.feedback(levels.ERROR, errorMessages.join("\n"), {
+                this.props.snackbar.error(errorMessages.join("\n"), {
                     autoHideDuration: null,
                 });
             } else {
@@ -225,4 +224,4 @@ class Wizard extends React.Component {
     }
 }
 
-export default withFeedback(withStyles(styles)(Wizard));
+export default withSnackbar(withStyles(styles)(Wizard));

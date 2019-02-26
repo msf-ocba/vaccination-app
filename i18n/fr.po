@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-18T17:03:51.855Z\n"
+"POT-Creation-Date: 2019-02-20T09:18:00.494Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,6 +21,60 @@ msgid "Dashboard"
 msgstr ""
 
 msgid "Maintenance"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Public access"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Short name"
+msgstr ""
+
+msgid "Code"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Last update"
+msgstr ""
+
+msgid "Id"
+msgstr ""
+
+msgid "API link"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Share"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Go to Data Entry"
+msgstr ""
+
+msgid "Go to Dashboard"
+msgstr ""
+
+msgid "Download data"
+msgstr ""
+
+msgid "Only my campaigns"
 msgstr ""
 
 msgid "Organisation Units"
@@ -74,87 +128,6 @@ msgstr ""
 msgid "Ok"
 msgstr ""
 
-msgid "View/edit"
-msgstr ""
-
-msgid "View only"
-msgstr ""
-
-msgid "Private"
-msgstr ""
-
-msgid "Actions"
-msgstr ""
-
-msgid "of"
-msgstr ""
-
-msgid "Name"
-msgstr ""
-
-msgid "Short name"
-msgstr ""
-
-msgid "Code"
-msgstr ""
-
-msgid "Display description"
-msgstr ""
-
-msgid "Created"
-msgstr ""
-
-msgid "Last update"
-msgstr ""
-
-msgid "Id"
-msgstr ""
-
-msgid "API link"
-msgstr ""
-
-msgid "Close"
-msgstr ""
-
-msgid "Public access"
-msgstr ""
-
-msgid "Last updated"
-msgstr ""
-
-msgid "Only my campaigns"
-msgstr ""
-
-msgid "Details"
-msgstr ""
-
-msgid "Edit"
-msgstr ""
-
-msgid "Share"
-msgstr ""
-
-msgid "Delete"
-msgstr ""
-
-msgid "Go to Data Entry"
-msgstr ""
-
-msgid "Go to Dashboard"
-msgstr ""
-
-msgid "Download data"
-msgstr ""
-
-msgid "For organisation units within"
-msgstr ""
-
-msgid "For all organisation units"
-msgstr ""
-
-msgid "Search by name"
-msgstr ""
-
 msgid "Field cannot be blank"
 msgstr ""
 
@@ -194,34 +167,13 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-msgid "Select"
+msgid "Search apps"
 msgstr ""
 
-msgid "Unselect"
+msgid "Manage my apps"
 msgstr ""
 
-msgid "Select all"
-msgstr ""
-
-msgid "Unselect all"
-msgstr ""
-
-msgid "Organisation Unit Level"
-msgstr ""
-
-msgid "Organisation Unit Group"
-msgstr ""
-
-msgid "Assign all"
-msgstr ""
-
-msgid "Remove all"
-msgstr ""
-
-msgid "Hidden by filters"
-msgstr ""
-
-msgid "selected"
+msgid "No results found"
 msgstr ""
 
 msgid "Select at least one organisation unit"
