@@ -17,7 +17,7 @@ const expectedFields = [
     "userGroupAccesses",
     "user",
     "access",
-    "attributeValues",
+    "attributeValues[value, attribute[code]]",
     "href",
 ];
 
@@ -73,6 +73,32 @@ describe("DataSets", () => {
                     page: 2,
                     pageSize: 10,
                     filter: ["displayName:ilike:abc", "user.id:eq:b123123123", "id:in:[]"],
+                });
+            });
+        });
+
+        describe("filters datasets by attribute", () => {
+            it("returns only datasets with the CREATED_BY_VACCINATION attribute set", async () => {
+                const testIds = ["id1", "id2", "id3", "id4"];
+                const code = metadataConfig.attibuteCodeForApp;
+                const testDataSets = [
+                    { id: testIds[0], attributeValues: [{ value: "true", attribute: { code } }] },
+                    { id: testIds[1], attributeValues: [{ value: "false", attribute: { code } }] },
+                    { id: testIds[2], attributeValues: [{ value: "true", attribute: { code } }] },
+                    { id: testIds[3], attributeValues: [{ value: "false", attribute: { code } }] },
+                ];
+                const listMock = jest.fn(() =>
+                    Promise.resolve({ toArray: () => testDataSets, pager: {} })
+                );
+                const d2 = getD2Stub({ models: { dataSets: { list: listMock } } });
+                await DataSets.get(d2, {}, {});
+
+                expect(d2.models.dataSets.list).toHaveBeenLastCalledWith({
+                    fields: expectedFields,
+                    order: undefined,
+                    page: undefined,
+                    pageSize: 20,
+                    filter: [`id:in:[${testIds[0]},${testIds[2]}]`],
                 });
             });
         });

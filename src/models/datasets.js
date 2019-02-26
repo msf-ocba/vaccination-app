@@ -17,7 +17,7 @@ const fields = [
     "userGroupAccesses",
     "user",
     "access",
-    "attributeValues",
+    "attributeValues[value, attribute[code]]",
     "href",
 ];
 
@@ -55,7 +55,7 @@ async function getByAttribute(d2) {
         .toArray()
         .filter(
             ({ attributeValues }) =>
-                !!attributeValues.some(
+                !!attributeValues.find(
                     ({ attribute, value }) => attribute.code === appCode && value === "true"
                 )
         )
