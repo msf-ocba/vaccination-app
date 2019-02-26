@@ -2,7 +2,7 @@ import { Dictionary } from "lodash";
 import { D2, D2Api } from './d2.types';
 import { OrganisationUnit, PaginatedObjects, CategoryOption, Maybe, CategoryCombo, DataElementGroup, DataSet, MetadataResponse, Response, Metadata, Attribute } from './db.types';
 import _ from 'lodash';
-import { chart } from './dashboard-items';
+import { chart, reportTable } from './dashboard-items';
 
 export default class DbD2 {
     d2: D2;
@@ -84,13 +84,16 @@ export default class DbD2 {
     public async createDashboard(name: String) {
         // For now, a chart is created from a genertic template and added to the dashboard
         const { response: { uid: chartId }} = await this.api.post("/charts", chart(name));
+        const { response: { uid: reportTableId }} = await this.api.post("/reportTables", reportTable(name));
         const dashboard = {
             name: `${name}_DASHBOARD`,
             dashboardItems: [
                 { id: chartId },
+                { id: reportTableId },
             ]
         };
         const { response: { uid } } = await this.api.post("/dashboards", dashboard);
+        console.log({ dashboardId: uid });
         return uid;
     }
 }
