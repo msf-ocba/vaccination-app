@@ -91,7 +91,7 @@ describe("DataSets", () => {
                     Promise.resolve({ toArray: () => testDataSets, pager: {} })
                 );
                 const d2 = getD2Stub({ models: { dataSets: { list: listMock } } });
-                await DataSets.get(d2, {}, {});
+                await list(d2, {}, {});
 
                 expect(d2.models.dataSets.list).toHaveBeenLastCalledWith({
                     fields: expectedFields,
