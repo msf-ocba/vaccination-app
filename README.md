@@ -16,7 +16,7 @@ vaccine-specific age groups
 $ yarn install
 ```
 
-When using code of a not yet published d2-ui-components, you will need to link to a development branch of `d2-ui-components`. For that, run `yarn link` in d2-ui-components and `yarn link d2-ui-components` in this project.
+When using code of an unpublished d2-ui-components, the typical workflow would be to use `yarn link` to point to a development branch of that package. Unfortunately, `yarn link` does not work at the moment (see [this issue](https://github.com/facebook/create-react-app/issues/1107)). So, for now, you'll have to overwrite `node_modules/d2-ui-components` yourself and restart the server afterwards. When developing d2-ui-components, tweak with `node_modules/react-scripts/config/webpackDevServer.config.js` (more info [here](https://stackoverflow.com/a/49932996/188031)) to see changes in `node_modules` without restarting the server.
 
 ## Development
 
