@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-21T07:35:26.758Z\n"
-"PO-Revision-Date: 2019-02-21T07:35:26.758Z\n"
+"POT-Creation-Date: 2019-02-23T08:53:33.398Z\n"
+"PO-Revision-Date: 2019-02-23T08:53:33.398Z\n"
 
 msgid "Vaccination"
 msgstr ""
@@ -98,6 +98,12 @@ msgid "Antigen selection"
 msgstr ""
 
 msgid "Select the antigens included in the campaign"
+msgstr ""
+
+msgid "Disaggregation"
+msgstr ""
+
+msgid "Define disaggration categories for each antigen"
 msgstr ""
 
 msgid "Save"

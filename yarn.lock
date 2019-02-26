@@ -3507,10 +3507,10 @@ d2-manifest@^1.0.0:
     minimist "^1.1.0"
     readline-sync "^1.4.1"
 
-d2-ui-components@0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/d2-ui-components/-/d2-ui-components-0.0.7.tgz#df2486bdc0f89fb80f0f7c62afce522b51be7891"
-  integrity sha512-IrE+t+bfIgVXK+BnRzP0epr56tNXm7QyUTjhD8C3zQraJREuTbcZpmbXFqs78Ug0hfRP44bi4vkhQGJiDEGlcw==
+d2-ui-components@0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/d2-ui-components/-/d2-ui-components-0.0.8.tgz#857f6f282a0927b769bfbb81c2751f839040e6a7"
+  integrity sha512-AdSrLKFQmxm7kNe7XRM9mXtyIOXO5omNALdik3sTc7UkTNHQFhbRNG9xQSI0taNXTNdN04hE5Os9m8jAGK5Xbg==
   dependencies:
     "@date-io/moment" "^1.0.2"
     "@dhis2/d2-i18n" "^1.0.3"
@@ -3520,6 +3520,7 @@ d2-ui-components@0.0.7:
     "@dhis2/d2-ui-org-unit-tree" "^5.1.1"
     "@material-ui/core" "^3.9.1"
     "@material-ui/icons" "^3.0.1"
+    lodash "^4.17.11"
     material-ui-pickers "^2.1.2"
     moment "^2.22.2"
     nano-memoize "^1.0.3"
