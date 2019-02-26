@@ -52,14 +52,9 @@ export default class Campaign {
                 namespace: {field: "name"}
             } : null,
 
-            startDate: startDate && !endDate ? {
+            startDate: !startDate && endDate ? {
                 key: "cannot_be_blank_if_other_set",
                 namespace: {field: "startDate", other: "endDate"},
-            } : null,
-
-            endDate: endDate && !startDate ? {
-                key: "cannot_be_blank_if_other_set",
-                namespace: {field: "endDate", other: "startDate"},
             } : null,
 
             organisationUnits: _.compact([
