@@ -1,13 +1,13 @@
-import { MetadataResponse, Section } from './db.types';
 ///<reference path="../types/d2.d.ts" />
-
-import { Dictionary } from 'lodash';
-import { CategoryCombo, DataSet, Response } from './db.types';
-import _ from '../utils/lodash';
+import moment from 'moment';
 import { generateUid } from "d2/uid";
+
+import { MetadataResponse, Section, CategoryCombo, DataSet, Response } from './db.types';
 import { PaginatedObjects, OrganisationUnitPathOnly, CategoryOption } from "./db.types";
-import DbD2 from './db-d2';
+import _ from '../utils/lodash';
 import { getDaysRange } from '../utils/date';
+import DbD2 from './db-d2';
+
 
 const metadataConfig = {
     categoryCodeForAntigens: "RVC_ANTIGENS",
@@ -52,14 +52,9 @@ export default class Campaign {
                 namespace: {field: "name"}
             } : null,
 
-            startDate: startDate && !endDate ? {
+            startDate: !startDate && endDate ? {
                 key: "cannot_be_blank_if_other_set",
                 namespace: {field: "startDate", other: "endDate"},
-            } : null,
-
-            endDate: endDate && !startDate ? {
-                key: "cannot_be_blank_if_other_set",
-                namespace: {field: "endDate", other: "startDate"},
             } : null,
 
             organisationUnits: _.compact([
@@ -180,10 +175,11 @@ export default class Campaign {
                     //greyedFields: [],
                 }
             })
+            const endDate = (!this.endDate && this.startDate) ? moment().endOf("year").toDate() : this.endDate;
 
-            const dataInputPeriods = getDaysRange(this.startDate, this.endDate).map(date => ({
+            const dataInputPeriods = getDaysRange(this.startDate, endDate).map(date => ({
                 openingDate: this.startDate ? this.startDate.toISOString() : undefined,
-                closingDate: this.endDate ? this.endDate.toISOString() : undefined,
+                closingDate: endDate ? endDate.toISOString() : undefined,
                 period: {id: date.format("YYYYMMDD")}
             }));
 

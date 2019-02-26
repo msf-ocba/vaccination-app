@@ -14,7 +14,7 @@ describe("Campaign configurator - List page", () => {
 
         cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
             "have.text",
-            "Cholera Outbreak - Daily "
+            "CampTest"
         );
     });
 
@@ -48,7 +48,7 @@ describe("Campaign configurator - List page", () => {
 
         cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
             "have.text",
-            "Cholera Outbreak - Daily "
+            "CampTest"
         );
 
         cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").should(
