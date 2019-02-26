@@ -175,12 +175,11 @@ export default class Campaign {
                     //greyedFields: [],
                 }
             })
-            const startDate = this.startDate || moment().toDate();
-            const endDate = this.endDate || moment().endOf("year").toDate();
+            const endDate = (!this.endDate && this.startDate) ? moment().endOf("year").toDate() : this.endDate;
 
-            const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
-                openingDate: startDate.toISOString(),
-                closingDate: endDate.toISOString(),
+            const dataInputPeriods = getDaysRange(this.startDate, endDate).map(date => ({
+                openingDate: this.startDate ? this.startDate.toISOString() : undefined,
+                closingDate: endDate ? endDate.toISOString() : undefined,
                 period: {id: date.format("YYYYMMDD")}
             }));
 
