@@ -43,6 +43,15 @@ export interface CategoryCombo {
     displayName: string,
 }
 
+export interface Attribute {
+    id: string;
+}
+
+export interface AttributeValue {
+    value: boolean;
+    attribute: Ref;
+}
+
 export interface DataElement {
     id: string;
     code: string;
@@ -87,6 +96,7 @@ export interface DataSet {
     expiryDays: number,
     sections?: Section[],
     dataInputPeriods: DataInputPeriod[],
+    attributeValues: AttributeValue[],
 }
 
 export interface DataInputPeriod {

@@ -1,6 +1,6 @@
 import { Dictionary } from "lodash";
 import { D2, D2Api } from './d2.types';
-import { OrganisationUnit, PaginatedObjects, CategoryOption, Maybe, CategoryCombo, DataElementGroup, DataSet, MetadataResponse, Response, Metadata } from './db.types';
+import { OrganisationUnit, PaginatedObjects, CategoryOption, Maybe, CategoryCombo, DataElementGroup, DataSet, MetadataResponse, Response, Metadata, Attribute } from './db.types';
 import _ from 'lodash';
 
 export default class DbD2 {
@@ -68,5 +68,15 @@ export default class DbD2 {
         }
         */
 
+    }
+
+    public async getAttributeIdByCode(code: string): Promise<Attribute | undefined> {
+        const { attributes } = await this.api.get("/attributes", {
+            paging: true,
+            pageSize: 1,
+            filter: [`code:eq:${code}`],
+            fields: ["id"],
+        });
+        return attributes[0];
     }
 }
