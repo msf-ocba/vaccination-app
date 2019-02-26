@@ -151,68 +151,70 @@ export default class Campaign {
             .mapValues("dataElements")
             .value();
 
-        if (!vaccinationAttribute) return { status: false, error: "Metadata not found: vaccinationAttributeId" };
-
-        if (!categoryComboTeams) {
-            return {status: false, error: `Metadata not found: teamsCode=${teamsCode}`};
+        if (!vaccinationAttribute) {
+            return { status: false, error: "Metadata not found: vaccinationAttributeId" }
         } else {
-            const dataSetId = generateUid();
-            const dataSetElements = _(this.antigens)
-                    .flatMap(antigen => {
-                        return _(dataElementsByAntigenCode).get(antigen.code).map(dataElement => {
-                            return {
-                                dataSet: {id: dataSetId},
-                                dataElement: {id: dataElement.id},
-                                categoryCombo: {id: dataElement.categoryCombo.id},
-                            };
-                        });
-                    })
-                    .value();
+            if (!categoryComboTeams) {
+                return {status: false, error: `Metadata not found: teamsCode=${teamsCode}`};
+            } else {
+                const dataSetId = generateUid();
+                const dataSetElements = _(this.antigens)
+                        .flatMap(antigen => {
+                            return _(dataElementsByAntigenCode).get(antigen.code).map(dataElement => {
+                                return {
+                                    dataSet: {id: dataSetId},
+                                    dataElement: {id: dataElement.id},
+                                    categoryCombo: {id: dataElement.categoryCombo.id},
+                                };
+                            });
+                        })
+                        .value();
+    
+                const sections: Section[] = this.antigens.map(antigen => {
+                    return {
+                        name: antigen.displayName,
+                        showRowTotals: false,
+                        showColumnTotals: false,
+                        dataSet: {id: dataSetId},
+                        dataElements: _(dataElementsByAntigenCode).get(antigen.code),
+                        //greyedFields: [],
+                    }
+                })
+                const endDate = (!this.endDate && this.startDate) ? moment().endOf("year").toDate() : this.endDate;
 
-            const sections: Section[] = this.antigens.map(antigen => {
-                return {
-                    name: antigen.displayName,
-                    showRowTotals: false,
-                    showColumnTotals: false,
-                    dataSet: {id: dataSetId},
-                    dataElements: _(dataElementsByAntigenCode).get(antigen.code),
-                    //greyedFields: [],
+                const dataInputPeriods = getDaysRange(this.startDate, endDate).map(date => ({
+                    openingDate: this.startDate ? this.startDate.toISOString() : undefined,
+                    closingDate: endDate ? endDate.toISOString() : undefined,
+                    period: {id: date.format("YYYYMMDD")}
+                }));
+    
+                const dataSet: DataSet = {
+                    id: dataSetId,
+                    name: this.name,
+                    publicAccess: "r-r-----", // Metadata can view-only, Data can view-only
+                    periodType: "Daily",
+                    categoryCombo: {id: categoryComboTeams.id},
+                    dataElementDecoration: true,
+                    renderAsTabs: true,
+                    organisationUnits: this.organisationUnits.map(ou => ({id: ou.id})),
+                    dataSetElements,
+                    openFuturePeriods: 0,
+                    timelyDays: 0,
+                    expiryDays: 0,
+                    dataInputPeriods,
+                    attributeValues: [{ value: true, attribute: { id: vaccinationAttribute.id }}],
                 }
-            })
-            const endDate = (!this.endDate && this.startDate) ? moment().endOf("year").toDate() : this.endDate;
 
-            const dataInputPeriods = getDaysRange(this.startDate, endDate).map(date => ({
-                openingDate: this.startDate ? this.startDate.toISOString() : undefined,
-                closingDate: endDate ? endDate.toISOString() : undefined,
-                period: {id: date.format("YYYYMMDD")}
-            }));
-
-            const dataSet: DataSet = {
-                id: dataSetId,
-                name: this.name,
-                publicAccess: "r-r-----", // Metadata can view-only, Data can view-only
-                periodType: "Daily",
-                categoryCombo: {id: categoryComboTeams.id},
-                dataElementDecoration: true,
-                renderAsTabs: true,
-                organisationUnits: this.organisationUnits.map(ou => ({id: ou.id})),
-                dataSetElements,
-                openFuturePeriods: 0,
-                timelyDays: 0,
-                expiryDays: 0,
-                dataInputPeriods,
-                attributeValues: [{ value: true, attribute: { id: vaccinationAttribute.id }}],
+                const result: MetadataResponse =
+                    await this.db.postMetadata({
+                        dataSets: [dataSet],
+                        sections: sections,
+                    });
+    
+                return result.status === "OK"
+                    ? {status: true}
+                    : {status: false, error: JSON.stringify(result.typeReports, null, 2)};
             }
-
-            const result: MetadataResponse =
-                await this.db.postMetadata({
-                    dataSets: [dataSet],
-                    sections: sections,
-                });
-
-            return result.status === "OK"
-                ? {status: true}
-                : {status: false, error: JSON.stringify(result.typeReports, null, 2)};
         }
     }
 }

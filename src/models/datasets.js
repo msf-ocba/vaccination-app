@@ -55,7 +55,7 @@ async function getByAttribute(d2) {
         .toArray()
         .filter(
             ({ attributeValues }) =>
-                !!attributeValues.find(
+                !!attributeValues.some(
                     ({ attribute, value }) => attribute.code === appCode && value === "true"
                 )
         )
