@@ -48,7 +48,7 @@ export interface Attribute {
 }
 
 export interface AttributeValue {
-    value: boolean;
+    value: string;
     attribute: Ref;
 }
 
@@ -66,7 +66,7 @@ export interface DataElementGroup {
     dataElements: DataElement[],
 }
 
-interface Ref {id: string};
+export interface Ref {id: string};
 
 export interface Metadata {
     dataSets?: Array<DataSet>,
