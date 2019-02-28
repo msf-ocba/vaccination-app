@@ -88,8 +88,8 @@ export default class DbD2 {
         const dashboard = {
             name: `${name}_DASHBOARD`,
             dashboardItems: [
-                { id: chartId },
-                { id: reportTableId },
+                { type: "CHART", chart: { id: chartId } },
+                { type: "REPORT_TABLE", reportTable: { id: reportTableId } },
             ]
         };
         const { response: { uid } } = await this.api.post("/dashboards", dashboard);
