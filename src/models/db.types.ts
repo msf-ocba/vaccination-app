@@ -78,7 +78,7 @@ export interface Section {
     showRowTotals: boolean;
     showColumnTotals: boolean;
     dataSet: Ref;
-    dataElements: DataElement[];
+    dataElements: Ref[];
 }
 
 export interface DataSet {

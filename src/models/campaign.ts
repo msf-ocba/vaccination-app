@@ -9,10 +9,11 @@ import { getDaysRange } from "../utils/date";
 import DbD2 from "./db-d2";
 
 export const metadataConfig = {
-    categoryCodeForAntigens: "RVC_ANTIGENS",
-    categoryComboCodeForTeams: "RVC_TEAMS",
-    attibuteCodeForApp: "CREATED_BY_VACCINATION_APP",
-    attributeCodeForDashboard: "DASHBOARD_ID",
+    categoryCodeForAntigens: "RVC_ANTIGEN",
+    dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
+    categoryComboCodeForTeams: "RVC_TEAM",
+    attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
+    attributeCodeForDashboard: "RVC_DASHBOARD_ID",
 };
 
 export interface Data {
@@ -171,44 +172,33 @@ export default class Campaign {
             .keyBy("code")
             .value();
         const categoryComboTeams = _(categoryCombosByCode).get(teamsCode);
-        const dataElementsGroups = await this.db.getDataElementGroupsByCodes(antigenCodes);
+        const [dataElementsGroupForAntigens] = await this.db.getDataElementGroupsByCodes([
+            metadataConfig.dataElementGroupCodeForAntigens,
+        ]);
 
-        const dataElementsByAntigenCode = _(dataElementsGroups)
-            .keyBy("code")
-            .mapValues("dataElements")
-            .value();
         if (!vaccinationAttribute || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: Attributes" };
         } else if (!categoryComboTeams) {
-            return { status: false, error: `Metadata not found: teamsCode=${teamsCode}` };
+            return { status: false, error: `Metadata not found: categoryCombo.code=${teamsCode}` };
         } else if (!dashboardId) {
             return { status: false, error: "Error creating dashboard" };
+        } else if (!dataElementsGroupForAntigens) {
+            return {
+                status: false,
+                error: `Metadata not found: dataElementGroup.code=${
+                    metadataConfig.dataElementGroupCodeForAntigens
+                }`,
+            };
         } else {
             const dataSetId = generateUid();
-            const dataSetElements = _(this.antigens)
-                .flatMap(antigen => {
-                    return _(dataElementsByAntigenCode)
-                        .get(antigen.code)
-                        .map(dataElement => {
-                            return {
-                                dataSet: { id: dataSetId },
-                                dataElement: { id: dataElement.id },
-                                categoryCombo: { id: dataElement.categoryCombo.id },
-                            };
-                        });
-                })
-                .value();
-
-            const sections: Section[] = this.antigens.map(antigen => {
+            const dataSetElements = dataElementsGroupForAntigens.dataElements.map(dataElement => {
                 return {
-                    name: antigen.displayName,
-                    showRowTotals: false,
-                    showColumnTotals: false,
                     dataSet: { id: dataSetId },
-                    dataElements: _(dataElementsByAntigenCode).get(antigen.code),
-                    //greyedFields: [],
+                    dataElement: { id: dataElement.id },
+                    categoryCombo: { id: dataElement.categoryCombo.id },
                 };
             });
+
             const endDate =
                 !this.endDate && this.startDate
                     ? moment()
@@ -244,7 +234,6 @@ export default class Campaign {
 
             const result: MetadataResponse = await this.db.postMetadata({
                 dataSets: [dataSet],
-                sections: sections,
             });
 
             return result.status === "OK"
