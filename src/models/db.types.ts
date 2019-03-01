@@ -4,6 +4,8 @@ export type Maybe<T> = T | undefined;
 
 export type Response<T> = { status: true } | { status: false; error: T };
 
+type Partial<T> = { [P in keyof T]?: T[P] };
+
 export interface Pager {
     page: number;
     pageCount: number;
@@ -42,6 +44,13 @@ export interface CategoryOption {
     id: string;
     code: string;
     displayName: string;
+}
+
+export interface CategoryOptionGroup {
+    id: string;
+    code: string;
+    displayName: string;
+    categoryOptions: CategoryOption[];
 }
 
 export interface CategoryCombo {
@@ -157,11 +166,14 @@ export interface ModelFields {
     [key: string]: boolean | ModelFields;
 }
 
+export type ModelName =
+    | "categories"
+    | "categoryCombos"
+    | "categoryOptionGroups"
+    | "dataElementGroups";
+
 export interface MetadataGetModelParams {
-    fields: ModelFields;
     filters?: string[];
 }
 
-export interface MetadataGetParams {
-    categories: MetadataGetModelParams;
-}
+export type MetadataGetParams = { [key in ModelName]: MetadataGetModelParams | undefined };

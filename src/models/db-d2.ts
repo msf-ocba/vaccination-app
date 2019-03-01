@@ -1,4 +1,4 @@
-import _ from "lodash";
+import _, { Dictionary } from "lodash";
 import { D2, D2Api } from "./d2.types";
 import {
     OrganisationUnit,
@@ -10,7 +10,7 @@ import {
     Metadata,
     ModelFields,
     MetadataGetParams,
-    MetadataGetModelParams,
+    ModelName,
 } from "./db.types";
 
 function getDbFields(modelFields: ModelFields): string[] {
@@ -26,16 +26,72 @@ function getDbFields(modelFields: ModelFields): string[] {
         .value();
 }
 
-function toDbParams(metadataParams: MetadataGetParams): string[] {
-    const data: Array<[keyof MetadataGetParams, MetadataGetModelParams]> = [
-        ["categories", metadataParams.categories],
-    ];
-
-    return _.flatMap(data, ([modelName, params]) => [
-        `${modelName}:fields=${getDbFields(params.fields).join(",")}`,
-        ...(params.filters || []).map(filter => `${modelName}:filter=${filter}`),
-    ]);
+function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
+    return _(metadataParams)
+        .flatMap((params, modelName) => {
+            const fields = metadataFields[modelName as ModelName];
+            if (!params) {
+                return [];
+            } else {
+                return [
+                    [modelName + ":fields", getDbFields(fields).join(",")],
+                    ...(params.filters || []).map(filter => [modelName + ":filter", filter]),
+                ];
+            }
+        })
+        .fromPairs()
+        .value();
 }
+
+const metadataFields: { [key in ModelName]: ModelFields } = {
+    categories: {
+        id: true,
+        displayName: true,
+        code: true,
+        dataDimensionType: true,
+        dataDimension: true,
+        categoryOptions: {
+            id: true,
+            code: true,
+            displayName: true,
+        },
+    },
+    categoryCombos: {
+        id: true,
+        displayName: true,
+        code: true,
+        categories: {
+            id: true,
+            code: true,
+            displayName: true,
+        },
+    },
+    categoryOptionGroups: {
+        id: true,
+        displayName: true,
+        code: true,
+        categoryOptions: {
+            id: true,
+            code: true,
+            displayName: true,
+        },
+    },
+    dataElementGroups: {
+        id: true,
+        displayName: true,
+        code: true,
+        dataElements: {
+            id: true,
+            displayName: true,
+            code: true,
+            categoryCombo: {
+                id: true,
+                displayName: true,
+                code: true,
+            },
+        },
+    },
+};
 
 export default class DbD2 {
     d2: D2;
@@ -47,7 +103,8 @@ export default class DbD2 {
     }
 
     public async getMetadata<T>(params: MetadataGetParams): Promise<T> {
-        return this.api.get("/metadata", toDbParams(params)) as T;
+        const options = { translate: true, ...toDbParams(params) };
+        return this.api.get("/metadata", options) as T;
     }
 
     public async getOrganisationUnitsFromIds(

@@ -4,7 +4,7 @@ import _ from "lodash";
 import { MultiSelector } from "d2-ui-components";
 
 class AntigenSelectionStep extends React.Component {
-    state = { categoryOptions: null };
+    state = { antigens: null };
 
     static propTypes = {
         d2: PropTypes.object.isRequired,
@@ -14,13 +14,13 @@ class AntigenSelectionStep extends React.Component {
 
     async componentDidMount() {
         const { campaign } = this.props;
-        const categoryOptions = await campaign.getAvailableAntigens();
-        this.setState({ categoryOptions });
+        const antigens = await campaign.getAvailableAntigens();
+        this.setState({ antigens });
     }
 
     onChange = selected => {
-        const antigens = _(this.state.categoryOptions)
-            .keyBy("id")
+        const antigens = _(this.state.antigens)
+            .keyBy("code")
             .at(selected)
             .value();
         const newCampaign = this.props.campaign.setAntigens(antigens);
@@ -29,12 +29,12 @@ class AntigenSelectionStep extends React.Component {
 
     render() {
         const { d2, campaign } = this.props;
-        const { categoryOptions } = this.state;
+        const { antigens } = this.state;
 
-        if (!categoryOptions) return null;
+        if (!antigens) return null;
 
-        const options = categoryOptions.map(co => ({ value: co.id, text: co.displayName }));
-        const selected = campaign.antigens.map(co => co.id);
+        const options = antigens.map(antigen => ({ value: antigen.code, text: antigen.name }));
+        const selected = campaign.antigens.map(antigen => antigen.code);
 
         return (
             <div>

@@ -1,4 +1,5 @@
 ///<reference path="../types/d2.d.ts" />
+import { AntigenDisaggregation } from "./AntigenDisaggregation";
 
 import { MetadataResponse, Section, DataElement, Category } from "./db.types";
 import { generateUid } from "d2/uid";
@@ -7,66 +8,36 @@ import _ from "../utils/lodash";
 import { PaginatedObjects, OrganisationUnitPathOnly, CategoryOption } from "./db.types";
 import DbD2 from "./db-d2";
 import { getDaysRange } from "../utils/date";
-import { MetadataConfig, getMetadataConfig } from "./config";
+import { MetadataConfig } from "./config";
+
+export interface Antigen {
+    name: string;
+    code: string;
+}
 
 export interface Data {
     name: string;
     organisationUnits: OrganisationUnitPathOnly[];
     startDate: Date | null;
     endDate: Date | null;
-    antigens: CategoryOption[];
-}
-
-export interface DataElementsWithCategoryOption {
-    antigen: CategoryOption;
-    data: Array<{ dataElement: DataElement; categories: Category[] }>;
-}
-
-export interface AntigenDisaggregationInfo {
-    name: string;
-    code: string;
-
-    dataElements: Array<{
-        name: string;
-        code: string;
-        selected: boolean;
-        optional: boolean;
-
-        categories: Array<{
-            name: string;
-            code: string;
-            optional: boolean;
-            selected: boolean;
-
-            options: Array<{
-                indexSelected: number;
-                values: Array<Array<{ name: string; selected: boolean }>>;
-            }>;
-        }>;
-    }>;
-}
-
-function getOrFail<T, K extends keyof T>(obj: T, key: K): T[K] {
-    const value = _.get(obj, key);
-    if (value === undefined) {
-        throw new Error(`Key ${key} not found in object ${JSON.stringify(obj, null, 2)}`);
-    } else {
-        return value;
-    }
+    antigens: Antigen[];
+    antigenDisaggregation: AntigenDisaggregation;
 }
 
 export default class Campaign {
     public selectableLevels: number[] = [6];
 
-    constructor(private db: DbD2, private config: MetadataConfig, private data: Data) {}
+    constructor(private db: DbD2, public config: MetadataConfig, private data: Data) {}
 
     public static create(config: MetadataConfig, db: DbD2): Campaign {
+        const antigens: Antigen[] = [];
         const initialData = {
             name: "",
             organisationUnits: [],
             startDate: null,
             endDate: null,
-            antigens: [],
+            antigens: antigens,
+            antigenDisaggregation: AntigenDisaggregation.build(config, antigens),
         };
 
         return new Campaign(db, config, initialData);
@@ -186,11 +157,16 @@ export default class Campaign {
 
     /* Antigens */
 
-    public setAntigens(antigens: CategoryOption[]): Campaign {
-        return this.update({ ...this.data, antigens });
+    public setAntigens(antigens: Antigen[]): Campaign {
+        const antigenDisaggregationUpdated = this.data.antigenDisaggregation.setAntigens(antigens);
+        return this.update({
+            ...this.data,
+            antigens,
+            antigenDisaggregation: antigenDisaggregationUpdated,
+        });
     }
 
-    public get antigens(): CategoryOption[] {
+    public get antigens(): Antigen[] {
         return this.data.antigens;
     }
 
@@ -198,60 +174,16 @@ export default class Campaign {
         return this.antigens.map(antigen => antigen.code);
     }
 
-    public async getAvailableAntigens(): Promise<CategoryOption[]> {
-        return this.db.getCategoryOptionsByCategoryCode(this.config.categoryCodeForAntigens);
+    public getAvailableAntigens(): Antigen[] {
+        return this.config.antigens;
     }
 
-    public async getAntigensDisaggregation(): Promise<AntigenDisaggregationInfo[]> {
-        const antigenConfigList = _(this.config.antigens)
-            .values()
-            .keyBy("code")
-            .at(this.antigenCodes)
-            .value();
+    public get antigenDisaggregation(): AntigenDisaggregation {
+        return this.data.antigenDisaggregation;
+    }
 
-        const antigensDisaggregation = antigenConfigList.map(
-            ({ name, code, dataElements, ageGroups }) => {
-                const dataElementsProcessed = dataElements.map(dataElementRef => {
-                    const dataElement = getOrFail(
-                        _.keyBy(this.config.dataElements, "code"),
-                        dataElementRef.code
-                    );
-                    const categories = dataElement.categories.map(categoryRef => {
-                        const optional = categoryRef.optional;
-                        const { $categoryOptions, ...other } = getOrFail(
-                            _.keyBy(this.config.categories, "code"),
-                            categoryRef.code
-                        );
-                        let groups;
-                        if ($categoryOptions.kind === "fromAgeGroups") {
-                            groups = ageGroups;
-                        } else if ($categoryOptions.kind === "values") {
-                            groups = $categoryOptions.values.map(option => [[option]]);
-                        } else {
-                            throw `Unsupported category: ${categoryRef.code}`;
-                        }
-                        const nestedOptions = groups.map(optionGroup => ({
-                            indexSelected: 0,
-                            values: optionGroup.map(options =>
-                                options.map(optionName => ({ name: optionName, selected: true }))
-                            ),
-                        }));
-                        return { ...other, optional, selected: !optional, options: nestedOptions };
-                    });
-
-                    return {
-                        name: dataElement.name,
-                        code,
-                        categories,
-                        optional: dataElementRef.optional,
-                        selected: true,
-                    };
-                });
-                return { name, code, dataElements: dataElementsProcessed };
-            }
-        );
-
-        return antigensDisaggregation;
+    public setAntigenDisaggregation(antigenDisaggregation: AntigenDisaggregation): Campaign {
+        return this.update({ ...this.data, antigenDisaggregation });
     }
 
     /* Save */
@@ -291,7 +223,7 @@ export default class Campaign {
 
             const sections: Section[] = this.antigens.map(antigen => {
                 return {
-                    name: antigen.displayName,
+                    name: antigen.name,
                     showRowTotals: false,
                     showColumnTotals: false,
                     dataSet: { id: dataSetId },

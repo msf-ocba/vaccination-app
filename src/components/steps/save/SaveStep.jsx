@@ -120,9 +120,7 @@ class SaveStep extends React.Component {
         const { classes, campaign } = this.props;
         const { orgUnitNames, errorMessage, isSaving, dialogOpen } = this.state;
         const LiEntry = this.renderLiEntry;
-        const antigens = _(campaign.antigens)
-            .map("displayName")
-            .join(", ");
+        const antigens = campaign.antigens.map(antigen => antigen.name).join(", ");
 
         return (
             <React.Fragment>

@@ -19,6 +19,7 @@ class GeneralInfoStep extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         campaign: PropTypes.object.isRequired,
+        onChange: PropTypes.func.isRequired,
     };
 
     onUpdateField = (fieldName, newValue) => {

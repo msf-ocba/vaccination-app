@@ -29,9 +29,9 @@ class CampaignWizard extends React.Component {
             campaign: Campaign.create(props.config, new DbD2(props.d2))
                 .setName("My campaign test")
                 .setAntigens([
-                    //{ id: "Oi2juOtDoM1", displayName: "Cholera", code: "RVC_CHOLERA" },
-                    { id: "e2QdJjfgZSD", displayName: "Measles", code: "RVC_MEASLES" },
-                    { id: "Oi2juOtDoM1", displayName: "Yellow Fever", code: "RVC_YELLOW_FEVER" },
+                    { name: "Measles", code: "RVC_ANTIGEN_MEASLES" },
+                    { name: "Cholera", code: "RVC_ANTIGEN_CHOLERA" },
+                    { name: "Typhoid Fever", code: "RVC_ANTIGEN_TYPHOID_FEVER" },
                 ])
                 .setOrganisationUnits([
                     {
