@@ -1,10 +1,8 @@
-import { Metadata } from './db.types';
-import { Dictionary } from 'lodash';
+import { Metadata } from "./db.types";
+import { Dictionary } from "lodash";
 export type Maybe<T> = T | undefined;
 
-export type Response<T> =
-    {status: true} |
-    {status: false, error: T};
+export type Response<T> = { status: true } | { status: false; error: T };
 
 export interface Pager {
     page: number;
@@ -14,14 +12,14 @@ export interface Pager {
 }
 
 export interface PaginatedObjects<T> {
-    pager: Pager,
+    pager: Pager;
     objects: T[];
 }
 
 export interface OrganisationUnitPathOnly {
     id: string;
     path: string;
-};
+}
 
 export interface OrganisationUnit {
     id: string;
@@ -29,7 +27,7 @@ export interface OrganisationUnit {
     level: number;
     path: string;
     ancestors: Maybe<OrganisationUnit[]>;
-};
+}
 
 export interface CategoryOption {
     id: string;
@@ -40,7 +38,7 @@ export interface CategoryOption {
 export interface CategoryCombo {
     id: string;
     code: string;
-    displayName: string,
+    displayName: string;
 }
 
 export interface Attribute {
@@ -63,44 +61,46 @@ export interface DataElementGroup {
     id: string;
     code: string;
     displayName: string;
-    dataElements: DataElement[],
+    dataElements: DataElement[];
 }
 
-export interface Ref {id: string};
+export interface Ref {
+    id: string;
+}
 
 export interface Metadata {
-    dataSets?: Array<DataSet>,
-    sections?: Array<Section>,
+    dataSets?: Array<DataSet>;
+    sections?: Array<Section>;
 }
 
 export interface Section {
-    name: string,
-    showRowTotals: boolean,
-    showColumnTotals: boolean,
-    dataSet: Ref,
-    dataElements: DataElement[],
+    name: string;
+    showRowTotals: boolean;
+    showColumnTotals: boolean;
+    dataSet: Ref;
+    dataElements: DataElement[];
 }
 
 export interface DataSet {
-    id: string,
-    name: string,
-    publicAccess: string,
-    periodType: string
-    categoryCombo: Ref,
-    dataElementDecoration: boolean,
-    renderAsTabs: boolean,
-    organisationUnits: Array<Ref>,
-    dataSetElements: Array<{dataSet: Ref, dataElement: Ref, categoryCombo: Ref}>,
-    openFuturePeriods: number,
-    timelyDays: number,
-    expiryDays: number,
-    sections?: Section[],
-    dataInputPeriods: DataInputPeriod[],
-    attributeValues: AttributeValue[],
+    id: string;
+    name: string;
+    publicAccess: string;
+    periodType: string;
+    categoryCombo: Ref;
+    dataElementDecoration: boolean;
+    renderAsTabs: boolean;
+    organisationUnits: Array<Ref>;
+    dataSetElements: Array<{ dataSet: Ref; dataElement: Ref; categoryCombo: Ref }>;
+    openFuturePeriods: number;
+    timelyDays: number;
+    expiryDays: number;
+    sections?: Section[];
+    dataInputPeriods: DataInputPeriod[];
+    attributeValues: AttributeValue[];
 }
 
 export interface DataInputPeriod {
-    period: {id: string}
+    period: { id: string };
 }
 
 export interface ImportParams {

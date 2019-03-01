@@ -1,13 +1,12 @@
 ///<reference path="../types/d2.d.ts" />
-import moment from 'moment';
+import moment from "moment";
 import { generateUid } from "d2/uid";
 
-import { MetadataResponse, Section, CategoryCombo, DataSet, Response } from './db.types';
+import { MetadataResponse, Section, CategoryCombo, DataSet, Response } from "./db.types";
 import { PaginatedObjects, OrganisationUnitPathOnly, CategoryOption } from "./db.types";
-import _ from '../utils/lodash';
-import { getDaysRange } from '../utils/date';
-import DbD2 from './db-d2';
-
+import _ from "../utils/lodash";
+import { getDaysRange } from "../utils/date";
+import DbD2 from "./db-d2";
 
 export const metadataConfig = {
     categoryCodeForAntigens: "RVC_ANTIGENS",
@@ -28,8 +27,7 @@ export default class Campaign {
     // Update OrganisationUnitStep.css accordingly if you change this value.
     public selectableLevels: number[] = [6];
 
-    constructor(private db: DbD2, private data: Data) {
-    }
+    constructor(private db: DbD2, private data: Data) {}
 
     public static create(db: DbD2): Campaign {
         const initialData = {
@@ -46,32 +44,48 @@ export default class Campaign {
         const { organisationUnits, name, startDate, endDate, antigens } = this.data;
 
         const allOrgUnitsInAcceptedLevels = _(organisationUnits).every(ou =>
-            _(this.selectableLevels).includes(_(ou.path).countBy().get("/") || 0));
+            _(this.selectableLevels).includes(
+                _(ou.path)
+                    .countBy()
+                    .get("/") || 0
+            )
+        );
 
         return _.pickBy({
-            name: !name.trim() ? {
-                key: "cannot_be_blank",
-                namespace: {field: "name"}
-            } : null,
+            name: !name.trim()
+                ? {
+                      key: "cannot_be_blank",
+                      namespace: { field: "name" },
+                  }
+                : null,
 
-            startDate: !startDate && endDate ? {
-                key: "cannot_be_blank_if_other_set",
-                namespace: {field: "startDate", other: "endDate"},
-            } : null,
+            startDate:
+                !startDate && endDate
+                    ? {
+                          key: "cannot_be_blank_if_other_set",
+                          namespace: { field: "startDate", other: "endDate" },
+                      }
+                    : null,
 
             organisationUnits: _.compact([
-                !allOrgUnitsInAcceptedLevels ? {
-                    key: "organisation_units_only_of_levels",
-                    namespace: {levels: this.selectableLevels.join("/")},
-                } : null,
-                _(organisationUnits).isEmpty() ? {
-                    key: "no_organisation_units_selected",
-                } : null,
+                !allOrgUnitsInAcceptedLevels
+                    ? {
+                          key: "organisation_units_only_of_levels",
+                          namespace: { levels: this.selectableLevels.join("/") },
+                      }
+                    : null,
+                _(organisationUnits).isEmpty()
+                    ? {
+                          key: "no_organisation_units_selected",
+                      }
+                    : null,
             ]),
 
-            antigens: _(antigens).isEmpty() ? {
-                key: "no_antigens_selected"
-            } : null,
+            antigens: _(antigens).isEmpty()
+                ? {
+                      key: "no_antigens_selected",
+                  }
+                : null,
         });
     }
 
@@ -79,15 +93,19 @@ export default class Campaign {
 
     public async getOrganisationUnitsFullName(): Promise<PaginatedObjects<string>> {
         const ids = this.data.organisationUnits.map(ou => ou.id);
-        const {pager, objects} = await this.db.getOrganisationUnitsFromIds(ids);
-        const names = objects
-            .map(ou => _(ou.ancestors || []).map("displayName").concat([ou.displayName]).join("-"));
-        return {pager, objects: names};
+        const { pager, objects } = await this.db.getOrganisationUnitsFromIds(ids);
+        const names = objects.map(ou =>
+            _(ou.ancestors || [])
+                .map("displayName")
+                .concat([ou.displayName])
+                .join("-")
+        );
+        return { pager, objects: names };
     }
 
     public setOrganisationUnits(organisationUnits: OrganisationUnitPathOnly[]): Campaign {
         // Use orgUnits only with id/path, that's the only info we get from a orgunit-tree
-        return new Campaign(this.db, {...this.data, organisationUnits});
+        return new Campaign(this.db, { ...this.data, organisationUnits });
     }
 
     public get organisationUnits(): OrganisationUnitPathOnly[] {
@@ -97,7 +115,7 @@ export default class Campaign {
     /* Name */
 
     public setName(name: string): Campaign {
-        return new Campaign(this.db, {...this.data, name});
+        return new Campaign(this.db, { ...this.data, name });
     }
 
     public get name(): string {
@@ -107,7 +125,7 @@ export default class Campaign {
     /* Period dates */
 
     public setStartDate(startDate: Date | null): Campaign {
-        return new Campaign(this.db, {...this.data, startDate});
+        return new Campaign(this.db, { ...this.data, startDate });
     }
 
     public get startDate(): Date | null {
@@ -115,7 +133,7 @@ export default class Campaign {
     }
 
     public setEndDate(endDate: Date | null): Campaign {
-        return new Campaign(this.db, {...this.data, endDate});
+        return new Campaign(this.db, { ...this.data, endDate });
     }
 
     public get endDate(): Date | null {
@@ -125,7 +143,7 @@ export default class Campaign {
     /* Antigens */
 
     public setAntigens(antigens: CategoryOption[]): Campaign {
-        return new Campaign(this.db, {...this.data, antigens});
+        return new Campaign(this.db, { ...this.data, antigens });
     }
 
     public get antigens(): CategoryOption[] {
@@ -142,10 +160,16 @@ export default class Campaign {
         const dashboardId = await this.db.createDashboard(this.name);
         const teamsCode = metadataConfig.categoryComboCodeForTeams;
         const antigenCodes = this.antigens.map(antigen => antigen.code);
-        const vaccinationAttribute = await this.db.getAttributeIdByCode(metadataConfig.attibuteCodeForApp);
-        const dashboardAttribute = await this.db.getAttributeIdByCode(metadataConfig.attributeCodeForDashboard);
+        const vaccinationAttribute = await this.db.getAttributeIdByCode(
+            metadataConfig.attibuteCodeForApp
+        );
+        const dashboardAttribute = await this.db.getAttributeIdByCode(
+            metadataConfig.attributeCodeForDashboard
+        );
         const categoryCombos = await this.db.getCategoryCombosByCode([teamsCode]);
-        const categoryCombosByCode = _(categoryCombos).keyBy("code").value();
+        const categoryCombosByCode = _(categoryCombos)
+            .keyBy("code")
+            .value();
         const categoryComboTeams = _(categoryCombosByCode).get(teamsCode);
         const dataElementsGroups = await this.db.getDataElementGroupsByCodes(antigenCodes);
 
@@ -154,41 +178,48 @@ export default class Campaign {
             .mapValues("dataElements")
             .value();
         if (!vaccinationAttribute || !dashboardAttribute) {
-            return { status: false, error: "Metadata not found: Attributes" }
+            return { status: false, error: "Metadata not found: Attributes" };
         } else if (!categoryComboTeams) {
-                return {status: false, error: `Metadata not found: teamsCode=${teamsCode}`};
+            return { status: false, error: `Metadata not found: teamsCode=${teamsCode}` };
         } else if (!dashboardId) {
-            return { status: false, error: 'Error creating dashboard' };
+            return { status: false, error: "Error creating dashboard" };
         } else {
             const dataSetId = generateUid();
             const dataSetElements = _(this.antigens)
-                    .flatMap(antigen => {
-                        return _(dataElementsByAntigenCode).get(antigen.code).map(dataElement => {
+                .flatMap(antigen => {
+                    return _(dataElementsByAntigenCode)
+                        .get(antigen.code)
+                        .map(dataElement => {
                             return {
-                                dataSet: {id: dataSetId},
-                                dataElement: {id: dataElement.id},
-                                categoryCombo: {id: dataElement.categoryCombo.id},
+                                dataSet: { id: dataSetId },
+                                dataElement: { id: dataElement.id },
+                                categoryCombo: { id: dataElement.categoryCombo.id },
                             };
                         });
-                    })
-                    .value();
+                })
+                .value();
 
             const sections: Section[] = this.antigens.map(antigen => {
                 return {
                     name: antigen.displayName,
                     showRowTotals: false,
                     showColumnTotals: false,
-                    dataSet: {id: dataSetId},
+                    dataSet: { id: dataSetId },
                     dataElements: _(dataElementsByAntigenCode).get(antigen.code),
                     //greyedFields: [],
-                }
-            })
-            const endDate = (!this.endDate && this.startDate) ? moment().endOf("year").toDate() : this.endDate;
+                };
+            });
+            const endDate =
+                !this.endDate && this.startDate
+                    ? moment()
+                          .endOf("year")
+                          .toDate()
+                    : this.endDate;
 
             const dataInputPeriods = getDaysRange(this.startDate, endDate).map(date => ({
                 openingDate: this.startDate ? this.startDate.toISOString() : undefined,
                 closingDate: endDate ? endDate.toISOString() : undefined,
-                period: {id: date.format("YYYYMMDD")}
+                period: { id: date.format("YYYYMMDD") },
             }));
 
             const dataSet: DataSet = {
@@ -196,10 +227,10 @@ export default class Campaign {
                 name: this.name,
                 publicAccess: "r-r-----", // Metadata can view-only, Data can view-only
                 periodType: "Daily",
-                categoryCombo: {id: categoryComboTeams.id},
+                categoryCombo: { id: categoryComboTeams.id },
                 dataElementDecoration: true,
                 renderAsTabs: true,
-                organisationUnits: this.organisationUnits.map(ou => ({id: ou.id})),
+                organisationUnits: this.organisationUnits.map(ou => ({ id: ou.id })),
                 dataSetElements,
                 openFuturePeriods: 0,
                 timelyDays: 0,
@@ -209,17 +240,16 @@ export default class Campaign {
                     { value: "true", attribute: { id: vaccinationAttribute.id } },
                     { value: dashboardId.id, attribute: { id: dashboardAttribute.id } },
                 ],
-            }
+            };
 
-            const result: MetadataResponse =
-                await this.db.postMetadata({
-                    dataSets: [dataSet],
-                    sections: sections,
-                });
+            const result: MetadataResponse = await this.db.postMetadata({
+                dataSets: [dataSet],
+                sections: sections,
+            });
 
             return result.status === "OK"
-                ? {status: true}
-                : {status: false, error: JSON.stringify(result.typeReports, null, 2)};
+                ? { status: true }
+                : { status: false, error: JSON.stringify(result.typeReports, null, 2) };
         }
     }
 }

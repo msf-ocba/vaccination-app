@@ -2,8 +2,8 @@ import { Dictionary } from "lodash";
 
 export interface D2 {
     Api: {
-        getApi(): D2Api,
-    }
+        getApi(): D2Api;
+    };
 }
 
 export interface Params {
