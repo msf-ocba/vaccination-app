@@ -96,7 +96,7 @@ export const reportTable = name => ({
 });
 
 
-export const globalIndicatorsChart = (name) => ({
+export const globalIndicatorsChart = (name, antigen, organizationUnitsIds) => ({
     aggregationType: "DEFAULT",
     baseLineLabel: null,
     baseLineValue: null,
@@ -107,14 +107,14 @@ export const globalIndicatorsChart = (name) => ({
     externalAccess: false,
     favorite: false,
     filters: [
-        { dimension: "ou", items: [{ id: "A0LvkJvbSR3" }] }, // Organization Unit/s
-        { dimension: "a6SQVBY9s18", items: [{ id: "e2QdJjfgZSD" }] }, // Antigen, MeaslesId = e2QdJjfgZSD
+        { dimension: "ou", items: organizationUnitsIds }, // Organization Unit/s
+        { dimension: "a6SQVBY9s18", items: [{ id: antigen.id }] }, // Antigen, MeaslesId = e2QdJjfgZSD
     ],
     hideEmptyRowItems: "AFTER_LAST",
     hideLegend: false,
     hideSubtitle: false,
     hideTitle: false,
-    name: "testPeriod",
+    name: `${name}-${antigen.displayName}-global-indicators`,
     noSpaceBetweenColumns: false,
     percentStackedValues: false,
     prototype: {},
@@ -129,11 +129,7 @@ export const globalIndicatorsChart = (name) => ({
     rows: [{
         dimension: "pe",
         items: [
-            {id: "20190303"},
-            {id: "20190302"},
-            {id: "20190301"},
-            {id: "20190228"},
-            {id: "20190227"}
+            { id: "LAST_14_DAYS" },
         ],
     }],
     showData: true,

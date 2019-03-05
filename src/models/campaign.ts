@@ -158,10 +158,10 @@ export default class Campaign {
     /* Save */
 
     public async save(): Promise<Response<string>> {
-        const dashboardId = await this.db.createDashboard(this.name);
         const teamsCode = metadataConfig.categoryComboCodeForTeams;
         const antigenCodes = this.antigens.map(antigen => antigen.code);
         console.log(this.antigens);
+        console.log(this.organisationUnits);
         const vaccinationAttribute = await this.db.getAttributeIdByCode(
             metadataConfig.attibuteCodeForApp
         );
@@ -176,6 +176,8 @@ export default class Campaign {
         const [dataElementsGroupForAntigens] = await this.db.getDataElementGroupsByCodes([
             metadataConfig.dataElementGroupCodeForAntigens,
         ]);
+
+        const dashboardId = await this.db.createDashboard(this.name, this.organisationUnits, this.antigens);
 
         if (!vaccinationAttribute || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: Attributes" };

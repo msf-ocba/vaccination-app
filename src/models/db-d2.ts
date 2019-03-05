@@ -13,9 +13,10 @@ import {
     Metadata,
     Attribute,
     Ref,
+    OrganisationUnitPathOnly,
 } from "./db.types";
 import _ from "lodash";
-import { chart, reportTable } from "./dashboard-items";
+import { chart, reportTable, globalIndicatorsChart } from "./dashboard-items";
 
 export default class DbD2 {
     d2: D2;
@@ -102,18 +103,26 @@ export default class DbD2 {
         return attributes[0];
     }
 
-    public async createDashboard(name: String): Promise<Ref | undefined> {
-        // For now, a chart is created from a genertic template and added to the dashboard
-        const {
-            response: { uid: chartId },
-        } = await this.api.post("/charts", chart(name));
+    public async createDashboard(name: String, organisationUnits: OrganisationUnitPathOnly[], antigens: CategoryOption[]): Promise<Ref | undefined> {
+        const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
+        // One chart per antigen
+        const chartIds = await Promise.all(antigens.map(async (antigen) => {
+            const {
+                response: { uid: chartId },
+            } = await this.api.post("/charts", globalIndicatorsChart(name, antigen, organisationUnitsIds));
+            return chartId;
+        }));
+
+        // Pivot Table (reportTable) - For now a generic hardcoded table
         const {
             response: { uid: reportTableId },
         } = await this.api.post("/reportTables", reportTable(name));
+
+        const dashboardCharts = chartIds.map(id => ({ type: "CHART", chart: { id } }))
         const dashboard = {
             name: `${name}_DASHBOARD`,
             dashboardItems: [
-                { type: "CHART", chart: { id: chartId } },
+                ...dashboardCharts,
                 { type: "REPORT_TABLE", reportTable: { id: reportTableId } },
             ],
         };
@@ -121,6 +130,7 @@ export default class DbD2 {
             response: { uid },
         } = await this.api.post("/dashboards", dashboard);
         console.log({ dashboardId: uid });
-        return { id: uid };
+        return { id: uid }; 
+        
     }
 }
