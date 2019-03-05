@@ -94,3 +94,54 @@ export const reportTable = name => ({
     subscribed: false,
     topLimit: 0,
 });
+
+
+export const globalIndicatorsChart = (name) => ({
+    aggregationType: "DEFAULT",
+    baseLineLabel: null,
+    baseLineValue: null,
+    columns: [{dimension: "dx", items: [{id: "e8w7mCxy9ia"}, {id: "eqMDzdX0Gug"}, {id: "SACyBTOq9mW"}]}], // Indicators
+    completedOnly: false,
+    cumulativeValues: false,
+    domainAxisLabel: null,
+    externalAccess: false,
+    favorite: false,
+    filters: [
+        { dimension: "ou", items: [{ id: "A0LvkJvbSR3" }] }, // Organization Unit/s
+        { dimension: "a6SQVBY9s18", items: [{ id: "e2QdJjfgZSD" }] }, // Antigen, MeaslesId = e2QdJjfgZSD
+    ],
+    hideEmptyRowItems: "AFTER_LAST",
+    hideLegend: false,
+    hideSubtitle: false,
+    hideTitle: false,
+    name: "testPeriod",
+    noSpaceBetweenColumns: false,
+    percentStackedValues: false,
+    prototype: {},
+    publicAccess: "rw------",
+    rangeAxisDecimals: null,
+    rangeAxisLabel: null,
+    rangeAxisMaxValue: null,
+    rangeAxisMinValue: null,
+    rangeAxisSteps: null,
+    regressionType: "NONE",
+    reportParams: {},
+    rows: [{
+        dimension: "pe",
+        items: [
+            {id: "20190303"},
+            {id: "20190302"},
+            {id: "20190301"},
+            {id: "20190228"},
+            {id: "20190227"}
+        ],
+    }],
+    showData: true,
+    sortOrder: 0,
+    subscribed: false,
+    subtitle: null,
+    targetLineLabel: null,
+    targetLineValue: null,
+    title: null,
+    type: "COLUMN",
+});

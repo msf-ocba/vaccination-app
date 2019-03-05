@@ -161,6 +161,7 @@ export default class Campaign {
         const dashboardId = await this.db.createDashboard(this.name);
         const teamsCode = metadataConfig.categoryComboCodeForTeams;
         const antigenCodes = this.antigens.map(antigen => antigen.code);
+        console.log(this.antigens);
         const vaccinationAttribute = await this.db.getAttributeIdByCode(
             metadataConfig.attibuteCodeForApp
         );
