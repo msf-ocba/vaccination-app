@@ -1,3 +1,4 @@
+import { AntigenDisaggregationEnabled, getDataElements } from "./AntigensDisaggregation";
 ///<reference path="../types/d2.d.ts" />
 import _ from "lodash";
 
@@ -180,12 +181,18 @@ export default class Campaign {
         return this.config.antigens;
     }
 
+    /* Antigens disaggregation */
+
     public get antigensDisaggregation(): AntigensDisaggregation {
         return this.data.antigensDisaggregation;
     }
 
     public setAntigensDisaggregation(antigensDisaggregation: AntigensDisaggregation): Campaign {
         return this.update({ ...this.data, antigensDisaggregation });
+    }
+
+    public getEnabledAntigensDisaggregation(): AntigenDisaggregationEnabled {
+        return this.antigensDisaggregation.getEnabled(this.antigens);
     }
 
     /* Save */
@@ -202,14 +209,8 @@ export default class Campaign {
             return { status: false, error: `Metadata not found: teamsCode=${teamsCode}` };
         } else {
             const dataSetId = generateUid();
-            const disaggregationData = this.antigensDisaggregation.getEnabled(this.antigens);
-            const dataElementCodes = _(disaggregationData)
-                .flatMap(dd => dd.dataElements.map(de => de.dataElement))
-                .uniq()
-                .value();
-            const { dataElements } = await this.db.getMetadata<{ dataElements: DataElement[] }>({
-                dataElements: { filters: [`code:in:[${dataElementCodes.join(",")}]`] },
-            });
+            const disaggregationData = this.getEnabledAntigensDisaggregation();
+            const dataElements = await getDataElements(this.db, disaggregationData);
 
             const dataSetElements = dataElements.map(dataElement => ({
                 dataSet: { id: dataSetId },

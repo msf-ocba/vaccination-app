@@ -53,6 +53,13 @@ describe("Campaign configurator - Create", () => {
 
         cy.contains("Next").click();
 
+        // Disaggregation
+
+        cy.contains("Measles");
+        cy.contains("Cholera");
+
+        cy.contains("Next").click();
+
         // Save step
 
         cy.get("[data-test-current=true]").contains("Save");
@@ -67,7 +74,8 @@ describe("Campaign configurator - Create", () => {
         cy.contains(`${expectedDataStart} -> ${expectedDataEnd}`);
 
         cy.contains("Antigens");
-        cy.contains("Measles, Cholera");
+        cy.contains("Measles");
+        cy.contains("Cholera");
 
         cy.contains("Organisation Units");
         cy.contains(
@@ -106,7 +114,7 @@ function selectOrgUnit(label) {
 
 function clickDay(dayOfMonth) {
     cy.xpath(`//span[contains(text(), '${dayOfMonth}')]`).then(spans => {
-        const span = spans[0];
+        const span = spans[spans.length - 1];
         if (span && span.parentElement) {
             span.parentElement.click();
         }

@@ -1,7 +1,9 @@
+import { DataElement } from "./db.types";
 import _ from "lodash";
 import { AntigenDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig } from "./config";
 import { Antigen } from "./campaign";
+import DbD2 from "./db-d2";
 import "../utils/lodash-mixins";
 
 export interface AntigenDisaggregation {
@@ -33,10 +35,10 @@ export type AntigenDisaggregationCategoriesData = AntigenDisaggregation["dataEle
 export type AntigenDisaggregationOptionGroup = AntigenDisaggregationCategoriesData[0]["options"][0];
 
 export type AntigenDisaggregationEnabled = Array<{
-    antigen: string;
+    code: string;
     dataElements: Array<{
-        dataElement: string;
-        categories: Array<{ category: string; categoryOptions: string[] }>;
+        code: string;
+        categories: Array<{ code: string; categoryOptions: string[] }>;
     }>;
 }>;
 
@@ -105,7 +107,7 @@ export class AntigensDisaggregation {
 
     getEnabled(antigens: Antigen[]): AntigenDisaggregationEnabled {
         const antigenDisaggregations = _(antigens)
-            .map(this.forAntigen)
+            .map(this.forAntigen.bind(this))
             .compact()
             .value();
 
@@ -121,13 +123,13 @@ export class AntigensDisaggregation {
                                 .filter("selected")
                                 .map("name")
                                 .value();
-                            return { category: category.code, categoryOptions };
+                            return { code: category.code, categoryOptions };
                         })
                         .value();
-                    return { dataElement: dataElement.code, categories };
+                    return { code: dataElement.code, categories };
                 })
                 .value();
-            return { antigen: antigenDisaggregation.code, dataElements };
+            return { code: antigenDisaggregation.code, dataElements };
         });
     }
 
@@ -167,4 +169,18 @@ export class AntigensDisaggregation {
 
         return res;
     }
+}
+
+export async function getDataElements(
+    db: DbD2,
+    disaggregationData: AntigenDisaggregationEnabled
+): Promise<DataElement[]> {
+    const dataElementCodes = _(disaggregationData)
+        .flatMap(dd => dd.dataElements.map(de => de.code))
+        .uniq()
+        .value();
+    const { dataElements } = await db.getMetadata<{ dataElements: DataElement[] }>({
+        dataElements: { filters: [`code:in:[${dataElementCodes.join(",")}]`] },
+    });
+    return dataElements;
 }
