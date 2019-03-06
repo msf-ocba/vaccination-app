@@ -11,12 +11,15 @@ import {
     ModelFields,
     MetadataGetParams,
     ModelName,
+    MetadataFields,
 } from "./db.types";
 
 function getDbFields(modelFields: ModelFields): string[] {
     return _(modelFields)
         .map((value, key) => {
-            if (typeof value === "boolean") {
+            if (typeof value === "function") {
+                return key + "[" + getDbFields(value(metadataFields)).join(",") + "]";
+            } else if (typeof value === "boolean") {
                 return value ? key : null;
             } else {
                 return key + "[" + getDbFields(value).join(",") + "]";
@@ -43,7 +46,7 @@ function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
         .value();
 }
 
-const metadataFields: { [key in ModelName]: ModelFields } = {
+const metadataFields: MetadataFields = {
     categories: {
         id: true,
         displayName: true,
@@ -60,36 +63,30 @@ const metadataFields: { [key in ModelName]: ModelFields } = {
         id: true,
         displayName: true,
         code: true,
-        categories: {
-            id: true,
-            code: true,
-            displayName: true,
-        },
+        categories: metadataFields => metadataFields.categories,
+    },
+    categoryOptions: {
+        id: name,
+        displayName: true,
+        code: true,
     },
     categoryOptionGroups: {
         id: true,
         displayName: true,
         code: true,
-        categoryOptions: {
-            id: true,
-            code: true,
-            displayName: true,
-        },
+        categoryOptions: metadataFields => metadataFields.categoryOptions,
+    },
+    dataElements: {
+        id: true,
+        code: true,
+        displayName: true,
+        categoryCombo: metadataFields => metadataFields.categoryCombos,
     },
     dataElementGroups: {
         id: true,
         displayName: true,
         code: true,
-        dataElements: {
-            id: true,
-            displayName: true,
-            code: true,
-            categoryCombo: {
-                id: true,
-                displayName: true,
-                code: true,
-            },
-        },
+        dataElements: metadataFields => metadataFields.dataElements,
     },
 };
 
@@ -148,21 +145,6 @@ export default class DbD2 {
         });
 
         return categoryCombos;
-    }
-
-    public async getDataElementGroupsByCodes(codes: string[]): Promise<DataElementGroup[]> {
-        const { dataElementGroups } = await this.api.get("/dataElementGroups", {
-            paging: false,
-            filter: [`code:in:[${codes.join(",")}]`],
-            fields: [
-                "id",
-                "name",
-                "code",
-                "dataElements[id,code,displayName,categoryCombo[id,code,displayName,categories[id,displayName,categoryOptions[id,displayName]]]]",
-            ],
-        });
-
-        return dataElementGroups;
     }
 
     public async postMetadata(metadata: Metadata): Promise<MetadataResponse> {

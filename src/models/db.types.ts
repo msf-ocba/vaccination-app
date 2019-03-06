@@ -162,18 +162,22 @@ export interface MetadataResponse {
     typeReports: TypeReport[];
 }
 
+export type MetadataFields = { [key in ModelName]: ModelFields };
+
 export interface ModelFields {
-    [key: string]: boolean | ModelFields;
+    [key: string]: boolean | ModelFields | ((fields: MetadataFields) => ModelFields);
 }
 
 export type ModelName =
     | "categories"
     | "categoryCombos"
+    | "categoryOptions"
     | "categoryOptionGroups"
+    | "dataElements"
     | "dataElementGroups";
 
 export interface MetadataGetModelParams {
     filters?: string[];
 }
 
-export type MetadataGetParams = { [key in ModelName]: MetadataGetModelParams | undefined };
+export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams | undefined };

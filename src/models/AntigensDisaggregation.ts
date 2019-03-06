@@ -1,8 +1,10 @@
+import _ from "lodash";
+import { AntigenDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig } from "./config";
-import _ from "../utils/lodash";
 import { Antigen } from "./campaign";
+import "../utils/lodash-mixins";
 
-export interface AntigenDisaggregationData {
+export interface AntigenDisaggregation {
     name: string;
     code: string;
 
@@ -26,32 +28,31 @@ export interface AntigenDisaggregationData {
     }>;
 }
 
-export type AntigenDisaggregationCategoriesData = AntigenDisaggregationData["dataElements"][0]["categories"];
+export type AntigenDisaggregationCategoriesData = AntigenDisaggregation["dataElements"][0]["categories"];
 
 export type AntigenDisaggregationOptionGroup = AntigenDisaggregationCategoriesData[0]["options"][0];
 
-function getOrFail<T, K extends keyof T>(obj: T, key: K): T[K] {
-    const value = _.get(obj, key);
-    if (value === undefined) {
-        throw new Error(`Key ${key} not found in object ${JSON.stringify(obj, null, 2)}`);
-    } else {
-        return value;
-    }
-}
+export type AntigenDisaggregationEnabled = Array<{
+    antigen: string;
+    dataElements: Array<{
+        dataElement: string;
+        categories: Array<{ category: string; categoryOptions: string[] }>;
+    }>;
+}>;
 
-type AntigenDisaggregationList = {
-    [code: string]: AntigenDisaggregationData;
+type AntigensDisaggregationData = {
+    [code: string]: AntigenDisaggregation;
 };
 
-export class AntigenDisaggregation {
-    constructor(private config: MetadataConfig, public data: AntigenDisaggregationList) {}
+export class AntigensDisaggregation {
+    constructor(private config: MetadataConfig, public data: AntigensDisaggregationData) {}
 
-    static build(config: MetadataConfig, antigens: Antigen[]): AntigenDisaggregation {
-        const initial = new AntigenDisaggregation(config, {});
+    static build(config: MetadataConfig, antigens: Antigen[]): AntigensDisaggregation {
+        const initial = new AntigensDisaggregation(config, {});
         return initial.setAntigens(antigens);
     }
 
-    public setAntigens(antigens: Antigen[]): AntigenDisaggregation {
+    public setAntigens(antigens: Antigen[]): AntigensDisaggregation {
         const disaggregationByCode = _.keyBy(this.data, "code");
         const dataUpdated = _(antigens)
             .keyBy("code")
@@ -59,16 +60,16 @@ export class AntigenDisaggregation {
                 antigen => disaggregationByCode[antigen.code] || this.buildForAntigen(antigen.code)
             )
             .value();
-        return new AntigenDisaggregation(this.config, dataUpdated);
+        return new AntigensDisaggregation(this.config, dataUpdated);
     }
 
-    public forAntigen(antigen: Antigen): AntigenDisaggregationData {
+    public forAntigen(antigen: Antigen): AntigenDisaggregation | undefined {
         return this.data[antigen.code];
     }
 
-    public set(path: (number | string)[], value: any): AntigenDisaggregation {
+    public set(path: (number | string)[], value: any): AntigensDisaggregation {
         const dataUpdated = _.set(this.data, path, value);
-        return new AntigenDisaggregation(this.config, dataUpdated);
+        return new AntigensDisaggregation(this.config, dataUpdated);
     }
 
     static getCategories(
@@ -78,10 +79,9 @@ export class AntigenDisaggregation {
     ): AntigenDisaggregationCategoriesData {
         return dataElementConfig.categories.map(categoryRef => {
             const optional = categoryRef.optional;
-            const { $categoryOptions, ...categoryAttributes } = getOrFail(
-                _.keyBy(config.categories, "code"),
-                categoryRef.code
-            );
+            const { $categoryOptions, ...categoryAttributes } = _(config.categories)
+                .keyBy("code")
+                .getOrFail(categoryRef.code);
 
             let groups;
             if ($categoryOptions.kind === "fromAgeGroups") {
@@ -103,7 +103,35 @@ export class AntigenDisaggregation {
         });
     }
 
-    buildForAntigen(antigenCode: string): AntigenDisaggregationData {
+    getEnabled(antigens: Antigen[]): AntigenDisaggregationEnabled {
+        const antigenDisaggregations = _(antigens)
+            .map(this.forAntigen)
+            .compact()
+            .value();
+
+        return antigenDisaggregations.map(antigenDisaggregation => {
+            const dataElements = _(antigenDisaggregation.dataElements)
+                .filter("selected")
+                .map(dataElement => {
+                    const categories = _(dataElement.categories)
+                        .filter("selected")
+                        .map(category => {
+                            const categoryOptions = _(category.options)
+                                .flatMap(({ values, indexSelected }) => values[indexSelected])
+                                .filter("selected")
+                                .map("name")
+                                .value();
+                            return { category: category.code, categoryOptions };
+                        })
+                        .value();
+                    return { dataElement: dataElement.code, categories };
+                })
+                .value();
+            return { antigen: antigenDisaggregation.code, dataElements };
+        });
+    }
+
+    buildForAntigen(antigenCode: string): AntigenDisaggregation {
         const { config } = this;
         const antigenConfig = _(config.antigens)
             .keyBy("code")
@@ -112,12 +140,11 @@ export class AntigenDisaggregation {
         if (!antigenConfig) throw `No configuration for antigen: ${antigenCode}`;
 
         const dataElementsProcessed = antigenConfig.dataElements.map(dataElementRef => {
-            const dataElementConfig = getOrFail(
-                _.keyBy(config.dataElements, "code"),
-                dataElementRef.code
-            );
+            const dataElementConfig = _(config.dataElements)
+                .keyBy("code")
+                .getOrFail(dataElementRef.code);
 
-            const categoriesDisaggregation = AntigenDisaggregation.getCategories(
+            const categoriesDisaggregation = AntigensDisaggregation.getCategories(
                 config,
                 dataElementConfig,
                 antigenConfig.ageGroups
@@ -125,7 +152,7 @@ export class AntigenDisaggregation {
 
             return {
                 name: dataElementConfig.name,
-                code: antigenConfig.code,
+                code: dataElementConfig.code,
                 categories: categoriesDisaggregation,
                 optional: dataElementRef.optional,
                 selected: true,

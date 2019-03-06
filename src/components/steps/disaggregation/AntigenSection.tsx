@@ -10,7 +10,7 @@ import TableRow from "@material-ui/core/TableRow";
 import { createStyles, WithStyles, Theme } from "@material-ui/core";
 
 import i18n from "../../../locales";
-import { AntigenDisaggregationData } from "../../../models/AntigenDisaggregation";
+import { AntigenDisaggregation } from "../../../models/AntigensDisaggregation";
 import SimpleCheckbox from "../../forms/SimpleCheckBox";
 import DataElement from "./DataElement";
 import { memoize } from "../../../utils/memoize";
@@ -18,7 +18,7 @@ import { memoize } from "../../../utils/memoize";
 type Path = (number | string)[];
 
 interface AntigenSectionProps extends WithStyles<typeof styles> {
-    antigen: AntigenDisaggregationData;
+    antigen: AntigenDisaggregation;
     antigenCode: string;
     update: (path: Path) => (value: any) => void;
 }

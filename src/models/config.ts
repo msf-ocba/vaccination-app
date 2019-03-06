@@ -1,6 +1,13 @@
-import DbD2 from "./db-d2";
 import _ from "lodash";
-import { Category, DataElementGroup, CategoryCombo, CategoryOptionGroup } from "./db.types";
+import "../utils/lodash-mixins";
+import DbD2 from "./db-d2";
+import {
+    Category,
+    DataElementGroup,
+    CategoryCombo,
+    CategoryOptionGroup,
+    DataElement,
+} from "./db.types";
 
 export interface MetadataConfig {
     categoryComboCodeForTeams: string;
@@ -57,23 +64,13 @@ function getCode(parts: string[]): string {
     return parts.map(part => part.replace(/\s*/g, "").toUpperCase()).join("_");
 }
 
-// Abstract in a lodash.ts file (also in campaign)
-function getOrFail<T, K extends keyof T>(obj: T, key: K): T[K] {
-    const value = _.get(obj, key);
-    if (value === undefined) {
-        throw new Error(`Key ${key} not found in object ${JSON.stringify(obj, null, 2)}`);
-    } else {
-        return value;
-    }
-}
-
 function getConfigDataElements(
     dataElementGroups: DataElementGroup[],
     categoryCombos: CategoryCombo[]
 ): MetadataConfig["dataElements"] {
     const groupsByCode = _.keyBy(dataElementGroups, "code");
     const catCombosByCode = _.keyBy(categoryCombos, "code");
-    const dataElements = getOrFail(groupsByCode, "RVC_ANTIGEN").dataElements;
+    const dataElements = _(groupsByCode).getOrFail("RVC_ANTIGEN").dataElements;
 
     return dataElements.map(dataElement => {
         const getCategories = (typeString: string) => {
@@ -100,14 +97,14 @@ function getAntigens(
     categoryOptionGroups: CategoryOptionGroup[]
 ): MetadataConfig["antigens"] {
     const categoriesByCode = _.keyBy(categories, "code");
-    const categoryOptions = getOrFail(categoriesByCode, "RVC_ANTIGEN").categoryOptions;
+    const categoryOptions = _(categoriesByCode).getOrFail("RVC_ANTIGEN").categoryOptions;
     const dataElementGroupsByCode = _.keyBy(dataElementGroups, "code");
     const categoryOptionGroupsByCode = _.keyBy(categoryOptionGroups, "code");
 
     return categoryOptions.map(categoryOption => {
         const getDataElements = (typeString: string) => {
             const code = getCode([categoryOption.code, typeString]);
-            return getOrFail(dataElementGroupsByCode, code).dataElements;
+            return _(dataElementGroupsByCode).getOrFail(code).dataElements;
         };
 
         const dataElements = _.concat(
@@ -119,10 +116,9 @@ function getAntigens(
             .orderBy([de => de.code.match(/DOSES/), "code"], ["asc", "asc"])
             .value();
 
-        const mainAgeGroups = getOrFail(
-            categoryOptionGroupsByCode,
-            getCode([categoryOption.code, "AGE_GROUP"])
-        ).categoryOptions.map(co => co.displayName);
+        const mainAgeGroups = _(categoryOptionGroupsByCode)
+            .getOrFail(getCode([categoryOption.code, "AGE_GROUP"]))
+            .categoryOptions.map(co => co.displayName);
 
         const ageGroups = mainAgeGroups.map(mainAgeGroup => {
             const codePrefix = getCode([categoryOption.code, "AGE_GROUP", mainAgeGroup]);

@@ -32,8 +32,8 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
 
     update = memoize((path: Path) => (newValue: any) => {
         const { campaign, onChange } = this.props;
-        const disaggregationDataUpdated = campaign.antigenDisaggregation.set(path, newValue);
-        const campaignUpdated = campaign.setAntigenDisaggregation(disaggregationDataUpdated);
+        const disaggregationDataUpdated = campaign.antigensDisaggregation.set(path, newValue);
+        const campaignUpdated = campaign.setAntigensDisaggregation(disaggregationDataUpdated);
         onChange(campaignUpdated);
     });
 
@@ -49,14 +49,14 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
         const { currentAntigen } = this.state;
         if (!currentAntigen) return null;
 
-        const antigenDisaggregation = campaign.antigenDisaggregation;
+        const antigenDisaggregation = campaign.antigensDisaggregation;
         const currentAntigenDisaggregation = antigenDisaggregation.forAntigen(currentAntigen);
         const sections = campaign.antigens.map(antigen => ({
             label: antigen.name,
             key: antigen.code,
         }));
 
-        if (_(sections).isEmpty()) return null;
+        if (_(sections).isEmpty() || !currentAntigenDisaggregation) return null;
 
         return (
             <MuiThemeProvider theme={materialTheme}>

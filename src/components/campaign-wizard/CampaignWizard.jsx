@@ -25,21 +25,9 @@ class CampaignWizard extends React.Component {
 
     constructor(props) {
         super(props);
+        const campaign = Campaign.create(props.config, new DbD2(props.d2));
         this.state = {
-            campaign: Campaign.create(props.config, new DbD2(props.d2))
-                .setName("My campaign test")
-                .setAntigens([
-                    { name: "Measles", code: "RVC_ANTIGEN_MEASLES" },
-                    { name: "Cholera", code: "RVC_ANTIGEN_CHOLERA" },
-                    { name: "Typhoid Fever", code: "RVC_ANTIGEN_TYPHOID_FEVER" },
-                ])
-                .setOrganisationUnits([
-                    {
-                        id: "uv6XHrWbjPi",
-                        path:
-                            "/zOyMxdCLXBM/G7g4TvbjFlX/lmelleX7G5X/ll8gkZ6djJG/ajVmyibuQR1/uv6XHrWbjPi",
-                    },
-                ]),
+            campaign: campaign,
             dialogOpen: false,
         };
     }
