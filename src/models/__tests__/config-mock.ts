@@ -1,8 +1,11 @@
 import { MetadataConfig } from "../config";
 
 const metadataConfig: MetadataConfig = {
-    categoryCodeForAntigens: "RVC_ANTIGENS",
-    categoryComboCodeForTeams: "RVC_TEAMS",
+    categoryCodeForAntigens: "RVC_ANTIGEN",
+    dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
+    categoryComboCodeForTeams: "RVC_TEAM",
+    attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
+    attributeCodeForDashboard: "RVC_DASHBOARD_ID",
     categories: [
         {
             name: "Antigens",

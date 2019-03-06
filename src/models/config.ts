@@ -1,17 +1,15 @@
 import _ from "lodash";
 import "../utils/lodash-mixins";
 import DbD2 from "./db-d2";
-import {
-    Category,
-    DataElementGroup,
-    CategoryCombo,
-    CategoryOptionGroup,
-    DataElement,
-} from "./db.types";
+import { Category, DataElementGroup, CategoryCombo, CategoryOptionGroup } from "./db.types";
 
 export interface MetadataConfig {
-    categoryComboCodeForTeams: string;
     categoryCodeForAntigens: string;
+    dataElementGroupCodeForAntigens: string;
+    categoryComboCodeForTeams: string;
+    attibuteCodeForApp: string;
+    attributeCodeForDashboard: string;
+
     categories: Array<{
         name: string;
         code: string;
@@ -159,7 +157,10 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
 
     return {
         categoryCodeForAntigens: "RVC_ANTIGEN",
+        dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
         categoryComboCodeForTeams: "RVC_TEAM",
+        attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
+        attributeCodeForDashboard: "RVC_DASHBOARD_ID",
         categories: getConfigCategories(metadata.categories),
         dataElements: getConfigDataElements(metadata.dataElementGroups, metadata.categoryCombos),
         antigens: getAntigens(
