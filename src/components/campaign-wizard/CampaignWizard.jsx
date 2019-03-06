@@ -64,7 +64,7 @@ Only organisation units of level 6 (service) can be selected`),
                 label: i18n.t("Disaggregation"),
                 component: DisaggregationStep,
                 validationKeys: [],
-                help: i18n.t(`Define disaggration categories for each antigen`),
+                help: i18n.t(`Define disaggregation categories for each antigen`),
             },
             {
                 key: "save",

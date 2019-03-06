@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-23T08:53:33.398Z\n"
-"PO-Revision-Date: 2019-02-23T08:53:33.398Z\n"
+"POT-Creation-Date: 2019-03-06T14:39:38.948Z\n"
+"PO-Revision-Date: 2019-03-06T14:39:38.948Z\n"
 
 msgid "Vaccination"
 msgstr ""
@@ -103,7 +103,7 @@ msgstr ""
 msgid "Disaggregation"
 msgstr ""
 
-msgid "Define disaggration categories for each antigen"
+msgid "Define disaggregation categories for each antigen"
 msgstr ""
 
 msgid "Save"
@@ -158,10 +158,10 @@ msgstr ""
 msgid "Setup is finished. Press the button Save to save the data"
 msgstr ""
 
-msgid "Antigens"
+msgid "Period dates"
 msgstr ""
 
-msgid "Period dates"
+msgid "Antigens"
 msgstr ""
 
 msgid "Help"
