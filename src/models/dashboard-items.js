@@ -101,7 +101,7 @@ export const metadataChartObject = (
     datasetId,
     organisationUnitsIds,
     organisationUnitsParents,
-    chartPeriod,
+    chartPeriod
 ) => ({
     name: `${name}-${antigen.displayName}-global-indicators`,
     code: `${datasetId}-${antigen.id}-chart`,
@@ -220,7 +220,7 @@ export const metadataChartObject = (
     organisationUnits: organisationUnitsIds,
     categoryDimensions: [
         { category: { id: "a6SQVBY9s18" }, categoryOptions: [{ id: antigen.id }] }, // category: antigens , option: measles (id=e2QdJjfgZSD)
-    ], 
+    ],
     filters: [{ id: "ou" }, { id: "a6SQVBY9s18" }],
     rows: [{ id: "pe" }],
 });

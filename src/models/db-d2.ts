@@ -1,5 +1,5 @@
 import { Dictionary } from "lodash";
-import moment from 'moment';
+import moment from "moment";
 import { D2, D2Api } from "./d2.types";
 import {
     OrganisationUnit,
@@ -111,10 +111,16 @@ export default class DbD2 {
         antigens: CategoryOption[],
         datasetId: String,
         startDate: Date | null,
-        endDate: Date | null,
+        endDate: Date | null
     ): Promise<Ref | undefined> {
-        
-        const dashboardCharts = await this.createCharts(name, organisationUnits, antigens, datasetId, startDate, endDate);
+        const dashboardCharts = await this.createCharts(
+            name,
+            organisationUnits,
+            antigens,
+            datasetId,
+            startDate,
+            endDate
+        );
         // Pivot Table (reportTable) - For now a generic hardcoded table
         const {
             response: { uid: reportTableId },
@@ -140,9 +146,8 @@ export default class DbD2 {
         antigens: CategoryOption[],
         datasetId: String,
         startDate: Date | null,
-        endDate: Date | null,
+        endDate: Date | null
     ): Promise<Ref[]> {
-
         const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
         const organizationUnitsParents = organisationUnits.reduce(
             (acc, ou) => ({ ...acc, [ou.id]: ou.path }),
