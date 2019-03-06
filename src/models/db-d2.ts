@@ -109,6 +109,28 @@ export default class DbD2 {
         antigens: CategoryOption[],
         datasetId: String
     ): Promise<Ref | undefined> {
+        
+        const dashboardCharts = await this.createCharts(name, organisationUnits, antigens, datasetId);
+        // Pivot Table (reportTable) - For now a generic hardcoded table
+        const {
+            response: { uid: reportTableId },
+        } = await this.api.post("/reportTables", reportTable(name));
+
+        const dashboard = {
+            name: `${name}_DASHBOARD`,
+            dashboardItems: [
+                ...dashboardCharts,
+                { type: "REPORT_TABLE", reportTable: { id: reportTableId } },
+            ],
+        };
+        const {
+            response: { uid },
+        } = await this.api.post("/dashboards", dashboard);
+        console.log({ dashboardId: uid });
+        return { id: uid };
+    }
+
+    async createCharts(name: String, organisationUnits: OrganisationUnitPathOnly[], antigens: CategoryOption[], datasetId: String): Promise<Ref[]> {
         const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
         const organizationUnitsParents = organisationUnits.reduce(
             (acc, ou) => ({ ...acc, [ou.id]: ou.path }),
@@ -135,23 +157,6 @@ export default class DbD2 {
             type: "CHART",
             chart: { id },
         }));
-
-        // Pivot Table (reportTable) - For now a generic hardcoded table
-        const {
-            response: { uid: reportTableId },
-        } = await this.api.post("/reportTables", reportTable(name));
-
-        const dashboard = {
-            name: `${name}_DASHBOARD`,
-            dashboardItems: [
-                ...dashboardCharts,
-                { type: "REPORT_TABLE", reportTable: { id: reportTableId } },
-            ],
-        };
-        const {
-            response: { uid },
-        } = await this.api.post("/dashboards", dashboard);
-        console.log({ dashboardId: uid });
-        return { id: uid };
+        return dashboardCharts;
     }
 }
