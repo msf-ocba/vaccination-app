@@ -5,14 +5,16 @@ import {
     PaginatedObjects,
     CategoryOption,
     CategoryCombo,
-    DataElementGroup,
     MetadataResponse,
     Metadata,
     ModelFields,
     MetadataGetParams,
     ModelName,
     MetadataFields,
+    Attribute,
+    Ref,
 } from "./db.types";
+import { chart, reportTable } from "./dashboard-items";
 
 function getDbFields(modelFields: ModelFields): string[] {
     return _(modelFields)
@@ -157,5 +159,37 @@ export default class DbD2 {
             this.api.post("/metadata", metadata) as MetadataResponse;
         }
         */
+    }
+
+    public async getAttributeIdByCode(code: string): Promise<Attribute | undefined> {
+        const { attributes } = await this.api.get("/attributes", {
+            paging: true,
+            pageSize: 1,
+            filter: [`code:eq:${code}`],
+            fields: ["id"],
+        });
+        return attributes[0];
+    }
+
+    public async createDashboard(name: String): Promise<Ref | undefined> {
+        // For now, a chart is created from a genertic template and added to the dashboard
+        const {
+            response: { uid: chartId },
+        } = await this.api.post("/charts", chart(name));
+        const {
+            response: { uid: reportTableId },
+        } = await this.api.post("/reportTables", reportTable(name));
+        const dashboard = {
+            name: `${name}_DASHBOARD`,
+            dashboardItems: [
+                { type: "CHART", chart: { id: chartId } },
+                { type: "REPORT_TABLE", reportTable: { id: reportTableId } },
+            ],
+        };
+        const {
+            response: { uid },
+        } = await this.api.post("/dashboards", dashboard);
+        console.log({ dashboardId: uid });
+        return { id: uid };
     }
 }

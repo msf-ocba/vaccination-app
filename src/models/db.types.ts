@@ -60,6 +60,15 @@ export interface CategoryCombo {
     categories: Category[];
 }
 
+export interface Attribute {
+    id: string;
+}
+
+export interface AttributeValue {
+    value: string;
+    attribute: Ref;
+}
+
 export interface DataElement {
     id: string;
     code: string;
@@ -74,7 +83,7 @@ export interface DataElementGroup {
     dataElements: DataElement[];
 }
 
-interface Ref {
+export interface Ref {
     id: string;
 }
 
@@ -88,7 +97,7 @@ export interface Section {
     showRowTotals: boolean;
     showColumnTotals: boolean;
     dataSet: Ref;
-    dataElements: DataElement[];
+    dataElements: Ref[];
 }
 
 export interface DataSet {
@@ -106,6 +115,7 @@ export interface DataSet {
     expiryDays: number;
     sections?: Section[];
     dataInputPeriods: DataInputPeriod[];
+    attributeValues: AttributeValue[];
 }
 
 export interface DataInputPeriod {

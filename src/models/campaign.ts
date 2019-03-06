@@ -1,15 +1,16 @@
-import { AntigenDisaggregationEnabled, getDataElements } from "./AntigensDisaggregation";
 ///<reference path="../types/d2.d.ts" />
 import _ from "lodash";
+import moment from "moment";
 
 import { AntigensDisaggregation } from "./AntigensDisaggregation";
-import { MetadataResponse, Section, DataElement, Category } from "./db.types";
+import { MetadataResponse } from "./db.types";
 import { generateUid } from "d2/uid";
 import { DataSet, Response } from "./db.types";
 import { PaginatedObjects, OrganisationUnitPathOnly, CategoryOption } from "./db.types";
 import DbD2 from "./db-d2";
 import { getDaysRange } from "../utils/date";
 import { MetadataConfig } from "./config";
+import { AntigenDisaggregationEnabled, getDataElements } from "./AntigensDisaggregation";
 
 export interface Antigen {
     name: string;
@@ -68,18 +69,10 @@ export default class Campaign {
                 : null,
 
             startDate:
-                startDate && !endDate
+                !startDate && endDate
                     ? {
                           key: "cannot_be_blank_if_other_set",
                           namespace: { field: "startDate", other: "endDate" },
-                      }
-                    : null,
-
-            endDate:
-                endDate && !startDate
-                    ? {
-                          key: "cannot_be_blank_if_other_set",
-                          namespace: { field: "endDate", other: "startDate" },
                       }
                     : null,
 
@@ -198,17 +191,31 @@ export default class Campaign {
     /* Save */
 
     public async save(): Promise<Response<string>> {
-        const teamsCode = this.config.categoryComboCodeForTeams;
+        const dashboardId = await this.db.createDashboard(this.name);
+        const metadataConfig = this.config;
+        const teamsCode = metadataConfig.categoryComboCodeForTeams;
+        const antigenCodes = this.antigens.map(antigen => antigen.code);
+        const vaccinationAttribute = await this.db.getAttributeIdByCode(
+            metadataConfig.attibuteCodeForApp
+        );
+        const dashboardAttribute = await this.db.getAttributeIdByCode(
+            metadataConfig.attributeCodeForDashboard
+        );
         const categoryCombos = await this.db.getCategoryCombosByCode([teamsCode]);
         const categoryCombosByCode = _(categoryCombos)
             .keyBy("code")
             .value();
         const categoryComboTeams = _(categoryCombosByCode).get(teamsCode);
 
-        if (!categoryComboTeams) {
-            return { status: false, error: `Metadata not found: teamsCode=${teamsCode}` };
+        if (!vaccinationAttribute || !dashboardAttribute) {
+            return { status: false, error: "Metadata not found: Attributes" };
+        } else if (!categoryComboTeams) {
+            return { status: false, error: `Metadata not found: categoryCombo.code=${teamsCode}` };
+        } else if (!dashboardId) {
+            return { status: false, error: "Error creating dashboard" };
         } else {
             const dataSetId = generateUid();
+
             const disaggregationData = this.getEnabledAntigensDisaggregation();
             const dataElements = await getDataElements(this.db, disaggregationData);
 
@@ -218,9 +225,16 @@ export default class Campaign {
                 categoryCombo: { id: dataElement.categoryCombo.id },
             }));
 
-            const dataInputPeriods = getDaysRange(this.startDate, this.endDate).map(date => ({
+            const endDate =
+                !this.endDate && this.startDate
+                    ? moment()
+                          .endOf("year")
+                          .toDate()
+                    : this.endDate;
+
+            const dataInputPeriods = getDaysRange(this.startDate, endDate).map(date => ({
                 openingDate: this.startDate ? this.startDate.toISOString() : undefined,
-                closingDate: this.endDate ? this.endDate.toISOString() : undefined,
+                closingDate: endDate ? endDate.toISOString() : undefined,
                 period: { id: date.format("YYYYMMDD") },
             }));
 
@@ -233,11 +247,15 @@ export default class Campaign {
                 dataElementDecoration: true,
                 renderAsTabs: true,
                 organisationUnits: this.organisationUnits.map(ou => ({ id: ou.id })),
-                dataSetElements: dataSetElements,
+                dataSetElements,
                 openFuturePeriods: 0,
                 timelyDays: 0,
                 expiryDays: 0,
                 dataInputPeriods,
+                attributeValues: [
+                    { value: "true", attribute: { id: vaccinationAttribute.id } },
+                    { value: dashboardId.id, attribute: { id: dashboardAttribute.id } },
+                ],
             };
 
             const result: MetadataResponse = await this.db.postMetadata({

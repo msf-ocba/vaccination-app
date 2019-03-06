@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { OrgUnitsSelector, withSnackbar } from "d2-ui-components";
+import { OrgUnitsSelector } from "d2-ui-components";
 import _ from "lodash";
 import "./OrganisationUnitsStep.css";
 
@@ -15,7 +15,6 @@ class OrganisationUnitsStep extends React.Component {
         d2: PropTypes.object.isRequired,
         campaign: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
-        snackbar: PropTypes.object.isRequired,
     };
 
     setOrgUnits = orgUnitsPaths => {
@@ -45,4 +44,4 @@ class OrganisationUnitsStep extends React.Component {
     }
 }
 
-export default withSnackbar(OrganisationUnitsStep);
+export default OrganisationUnitsStep;
