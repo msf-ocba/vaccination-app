@@ -1,4 +1,5 @@
 import { Dictionary } from "lodash";
+import moment from 'moment';
 import { D2, D2Api } from "./d2.types";
 import {
     OrganisationUnit,
@@ -17,6 +18,7 @@ import {
 } from "./db.types";
 import _ from "lodash";
 import { reportTable, metadataChartObject } from "./dashboard-items";
+import { getDaysRange } from "../utils/date";
 
 export default class DbD2 {
     d2: D2;
@@ -107,10 +109,12 @@ export default class DbD2 {
         name: String,
         organisationUnits: OrganisationUnitPathOnly[],
         antigens: CategoryOption[],
-        datasetId: String
+        datasetId: String,
+        startDate: Date | null,
+        endDate: Date | null,
     ): Promise<Ref | undefined> {
         
-        const dashboardCharts = await this.createCharts(name, organisationUnits, antigens, datasetId);
+        const dashboardCharts = await this.createCharts(name, organisationUnits, antigens, datasetId, startDate, endDate);
         // Pivot Table (reportTable) - For now a generic hardcoded table
         const {
             response: { uid: reportTableId },
@@ -130,12 +134,24 @@ export default class DbD2 {
         return { id: uid };
     }
 
-    async createCharts(name: String, organisationUnits: OrganisationUnitPathOnly[], antigens: CategoryOption[], datasetId: String): Promise<Ref[]> {
+    async createCharts(
+        name: String,
+        organisationUnits: OrganisationUnitPathOnly[],
+        antigens: CategoryOption[],
+        datasetId: String,
+        startDate: Date | null,
+        endDate: Date | null,
+    ): Promise<Ref[]> {
+
         const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
         const organizationUnitsParents = organisationUnits.reduce(
             (acc, ou) => ({ ...acc, [ou.id]: ou.path }),
             {}
         );
+        const periodStart = startDate ? moment(startDate) : moment();
+        const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
+        const periodRange = getDaysRange(periodStart, periodEnd);
+        const chartPeriod = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
 
         // One chart per antigen
         const charts = antigens.map(antigen =>
@@ -144,7 +160,8 @@ export default class DbD2 {
                 antigen,
                 datasetId,
                 organisationUnitsIds,
-                organizationUnitsParents
+                organizationUnitsParents,
+                chartPeriod
             )
         );
         await this.api.post("/metadata", { charts });

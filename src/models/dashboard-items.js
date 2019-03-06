@@ -100,7 +100,8 @@ export const metadataChartObject = (
     antigen,
     datasetId,
     organisationUnitsIds,
-    organisationUnitsParents
+    organisationUnitsParents,
+    chartPeriod,
 ) => ({
     name: `${name}-${antigen.displayName}-global-indicators`,
     code: `${datasetId}-${antigen.id}-chart`,
@@ -143,7 +144,7 @@ export const metadataChartObject = (
         last52Weeks: false,
         thisWeek: false,
         lastMonth: false,
-        last14Days: true,
+        last14Days: false,
         biMonthsThisYear: false,
         monthsThisYear: false,
         last2SixMonths: false,
@@ -215,7 +216,7 @@ export const metadataChartObject = (
     organisationUnitGroupSetDimensions: [],
     organisationUnitLevels: [],
     dataElementDimensions: [],
-    periods: [],
+    periods: chartPeriod,
     organisationUnits: organisationUnitsIds,
     categoryDimensions: [
         { category: { id: "a6SQVBY9s18" }, categoryOptions: [{ id: antigen.id }] }, // category: antigens , option: measles (id=e2QdJjfgZSD)

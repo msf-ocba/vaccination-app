@@ -181,7 +181,9 @@ export default class Campaign {
             this.name,
             this.organisationUnits,
             this.antigens,
-            dataSetId
+            dataSetId,
+            this.startDate,
+            this.endDate
         );
 
         if (!vaccinationAttribute || !dashboardAttribute) {
