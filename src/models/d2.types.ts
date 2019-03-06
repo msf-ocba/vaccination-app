@@ -1,4 +1,5 @@
 import { Dictionary } from "lodash";
+import { Ref } from "./db.types";
 
 export interface D2 {
     Api: {
@@ -14,7 +15,11 @@ export interface Params {
     order?: string;
 }
 
+export interface MetadataParams {
+    [key: string]: string;
+}
+
 export interface D2Api {
-    get(url: string, data: Params): Dictionary<any>;
+    get(url: string, data: Params | MetadataParams): Dictionary<any>;
     post(url: string, data: Dictionary<any>): Dictionary<any>;
 }

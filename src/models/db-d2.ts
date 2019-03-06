@@ -16,7 +16,7 @@ import {
     OrganisationUnitPathOnly,
 } from "./db.types";
 import _ from "lodash";
-import { chart, reportTable, globalIndicatorsChart } from "./dashboard-items";
+import { reportTable, metadataChartObject } from "./dashboard-items";
 
 export default class DbD2 {
     d2: D2;
@@ -103,14 +103,37 @@ export default class DbD2 {
         return attributes[0];
     }
 
-    public async createDashboard(name: String, organisationUnits: OrganisationUnitPathOnly[], antigens: CategoryOption[]): Promise<Ref | undefined> {
+    public async createDashboard(
+        name: String,
+        organisationUnits: OrganisationUnitPathOnly[],
+        antigens: CategoryOption[],
+        datasetId: String
+    ): Promise<Ref | undefined> {
         const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
+        const organizationUnitsParents = organisationUnits.reduce(
+            (acc, ou) => ({ ...acc, [ou.id]: ou.path }),
+            {}
+        );
+
         // One chart per antigen
-        const chartIds = await Promise.all(antigens.map(async (antigen) => {
-            const {
-                response: { uid: chartId },
-            } = await this.api.post("/charts", globalIndicatorsChart(name, antigen, organisationUnitsIds));
-            return chartId;
+        const charts = antigens.map(antigen =>
+            metadataChartObject(
+                name,
+                antigen,
+                datasetId,
+                organisationUnitsIds,
+                organizationUnitsParents
+            )
+        );
+        await this.api.post("/metadata", { charts });
+        const chartCodes = antigens.map(({ id }) => `${datasetId}-${id}-chart`);
+        const { charts: chartIds } = await this.api.get("/metadata", {
+            "charts:fields": "id",
+            "charts:filter": `code:in:[${chartCodes.join(",")}]`,
+        });
+        const dashboardCharts = chartIds.map(({ id }: { id: string }) => ({
+            type: "CHART",
+            chart: { id },
         }));
 
         // Pivot Table (reportTable) - For now a generic hardcoded table
@@ -118,7 +141,6 @@ export default class DbD2 {
             response: { uid: reportTableId },
         } = await this.api.post("/reportTables", reportTable(name));
 
-        const dashboardCharts = chartIds.map(id => ({ type: "CHART", chart: { id } }))
         const dashboard = {
             name: `${name}_DASHBOARD`,
             dashboardItems: [
@@ -130,7 +152,6 @@ export default class DbD2 {
             response: { uid },
         } = await this.api.post("/dashboards", dashboard);
         console.log({ dashboardId: uid });
-        return { id: uid }; 
-        
+        return { id: uid };
     }
 }
