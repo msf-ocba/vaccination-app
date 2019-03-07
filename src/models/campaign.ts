@@ -161,7 +161,6 @@ export default class Campaign {
         const dataSetId = generateUid();
         const teamsCode = metadataConfig.categoryComboCodeForTeams;
         const antigenCodes = this.antigens.map(antigen => antigen.code);
-        console.log(this.organisationUnits);
         const vaccinationAttribute = await this.db.getAttributeIdByCode(
             metadataConfig.attibuteCodeForApp
         );

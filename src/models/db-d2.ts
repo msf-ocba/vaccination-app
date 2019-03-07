@@ -5,19 +5,16 @@ import {
     OrganisationUnit,
     PaginatedObjects,
     CategoryOption,
-    Maybe,
     CategoryCombo,
     DataElementGroup,
-    DataSet,
     MetadataResponse,
-    Response,
     Metadata,
     Attribute,
     Ref,
     OrganisationUnitPathOnly,
 } from "./db.types";
 import _ from "lodash";
-import { reportTable, metadataChartObject } from "./dashboard-items";
+import { qsIndicatorsTable, metadataChartObject } from "./dashboard-items";
 import { getDaysRange } from "../utils/date";
 
 export default class DbD2 {
@@ -113,7 +110,7 @@ export default class DbD2 {
         startDate: Date | null,
         endDate: Date | null
     ): Promise<Ref | undefined> {
-        const dashboardCharts = await this.createCharts(
+        const dashboardItems = await this.createDashboardItems(
             name,
             organisationUnits,
             antigens,
@@ -122,25 +119,16 @@ export default class DbD2 {
             endDate
         );
         // Pivot Table (reportTable) - For now a generic hardcoded table
-        const {
-            response: { uid: reportTableId },
-        } = await this.api.post("/reportTables", reportTable(name));
 
-        const dashboard = {
-            name: `${name}_DASHBOARD`,
-            dashboardItems: [
-                ...dashboardCharts,
-                { type: "REPORT_TABLE", reportTable: { id: reportTableId } },
-            ],
-        };
+        const dashboard = { name: `${name}_DASHBOARD`, dashboardItems };
         const {
             response: { uid },
         } = await this.api.post("/dashboards", dashboard);
-        console.log({ dashboardId: uid });
+
         return { id: uid };
     }
 
-    async createCharts(
+    async createDashboardItems(
         name: String,
         organisationUnits: OrganisationUnitPathOnly[],
         antigens: CategoryOption[],
@@ -156,7 +144,7 @@ export default class DbD2 {
         const periodStart = startDate ? moment(startDate) : moment();
         const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
         const periodRange = getDaysRange(periodStart, periodEnd);
-        const chartPeriod = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
+        const period = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
 
         // One chart per antigen
         const charts = antigens.map(antigen =>
@@ -166,19 +154,34 @@ export default class DbD2 {
                 datasetId,
                 organisationUnitsIds,
                 organizationUnitsParents,
-                chartPeriod
+                period
             )
         );
-        await this.api.post("/metadata", { charts });
+
+        const tables = antigens.map(antigen =>
+            qsIndicatorsTable(name, antigen, datasetId, organisationUnitsIds, period)
+        );
+
+        await this.api.post("/metadata", { charts, reportTables: tables });
         const chartCodes = antigens.map(({ id }) => `${datasetId}-${id}-chart`);
-        const { charts: chartIds } = await this.api.get("/metadata", {
+        const tableCodes = antigens.map(({ id }) => `${datasetId}-${id}-qsTable`);
+
+        const { charts: chartIds, reportTables: tableIds } = await this.api.get("/metadata", {
             "charts:fields": "id",
             "charts:filter": `code:in:[${chartCodes.join(",")}]`,
+            "reportTables:fields": "id",
+            "reportTables:filter": `code:in:[${tableCodes.join(",")}]`,
         });
+
         const dashboardCharts = chartIds.map(({ id }: { id: string }) => ({
             type: "CHART",
             chart: { id },
         }));
-        return dashboardCharts;
+        const dashboardTables = tableIds.map(({ id }: { id: string }) => ({
+            type: "REPORT_TABLE",
+            reportTable: { id },
+        }));
+
+        return [...dashboardCharts, ...dashboardTables];
     }
 }
