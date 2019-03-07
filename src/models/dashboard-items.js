@@ -1,69 +1,103 @@
-import { metadataConfig } from './campaign';
+import _ from "lodash";
+import { metadataConfig } from "./campaign";
 
 export const dashboardItemsConfig = {
     appendCodes: {
         indicatorChart: "indicatorChart",
         qsTable: "qsTable",
-        vTable: "vTable",
+        vaccinesTable: "vTable",
     },
     categoryCode: metadataConfig.categoryCodeForAntigens,
-    tableDataElementCodes: {
-        vaccinesTable: ['RVC_DOSES_ADMINISTERED', 'RVC_DOSES_USED'],
-        qsIndicatorsTable: ['RVC_ADS_USED','RVC_SYRINGES','RVC_SAFETY_BOXES','RVC_NEEDLES','RVC_AEB'],
+    tablesDataCodes: {
+        vaccinesTable: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
+        qsIndicatorsTable: [
+            "RVC_ADS_USED",
+            "RVC_SYRINGES",
+            "RVC_SAFETY_BOXES",
+            "RVC_NEEDLES",
+            "RVC_AEB",
+        ],
     },
-    chartIndicatorsCodes: {
-        indicatorChart: ['RVC_ADS_WASTAGE', 'RVC_SAFETY_BOXES', 'RVC_DILUTION_SYRINGES_RATIO'],
-        coverageChart: ['RVC_CAMPAIGN_COVERAGE', 'RVC_VACCINE_UTILITZATION'],
-    }
+    chartsDataCodes: {
+        indicatorChart: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
+        coverageChart: ["RVC_CAMPAIGN_COVERAGE", "RVC_VACCINE_UTILITZATION"],
+    },
+};
 
+export function buildDashboardItems(
+    antigens,
+    name,
+    datasetId,
+    organisationUnitsIds,
+    organizationUnitsParents,
+    period,
+    antigenCategory,
+    elements
+) {
+    const charts = antigens.map(antigen =>
+        indicatorsChart(
+            name,
+            antigen,
+            datasetId,
+            organisationUnitsIds,
+            organizationUnitsParents,
+            period,
+            antigenCategory,
+            elements.indicatorChart
+        )
+    );
+    const tables = antigens.map(antigen => [
+        qsIndicatorsTable(
+            name,
+            antigen,
+            datasetId,
+            organisationUnitsIds,
+            period,
+            antigenCategory,
+            elements.qsTable
+        ),
+        vaccinesTable(
+            name,
+            antigen,
+            datasetId,
+            organisationUnitsIds,
+            period,
+            antigenCategory,
+            elements.vaccineTable
+        ),
+    ]);
+    return { charts, reportTables: _.flatten(tables) };
 }
+
+const dataMapper = (dataList, filterList) =>
+    dataList.data.filter(({ code }) => _.includes(filterList, code)).map(({ id }) => ({
+        dataDimensionItemType: dataList.type,
+        [dataList.key]: { id },
+    }));
 
 export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const { dataElements, indicators, antigenCategory } = dashboardItemsMetadata;
     const {
-        tableDataElementCodes: { vaccinesTable, qsIndicatorsTable },
-        chartIndicatorsCodes: { indicatorChart, coverageChart },
+        tablesDataCodes: { vaccinesTable, qsIndicatorsTable },
+        chartsDataCodes: { indicatorChart, coverageChart },
     } = dashboardItemsConfig;
 
-    const vaccineTableDE =  dataElements.data
-        .filter(({ code }) => vaccinesTable.includes(code))
-        .map(({ id }) => ({
-            dataDimensionItemType: dataElements.type,
-            dataElement: { id },
-        }));
-
-    const qsTableDE = dataElements.data
-        .filter(({ code }) => qsIndicatorsTable.includes(code))
-        .map(({ id }) => ({
-            dataDimensionItemType: dataElements.type,
-            dataElement: { id },
-        }));
-
-    const indicatorChartInd = indicators.data
-        .filter(({ code }) => indicatorChart.includes(code))
-        .map(({ id }) => ({
-            dataDimensionItemType: indicators.type,
-            indicator: { id },
-        }));
-
-    const coverageChartInd = indicators.data
-        .filter(({ code }) => coverageChart.includes(code))
-        .map(({ id }) => ({
-            dataDimensionItemType: indicators.type,
-            indicator: { id },
-        }));
+    const vaccineTableDE = dataMapper(dataElements, vaccinesTable);
+    const qsTableDE = dataMapper(dataElements, qsIndicatorsTable);
+    const indicatorChartInd = dataMapper(indicators, indicatorChart);
+    const coverageChartInd = dataMapper(indicators, coverageChart);
 
     const dashboardItemsElements = {
         antigenCategory,
         vaccineTable: vaccineTableDE,
         qsTable: qsTableDE,
         indicatorChart: indicatorChartInd,
-        coverageChart: coverageChartInd
+        coverageChart: coverageChartInd,
     };
     return dashboardItemsElements;
 }
 
-export const indicatorsChart = (
+const indicatorsChart = (
     name,
     antigen,
     datasetId,
@@ -71,7 +105,7 @@ export const indicatorsChart = (
     organisationUnitsParents,
     period,
     antigenCategory,
-    data,
+    data
 ) => ({
     name: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
     code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
@@ -91,7 +125,9 @@ export const indicatorsChart = (
     hideEmptyRowItems: "AFTER_LAST",
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
+    displayName: `${name}-${antigen.displayName}-${
+        dashboardItemsConfig.appendCodes.indicatorChart
+    }`,
     hideSubtitle: false,
     hideLegend: false,
     externalAccess: false,
@@ -176,15 +212,14 @@ export const indicatorsChart = (
     rows: [{ id: "pe" }],
 });
 
-
-export const qsIndicatorsTable = (
+const qsIndicatorsTable = (
     name,
     antigen,
     datasetId,
     organisationUnitsIds,
     period,
     antigenCategory,
-    data,
+    data
 ) => ({
     name: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.qsTable}`,
     code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.qsTable}`,
@@ -304,17 +339,17 @@ export const qsIndicatorsTable = (
     rowDimensions: ["pe"],
 });
 
-export const vaccinesTable = (
+const vaccinesTable = (
     name,
     antigen,
     datasetId,
     organisationUnitsIds,
     period,
     antigenCategory,
-    data,
+    data
 ) => ({
-    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.vaccineTable}`,
-    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.vaccineTable}`,
+    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.vaccinesTable}`,
+    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.vaccinesTable}`,
     numberType: "VALUE",
     publicAccess: "rw------",
     userOrganisationUnitChildren: false,
@@ -335,7 +370,7 @@ export const vaccinesTable = (
     topLimit: 0,
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.qsTable}`,
+    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.vaccineTable}`,
     hideSubtitle: false,
     externalAccess: false,
     legendDisplayStrategy: "FIXED",
