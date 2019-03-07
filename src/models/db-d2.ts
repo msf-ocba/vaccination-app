@@ -14,7 +14,7 @@ import {
     OrganisationUnitPathOnly,
 } from "./db.types";
 import _ from "lodash";
-import { qsIndicatorsTable, metadataChartObject } from "./dashboard-items";
+import { qsIndicatorsTable, vaccinesTable, indicatorsChart, dashboardItemsConfig } from "./dashboard-items";
 import { getDaysRange } from "../utils/date";
 
 export default class DbD2 {
@@ -137,10 +137,7 @@ export default class DbD2 {
         endDate: Date | null
     ): Promise<Ref[]> {
         const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
-        const organizationUnitsParents = organisationUnits.reduce(
-            (acc, ou) => ({ ...acc, [ou.id]: ou.path }),
-            {}
-        );
+        const organizationUnitsParents = _(organisationUnits).map(ou => [ou.id, ou.path]).fromPairs().value();
         const periodStart = startDate ? moment(startDate) : moment();
         const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
         const periodRange = getDaysRange(periodStart, periodEnd);
@@ -148,7 +145,7 @@ export default class DbD2 {
 
         // One chart per antigen
         const charts = antigens.map(antigen =>
-            metadataChartObject(
+            indicatorsChart(
                 name,
                 antigen,
                 datasetId,
@@ -159,18 +156,24 @@ export default class DbD2 {
         );
 
         const tables = antigens.map(antigen =>
-            qsIndicatorsTable(name, antigen, datasetId, organisationUnitsIds, period)
+            [
+                qsIndicatorsTable(name, antigen, datasetId, organisationUnitsIds, period),
+                vaccinesTable(name, antigen, datasetId, organisationUnitsIds, period),
+            ]
         );
+        
+        await this.api.post("/metadata", { charts, reportTables: _.flatten(tables) });
 
-        await this.api.post("/metadata", { charts, reportTables: tables });
-        const chartCodes = antigens.map(({ id }) => `${datasetId}-${id}-chart`);
-        const tableCodes = antigens.map(({ id }) => `${datasetId}-${id}-qsTable`);
+        const appendCodes = dashboardItemsConfig.codes
+        const chartCodes = antigens.map(({ id }) => `${datasetId}-${id}-${appendCodes.indicatorChart}`);
+        const indicatorTableCodes = antigens.map(({ id }) => `${datasetId}-${id}-${appendCodes.qsTable}`);
+        const vaccineTableCodes = antigens.map(({ id }) => `${datasetId}-${id}-${appendCodes.vTable}`);
 
         const { charts: chartIds, reportTables: tableIds } = await this.api.get("/metadata", {
             "charts:fields": "id",
             "charts:filter": `code:in:[${chartCodes.join(",")}]`,
             "reportTables:fields": "id",
-            "reportTables:filter": `code:in:[${tableCodes.join(",")}]`,
+            "reportTables:filter": `code:in:[${indicatorTableCodes.join(",")},${vaccineTableCodes.join(",")}]`,
         });
 
         const dashboardCharts = chartIds.map(({ id }: { id: string }) => ({
