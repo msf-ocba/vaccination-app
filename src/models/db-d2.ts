@@ -68,7 +68,7 @@ const metadataFields: MetadataFields = {
         categories: metadataFields => metadataFields.categories,
     },
     categoryOptions: {
-        id: name,
+        id: true,
         displayName: true,
         code: true,
     },
