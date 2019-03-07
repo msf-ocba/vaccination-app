@@ -1,44 +1,52 @@
 ///<reference path="../types/d2.d.ts" />
+import _ from "lodash";
 import moment from "moment";
+
+import { AntigensDisaggregation } from "./AntigensDisaggregation";
+import { MetadataResponse } from "./db.types";
 import { generateUid } from "d2/uid";
-
-import { MetadataResponse, Section, CategoryCombo, DataSet, Response } from "./db.types";
+import { DataSet, Response } from "./db.types";
 import { PaginatedObjects, OrganisationUnitPathOnly, CategoryOption } from "./db.types";
-import _ from "../utils/lodash";
-import { getDaysRange } from "../utils/date";
 import DbD2 from "./db-d2";
+import { getDaysRange } from "../utils/date";
+import { MetadataConfig } from "./config";
+import { AntigenDisaggregationEnabled, getDataElements } from "./AntigensDisaggregation";
 
-export const metadataConfig = {
-    categoryCodeForAntigens: "RVC_ANTIGEN",
-    dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
-    categoryComboCodeForTeams: "RVC_TEAM",
-    attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
-    attributeCodeForDashboard: "RVC_DASHBOARD_ID",
-};
+export interface Antigen {
+    name: string;
+    code: string;
+}
 
 export interface Data {
     name: string;
     organisationUnits: OrganisationUnitPathOnly[];
     startDate: Date | null;
     endDate: Date | null;
-    antigens: CategoryOption[];
+    antigens: Antigen[];
+    antigensDisaggregation: AntigensDisaggregation;
 }
 
 export default class Campaign {
-    // Update OrganisationUnitStep.css accordingly if you change this value.
     public selectableLevels: number[] = [6];
 
-    constructor(private db: DbD2, private data: Data) {}
+    constructor(private db: DbD2, public config: MetadataConfig, private data: Data) {}
 
-    public static create(db: DbD2): Campaign {
+    public static create(config: MetadataConfig, db: DbD2): Campaign {
+        const antigens: Antigen[] = [];
         const initialData = {
             name: "",
             organisationUnits: [],
             startDate: null,
             endDate: null,
-            antigens: [],
+            antigens: antigens,
+            antigensDisaggregation: AntigensDisaggregation.build(config, antigens),
         };
-        return new Campaign(db, initialData);
+
+        return new Campaign(db, config, initialData);
+    }
+
+    public update(newData: Data) {
+        return new Campaign(this.db, this.config, newData);
     }
 
     public validate() {
@@ -106,7 +114,7 @@ export default class Campaign {
 
     public setOrganisationUnits(organisationUnits: OrganisationUnitPathOnly[]): Campaign {
         // Use orgUnits only with id/path, that's the only info we get from a orgunit-tree
-        return new Campaign(this.db, { ...this.data, organisationUnits });
+        return this.update({ ...this.data, organisationUnits });
     }
 
     public get organisationUnits(): OrganisationUnitPathOnly[] {
@@ -116,7 +124,7 @@ export default class Campaign {
     /* Name */
 
     public setName(name: string): Campaign {
-        return new Campaign(this.db, { ...this.data, name });
+        return this.update({ ...this.data, name });
     }
 
     public get name(): string {
@@ -126,7 +134,7 @@ export default class Campaign {
     /* Period dates */
 
     public setStartDate(startDate: Date | null): Campaign {
-        return new Campaign(this.db, { ...this.data, startDate });
+        return this.update({ ...this.data, startDate });
     }
 
     public get startDate(): Date | null {
@@ -134,7 +142,7 @@ export default class Campaign {
     }
 
     public setEndDate(endDate: Date | null): Campaign {
-        return new Campaign(this.db, { ...this.data, endDate });
+        return this.update({ ...this.data, endDate });
     }
 
     public get endDate(): Date | null {
@@ -143,22 +151,48 @@ export default class Campaign {
 
     /* Antigens */
 
-    public setAntigens(antigens: CategoryOption[]): Campaign {
-        return new Campaign(this.db, { ...this.data, antigens });
+    public setAntigens(antigens: Antigen[]): Campaign {
+        const antigensDisaggregationUpdated = this.data.antigensDisaggregation.setAntigens(
+            antigens
+        );
+        return this.update({
+            ...this.data,
+            antigens,
+            antigensDisaggregation: antigensDisaggregationUpdated,
+        });
     }
 
-    public get antigens(): CategoryOption[] {
+    public get antigens(): Antigen[] {
         return this.data.antigens;
     }
 
-    public async getAvailableAntigens(): Promise<CategoryOption[]> {
-        return this.db.getCategoryOptionsByCategoryCode(metadataConfig.categoryCodeForAntigens);
+    public get antigenCodes(): string[] {
+        return this.antigens.map(antigen => antigen.code);
+    }
+
+    public getAvailableAntigens(): Antigen[] {
+        return this.config.antigens;
+    }
+
+    /* Antigens disaggregation */
+
+    public get antigensDisaggregation(): AntigensDisaggregation {
+        return this.data.antigensDisaggregation;
+    }
+
+    public setAntigensDisaggregation(antigensDisaggregation: AntigensDisaggregation): Campaign {
+        return this.update({ ...this.data, antigensDisaggregation });
+    }
+
+    public getEnabledAntigensDisaggregation(): AntigenDisaggregationEnabled {
+        return this.antigensDisaggregation.getEnabled(this.antigens);
     }
 
     /* Save */
 
     public async save(): Promise<Response<string>> {
         const dashboardId = await this.db.createDashboard(this.name);
+        const metadataConfig = this.config;
         const teamsCode = metadataConfig.categoryComboCodeForTeams;
         const antigenCodes = this.antigens.map(antigen => antigen.code);
         const vaccinationAttribute = await this.db.getAttributeIdByCode(
@@ -172,9 +206,6 @@ export default class Campaign {
             .keyBy("code")
             .value();
         const categoryComboTeams = _(categoryCombosByCode).get(teamsCode);
-        const [dataElementsGroupForAntigens] = await this.db.getDataElementGroupsByCodes([
-            metadataConfig.dataElementGroupCodeForAntigens,
-        ]);
 
         if (!vaccinationAttribute || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: Attributes" };
@@ -182,22 +213,17 @@ export default class Campaign {
             return { status: false, error: `Metadata not found: categoryCombo.code=${teamsCode}` };
         } else if (!dashboardId) {
             return { status: false, error: "Error creating dashboard" };
-        } else if (!dataElementsGroupForAntigens) {
-            return {
-                status: false,
-                error: `Metadata not found: dataElementGroup.code=${
-                    metadataConfig.dataElementGroupCodeForAntigens
-                }`,
-            };
         } else {
             const dataSetId = generateUid();
-            const dataSetElements = dataElementsGroupForAntigens.dataElements.map(dataElement => {
-                return {
-                    dataSet: { id: dataSetId },
-                    dataElement: { id: dataElement.id },
-                    categoryCombo: { id: dataElement.categoryCombo.id },
-                };
-            });
+
+            const disaggregationData = this.getEnabledAntigensDisaggregation();
+            const dataElements = await getDataElements(this.db, disaggregationData);
+
+            const dataSetElements = dataElements.map(dataElement => ({
+                dataSet: { id: dataSetId },
+                dataElement: { id: dataElement.id },
+                categoryCombo: { id: dataElement.categoryCombo.id },
+            }));
 
             const endDate =
                 !this.endDate && this.startDate

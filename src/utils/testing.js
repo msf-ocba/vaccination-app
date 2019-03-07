@@ -1,14 +1,13 @@
 import React from "react";
 import { mount as enzymeMount } from "enzyme";
 import fetch from "node-fetch";
-import _ from "./lodash";
+import _ from "lodash";
 import sinon from "sinon";
 import { generateUid } from "d2/uid";
 import OldMuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { MuiThemeProvider } from "@material-ui/core/styles";
-
-import { muiTheme } from "themes/dhis2.theme";
 import { SnackbarProvider } from "d2-ui-components";
+import { muiTheme } from "../themes/dhis2.theme";
 
 // DHIS2 expects a browser environment, add some required keys to the global node namespace
 Object.assign(global, {
@@ -38,8 +37,16 @@ const mocks = {
     },
 };
 
+function deepMerge(object, source) {
+    return _.mergeWith(object, source, function(objValue, srcValue) {
+        if (_.isObject(objValue) && srcValue) {
+            return deepMerge(objValue, srcValue);
+        }
+    });
+}
+
 export function getD2Stub(partialD2 = {}) {
-    return _.deepMerge(
+    return deepMerge(
         {
             Api: {
                 getApi: () => mocks.api,

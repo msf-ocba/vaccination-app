@@ -6,6 +6,7 @@ export interface D2 {
     };
 }
 
+/*
 export interface Params {
     paging?: boolean;
     pageSize?: number;
@@ -13,8 +14,9 @@ export interface Params {
     fields?: string[];
     order?: string;
 }
+*/
 
 export interface D2Api {
-    get(url: string, data: Params): Dictionary<any>;
+    get(url: string, data: Dictionary<any>): Dictionary<any>;
     post(url: string, data: Dictionary<any>): Dictionary<any>;
 }

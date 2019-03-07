@@ -1,6 +1,7 @@
 import { list } from "../datasets";
 import { getD2Stub } from "../../utils/testing";
-import { metadataConfig } from "../campaign";
+
+const metadataConfig = { attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP" };
 
 const expectedFields = [
     "id",
