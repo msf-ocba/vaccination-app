@@ -1,9 +1,66 @@
+import { metadataConfig } from './campaign';
+
 export const dashboardItemsConfig = {
-    codes:{
+    appendCodes: {
         indicatorChart: "indicatorChart",
         qsTable: "qsTable",
         vTable: "vTable",
+    },
+    categoryCode: metadataConfig.categoryCodeForAntigens,
+    tableDataElementCodes: {
+        vaccinesTable: ['RVC_DOSES_ADMINISTERED', 'RVC_DOSES_USED'],
+        qsIndicatorsTable: ['RVC_ADS_USED','RVC_SYRINGES','RVC_SAFETY_BOXES','RVC_NEEDLES','RVC_AEB'],
+    },
+    chartIndicatorsCodes: {
+        indicatorChart: ['RVC_ADS_WASTAGE', 'RVC_SAFETY_BOXES', 'RVC_DILUTION_SYRINGES_RATIO'],
+        coverageChart: ['RVC_CAMPAIGN_COVERAGE', 'RVC_VACCINE_UTILITZATION'],
     }
+
+}
+
+export function itemsMetadataConstructor(dashboardItemsMetadata) {
+    const { dataElements, indicators, antigenCategory } = dashboardItemsMetadata;
+    const {
+        tableDataElementCodes: { vaccinesTable, qsIndicatorsTable },
+        chartIndicatorsCodes: { indicatorChart, coverageChart },
+    } = dashboardItemsConfig;
+
+    const vaccineTableDE =  dataElements.data
+        .filter(({ code }) => vaccinesTable.includes(code))
+        .map(({ id }) => ({
+            dataDimensionItemType: dataElements.type,
+            dataElement: { id },
+        }));
+
+    const qsTableDE = dataElements.data
+        .filter(({ code }) => qsIndicatorsTable.includes(code))
+        .map(({ id }) => ({
+            dataDimensionItemType: dataElements.type,
+            dataElement: { id },
+        }));
+
+    const indicatorChartInd = indicators.data
+        .filter(({ code }) => indicatorChart.includes(code))
+        .map(({ id }) => ({
+            dataDimensionItemType: indicators.type,
+            indicator: { id },
+        }));
+
+    const coverageChartInd = indicators.data
+        .filter(({ code }) => coverageChart.includes(code))
+        .map(({ id }) => ({
+            dataDimensionItemType: indicators.type,
+            indicator: { id },
+        }));
+
+    const dashboardItemsElements = {
+        antigenCategory,
+        vaccineTable: vaccineTableDE,
+        qsTable: qsTableDE,
+        indicatorChart: indicatorChartInd,
+        coverageChart: coverageChartInd
+    };
+    return dashboardItemsElements;
 }
 
 export const indicatorsChart = (
@@ -12,10 +69,12 @@ export const indicatorsChart = (
     datasetId,
     organisationUnitsIds,
     organisationUnitsParents,
-    period
+    period,
+    antigenCategory,
+    data,
 ) => ({
-    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.codes.indicatorChart}`,
-    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.codes.indicatorChart}`,
+    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
+    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
     showData: true,
     publicAccess: "rw------",
     userOrganisationUnitChildren: false,
@@ -32,7 +91,7 @@ export const indicatorsChart = (
     hideEmptyRowItems: "AFTER_LAST",
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.codes.indicatorChart}`,
+    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
     hideSubtitle: false,
     hideLegend: false,
     externalAccess: false,
@@ -93,7 +152,7 @@ export const indicatorsChart = (
     dataElementGroupSetDimensions: [],
     attributeDimensions: [],
     translations: [],
-    filterDimensions: ["ou", "a6SQVBY9s18"], // Filter by orgUnits and Antigen category
+    filterDimensions: ["ou", antigenCategory], // Filter by orgUnits and Antigen category
     interpretations: [],
     itemOrganisationUnitGroups: [],
     userGroupAccesses: [],
@@ -102,26 +161,7 @@ export const indicatorsChart = (
     attributeValues: [],
     userAccesses: [],
     favorites: [],
-    dataDimensionItems: [
-        {
-            dataDimensionItemType: "INDICATOR", //TODO get indicator ids from metadata
-            indicator: {
-                id: "e8w7mCxy9ia",
-            },
-        },
-        {
-            dataDimensionItemType: "INDICATOR",
-            indicator: {
-                id: "eqMDzdX0Gug",
-            },
-        },
-        {
-            dataDimensionItemType: "INDICATOR",
-            indicator: {
-                id: "SACyBTOq9mW",
-            },
-        },
-    ],
+    dataDimensionItems: data,
     categoryOptionGroupSetDimensions: [],
     columns: [{ id: "dx" }],
     organisationUnitGroupSetDimensions: [],
@@ -130,16 +170,24 @@ export const indicatorsChart = (
     periods: period,
     organisationUnits: organisationUnitsIds,
     categoryDimensions: [
-        { category: { id: "a6SQVBY9s18" }, categoryOptions: [{ id: antigen.id }] }, // TODO get antigen categorID from metadata
+        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] }, // TODO get antigen categorID from metadata
     ],
-    filters: [{ id: "ou" }, { id: "a6SQVBY9s18" }],
+    filters: [{ id: "ou" }, { id: antigenCategory }],
     rows: [{ id: "pe" }],
 });
 
 
-export const qsIndicatorsTable = (name, antigen, datasetId, organisationUnitsIds, period) => ({
-    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.codes.qsTable}`,
-    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.codes.qsTable}`,
+export const qsIndicatorsTable = (
+    name,
+    antigen,
+    datasetId,
+    organisationUnitsIds,
+    period,
+    antigenCategory,
+    data,
+) => ({
+    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.qsTable}`,
+    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.qsTable}`,
     numberType: "VALUE",
     publicAccess: "rw------",
     userOrganisationUnitChildren: false,
@@ -160,7 +208,7 @@ export const qsIndicatorsTable = (name, antigen, datasetId, organisationUnitsIds
     topLimit: 0,
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.codes.qsTable}`,
+    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.qsTable}`,
     hideSubtitle: false,
     externalAccess: false,
     legendDisplayStrategy: "FIXED",
@@ -230,7 +278,7 @@ export const qsIndicatorsTable = (name, antigen, datasetId, organisationUnitsIds
     dataElementGroupSetDimensions: [],
     attributeDimensions: [],
     translations: [],
-    filterDimensions: ["ou", "a6SQVBY9s18"],
+    filterDimensions: ["ou", antigenCategory],
     interpretations: [],
     itemOrganisationUnitGroups: [],
     userGroupAccesses: [],
@@ -240,38 +288,7 @@ export const qsIndicatorsTable = (name, antigen, datasetId, organisationUnitsIds
     columnDimensions: ["dx"],
     userAccesses: [],
     favorites: [],
-    dataDimensionItems: [
-        {
-            dataDimensionItemType: "DATA_ELEMENT", //TODO get Q&S dataelement ids from metadata
-            dataElement: {
-                id: "ywKG3QmCbDi",
-            },
-        },
-        {
-            dataDimensionItemType: "DATA_ELEMENT",
-            dataElement: {
-                id: "q0MMyiUi0Pl",
-            },
-        },
-        {
-            dataDimensionItemType: "DATA_ELEMENT",
-            dataElement: {
-                id: "WCQHqR2RBIX",
-            },
-        },
-        {
-            dataDimensionItemType: "DATA_ELEMENT",
-            dataElement: {
-                id: "CCqBBZmfsTs",
-            },
-        },
-        {
-            dataDimensionItemType: "DATA_ELEMENT",
-            dataElement: {
-                id: "OQOgTET6NwY",
-            },
-        },
-    ],
+    dataDimensionItems: data,
     categoryOptionGroupSetDimensions: [],
     columns: [],
     organisationUnitGroupSetDimensions: [],
@@ -280,16 +297,24 @@ export const qsIndicatorsTable = (name, antigen, datasetId, organisationUnitsIds
     periods: period,
     organisationUnits: organisationUnitsIds,
     categoryDimensions: [
-        { category: { id: "a6SQVBY9s18" }, categoryOptions: [{ id: antigen.id }] }, //  TODO: Same as chart
+        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] }, //  TODO: Same as chart
     ],
     filters: [],
     rows: [],
     rowDimensions: ["pe"],
 });
 
-export const vaccinesTable = (name, antigen, datasetId, organisationUnitsIds, period) => ({
-    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.codes.qsTable}`,
-    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.codes.qsTable}`,
+export const vaccinesTable = (
+    name,
+    antigen,
+    datasetId,
+    organisationUnitsIds,
+    period,
+    antigenCategory,
+    data,
+) => ({
+    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.vaccineTable}`,
+    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.vaccineTable}`,
     numberType: "VALUE",
     publicAccess: "rw------",
     userOrganisationUnitChildren: false,
@@ -310,7 +335,7 @@ export const vaccinesTable = (name, antigen, datasetId, organisationUnitsIds, pe
     topLimit: 0,
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.codes.qsTable}`,
+    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.qsTable}`,
     hideSubtitle: false,
     externalAccess: false,
     legendDisplayStrategy: "FIXED",
@@ -380,7 +405,7 @@ export const vaccinesTable = (name, antigen, datasetId, organisationUnitsIds, pe
     dataElementGroupSetDimensions: [],
     attributeDimensions: [],
     translations: [],
-    filterDimensions: ["ou", "a6SQVBY9s18"],
+    filterDimensions: ["ou", antigenCategory],
     interpretations: [],
     itemOrganisationUnitGroups: [],
     userGroupAccesses: [],
@@ -390,20 +415,7 @@ export const vaccinesTable = (name, antigen, datasetId, organisationUnitsIds, pe
     columnDimensions: ["dx"],
     userAccesses: [],
     favorites: [],
-    dataDimensionItems: [
-        {
-            dataDimensionItemType: "DATA_ELEMENT",
-            dataElement: {
-                id: "ycy4WvaTCtm",
-            },
-        },
-        {
-            dataDimensionItemType: "DATA_ELEMENT",
-            dataElement: {
-                id: "mkgnDxyksQS",
-            },
-        },
-    ],
+    dataDimensionItems: data,
     categoryOptionGroupSetDimensions: [],
     columns: [],
     organisationUnitGroupSetDimensions: [],
@@ -412,7 +424,7 @@ export const vaccinesTable = (name, antigen, datasetId, organisationUnitsIds, pe
     periods: period,
     organisationUnits: organisationUnitsIds,
     categoryDimensions: [
-        { category: { id: "a6SQVBY9s18" }, categoryOptions: [{ id: antigen.id }] }, //  TODO: Same as chart
+        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] }, //  TODO: Same as chart
     ],
     filters: [],
     rows: [],
