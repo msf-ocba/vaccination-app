@@ -90,6 +90,9 @@ const styles = (_theme: Theme) =>
         },
         leftBar: {
             position: "absolute",
+            height: "100%",
+            boxShadow: "rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px",
+            paddingRight: 20
         },
         page: {
             paddingLeft: 295 + 8,

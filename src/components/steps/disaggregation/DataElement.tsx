@@ -39,6 +39,7 @@ const DataElement: SFC<DataElementProps> = props => {
 
     return (
         <div className={classes.categories}>
+            <div className={classes.categoriesWrapper}>{i18n.t("Disaggregation")}</div>
             {categories.map((category, categoryIdx) => (
                 <div key={category.code} className={classes.categoriesWrapper}>
                     <SimpleCheckbox

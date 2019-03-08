@@ -49,7 +49,6 @@ class AntigenSection extends React.Component<AntigenSectionProps, Disaggregation
                 <TableHead>
                     <TableRow>
                         <TableCell className={classes.nameTableCell}>{i18n.t("Name")}</TableCell>
-                        <TableCell>{i18n.t("Disaggregation")}</TableCell>
                     </TableRow>
                 </TableHead>
 
