@@ -23,43 +23,45 @@ const OptionGroup: SFC<OptionGroupProps> = props => {
     return (
         <React.Fragment>
             <div className={classes.checkboxesGroup}>
-                {optionGroup.values[optionGroup.indexSelected].map((option, optionIdx) =>
-                    !isEditing ? (
-                        option.selected && (
-                            <span key={option.name} className={classes.optionValue}>
-                                {option.name}
-                            </span>
+                {optionGroup.values[optionGroup.indexSelected].map(
+                    (option, optionIdx) =>
+                        !isEditing ? (
+                            option.selected && (
+                                <span key={option.name} className={classes.optionValue}>
+                                    {option.name}
+                                </span>
+                            )
+                        ) : (
+                            <SimpleCheckbox
+                                key={option.name}
+                                checked={option.selected}
+                                label={option.name}
+                                onChange={update([
+                                    ...basePath,
+                                    "values",
+                                    optionGroup.indexSelected,
+                                    optionIdx,
+                                    "selected",
+                                ])}
+                            />
                         )
-                    ) : (
-                        <SimpleCheckbox
-                            key={option.name}
-                            checked={option.selected}
-                            label={option.name}
-                            onChange={update([
-                                ...basePath,
-                                "values",
-                                optionGroup.indexSelected,
-                                optionIdx,
-                                "selected",
-                            ])}
-                        />
-                    )
                 )}
             </div>
 
             <div>
-                {isEditing && optionGroup.values.length > 1 && (
-                    <div className={classes.groupSelector}>
-                        <SimpleSelect
-                            value={optionGroup.indexSelected.toString()}
-                            onChange={update([...basePath, "indexSelected"])}
-                            options={optionGroup.values.map((og, index) => ({
-                                text: og.map(o => o.name).join(" / "),
-                                value: index.toString(),
-                            }))}
-                        />
-                    </div>
-                )}
+                {isEditing &&
+                    optionGroup.values.length > 1 && (
+                        <div className={classes.groupSelector}>
+                            <SimpleSelect
+                                value={optionGroup.indexSelected.toString()}
+                                onChange={update([...basePath, "indexSelected"])}
+                                options={optionGroup.values.map((og, index) => ({
+                                    text: og.map(o => o.name).join(" / "),
+                                    value: index.toString(),
+                                }))}
+                            />
+                        </div>
+                    )}
             </div>
         </React.Fragment>
     );

@@ -134,7 +134,6 @@ export default class DbD2 {
     }
 
     public async getCategoryOptionsByCategoryCode(code: string): Promise<CategoryOption[]> {
-        await this.getMetadataForDashboardItems();
         const { categories } = await this.api.get("/categories", {
             filter: [`code:in:[${code}]`],
             fields: ["categoryOptions[id,displayName,code,dataDimension,dataDimensionType]"],
@@ -180,7 +179,7 @@ export default class DbD2 {
         return attributes[0];
     }
 
-    async getMetadataForDashboardItems() {
+    async getMetadataForDashboardItems(antigens: Antigen[]) {
         const { categoryCode, tablesDataCodes, chartsDataCodes } = dashboardItemsConfig;
         const allDataElementCodes = _(tablesDataCodes)
             .values()
@@ -188,18 +187,19 @@ export default class DbD2 {
         const allIndicatorCodes = _(chartsDataCodes)
             .values()
             .flatten();
-
+        const antigenCodes = antigens.map(an => an.code);
         const { dataElements, categories, indicators } = await this.api.get("/metadata", {
-            "categories:fields": "id",
+            "categories:fields": "id,categoryOptions[id,code,name]",
             "categories:filter": `code:in:[${categoryCode}]`,
             "dataElements:fields": "id,code",
             "dataElements:filter": `code:in:[${allDataElementCodes.join(",")}]`,
             "indicators:fields": "id,code",
             "indicators:filter": `code:in:[${allIndicatorCodes.join(",")}]`,
         });
-
+        const { id: categoryId, categoryOptions } = categories[0];
+        const antigensMeta = _.filter(categoryOptions, op => _.includes(antigenCodes, op.code));
         const dashboardMetadata = {
-            antigenCategory: categories[0].id,
+            antigenCategory: categoryId,
             dataElements: {
                 type: "DATA_ELEMENT",
                 data: dataElements,
@@ -210,6 +210,7 @@ export default class DbD2 {
                 data: indicators,
                 key: "indicator",
             },
+            antigensMeta,
         };
         return dashboardMetadata;
     }
@@ -222,13 +223,15 @@ export default class DbD2 {
         startDate: Date | null,
         endDate: Date | null
     ): Promise<Ref | undefined> {
+        const dashboardItemsMetadata = await this.getMetadataForDashboardItems(antigens);
+
         const dashboardItems = await this.createDashboardItems(
             name,
             organisationUnits,
-            antigens,
             datasetId,
             startDate,
-            endDate
+            endDate,
+            dashboardItemsMetadata
         );
 
         const dashboard = { name: `${name}_DASHBOARD`, dashboardItems };
@@ -242,10 +245,10 @@ export default class DbD2 {
     async createDashboardItems(
         name: String,
         organisationUnits: OrganisationUnitPathOnly[],
-        antigens: Antigen[],
         datasetId: String,
         startDate: Date | null,
-        endDate: Date | null
+        endDate: Date | null,
+        dashboardItemsMetadata: Dictionary<any>
     ): Promise<Ref[]> {
         const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
         const organizationUnitsParents = _(organisationUnits)
@@ -256,13 +259,12 @@ export default class DbD2 {
         const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
         const periodRange = getDaysRange(periodStart, periodEnd);
         const period = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
-
-        const dashboardItemsMetadata = await this.getMetadataForDashboardItems();
+        const { antigensMeta } = dashboardItemsMetadata;
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
         const { antigenCategory, ...elements } = dashboardItemsElements;
 
         const { charts, reportTables } = buildDashboardItems(
-            antigens,
+            antigensMeta,
             name,
             datasetId,
             organisationUnitsIds,
@@ -276,14 +278,14 @@ export default class DbD2 {
 
         // Search for dashboardItems ids
         const appendCodes = dashboardItemsConfig.appendCodes;
-        const chartCodes = antigens.map(
-            ({ id }) => `${datasetId}-${id}-${appendCodes.indicatorChart}`
+        const chartCodes = antigensMeta.map(
+            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.indicatorChart}`
         );
-        const indicatorTableCodes = antigens.map(
-            ({ id }) => `${datasetId}-${id}-${appendCodes.qsTable}`
+        const indicatorTableCodes = antigensMeta.map(
+            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.qsTable}`
         );
-        const vaccineTableCodes = antigens.map(
-            ({ id }) => `${datasetId}-${id}-${appendCodes.vaccinesTable}`
+        const vaccineTableCodes = antigensMeta.map(
+            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.vaccinesTable}`
         );
 
         const { charts: chartIds, reportTables: tableIds } = await this.api.get("/metadata", {

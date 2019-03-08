@@ -24,7 +24,7 @@ export const dashboardItemsConfig = {
 };
 
 export function buildDashboardItems(
-    antigens,
+    antigensMeta,
     name,
     datasetId,
     organisationUnitsIds,
@@ -33,7 +33,7 @@ export function buildDashboardItems(
     antigenCategory,
     elements
 ) {
-    const charts = antigens.map(antigen =>
+    const charts = antigensMeta.map(antigen =>
         indicatorsChart(
             name,
             antigen,
@@ -45,7 +45,7 @@ export function buildDashboardItems(
             elements.indicatorChart
         )
     );
-    const tables = antigens.map(antigen => [
+    const tables = antigensMeta.map(antigen => [
         qsIndicatorsTable(
             name,
             antigen,
@@ -106,7 +106,7 @@ const indicatorsChart = (
     antigenCategory,
     data
 ) => ({
-    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
+    name: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
     code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
     showData: true,
     publicAccess: "rw------",
@@ -124,9 +124,7 @@ const indicatorsChart = (
     hideEmptyRowItems: "AFTER_LAST",
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.displayName}-${
-        dashboardItemsConfig.appendCodes.indicatorChart
-    }`,
+    displayName: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
     hideSubtitle: false,
     hideLegend: false,
     externalAccess: false,
@@ -220,7 +218,7 @@ const qsIndicatorsTable = (
     antigenCategory,
     data
 ) => ({
-    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.qsTable}`,
+    name: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.qsTable}`,
     code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.qsTable}`,
     numberType: "VALUE",
     publicAccess: "rw------",
@@ -242,7 +240,7 @@ const qsIndicatorsTable = (
     topLimit: 0,
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.qsTable}`,
+    displayName: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.qsTable}`,
     hideSubtitle: false,
     externalAccess: false,
     legendDisplayStrategy: "FIXED",
@@ -347,7 +345,7 @@ const vaccinesTable = (
     antigenCategory,
     data
 ) => ({
-    name: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.vaccinesTable}`,
+    name: `${name}-${antigen}-${dashboardItemsConfig.appendCodes.vaccinesTable}`,
     code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.vaccinesTable}`,
     numberType: "VALUE",
     publicAccess: "rw------",
@@ -369,7 +367,7 @@ const vaccinesTable = (
     topLimit: 0,
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.displayName}-${dashboardItemsConfig.appendCodes.vaccineTable}`,
+    displayName: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.vaccineTable}`,
     hideSubtitle: false,
     externalAccess: false,
     legendDisplayStrategy: "FIXED",

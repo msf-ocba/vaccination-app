@@ -13,7 +13,6 @@ import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled, getDataElements } from "./AntigensDisaggregation";
 
 export interface Antigen {
-    id?: string;
     name: string;
     code: string;
 }
@@ -224,7 +223,6 @@ export default class Campaign {
         } else if (!dashboardId) {
             return { status: false, error: "Error creating dashboard" };
         } else {
-
             const disaggregationData = this.getEnabledAntigensDisaggregation();
             const dataElements = await getDataElements(this.db, disaggregationData);
 
