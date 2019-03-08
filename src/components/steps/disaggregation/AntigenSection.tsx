@@ -99,6 +99,7 @@ const styles = (_theme: Theme) =>
         },
         nameTableCell: {
             width: "50%",
+            fontSize: '1rem'
         },
     });
 

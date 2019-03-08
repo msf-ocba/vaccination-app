@@ -82,17 +82,15 @@ const styles = (_theme: Theme) =>
     createStyles({
         box: {
             position: "relative",
-            border: "1px solid #808080",
-            borderRadius: 3,
             width: "auto",
             height: "auto",
             margin: 16,
+            boxShadow: "rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px",
+            paddingRight: 20
         },
         leftBar: {
             position: "absolute",
             height: "100%",
-            boxShadow: "rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px",
-            paddingRight: 20
         },
         page: {
             paddingLeft: 295 + 8,
@@ -104,7 +102,7 @@ const materialTheme = createMuiThemeOverrides({
         label: {
             "&$disabled": {
                 color: "#000",
-            },
+            }
         },
     },
     MuiCheckbox: {
