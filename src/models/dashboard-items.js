@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { metadataConfig } from "./campaign";
 
 export const dashboardItemsConfig = {
     appendCodes: {
@@ -7,7 +6,7 @@ export const dashboardItemsConfig = {
         qsTable: "qsTable",
         vaccinesTable: "vTable",
     },
-    categoryCode: metadataConfig.categoryCodeForAntigens,
+    categoryCode: "RVC_ANTIGEN",
     tablesDataCodes: {
         vaccinesTable: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
         qsIndicatorsTable: [

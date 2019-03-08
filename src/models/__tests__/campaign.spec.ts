@@ -2,10 +2,11 @@ import Campaign from "../campaign";
 import DbD2 from "../db-d2";
 import { getD2Stub } from "../../utils/testing";
 import _ from "lodash";
+import metadataConfig from "./config-mock";
 
 const d2 = getD2Stub();
 const db = new DbD2(d2);
-const campaign = Campaign.create(db);
+const campaign = Campaign.create(metadataConfig, db);
 
 describe("Campaign", () => {
     describe("Validations", () => {

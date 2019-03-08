@@ -1,7 +1,5 @@
 import _ from "lodash";
 
-import { metadataConfig } from "./campaign";
-
 const fields = [
     "id",
     "name",
@@ -43,7 +41,7 @@ export async function list(d2, filters, pagination) {
 }
 
 async function getByAttribute(d2) {
-    const appCode = metadataConfig.attibuteCodeForApp;
+    const appCode = "RVC_CREATED_BY_VACCINATION_APP"; //metadataConfig.attibuteCodeForApp;
     const filter = `attributeValues.attribute.code:eq:${appCode}`;
     const listOptions = {
         filter,

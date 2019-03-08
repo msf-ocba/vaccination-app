@@ -6,9 +6,12 @@ import {
     PaginatedObjects,
     CategoryOption,
     CategoryCombo,
-    DataElementGroup,
     MetadataResponse,
     Metadata,
+    ModelFields,
+    MetadataGetParams,
+    ModelName,
+    MetadataFields,
     Attribute,
     Ref,
     OrganisationUnitPathOnly,
@@ -20,6 +23,83 @@ import {
     buildDashboardItems,
 } from "./dashboard-items";
 import { getDaysRange } from "../utils/date";
+import { Antigen } from "./campaign";
+
+function getDbFields(modelFields: ModelFields): string[] {
+    return _(modelFields)
+        .map((value, key) => {
+            if (typeof value === "function") {
+                return key + "[" + getDbFields(value(metadataFields)).join(",") + "]";
+            } else if (typeof value === "boolean") {
+                return value ? key : null;
+            } else {
+                return key + "[" + getDbFields(value).join(",") + "]";
+            }
+        })
+        .compact()
+        .value();
+}
+
+function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
+    return _(metadataParams)
+        .flatMap((params, modelName) => {
+            const fields = metadataFields[modelName as ModelName];
+            if (!params) {
+                return [];
+            } else {
+                return [
+                    [modelName + ":fields", getDbFields(fields).join(",")],
+                    ...(params.filters || []).map(filter => [modelName + ":filter", filter]),
+                ];
+            }
+        })
+        .fromPairs()
+        .value();
+}
+
+const metadataFields: MetadataFields = {
+    categories: {
+        id: true,
+        displayName: true,
+        code: true,
+        dataDimensionType: true,
+        dataDimension: true,
+        categoryOptions: {
+            id: true,
+            code: true,
+            displayName: true,
+        },
+    },
+    categoryCombos: {
+        id: true,
+        displayName: true,
+        code: true,
+        categories: metadataFields => metadataFields.categories,
+    },
+    categoryOptions: {
+        id: true,
+        displayName: true,
+        code: true,
+    },
+    categoryOptionGroups: {
+        id: true,
+        displayName: true,
+        code: true,
+        categoryOptions: metadataFields => metadataFields.categoryOptions,
+    },
+    dataElements: {
+        id: true,
+        code: true,
+        displayName: true,
+        categoryCombo: metadataFields => metadataFields.categoryCombos,
+    },
+    dataElementGroups: {
+        id: true,
+        displayName: true,
+        code: true,
+        dataElements: metadataFields => metadataFields.dataElements,
+    },
+};
 
 export default class DbD2 {
     d2: D2;
@@ -28,6 +108,11 @@ export default class DbD2 {
     constructor(d2: D2) {
         this.d2 = d2;
         this.api = d2.Api.getApi();
+    }
+
+    public async getMetadata<T>(params: MetadataGetParams): Promise<T> {
+        const options = { translate: true, ...toDbParams(params) };
+        return this.api.get("/metadata", options) as T;
     }
 
     public async getOrganisationUnitsFromIds(
@@ -52,7 +137,7 @@ export default class DbD2 {
         await this.getMetadataForDashboardItems();
         const { categories } = await this.api.get("/categories", {
             filter: [`code:in:[${code}]`],
-            fields: ["categoryOptions[id,displayName,code]"],
+            fields: ["categoryOptions[id,displayName,code,dataDimension,dataDimensionType]"],
         });
 
         if (_(categories).isEmpty()) {
@@ -71,16 +156,6 @@ export default class DbD2 {
             fields: ["id,code,displayName"],
         });
         return categoryCombos;
-    }
-
-    public async getDataElementGroupsByCodes(codes: string[]): Promise<DataElementGroup[]> {
-        const { dataElementGroups } = await this.api.get("/dataElementGroups", {
-            filter: [`code:in:[${codes.join(",")}]`],
-            fields: [
-                "id,code,displayName,dataElements[id,code,displayName,categoryCombo[id,displayName,code]]",
-            ],
-        });
-        return dataElementGroups;
     }
 
     public async postMetadata(metadata: Metadata): Promise<MetadataResponse> {
@@ -142,7 +217,7 @@ export default class DbD2 {
     public async createDashboard(
         name: String,
         organisationUnits: OrganisationUnitPathOnly[],
-        antigens: CategoryOption[],
+        antigens: Antigen[],
         datasetId: String,
         startDate: Date | null,
         endDate: Date | null
@@ -167,7 +242,7 @@ export default class DbD2 {
     async createDashboardItems(
         name: String,
         organisationUnits: OrganisationUnitPathOnly[],
-        antigens: CategoryOption[],
+        antigens: Antigen[],
         datasetId: String,
         startDate: Date | null,
         endDate: Date | null

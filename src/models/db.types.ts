@@ -4,6 +4,8 @@ export type Maybe<T> = T | undefined;
 
 export type Response<T> = { status: true } | { status: false; error: T };
 
+type Partial<T> = { [P in keyof T]?: T[P] };
+
 export interface Pager {
     page: number;
     pageCount: number;
@@ -29,16 +31,33 @@ export interface OrganisationUnit {
     ancestors: Maybe<OrganisationUnit[]>;
 }
 
+export interface Category {
+    id: string;
+    code: string;
+    displayName: string;
+    categoryOptions: CategoryOption[];
+    dataDimensionType: "DISAGGREGATION" | "ATTRIBUTE";
+    dataDimension: boolean;
+}
+
 export interface CategoryOption {
     id: string;
     code: string;
     displayName: string;
 }
 
+export interface CategoryOptionGroup {
+    id: string;
+    code: string;
+    displayName: string;
+    categoryOptions: CategoryOption[];
+}
+
 export interface CategoryCombo {
     id: string;
     code: string;
     displayName: string;
+    categories: Category[];
 }
 
 export interface Attribute {
@@ -152,3 +171,23 @@ export interface MetadataResponse {
     stats: Stats;
     typeReports: TypeReport[];
 }
+
+export type MetadataFields = { [key in ModelName]: ModelFields };
+
+export interface ModelFields {
+    [key: string]: boolean | ModelFields | ((fields: MetadataFields) => ModelFields);
+}
+
+export type ModelName =
+    | "categories"
+    | "categoryCombos"
+    | "categoryOptions"
+    | "categoryOptionGroups"
+    | "dataElements"
+    | "dataElementGroups";
+
+export interface MetadataGetModelParams {
+    filters?: string[];
+}
+
+export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams | undefined };

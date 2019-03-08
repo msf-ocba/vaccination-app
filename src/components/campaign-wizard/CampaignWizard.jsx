@@ -14,17 +14,20 @@ import { getValidationMessages } from "../../utils/validations";
 import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
 import ConfirmationDialog from "../confirmation-dialog/ConfirmationDialog";
+import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         history: PropTypes.object.isRequired,
+        config: PropTypes.object.isRequired,
     };
 
     constructor(props) {
         super(props);
+        const campaign = Campaign.create(props.config, new DbD2(props.d2));
         this.state = {
-            campaign: Campaign.create(new DbD2(props.d2)),
+            campaign: campaign,
             dialogOpen: false,
         };
     }
@@ -55,6 +58,13 @@ Only organisation units of level 6 (service) can be selected`),
                 component: AntigenSelectionStep,
                 validationKeys: ["antigens"],
                 help: i18n.t(`Select the antigens included in the campaign`),
+            },
+            {
+                key: "disaggregation",
+                label: i18n.t("Disaggregation"),
+                component: DisaggregationStep,
+                validationKeys: [],
+                help: i18n.t(`Define disaggregation categories for each antigen`),
             },
             {
                 key: "save",
