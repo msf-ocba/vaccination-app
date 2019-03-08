@@ -100,11 +100,11 @@ const styles = (_theme: Theme) =>
         },
         categoriesTitle: {
             display: "flex",
-            fontSize: '0.9rem',
-            borderBottom: '1px solid #e0e0e0',
-            padding: '15px 0px',
-            color: '#494949',
-            fontWeight: 500
+            fontSize: "0.9rem",
+            borderBottom: "1px solid #e0e0e0",
+            padding: "15px 0px",
+            color: "#494949",
+            fontWeight: 500,
         },
         categoriesWrapper: {
             display: "flex",
@@ -113,13 +113,13 @@ const styles = (_theme: Theme) =>
             display: "flex",
         },
         categoriesInnerWrapper: {
-            width: '200px',
+            width: "200px",
         },
         optionGroupWrapper: {
             textAlign: "center",
         },
         optionGroup: {
-            backgroundColor: 'rgb(243, 243, 243)',
+            backgroundColor: "rgb(243, 243, 243)",
             paddingLeft: 10,
             paddingRight: 10,
             paddingBottom: 8,
