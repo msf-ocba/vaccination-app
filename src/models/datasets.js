@@ -23,13 +23,13 @@ function cleanOptions(options) {
     return _.omitBy(options, value => _.isArray(value) && _.isEmpty(value));
 }
 
-export async function list(d2, filters, pagination) {
+export async function list(config, d2, filters, pagination) {
     const { search, showOnlyUserCampaigns } = filters || {};
     const { page, pageSize = 20, sorting } = pagination || {};
     // order=FIELD:DIRECTION where direction = "iasc" | "idesc" (insensitive ASC, DESC)
     const [field, direction] = sorting || [];
     const order = field && direction ? `${field}:i${direction}` : undefined;
-    const vaccinationIds = await getByAttribute(d2);
+    const vaccinationIds = await getByAttribute(config, d2);
     const filter = _.compact([
         search ? `displayName:ilike:${search}` : null,
         showOnlyUserCampaigns ? `user.id:eq:${d2.currentUser.id}` : null,
@@ -40,8 +40,8 @@ export async function list(d2, filters, pagination) {
     return { pager: collection.pager, objects: collection.toArray() };
 }
 
-async function getByAttribute(d2) {
-    const appCode = "RVC_CREATED_BY_VACCINATION_APP"; //metadataConfig.attibuteCodeForApp;
+async function getByAttribute(config, d2) {
+    const appCode = config.attibuteCodeForApp;
     const filter = `attributeValues.attribute.code:eq:${appCode}`;
     const listOptions = {
         filter,

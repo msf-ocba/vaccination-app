@@ -10,6 +10,7 @@ import { list } from "../../models/datasets";
 class CampaignConfigurator extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
+        config: PropTypes.object.isRequired,
     };
 
     state = {
@@ -108,6 +109,11 @@ class CampaignConfigurator extends React.Component {
         );
     };
 
+    list = (...listArgs) => {
+        const { config } = this.props;
+        return list(config, ...listArgs);
+    };
+
     render() {
         const { d2 } = this.props;
 
@@ -122,7 +128,7 @@ class CampaignConfigurator extends React.Component {
                     initialSorting={this.initialSorting}
                     actions={this.actions}
                     onCreate={this.canCreateDataSets ? this.onCreate : null}
-                    list={list}
+                    list={this.list}
                     customFiltersComponent={this.renderCustomFilters}
                     customFilters={this.state.filters}
                 />

@@ -40,7 +40,9 @@ class Root extends React.Component {
 
                 <Route
                     path="/campaign-configurator"
-                    render={props => <CampaignConfigurator d2={d2} {...props} />}
+                    render={props => (
+                        <CampaignConfigurator d2={d2} config={this.state.config} {...props} />
+                    )}
                 />
                 <Route
                     path="/data-entry"
