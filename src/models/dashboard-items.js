@@ -345,7 +345,7 @@ const vaccinesTable = (
     antigenCategory,
     data
 ) => ({
-    name: `${name}-${antigen}-${dashboardItemsConfig.appendCodes.vaccinesTable}`,
+    name: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.vaccinesTable}`,
     code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.vaccinesTable}`,
     numberType: "VALUE",
     publicAccess: "rw------",
