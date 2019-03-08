@@ -1,7 +1,6 @@
 import { list } from "../datasets";
 import { getD2Stub } from "../../utils/testing";
-
-const metadataConfig = { attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP" };
+import metadataConfig from "./config-mock";
 
 const expectedFields = [
     "id",
@@ -30,7 +29,7 @@ describe("DataSets", () => {
         describe("without filters nor pagination", () => {
             it("returns datasets", async () => {
                 const d2 = getD2Stub({ models: { dataSets: { list: listMock } } });
-                await list(d2, {}, {});
+                await list(metadataConfig, d2, {}, {});
 
                 expect(d2.models.dataSets.list).toHaveBeenNthCalledWith(1, {
                     fields: ["id", "attributeValues[value, attribute[code]]"],
@@ -66,7 +65,7 @@ describe("DataSets", () => {
                     pageSize: 10,
                     sorting: ["displayName", "desc"],
                 };
-                await list(d2, filters, pagination);
+                await list(metadataConfig, d2, filters, pagination);
 
                 expect(d2.models.dataSets.list).toHaveBeenCalledWith({
                     fields: expectedFields,
@@ -92,7 +91,7 @@ describe("DataSets", () => {
                     Promise.resolve({ toArray: () => testDataSets, pager: {} })
                 );
                 const d2 = getD2Stub({ models: { dataSets: { list: listMock } } });
-                await list(d2, {}, {});
+                await list(metadataConfig, d2, {}, {});
 
                 expect(d2.models.dataSets.list).toHaveBeenLastCalledWith({
                     fields: expectedFields,

@@ -13,6 +13,7 @@ import {
     MetadataFields,
     Attribute,
     Ref,
+    DataEntryForm,
 } from "./db.types";
 import { chart, reportTable } from "./dashboard-items";
 
@@ -66,6 +67,7 @@ const metadataFields: MetadataFields = {
         displayName: true,
         code: true,
         categories: metadataFields => metadataFields.categories,
+        categoryOptionCombos: { id: true, name: true, categoryOptions: { id: true } },
     },
     categoryOptions: {
         id: true,
@@ -150,15 +152,12 @@ export default class DbD2 {
     }
 
     public async postMetadata(metadata: Metadata): Promise<MetadataResponse> {
-        const result = (await this.api.post("/metadata", metadata)) as MetadataResponse;
-        return result;
+        return this.api.post("/metadata", metadata) as MetadataResponse;
+    }
 
-        /*
-        if (result.status === "OK" && metadata.dataSets) {
-            metadata.dataSets.map(dataSet => {})
-            this.api.post("/metadata", metadata) as MetadataResponse;
-        }
-        */
+    public async postForm(dataSetId: string, dataEntryForm: DataEntryForm): Promise<boolean> {
+        await this.api.post(["dataSets", dataSetId, "form"].join("/"), dataEntryForm);
+        return true;
     }
 
     public async getAttributeIdByCode(code: string): Promise<Attribute | undefined> {

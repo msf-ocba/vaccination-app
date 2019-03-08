@@ -1,9 +1,10 @@
 ///<reference path="../types/d2.d.ts" />
+import { DataSetCustomForm } from "./DataSetCustomForm";
 import _ from "lodash";
 import moment from "moment";
 
 import { AntigensDisaggregation } from "./AntigensDisaggregation";
-import { MetadataResponse } from "./db.types";
+import { MetadataResponse, DataEntryForm } from "./db.types";
 import { generateUid } from "d2/uid";
 import { DataSet, Response } from "./db.types";
 import { PaginatedObjects, OrganisationUnitPathOnly, CategoryOption } from "./db.types";
@@ -194,7 +195,6 @@ export default class Campaign {
         const dashboardId = await this.db.createDashboard(this.name);
         const metadataConfig = this.config;
         const teamsCode = metadataConfig.categoryComboCodeForTeams;
-        const antigenCodes = this.antigens.map(antigen => antigen.code);
         const vaccinationAttribute = await this.db.getAttributeIdByCode(
             metadataConfig.attibuteCodeForApp
         );
@@ -238,6 +238,15 @@ export default class Campaign {
                 period: { id: date.format("YYYYMMDD") },
             }));
 
+            const customForm = await DataSetCustomForm.build(this, this.db);
+            const customFormHtml = customForm.generate();
+            const dataEntryForm: DataEntryForm = {
+                id: generateUid(),
+                name: this.name,
+                htmlCode: customFormHtml,
+                style: "NONE",
+            };
+
             const dataSet: DataSet = {
                 id: dataSetId,
                 name: this.name,
@@ -251,6 +260,7 @@ export default class Campaign {
                 openFuturePeriods: 0,
                 timelyDays: 0,
                 expiryDays: 0,
+                formType: "CUSTOM",
                 dataInputPeriods,
                 attributeValues: [
                     { value: "true", attribute: { id: vaccinationAttribute.id } },
@@ -262,9 +272,12 @@ export default class Campaign {
                 dataSets: [dataSet],
             });
 
-            return result.status === "OK"
-                ? { status: true }
-                : { status: false, error: JSON.stringify(result.typeReports, null, 2) };
+            if (result.status !== "OK") {
+                return { status: false, error: JSON.stringify(result.typeReports, null, 2) };
+            } else {
+                await this.db.postForm(dataSetId, dataEntryForm);
+                return { status: true };
+            }
         }
     }
 }

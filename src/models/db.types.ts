@@ -58,6 +58,7 @@ export interface CategoryCombo {
     code: string;
     displayName: string;
     categories: Category[];
+    categoryOptionCombos: { id: string; name: string; categoryOptions: Ref[] }[];
 }
 
 export interface Attribute {
@@ -116,6 +117,14 @@ export interface DataSet {
     sections?: Section[];
     dataInputPeriods: DataInputPeriod[];
     attributeValues: AttributeValue[];
+    formType: "DEFAULT" | "CUSTOM";
+}
+
+export interface DataEntryForm {
+    id: string;
+    name: string;
+    htmlCode: string;
+    style: "NORMAL" | "COMFORTABLE" | "COMPACT" | "NONE";
 }
 
 export interface DataInputPeriod {

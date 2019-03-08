@@ -2,6 +2,7 @@ import { MetadataConfig } from "../config";
 
 const metadataConfig: MetadataConfig = {
     categoryCodeForAntigens: "RVC_ANTIGEN",
+    categoryCodeForAgeGroup: "RVC_AGE_GROUP",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
@@ -62,6 +63,7 @@ const metadataConfig: MetadataConfig = {
     ],
     dataElements: [
         {
+            id: "1",
             name: "Vaccine doses administered",
             code: "RVC_DOSES_ADMINISTERED",
             categories: [
@@ -71,36 +73,43 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "2",
             name: "Vaccine doses used",
             code: "RVC_USED",
             categories: [],
         },
         {
+            id: "3",
             name: "ADS used",
             code: "RVC_ADS_USED",
             categories: [],
         },
         {
+            id: "4",
             name: "Syringes for dilution",
             code: "RVC_SYRINGES",
             categories: [],
         },
         {
+            id: "5",
             name: "Needles doses used",
             code: "RVC_NEEDLES",
             categories: [],
         },
         {
+            id: "6",
             name: "Safety boxes",
             code: "RVC_SAFETY_BOXES",
             categories: [],
         },
         {
+            id: "7",
             name: "Accidental Exposure to Blood (AEB)",
             code: "RVC_AEB",
             categories: [],
         },
         {
+            id: "8",
             name: "Adverse Event Following Immunization",
             code: "RVC_AEFI",
             categories: [{ code: "RVC_SEVERITY", optional: true }],

@@ -3,13 +3,25 @@ import "../utils/lodash-mixins";
 import DbD2 from "./db-d2";
 import { Category, DataElementGroup, CategoryCombo, CategoryOptionGroup } from "./db.types";
 
-export interface MetadataConfig {
+export interface BaseConfig {
     categoryCodeForAntigens: string;
+    categoryCodeForAgeGroup: string;
     dataElementGroupCodeForAntigens: string;
     categoryComboCodeForTeams: string;
     attibuteCodeForApp: string;
     attributeCodeForDashboard: string;
+}
 
+const baseConfig: BaseConfig = {
+    categoryCodeForAntigens: "RVC_ANTIGEN",
+    categoryCodeForAgeGroup: "RVC_AGE_GROUP",
+    dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
+    categoryComboCodeForTeams: "RVC_TEAM",
+    attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
+    attributeCodeForDashboard: "RVC_DASHBOARD_ID",
+};
+
+export interface MetadataConfig extends BaseConfig {
     categories: Array<{
         name: string;
         code: string;
@@ -23,6 +35,7 @@ export interface MetadataConfig {
     dataElements: Array<{
         name: string;
         code: string;
+        id: string;
         categories: { code: string; optional: boolean }[];
     }>;
     antigens: Array<{
@@ -37,9 +50,9 @@ function getConfigCategories(categories: Category[]): MetadataConfig["categories
     return categories.map(category => {
         let $categoryOptions: MetadataConfig["categories"][0]["$categoryOptions"];
 
-        if (category.code === "RVC_ANTIGEN") {
+        if (category.code === baseConfig.categoryCodeForAntigens) {
             $categoryOptions = { kind: "fromAntigens" };
-        } else if (category.code === "RVC_AGE_GROUP") {
+        } else if (category.code === baseConfig.categoryCodeForAgeGroup) {
             $categoryOptions = { kind: "fromAgeGroups" };
         } else {
             $categoryOptions = {
@@ -82,10 +95,20 @@ function getConfigDataElements(
         );
 
         return {
+            id: dataElement.id,
             name: dataElement.displayName,
             code: dataElement.code,
             categories,
         };
+    });
+}
+
+function sortAgeGroups(names: string[]): string[] {
+    const timeUnits = ["d", "w", "m", "y"];
+    return _.sortBy(names, name => {
+        const parts = name.split(" ");
+        const timeOrder = timeUnits.indexOf(_.last(parts) || "y") || timeUnits.length;
+        return 1000 * timeOrder + parseInt(parts[0]);
     });
 }
 
@@ -118,12 +141,12 @@ function getAntigens(
             .getOrFail(getCode([categoryOption.code, "AGE_GROUP"]))
             .categoryOptions.map(co => co.displayName);
 
-        const ageGroups = mainAgeGroups.map(mainAgeGroup => {
+        const ageGroups = sortAgeGroups(mainAgeGroups).map(mainAgeGroup => {
             const codePrefix = getCode([categoryOption.code, "AGE_GROUP", mainAgeGroup]);
             const disaggregatedAgeGroups = _(categoryOptionGroups)
                 .filter(cog => cog.code.startsWith(codePrefix))
                 .sortBy(cog => cog.code)
-                .map(cog => cog.categoryOptions.map(co => co.displayName))
+                .map(cog => sortAgeGroups(cog.categoryOptions.map(co => co.displayName)))
                 .value();
             return [[mainAgeGroup], ...disaggregatedAgeGroups];
         });
@@ -156,11 +179,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
     }>(metadataParams);
 
     return {
-        categoryCodeForAntigens: "RVC_ANTIGEN",
-        dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
-        categoryComboCodeForTeams: "RVC_TEAM",
-        attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
-        attributeCodeForDashboard: "RVC_DASHBOARD_ID",
+        ...baseConfig,
         categories: getConfigCategories(metadata.categories),
         dataElements: getConfigDataElements(metadata.dataElementGroups, metadata.categoryCombos),
         antigens: getAntigens(
