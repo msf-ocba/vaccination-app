@@ -8,7 +8,6 @@ import { withStyles } from "@material-ui/core/styles";
 import { Button, LinearProgress } from "@material-ui/core";
 import { withSnackbar } from "d2-ui-components";
 import ConfirmationDialog from "../../confirmation-dialog/ConfirmationDialog";
-import { getDataElements } from "../../../models/AntigensDisaggregation";
 
 const styles = _theme => ({
     wrapper: {
@@ -25,7 +24,6 @@ class SaveStep extends React.Component {
     state = {
         isSaving: false,
         orgUnitNames: null,
-        dataElementsByCode: null,
         errorMessage: [],
         dialogOpen: false,
     };
@@ -40,12 +38,7 @@ class SaveStep extends React.Component {
     async componentDidMount() {
         const { campaign } = this.props;
         const orgUnitNames = await campaign.getOrganisationUnitsFullName();
-
-        const disaggregationData = campaign.getEnabledAntigensDisaggregation();
-        const dataElements = await getDataElements(campaign.db, disaggregationData);
-        const dataElementsByCode = _.keyBy(dataElements, "code");
-
-        this.setState({ orgUnitNames, dataElementsByCode });
+        this.setState({ orgUnitNames });
     }
 
     save = async () => {
@@ -126,16 +119,11 @@ class SaveStep extends React.Component {
         }
     };
 
-    renderDataElements(dataElementRefs) {
-        const { dataElementsByCode } = this.state;
+    renderDataElements(dataElements) {
         const LiEntry = this.renderLiEntry;
-        const dataElements = _(dataElementsByCode)
-            .at(_.map(dataElementRefs, "code"))
-            .compact()
-            .value();
 
         return dataElements.map(dataElement => {
-            return <LiEntry key={dataElement.code} label={dataElement.displayName} />;
+            return <LiEntry key={dataElement.code} label={dataElement.name} />;
         });
     }
 
@@ -144,10 +132,6 @@ class SaveStep extends React.Component {
         const { orgUnitNames, errorMessage, isSaving, dialogOpen } = this.state;
         const LiEntry = this.renderLiEntry;
         const disaggregation = campaign.getEnabledAntigensDisaggregation();
-        const antigenNamesByCode = _(campaign.antigens)
-            .keyBy("code")
-            .mapValues("name")
-            .value();
 
         return (
             <React.Fragment>
@@ -177,8 +161,8 @@ class SaveStep extends React.Component {
 
                         <LiEntry label={i18n.t("Antigens")}>
                             <ul>
-                                {disaggregation.map(({ code, dataElements }) => (
-                                    <LiEntry key={code} label={antigenNamesByCode[code]}>
+                                {disaggregation.map(({ antigen, dataElements }) => (
+                                    <LiEntry key={antigen.code} label={antigen.name}>
                                         <ul>{this.renderDataElements(dataElements)}</ul>
                                     </LiEntry>
                                 ))}
