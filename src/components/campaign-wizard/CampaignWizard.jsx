@@ -61,10 +61,10 @@ Only organisation units of level 6 (service) can be selected`),
             },
             {
                 key: "disaggregation",
-                label: i18n.t("Disaggregation"),
+                label: i18n.t("Indicators Configuration"),
                 component: DisaggregationStep,
                 validationKeys: [],
-                help: i18n.t(`Define disaggregation categories for each antigen`),
+                help: i18n.t(`Select indicators and categories for each antigen`),
             },
             {
                 key: "save",

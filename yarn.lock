@@ -10973,6 +10973,11 @@ type-is@~1.6.16:
     media-typer "0.3.0"
     mime-types "~2.1.18"
 
+typed-html@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/typed-html/-/typed-html-1.0.0.tgz#b749d9de7989e05febe133636c360823b7ed0f51"
+  integrity sha512-/MGJs8DqjNdJWSnUdV7U7VeSwhKYNZli0wq84h5zPg/+76DNuDEnWloAkzmoYdgQOWtwZIlyLUQMLHYuUnP3tQ==
+
 typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
