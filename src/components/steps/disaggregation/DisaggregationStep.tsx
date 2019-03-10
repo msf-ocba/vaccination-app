@@ -11,7 +11,11 @@ import { memoize } from "../../../utils/memoize";
 import { createMuiThemeOverrides } from "../../../utils/styles";
 import AntigenSection from "./AntigenSection";
 
+// d2-ui Sidebar component has a prop "styles" to customize the leftBar styles, but it
+// raises an error ("object is not extensible") when passed, so use a CSS file instead.
+
 const { Sidebar } = require("@dhis2/d2-ui-core"); // Untyped
+import "./DisaggregationStep.css";
 
 type Path = (number | string)[];
 
