@@ -1,4 +1,5 @@
-import _, { Dictionary } from "lodash";
+import { Dictionary } from "lodash";
+import moment from "moment";
 import { D2, D2Api } from "./d2.types";
 import {
     OrganisationUnit,
@@ -14,8 +15,16 @@ import {
     Attribute,
     Ref,
     DataEntryForm,
+    OrganisationUnitPathOnly,
 } from "./db.types";
-import { chart, reportTable } from "./dashboard-items";
+import _ from "lodash";
+import {
+    dashboardItemsConfig,
+    itemsMetadataConstructor,
+    buildDashboardItems,
+} from "./dashboard-items";
+import { getDaysRange } from "../utils/date";
+import { Antigen } from "./campaign";
 
 function getDbFields(modelFields: ModelFields): string[] {
     return _(modelFields)
@@ -147,7 +156,6 @@ export default class DbD2 {
             filter: [`code:in:[${codes.join(",")}]`],
             fields: ["id,code,displayName"],
         });
-
         return categoryCombos;
     }
 
@@ -170,25 +178,133 @@ export default class DbD2 {
         return attributes[0];
     }
 
-    public async createDashboard(name: String): Promise<Ref | undefined> {
-        // For now, a chart is created from a genertic template and added to the dashboard
-        const {
-            response: { uid: chartId },
-        } = await this.api.post("/charts", chart(name));
-        const {
-            response: { uid: reportTableId },
-        } = await this.api.post("/reportTables", reportTable(name));
-        const dashboard = {
-            name: `${name}_DASHBOARD`,
-            dashboardItems: [
-                { type: "CHART", chart: { id: chartId } },
-                { type: "REPORT_TABLE", reportTable: { id: reportTableId } },
-            ],
+    async getMetadataForDashboardItems(antigens: Antigen[]) {
+        const { categoryCode, tablesDataCodes, chartsDataCodes } = dashboardItemsConfig;
+        const allDataElementCodes = _(tablesDataCodes)
+            .values()
+            .flatten();
+        const allIndicatorCodes = _(chartsDataCodes)
+            .values()
+            .flatten();
+        const antigenCodes = antigens.map(an => an.code);
+        const { dataElements, categories, indicators } = await this.api.get("/metadata", {
+            "categories:fields": "id,categoryOptions[id,code,name]",
+            "categories:filter": `code:in:[${categoryCode}]`,
+            "dataElements:fields": "id,code",
+            "dataElements:filter": `code:in:[${allDataElementCodes.join(",")}]`,
+            "indicators:fields": "id,code",
+            "indicators:filter": `code:in:[${allIndicatorCodes.join(",")}]`,
+        });
+        const { id: categoryId, categoryOptions } = categories[0];
+        const antigensMeta = _.filter(categoryOptions, op => _.includes(antigenCodes, op.code));
+        const dashboardMetadata = {
+            antigenCategory: categoryId,
+            dataElements: {
+                type: "DATA_ELEMENT",
+                data: dataElements,
+                key: "dataElement",
+            },
+            indicators: {
+                type: "INDICATOR",
+                data: indicators,
+                key: "indicator",
+            },
+            antigensMeta,
         };
+        return dashboardMetadata;
+    }
+
+    public async createDashboard(
+        name: String,
+        organisationUnits: OrganisationUnitPathOnly[],
+        antigens: Antigen[],
+        datasetId: String,
+        startDate: Date | null,
+        endDate: Date | null
+    ): Promise<Ref | undefined> {
+        const dashboardItemsMetadata = await this.getMetadataForDashboardItems(antigens);
+
+        const dashboardItems = await this.createDashboardItems(
+            name,
+            organisationUnits,
+            datasetId,
+            startDate,
+            endDate,
+            dashboardItemsMetadata
+        );
+
+        const dashboard = { name: `${name}_DASHBOARD`, dashboardItems };
         const {
             response: { uid },
         } = await this.api.post("/dashboards", dashboard);
-        console.log({ dashboardId: uid });
+
         return { id: uid };
+    }
+
+    async createDashboardItems(
+        name: String,
+        organisationUnits: OrganisationUnitPathOnly[],
+        datasetId: String,
+        startDate: Date | null,
+        endDate: Date | null,
+        dashboardItemsMetadata: Dictionary<any>
+    ): Promise<Ref[]> {
+        const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
+        const organizationUnitsParents = _(organisationUnits)
+            .map(ou => [ou.id, ou.path])
+            .fromPairs()
+            .value();
+        const periodStart = startDate ? moment(startDate) : moment();
+        const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
+        const periodRange = getDaysRange(periodStart, periodEnd);
+        const period = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
+        const { antigensMeta } = dashboardItemsMetadata;
+        const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
+        const { antigenCategory, ...elements } = dashboardItemsElements;
+
+        const { charts, reportTables } = buildDashboardItems(
+            antigensMeta,
+            name,
+            datasetId,
+            organisationUnitsIds,
+            organizationUnitsParents,
+            period,
+            antigenCategory,
+            elements
+        );
+
+        await this.api.post("/metadata", { charts, reportTables });
+
+        // Search for dashboardItems ids
+        const appendCodes = dashboardItemsConfig.appendCodes;
+        const chartCodes = antigensMeta.map(
+            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.indicatorChart}`
+        );
+        const indicatorTableCodes = antigensMeta.map(
+            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.qsTable}`
+        );
+        const vaccineTableCodes = antigensMeta.map(
+            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.vaccinesTable}`
+        );
+
+        const { charts: chartIds, reportTables: tableIds } = await this.api.get("/metadata", {
+            "charts:fields": "id",
+            "charts:filter": `code:in:[${chartCodes.join(",")}]`,
+            "reportTables:fields": "id",
+            "reportTables:filter": `code:in:[${indicatorTableCodes.join(
+                ","
+            )},${vaccineTableCodes.join(",")}]`,
+        });
+
+        const dashboardCharts = chartIds.map(({ id }: { id: string }) => ({
+            type: "CHART",
+            chart: { id },
+        }));
+        const dashboardTables = tableIds.map(({ id }: { id: string }) => ({
+            type: "REPORT_TABLE",
+            reportTable: { id },
+        }));
+
+        return [...dashboardCharts, ...dashboardTables];
     }
 }

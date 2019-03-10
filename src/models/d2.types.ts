@@ -1,4 +1,5 @@
 import { Dictionary } from "lodash";
+import { Ref } from "./db.types";
 
 export interface D2 {
     Api: {

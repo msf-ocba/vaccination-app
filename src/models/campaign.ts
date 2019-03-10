@@ -192,7 +192,7 @@ export default class Campaign {
     /* Save */
 
     public async save(): Promise<Response<string>> {
-        const dashboardId = await this.db.createDashboard(this.name);
+        const dataSetId = generateUid();
         const metadataConfig = this.config;
         const teamsCode = metadataConfig.categoryComboCodeForTeams;
         const vaccinationAttribute = await this.db.getAttributeIdByCode(
@@ -207,6 +207,15 @@ export default class Campaign {
             .value();
         const categoryComboTeams = _(categoryCombosByCode).get(teamsCode);
 
+        const dashboardId = await this.db.createDashboard(
+            this.name,
+            this.organisationUnits,
+            this.antigens,
+            dataSetId,
+            this.startDate,
+            this.endDate
+        );
+
         if (!vaccinationAttribute || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: Attributes" };
         } else if (!categoryComboTeams) {
@@ -214,8 +223,6 @@ export default class Campaign {
         } else if (!dashboardId) {
             return { status: false, error: "Error creating dashboard" };
         } else {
-            const dataSetId = generateUid();
-
             const disaggregationData = this.getEnabledAntigensDisaggregation();
             const dataElements = await getDataElements(this.db, disaggregationData);
 

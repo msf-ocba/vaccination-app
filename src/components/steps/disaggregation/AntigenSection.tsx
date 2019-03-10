@@ -71,21 +71,22 @@ class AntigenSection extends React.Component<AntigenSectionProps, Disaggregation
                             </TableCell>
                         </TableRow>,
 
-                        dataElement.selected && !_(dataElement.categories).isEmpty() && (
-                            <TableRow key={dataElementIdx + "-dis"}>
-                                <TableCell colSpan={2}>
-                                    <DataElement
-                                        antigenCode={antigenCode}
-                                        dataElementIdx={dataElementIdx}
-                                        categories={dataElement.categories}
-                                        basePath={[antigenCode, "dataElements", dataElementIdx]}
-                                        update={update}
-                                        isEditing={this.isEditing}
-                                        toggleEdit={this.toggleEdit}
-                                    />
-                                </TableCell>
-                            </TableRow>
-                        ),
+                        dataElement.selected &&
+                            !_(dataElement.categories).isEmpty() && (
+                                <TableRow key={dataElementIdx + "-dis"}>
+                                    <TableCell colSpan={2}>
+                                        <DataElement
+                                            antigenCode={antigenCode}
+                                            dataElementIdx={dataElementIdx}
+                                            categories={dataElement.categories}
+                                            basePath={[antigenCode, "dataElements", dataElementIdx]}
+                                            update={update}
+                                            isEditing={this.isEditing}
+                                            toggleEdit={this.toggleEdit}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ),
                     ])}
                 </TableBody>
             </Table>
