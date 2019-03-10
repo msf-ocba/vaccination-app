@@ -5,18 +5,16 @@ export function formatDateLong(stringDate: string): string {
     return date.format("YYYY-MM-DD HH:mm:ss");
 }
 
-export function getDaysRange(startDate: Date | null, endDate: Date | null): Moment[] {
+export function getDaysRange(startDate: Moment | null, endDate: Moment | null): Moment[] {
     if (!startDate || !endDate) {
         return [];
     } else {
-        const startDateM = moment(startDate);
-        const endDateM = moment(endDate);
-        const currentDateM = startDateM.clone();
+        const currentDate = startDate.clone();
         let outputDates: Moment[] = [];
 
-        while (currentDateM <= endDateM) {
-            outputDates.push(currentDateM.clone());
-            currentDateM.add(1, "days");
+        while (currentDate <= endDate) {
+            outputDates.push(currentDate.clone());
+            currentDate.add(1, "days");
         }
         return outputDates;
     }

@@ -232,14 +232,12 @@ export default class Campaign {
                 categoryCombo: { id: dataElement.categoryCombo.id },
             }));
 
+            const toMoment = (date: Date | null) => (date ? moment(date) : null);
+            const startDate = toMoment(this.startDate);
             const endDate =
-                !this.endDate && this.startDate
-                    ? moment()
-                          .endOf("year")
-                          .toDate()
-                    : this.endDate;
+                !this.endDate && this.startDate ? moment().endOf("year") : toMoment(this.endDate);
 
-            const dataInputPeriods = getDaysRange(this.startDate, endDate).map(date => ({
+            const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
                 openingDate: this.startDate ? this.startDate.toISOString() : undefined,
                 closingDate: endDate ? endDate.toISOString() : undefined,
                 period: { id: date.format("YYYYMMDD") },
