@@ -11,7 +11,11 @@ import { memoize } from "../../../utils/memoize";
 import { createMuiThemeOverrides } from "../../../utils/styles";
 import AntigenSection from "./AntigenSection";
 
+// d2-ui Sidebar component has a prop "styles" to customize the leftBar styles, but it
+// raises an error ("object is not extensible") when passed, so use a CSS file instead.
+
 const { Sidebar } = require("@dhis2/d2-ui-core"); // Untyped
+import "./DisaggregationStep.css";
 
 type Path = (number | string)[];
 
@@ -82,14 +86,15 @@ const styles = (_theme: Theme) =>
     createStyles({
         box: {
             position: "relative",
-            border: "1px solid #808080",
-            borderRadius: 3,
             width: "auto",
             height: "auto",
             margin: 16,
+            boxShadow: "rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px",
+            paddingRight: 20,
         },
         leftBar: {
             position: "absolute",
+            height: "100%",
         },
         page: {
             paddingLeft: 295 + 8,
