@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-03-08T13:08:45.620Z\n"
+"POT-Creation-Date: 2019-03-11T09:50:22.246Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -11,7 +11,7 @@ msgstr ""
 msgid "Vaccination"
 msgstr "Vacunación"
 
-msgid "Campaign Configurator"
+msgid "Campaign Configuration"
 msgstr "Configurador de campaña"
 
 msgid "Data Entry"
@@ -80,8 +80,11 @@ msgstr "Solo mis campañas"
 msgid "Organisation Units"
 msgstr "Unidades organizativas"
 
+msgid "Select the organization units which will implement the campaign"
+msgstr "Seleccione las unidades organizativas asignadas a esta campaña"
+
 msgid ""
-"Select organisation units assigned to this campaign.\n"
+"Select the organization units which will implement the campaign.\n"
 "At least one must be selected.\n"
 "Only organisation units of level 6 (service) can be selected"
 msgstr ""
@@ -93,8 +96,7 @@ msgid "General info"
 msgstr "Información general"
 
 msgid ""
-"Set the name of the campaign and the period in which data entry will be "
-"enabled"
+"Name your campaign and choose dates for which data entry will be enabled"
 msgstr ""
 "Establezca el nombre de la campaña y el periodo de tiempo en el cual "
 "seráposible añadir datos"
@@ -102,7 +104,7 @@ msgstr ""
 msgid "Antigen selection"
 msgstr "Antígenos"
 
-msgid "Select the antigens included in the campaign"
+msgid "Select the antigens which will be administered"
 msgstr "Seleccione los antígenos incluídos en la campaña"
 
 msgid "Indicators Configuration"
@@ -113,6 +115,9 @@ msgstr "Seleccione los indicadores y las categorías para cada antígeno"
 
 msgid "Save"
 msgstr "Guardar"
+
+msgid "Setup is finished. Press the button Save to save the data"
+msgstr "La configuración ha terminado. Pulse el botón para guardar los datos"
 
 msgid ""
 "Press the button to create the dataset and all the metadata associated with "
@@ -163,9 +168,6 @@ msgstr "[Vacío]"
 
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr "[{{total}}] {{names}} y {{othersCount}} otros"
-
-msgid "Setup is finished. Press the button Save to save the data"
-msgstr "La configuración ha terminado. Pulse el botón para guardar los datos"
 
 msgid "Period dates"
 msgstr "Periodo"

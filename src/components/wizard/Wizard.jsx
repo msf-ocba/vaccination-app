@@ -17,6 +17,10 @@ const styles = theme => ({
     root: {
         width: "100%",
     },
+    description: {
+        marginBottom: 10,
+        fontSize: "1.1em",
+    },
     button: {
         margin: theme.spacing.unit,
         marginRight: 5,
@@ -204,6 +208,9 @@ class Wizard extends React.Component {
                 <FeedbackMessages />
 
                 <Paper className={classes.contents} data-wizard-contents={true}>
+                    {currentStep.description && (
+                        <div className={classes.description}>{currentStep.description}</div>
+                    )}
                     {<currentStep.component {...currentStep.props} />}
                     <div className={classes.buttonContainer}>
                         <NavigationButton

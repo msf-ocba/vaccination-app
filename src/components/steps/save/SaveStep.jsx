@@ -145,8 +145,6 @@ class SaveStep extends React.Component {
                     )}
                 />
                 <div className={classes.wrapper}>
-                    <h3>{i18n.t("Setup is finished. Press the button Save to save the data")}</h3>
-
                     <ul>
                         <LiEntry label={i18n.t("Name")} value={campaign.name} />
 
