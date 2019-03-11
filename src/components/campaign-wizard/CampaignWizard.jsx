@@ -40,7 +40,7 @@ class CampaignWizard extends React.Component {
                 component: OrganisationUnitsStep,
                 validationKeys: ["organisationUnits"],
                 description: i18n.t(
-                    "Select the organization units which will implement the campaign"
+                    `Select the organization units which will implement the campaign`
                 ),
                 help: i18n.t(`Select the organization units which will implement the campaign.
 At least one must be selected.
@@ -52,7 +52,7 @@ Only organisation units of level 6 (service) can be selected`),
                 component: GeneralInfoStep,
                 validationKeys: ["name", "startDate", "endDate"],
                 description: i18n.t(
-                    "Name your campaign and choose dates for which data entry will be enabled"
+                    `Name your campaign and choose dates for which data entry will be enabled`
                 ),
                 help: i18n.t(
                     `Name your campaign and choose dates for which data entry will be enabled`
