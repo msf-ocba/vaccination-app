@@ -19,6 +19,7 @@ const styles = theme => ({
     },
     description: {
         marginBottom: 10,
+        marginLeft: 3,
         fontSize: "1.1em",
     },
     button: {
@@ -39,7 +40,7 @@ const styles = theme => ({
     },
     contents: {
         margin: 10,
-        padding: 20,
+        padding: 25,
     },
     messages: {
         padding: 0,
