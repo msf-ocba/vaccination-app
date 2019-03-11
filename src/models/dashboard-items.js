@@ -77,7 +77,7 @@ export function buildDashboardItems(
             organisationUnitsIds,
             period,
             antigenCategory,
-            elements.qsTable,
+            elements.qsIndicatorsTable,
             appendCodes.qsIndicatorsTable
         ),
         tableConstructor(
@@ -88,7 +88,7 @@ export function buildDashboardItems(
             organisationUnitsIds,
             period,
             antigenCategory,
-            elements.vaccineTable,
+            elements.vaccinesTable,
             appendCodes.vaccinesTable
         ),
     ]);
@@ -103,22 +103,26 @@ const dataMapper = (dataList, filterList) =>
 
 export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const { dataElements, indicators, antigenCategory } = dashboardItemsMetadata;
-    const {
-        tablesDataCodes: { vaccinesTable, qsIndicatorsTable },
-        chartsDataCodes: { indicatorChart, utilizationRateChart },
-    } = dashboardItemsConfig;
+    const { tablesDataCodes, chartsDataCodes } = dashboardItemsConfig;
 
-    const vaccineTableDE = dataMapper(dataElements, vaccinesTable);
-    const qsTableDE = dataMapper(dataElements, qsIndicatorsTable);
-    const indicatorChartInd = dataMapper(indicators, indicatorChart);
-    const utilizationRateChartInd = dataMapper(indicators, utilizationRateChart);
+    const chartKeys = _.keys(chartsDataCodes);
+    const tableKeys = _.keys(tablesDataCodes);
+
+    const { vaccinesTable, qsIndicatorsTable } = tableKeys.reduce(
+        (acc, tb) => ({ ...acc, [tb]: dataMapper(dataElements, tablesDataCodes[tb]) }),
+        {}
+    );
+    const { indicatorChart, utilizationRateChart } = chartKeys.reduce(
+        (acc, tb) => ({ ...acc, [tb]: dataMapper(indicators, chartsDataCodes[tb]) }),
+        {}
+    );
 
     const dashboardItemsElements = {
         antigenCategory,
-        vaccineTable: vaccineTableDE,
-        qsTable: qsTableDE,
-        indicatorChart: indicatorChartInd,
-        utilizationRateChart: utilizationRateChartInd,
+        vaccinesTable,
+        qsIndicatorsTable,
+        indicatorChart,
+        utilizationRateChart,
     };
     return dashboardItemsElements;
 }
@@ -215,7 +219,7 @@ const chartConstructor = (
     dataElementGroupSetDimensions: [],
     attributeDimensions: [],
     translations: [],
-    filterDimensions: ["ou", antigenCategory], // Filter by orgUnits and Antigen category
+    filterDimensions: ["ou", antigenCategory],
     interpretations: [],
     itemOrganisationUnitGroups: [],
     userGroupAccesses: [],
@@ -233,7 +237,7 @@ const chartConstructor = (
     periods: period,
     organisationUnits: organisationUnitsIds,
     categoryDimensions: [
-        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] }, // TODO get antigen categorID from metadata
+        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] },
     ],
     filters: [{ id: "ou" }, { id: antigenCategory }],
     rows: [{ id: "pe" }],
@@ -361,7 +365,7 @@ const tableConstructor = (
     periods: period,
     organisationUnits: organisationUnitsIds,
     categoryDimensions: [
-        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] }, //  TODO: Same as chart
+        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] },
     ],
     filters: [],
     rows: [],

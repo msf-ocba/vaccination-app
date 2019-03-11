@@ -273,9 +273,9 @@ export default class DbD2 {
             antigenCategory,
             elements
         );
-        
-        const chartIds = charts.map(chart  => chart.id);
-        const reportTableIds = reportTables.map(table  => table.id);
+
+        const chartIds = charts.map(chart => chart.id);
+        const reportTableIds = reportTables.map(table => table.id);
 
         const dashboardCharts = chartIds.map((id: string) => ({
             type: "CHART",
@@ -289,8 +289,8 @@ export default class DbD2 {
         const dashboardData = {
             items: [...dashboardCharts, ...dashboardTables],
             charts,
-            reportTables
-        }
+            reportTables,
+        };
 
         return dashboardData;
     }
