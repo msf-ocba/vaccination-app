@@ -3,7 +3,7 @@ import _ from "lodash";
 export const dashboardItemsConfig = {
     appendCodes: {
         indicatorChart: "indicatorChart",
-        qsTable: "qsTable",
+        qsIndicatorsTable: "qsTable",
         vaccinesTable: "vTable",
         utilizationRateChart: "utilzationRateChart",
     },
@@ -70,7 +70,7 @@ export function buildDashboardItems(
             period,
             antigenCategory,
             elements.qsTable,
-            appendCodes.qsTable
+            appendCodes.qsIndicatorsTable
         ),
         tableConstructor(
             name,

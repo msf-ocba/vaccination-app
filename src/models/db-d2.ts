@@ -277,29 +277,23 @@ export default class DbD2 {
         await this.api.post("/metadata", { charts, reportTables });
 
         // Search for dashboardItems ids
-        const appendCodes = dashboardItemsConfig.appendCodes;
-        const chartCodes = antigensMeta.map(
-            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.indicatorChart}`
+        const appendCodes: { [key: string]: string } = dashboardItemsConfig.appendCodes;
+        const chartKeys = _.keys(dashboardItemsConfig.chartsDataCodes);
+        const tableKeys = _.keys(dashboardItemsConfig.tablesDataCodes);
+
+        const chartCodes = chartKeys.map(key =>
+            antigensMeta.map(({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes[key]}`)
         );
-        const indicatorTableCodes = antigensMeta.map(
-            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.qsTable}`
-        );
-        const vaccineTableCodes = antigensMeta.map(
-            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.vaccinesTable}`
-        );
-        const utilizationRateChartCodes = antigensMeta.map(
-            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.utilizationRateChart}`
+
+        const tableCodes = tableKeys.map(key =>
+            antigensMeta.map(({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes[key]}`)
         );
 
         const { charts: chartIds, reportTables: tableIds } = await this.api.get("/metadata", {
             "charts:fields": "id",
-            "charts:filter": `code:in:[${chartCodes.join(",")},${utilizationRateChartCodes.join(
-                ","
-            )}]`,
+            "charts:filter": `code:in:[${chartCodes.join(",")}]`,
             "reportTables:fields": "id",
-            "reportTables:filter": `code:in:[${indicatorTableCodes.join(
-                ","
-            )},${vaccineTableCodes.join(",")}]`,
+            "reportTables:filter": `code:in:[${tableCodes.join(",")}]`,
         });
 
         const dashboardCharts = chartIds.map(({ id }: { id: string }) => ({
