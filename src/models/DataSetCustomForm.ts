@@ -294,7 +294,7 @@ const css = `
         font-style: italic;
     }
 
-    #contentDiv .header-first-column_DISABLED {
+    #contentDiv .header-first-column {
         backgroud-color: #e0e0e0;
         text-align: left;
         border-bottom-style: hidden;
