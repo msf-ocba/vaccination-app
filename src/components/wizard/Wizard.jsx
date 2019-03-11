@@ -18,7 +18,7 @@ const styles = theme => ({
         width: "100%",
     },
     description: {
-        marginBottom: 10,
+        marginBottom: 15,
         marginLeft: 3,
         fontSize: "1.1em",
     },
