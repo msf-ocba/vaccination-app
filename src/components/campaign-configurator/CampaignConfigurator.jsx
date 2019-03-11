@@ -86,7 +86,7 @@ class CampaignConfigurator extends React.Component {
     ];
 
     onCreate = () => {
-        this.props.history.push("/campaign-configurator/new");
+        this.props.history.push("/campaign-configuration/new");
     };
 
     toggleShowOnlyUserCampaigns = ev => {

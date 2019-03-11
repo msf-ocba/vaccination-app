@@ -51,7 +51,7 @@ class SaveStep extends React.Component {
             this.props.snackbar.success(
                 i18n.t("Campaign created: {{name}}", { name: campaign.name })
             );
-            this.props.history.push("/campaign-configurator");
+            this.props.history.push("/campaign-configuration");
         } else {
             this.setState({ errorMessage: saveResponse.error });
             this.props.snackbar.error(i18n.t("Error saving campaign"));
@@ -64,7 +64,7 @@ class SaveStep extends React.Component {
 
     confirmCancel = () => {
         this.setState({ dialogOpen: false });
-        this.props.history.push("/campaign-configurator");
+        this.props.history.push("/campaign-configuration");
     };
 
     dialogCancel = () => {
@@ -145,8 +145,6 @@ class SaveStep extends React.Component {
                     )}
                 />
                 <div className={classes.wrapper}>
-                    <h3>{i18n.t("Setup is finished. Press the button Save to save the data")}</h3>
-
                     <ul>
                         <LiEntry label={i18n.t("Name")} value={campaign.name} />
 
