@@ -5,6 +5,7 @@ export const dashboardItemsConfig = {
         indicatorChart: "indicatorChart",
         qsTable: "qsTable",
         vaccinesTable: "vTable",
+        utilizationRateChart: "utilzationRateChart",
     },
     categoryCode: "RVC_ANTIGEN",
     tablesDataCodes: {
@@ -19,7 +20,7 @@ export const dashboardItemsConfig = {
     },
     chartsDataCodes: {
         indicatorChart: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
-        coverageChart: ["RVC_CAMPAIGN_COVERAGE", "RVC_VACCINE_UTILITZATION"],
+        utilizationRateChart: ["RVC_VACCINE_UTILITZATION"],
     },
 };
 
@@ -33,8 +34,9 @@ export function buildDashboardItems(
     antigenCategory,
     elements
 ) {
-    const charts = antigensMeta.map(antigen =>
-        indicatorsChart(
+    const { appendCodes } = dashboardItemsConfig;
+    const charts = antigensMeta.map(antigen =>[
+        chartConstructor(
             name,
             antigen,
             datasetId,
@@ -42,9 +44,23 @@ export function buildDashboardItems(
             organizationUnitsParents,
             period,
             antigenCategory,
-            elements.indicatorChart
+            elements.indicatorChart,
+            "COLUMN",
+            appendCodes.indicatorChart
+        ),
+        chartConstructor(
+            name,
+            antigen,
+            datasetId,
+            organisationUnitsIds,
+            organizationUnitsParents,
+            period,
+            antigenCategory,
+            elements.utilizationRateChart,
+            "LINE",
+            appendCodes.utilizationRateChart
         )
-    );
+    ]);
     const tables = antigensMeta.map(antigen => [
         qsIndicatorsTable(
             name,
@@ -65,7 +81,7 @@ export function buildDashboardItems(
             elements.vaccineTable
         ),
     ]);
-    return { charts, reportTables: _.flatten(tables) };
+    return { charts: _.flatten(charts), reportTables: _.flatten(tables) };
 }
 
 const dataMapper = (dataList, filterList) =>
@@ -78,25 +94,25 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const { dataElements, indicators, antigenCategory } = dashboardItemsMetadata;
     const {
         tablesDataCodes: { vaccinesTable, qsIndicatorsTable },
-        chartsDataCodes: { indicatorChart, coverageChart },
+        chartsDataCodes: { indicatorChart, utilizationRateChart },
     } = dashboardItemsConfig;
 
     const vaccineTableDE = dataMapper(dataElements, vaccinesTable);
     const qsTableDE = dataMapper(dataElements, qsIndicatorsTable);
     const indicatorChartInd = dataMapper(indicators, indicatorChart);
-    const coverageChartInd = dataMapper(indicators, coverageChart);
+    const utilizationRateChartInd = dataMapper(indicators, utilizationRateChart);
 
     const dashboardItemsElements = {
         antigenCategory,
         vaccineTable: vaccineTableDE,
         qsTable: qsTableDE,
         indicatorChart: indicatorChartInd,
-        coverageChart: coverageChartInd,
+        utilizationRateChart: utilizationRateChartInd,
     };
     return dashboardItemsElements;
 }
 
-const indicatorsChart = (
+const chartConstructor = (
     name,
     antigen,
     datasetId,
@@ -104,14 +120,16 @@ const indicatorsChart = (
     organisationUnitsParents,
     period,
     antigenCategory,
-    data
+    data,
+    type,
+    appendCode,
 ) => ({
-    name: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
-    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
+    name: `${name}-${antigen.name}-${appendCode}`,
+    code: `${datasetId}-${antigen.id}-${appendCode}`,
     showData: true,
     publicAccess: "rw------",
     userOrganisationUnitChildren: false,
-    type: "COLUMN",
+    type,
     subscribed: false,
     parentGraphMap: organisationUnitsParents,
     userOrganisationUnit: false,
@@ -124,7 +142,7 @@ const indicatorsChart = (
     hideEmptyRowItems: "AFTER_LAST",
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.indicatorChart}`,
+    displayName: `${name}-${antigen.name}-${appendCode}`,
     hideSubtitle: false,
     hideLegend: false,
     externalAccess: false,

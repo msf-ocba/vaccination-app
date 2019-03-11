@@ -274,8 +274,8 @@ export default class DbD2 {
             elements
         );
 
-        await this.api.post("/metadata", { charts, reportTables });
-
+        const resp = await this.api.post("/metadata", { charts, reportTables });
+        console.log(resp);
         // Search for dashboardItems ids
         const appendCodes = dashboardItemsConfig.appendCodes;
         const chartCodes = antigensMeta.map(
@@ -287,10 +287,13 @@ export default class DbD2 {
         const vaccineTableCodes = antigensMeta.map(
             ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.vaccinesTable}`
         );
+        const utilizationRateChartCodes= antigensMeta.map(
+            ({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes.utilizationRateChart}`
+        );
 
         const { charts: chartIds, reportTables: tableIds } = await this.api.get("/metadata", {
             "charts:fields": "id",
-            "charts:filter": `code:in:[${chartCodes.join(",")}]`,
+            "charts:filter": `code:in:[${chartCodes.join(",")},${utilizationRateChartCodes.join(",")}]`,
             "reportTables:fields": "id",
             "reportTables:filter": `code:in:[${indicatorTableCodes.join(
                 ","
