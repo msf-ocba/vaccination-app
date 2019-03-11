@@ -90,6 +90,9 @@ export interface Ref {
 export interface Metadata {
     dataSets?: Array<DataSet>;
     sections?: Array<Section>;
+    charts?: Array<Dictionary<any>>;
+    reportTables?: Array<Dictionary<any>>;
+    dashboards?: Array<Dictionary<any>>;
 }
 
 export interface Section {
@@ -188,6 +191,19 @@ export type ModelName =
 
 export interface MetadataGetModelParams {
     filters?: string[];
+}
+
+interface DashboardItemElement {
+    type: string;
+    reportTable?: Ref;
+    chart?: Ref;
+}
+
+export interface DashboardData {
+    items?: DashboardItemElement[];
+    charts: Dictionary<any>[];
+    reportTables: Dictionary<any>[];
+    dashboard?: Dictionary<any>;
 }
 
 export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams | undefined };

@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { generateUid } from "d2/uid";
 
 export const dashboardItemsConfig = {
     appendCodes: {
@@ -41,6 +42,7 @@ export function buildDashboardItems(
     const { appendCodes } = dashboardItemsConfig;
     const charts = antigensMeta.map(antigen => [
         chartConstructor(
+            generateUid(),
             name,
             antigen,
             datasetId,
@@ -53,6 +55,7 @@ export function buildDashboardItems(
             appendCodes.indicatorChart
         ),
         chartConstructor(
+            generateUid(),
             name,
             antigen,
             datasetId,
@@ -67,6 +70,7 @@ export function buildDashboardItems(
     ]);
     const tables = antigensMeta.map(antigen => [
         tableConstructor(
+            generateUid(),
             name,
             antigen,
             datasetId,
@@ -77,6 +81,7 @@ export function buildDashboardItems(
             appendCodes.qsIndicatorsTable
         ),
         tableConstructor(
+            generateUid(),
             name,
             antigen,
             datasetId,
@@ -119,6 +124,7 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
 }
 
 const chartConstructor = (
+    id,
     name,
     antigen,
     datasetId,
@@ -234,6 +240,7 @@ const chartConstructor = (
 });
 
 const tableConstructor = (
+    id,
     name,
     antigen,
     datasetId,

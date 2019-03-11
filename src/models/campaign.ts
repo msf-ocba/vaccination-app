@@ -207,7 +207,7 @@ export default class Campaign {
             .value();
         const categoryComboTeams = _(categoryCombosByCode).get(teamsCode);
 
-        const dashboardId = await this.db.createDashboard(
+        const { dashboard, charts, reportTables } = await this.db.createDashboard(
             this.name,
             this.organisationUnits,
             this.antigens,
@@ -220,7 +220,7 @@ export default class Campaign {
             return { status: false, error: "Metadata not found: Attributes" };
         } else if (!categoryComboTeams) {
             return { status: false, error: `Metadata not found: categoryCombo.code=${teamsCode}` };
-        } else if (!dashboardId) {
+        } else if (!dashboard) {
             return { status: false, error: "Error creating dashboard" };
         } else {
             const disaggregationData = this.getEnabledAntigensDisaggregation();
@@ -261,11 +261,14 @@ export default class Campaign {
                 dataInputPeriods,
                 attributeValues: [
                     { value: "true", attribute: { id: vaccinationAttribute.id } },
-                    { value: dashboardId.id, attribute: { id: dashboardAttribute.id } },
+                    { value: dashboard.id, attribute: { id: dashboardAttribute.id } },
                 ],
             };
 
             const result: MetadataResponse = await this.db.postMetadata({
+                charts,
+                reportTables,
+                dashboards: [dashboard],
                 dataSets: [dataSet],
             });
 
