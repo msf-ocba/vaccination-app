@@ -35,7 +35,7 @@ export function buildDashboardItems(
     elements
 ) {
     const { appendCodes } = dashboardItemsConfig;
-    const charts = antigensMeta.map(antigen =>[
+    const charts = antigensMeta.map(antigen => [
         chartConstructor(
             name,
             antigen,
@@ -59,26 +59,28 @@ export function buildDashboardItems(
             elements.utilizationRateChart,
             "LINE",
             appendCodes.utilizationRateChart
-        )
+        ),
     ]);
     const tables = antigensMeta.map(antigen => [
-        qsIndicatorsTable(
+        tableConstructor(
             name,
             antigen,
             datasetId,
             organisationUnitsIds,
             period,
             antigenCategory,
-            elements.qsTable
+            elements.qsTable,
+            appendCodes.qsTable
         ),
-        vaccinesTable(
+        tableConstructor(
             name,
             antigen,
             datasetId,
             organisationUnitsIds,
             period,
             antigenCategory,
-            elements.vaccineTable
+            elements.vaccineTable,
+            appendCodes.vaccinesTable
         ),
     ]);
     return { charts: _.flatten(charts), reportTables: _.flatten(tables) };
@@ -122,7 +124,7 @@ const chartConstructor = (
     antigenCategory,
     data,
     type,
-    appendCode,
+    appendCode
 ) => ({
     name: `${name}-${antigen.name}-${appendCode}`,
     code: `${datasetId}-${antigen.id}-${appendCode}`,
@@ -227,17 +229,18 @@ const chartConstructor = (
     rows: [{ id: "pe" }],
 });
 
-const qsIndicatorsTable = (
+const tableConstructor = (
     name,
     antigen,
     datasetId,
     organisationUnitsIds,
     period,
     antigenCategory,
-    data
+    data,
+    appendCode
 ) => ({
-    name: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.qsTable}`,
-    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.qsTable}`,
+    name: `${name}-${antigen.name}-${appendCode}`,
+    code: `${datasetId}-${antigen.id}-${appendCode}`,
     numberType: "VALUE",
     publicAccess: "rw------",
     userOrganisationUnitChildren: false,
@@ -258,134 +261,7 @@ const qsIndicatorsTable = (
     topLimit: 0,
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.qsTable}`,
-    hideSubtitle: false,
-    externalAccess: false,
-    legendDisplayStrategy: "FIXED",
-    colSubTotals: false,
-    showHierarchy: false,
-    rowTotals: false,
-    cumulative: false,
-    digitGroupSeparator: "NONE",
-    hideTitle: false,
-    regression: false,
-    skipRounding: false,
-    reportParams: {
-        paramGrandParentOrganisationUnit: false,
-        paramReportingPeriod: false,
-        paramOrganisationUnit: false,
-        paramParentOrganisationUnit: false,
-    },
-    access: {
-        read: true,
-        update: true,
-        externalize: true,
-        delete: true,
-        write: true,
-        manage: true,
-    },
-    relativePeriods: {
-        thisYear: false,
-        quartersLastYear: false,
-        last52Weeks: false,
-        thisWeek: false,
-        lastMonth: false,
-        last14Days: false,
-        biMonthsThisYear: false,
-        monthsThisYear: false,
-        last2SixMonths: false,
-        yesterday: false,
-        thisQuarter: false,
-        last12Months: false,
-        last5FinancialYears: false,
-        thisSixMonth: false,
-        lastQuarter: false,
-        thisFinancialYear: false,
-        last4Weeks: false,
-        last3Months: false,
-        thisDay: false,
-        thisMonth: false,
-        last5Years: false,
-        last6BiMonths: false,
-        last4BiWeeks: false,
-        lastFinancialYear: false,
-        lastBiWeek: false,
-        weeksThisYear: false,
-        last6Months: false,
-        last3Days: false,
-        quartersThisYear: false,
-        monthsLastYear: false,
-        lastWeek: false,
-        last7Days: false,
-        thisBimonth: false,
-        lastBimonth: false,
-        lastSixMonth: false,
-        thisBiWeek: false,
-        lastYear: false,
-        last12Weeks: false,
-        last4Quarters: false,
-    },
-    dataElementGroupSetDimensions: [],
-    attributeDimensions: [],
-    translations: [],
-    filterDimensions: ["ou", antigenCategory],
-    interpretations: [],
-    itemOrganisationUnitGroups: [],
-    userGroupAccesses: [],
-    programIndicatorDimensions: [],
-    subscribers: [],
-    attributeValues: [],
-    columnDimensions: ["dx"],
-    userAccesses: [],
-    favorites: [],
-    dataDimensionItems: data,
-    categoryOptionGroupSetDimensions: [],
-    columns: [],
-    organisationUnitGroupSetDimensions: [],
-    organisationUnitLevels: [],
-    dataElementDimensions: [],
-    periods: period,
-    organisationUnits: organisationUnitsIds,
-    categoryDimensions: [
-        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] }, //  TODO: Same as chart
-    ],
-    filters: [],
-    rows: [],
-    rowDimensions: ["pe"],
-});
-
-const vaccinesTable = (
-    name,
-    antigen,
-    datasetId,
-    organisationUnitsIds,
-    period,
-    antigenCategory,
-    data
-) => ({
-    name: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.vaccinesTable}`,
-    code: `${datasetId}-${antigen.id}-${dashboardItemsConfig.appendCodes.vaccinesTable}`,
-    numberType: "VALUE",
-    publicAccess: "rw------",
-    userOrganisationUnitChildren: false,
-    legendDisplayStyle: "FILL",
-    hideEmptyColumns: false,
-    subscribed: false,
-    hideEmptyRows: true,
-    parentGraphMap: {},
-    userOrganisationUnit: false,
-    rowSubTotals: false,
-    displayDensity: "NORMAL",
-    completedOnly: false,
-    colTotals: true,
-    showDimensionLabels: true,
-    sortOrder: 0,
-    fontSize: "NORMAL",
-    favorite: false,
-    topLimit: 0,
-    aggregationType: "DEFAULT",
-    userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.name}-${dashboardItemsConfig.appendCodes.vaccineTable}`,
+    displayName: `${name}-${antigen.name}-${appendCode}`,
     hideSubtitle: false,
     externalAccess: false,
     legendDisplayStrategy: "FIXED",
