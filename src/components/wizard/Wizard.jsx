@@ -209,7 +209,7 @@ class Wizard extends React.Component {
 
                 <Paper className={classes.contents} data-wizard-contents={true}>
                     {currentStep.description && (
-                        <div className={classes.description}>{currentStep.description}</div>
+                        <div className={classes.description}>{currentStep.description}.</div>
                     )}
                     {<currentStep.component {...currentStep.props} />}
                     <div className={classes.buttonContainer}>

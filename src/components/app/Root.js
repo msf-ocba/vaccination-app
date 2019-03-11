@@ -32,14 +32,14 @@ class Root extends React.Component {
         return (
             <Switch>
                 <Route
-                    path="/campaign-configurator/new"
+                    path="/campaign-configuration/new"
                     render={props => (
                         <CampaignWizard d2={d2} config={this.state.config} {...props} />
                     )}
                 />
 
                 <Route
-                    path="/campaign-configurator"
+                    path="/campaign-configuration"
                     render={props => (
                         <CampaignConfigurator d2={d2} config={this.state.config} {...props} />
                     )}

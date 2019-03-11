@@ -92,7 +92,7 @@ dataset and all the metadata associated with this vaccination campaign`),
 
     handleConfirm = () => {
         this.setState({ dialogOpen: false });
-        this.props.history.push("/campaign-configurator");
+        this.props.history.push("/campaign-configuration");
     };
 
     handleDialogCancel = () => {
