@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-03-11T09:50:22.246Z\n"
-"PO-Revision-Date: 2019-03-11T09:50:22.246Z\n"
+"POT-Creation-Date: 2019-03-11T11:33:36.984Z\n"
+"PO-Revision-Date: 2019-03-11T11:33:36.984Z\n"
 
 msgid "Vaccination"
 msgstr ""
@@ -72,6 +72,9 @@ msgid "Go to Dashboard"
 msgstr ""
 
 msgid "Download data"
+msgstr ""
+
+msgid "Cannot find dashboard associated to the campaign"
 msgstr ""
 
 msgid "Only my campaigns"

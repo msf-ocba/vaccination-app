@@ -60,3 +60,10 @@ async function getByAttribute(config, d2) {
         .map(el => el.id);
     return ids;
 }
+
+export function getDashboardId(dataSet, config) {
+    return _(dataSet.attributeValues || [])
+        .filter(av => av.attribute.code === config.attributeCodeForDashboard)
+        .map(av => av.value)
+        .first();
+}
