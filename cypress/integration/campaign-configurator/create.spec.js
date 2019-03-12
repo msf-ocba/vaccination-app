@@ -1,10 +1,10 @@
 import moment from "moment";
 
-describe("Campaign configurator - Create", () => {
+describe("Campaign configuration - Create", () => {
     before(() => {
         cy.login("admin");
         cy.loadPage();
-        cy.contains("Campaign Configurator").click();
+        cy.contains("Campaign Configuration").click();
         cy.get("[data-test=list-action-bar]").click();
     });
 
@@ -14,7 +14,7 @@ describe("Campaign configurator - Create", () => {
         cy.contains("New vaccination campaign");
 
         // Organisation Units Step
-        cy.contains("For all organisation units");
+        cy.contains("Select the organization units which will implement the campaign");
 
         cy.contains("Next").click();
         cy.contains("Select at least one organisation unit");
