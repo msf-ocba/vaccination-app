@@ -20,7 +20,7 @@ export const dashboardItemsConfig = {
     },
     chartsDataCodes: {
         indicatorChart: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
-        utilizationRateChart: ["RVC_VACCINE_UTILITZATION"],
+        utilizationRateChart: ["RVC_VACCINE_UTILIZATION"],
     },
 };
 
