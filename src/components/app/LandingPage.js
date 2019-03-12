@@ -6,7 +6,8 @@ import FontIcon from "material-ui/FontIcon";
 import GridList from "@material-ui/core/GridList";
 import GridListTile from "@material-ui/core/GridListTile";
 import { withStyles } from "@material-ui/core/styles";
-import { Link } from "react-router-dom";
+import { withRouter } from "react-router";
+import { goToDhis2Url } from "../../utils/routes";
 
 const lightGray = "#7a7a7a";
 const styles = _theme => ({
@@ -52,7 +53,23 @@ class LandingPage extends React.Component {
     };
 
     onClick = key => {
-        console.log("TODO", "clicked", key);
+        const { history } = this.props;
+        switch (key) {
+            case "campaign-configuration":
+                history.push("/" + key);
+                break;
+            case "data-entry":
+                goToDhis2Url("/dhis-web-dataentry/index.action");
+                break;
+            case "dashboard":
+                goToDhis2Url("/dhis-web-dashboard/index.html");
+                break;
+            case "maintenance":
+                goToDhis2Url("/dhis-web-maintenance/index.html");
+                break;
+            default:
+                throw new Error(`Unsupported page key: ${key}`);
+        }
     };
 
     render() {
@@ -68,8 +85,6 @@ class LandingPage extends React.Component {
                 key={key}
                 data-test={`page-${key}`}
                 onClick={this.onClick.bind(this, key)}
-                component={Link}
-                to={`/${key}`}
                 className={classes.gridTile}
             >
                 <div className={classes.tileContainer}>
@@ -91,4 +106,4 @@ class LandingPage extends React.Component {
     }
 }
 
-export default withStyles(styles)(LandingPage);
+export default withRouter(withStyles(styles)(LandingPage));
