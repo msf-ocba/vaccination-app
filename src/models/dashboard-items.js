@@ -24,6 +24,10 @@ export const dashboardItemsConfig = {
     },
 };
 
+export function buildDashboardItemsCode(datasetId, antigenId, appendCode) {
+    return [datasetId, antigenId, appendCode].join("_");
+}
+
 export function buildDashboardItems(
     antigensMeta,
     name,
@@ -126,8 +130,8 @@ const chartConstructor = (
     type,
     appendCode
 ) => ({
-    name: `${name}-${antigen.name}-${appendCode}`,
-    code: `${datasetId}-${antigen.id}-${appendCode}`,
+    name: [name, antigen.name, appendCode].join("-"),
+    code: buildDashboardItemsCode(datasetId, antigen.id, appendCode),
     showData: true,
     publicAccess: "rw------",
     userOrganisationUnitChildren: false,
@@ -144,7 +148,7 @@ const chartConstructor = (
     hideEmptyRowItems: "AFTER_LAST",
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.name}-${appendCode}`,
+    displayName: [name, antigen.name, appendCode].join("-"),
     hideSubtitle: false,
     hideLegend: false,
     externalAccess: false,
@@ -239,8 +243,8 @@ const tableConstructor = (
     data,
     appendCode
 ) => ({
-    name: `${name}-${antigen.name}-${appendCode}`,
-    code: `${datasetId}-${antigen.id}-${appendCode}`,
+    name: [name, antigen.name, appendCode].join("-"),
+    code: buildDashboardItemsCode(datasetId, antigen.id, appendCode),
     numberType: "VALUE",
     publicAccess: "rw------",
     userOrganisationUnitChildren: false,
@@ -261,7 +265,7 @@ const tableConstructor = (
     topLimit: 0,
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: `${name}-${antigen.name}-${appendCode}`,
+    displayName: [name, antigen.name, appendCode].join("-"),
     hideSubtitle: false,
     externalAccess: false,
     legendDisplayStrategy: "FIXED",

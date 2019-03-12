@@ -21,6 +21,7 @@ import {
     dashboardItemsConfig,
     itemsMetadataConstructor,
     buildDashboardItems,
+    buildDashboardItemsCode,
 } from "./dashboard-items";
 import { getDaysRange } from "../utils/date";
 import { Antigen } from "./campaign";
@@ -282,11 +283,11 @@ export default class DbD2 {
         const tableKeys = _.keys(dashboardItemsConfig.tablesDataCodes);
 
         const chartCodes = chartKeys.map(key =>
-            antigensMeta.map(({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes[key]}`)
+            antigensMeta.map(({ id }: { id: string }) => buildDashboardItemsCode(datasetId, id, appendCodes[key]))
         );
 
         const tableCodes = tableKeys.map(key =>
-            antigensMeta.map(({ id }: { id: string }) => `${datasetId}-${id}-${appendCodes[key]}`)
+            antigensMeta.map(({ id }: { id: string }) => buildDashboardItemsCode(datasetId, id, appendCodes[key]))
         );
 
         const { charts: chartIds, reportTables: tableIds } = await this.api.get("/metadata", {
