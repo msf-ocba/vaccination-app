@@ -17,6 +17,12 @@ class OrganisationUnitsStep extends React.Component {
         onChange: PropTypes.func.isRequired,
     };
 
+    controls = {
+        filterByLevel: false,
+        filterByGroup: false,
+        selectAll: false,
+    };
+
     setOrgUnits = orgUnitsPaths => {
         const orgUnits = orgUnitsPaths.map(path => ({
             id: _.last(path.split("/")),
@@ -39,6 +45,7 @@ class OrganisationUnitsStep extends React.Component {
                 onChange={this.setOrgUnits}
                 selected={campaign.organisationUnits.map(ou => ou.path)}
                 levels={campaign.selectableLevels}
+                controls={this.controls}
             />
         );
     }
