@@ -1,16 +1,19 @@
 import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
-import { ObjectsTable } from "d2-ui-components";
+import { ObjectsTable, withSnackbar } from "d2-ui-components";
+
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/auth";
-import { list } from "../../models/datasets";
+import { list, getDashboardId } from "../../models/datasets";
+import { goToDhis2Url } from "../../utils/routes";
 
 class CampaignConfigurator extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
+        snackbar: PropTypes.object.isRequired,
     };
 
     state = {
@@ -76,6 +79,7 @@ class CampaignConfigurator extends React.Component {
             name: "dashboard",
             text: i18n.t("Go to Dashboard"),
             multiple: false,
+            onClick: dataSet => this.goToDashboard(dataSet),
         },
         {
             name: "download",
@@ -84,6 +88,15 @@ class CampaignConfigurator extends React.Component {
             multiple: false,
         },
     ];
+
+    goToDashboard = dataSet => {
+        const dashboardId = getDashboardId(dataSet, this.props.config);
+        if (dashboardId) {
+            goToDhis2Url(`/dhis-web-dashboard/#/${dashboardId}`);
+        } else {
+            this.props.snackbar.error(i18n.t("Cannot find dashboard associated to the campaign"));
+        }
+    };
 
     onCreate = () => {
         this.props.history.push("/campaign-configuration/new");
@@ -142,4 +155,4 @@ const styles = {
     checkboxIcon: { marginRight: 8 },
 };
 
-export default CampaignConfigurator;
+export default withSnackbar(CampaignConfigurator);
