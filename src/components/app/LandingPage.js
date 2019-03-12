@@ -27,7 +27,7 @@ const styles = _theme => ({
         "&:hover": {
             backgroundColor: "#f9f9f9",
         },
-        cursor: 'pointer'
+        cursor: "pointer",
     },
     tileContainer: {
         display: "flex",
