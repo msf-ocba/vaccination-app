@@ -5,7 +5,7 @@ export const dashboardItemsConfig = {
         indicatorChart: "indicatorChart",
         qsIndicatorsTable: "qsTable",
         vaccinesTable: "vTable",
-        utilizationRateChart: "utilzationRateChart",
+        utilizationRateChart: "utilizationRateChart",
     },
     categoryCode: "RVC_ANTIGEN",
     tablesDataCodes: {
