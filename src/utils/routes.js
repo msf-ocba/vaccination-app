@@ -1,7 +1,6 @@
 export function goToDhis2Url(path) {
-    const { REACT_APP_DHIS2_BASE_URL } = process.env;
-    const clean = s => s.replace(/^\//, "");
-    const url = [clean(REACT_APP_DHIS2_BASE_URL), clean(path)].join("/");
+    const baseUrl = process.env.REACT_APP_DHIS2_BASE_URL || "";
+    const url = [baseUrl.replace(/\/$/, ""), path.replace(/^\//, "")].join("/");
     window.location = url;
     return null;
 }
