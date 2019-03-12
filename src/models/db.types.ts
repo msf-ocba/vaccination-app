@@ -1,10 +1,10 @@
-import { Metadata } from './db.types';
-import { Dictionary } from 'lodash';
+import { Metadata } from "./db.types";
+import { Dictionary } from "lodash";
 export type Maybe<T> = T | undefined;
 
-export type Response<T> =
-    {status: true} |
-    {status: false, error: T};
+export type Response<T> = { status: true } | { status: false; error: T };
+
+type Partial<T> = { [P in keyof T]?: T[P] };
 
 export interface Pager {
     page: number;
@@ -14,14 +14,14 @@ export interface Pager {
 }
 
 export interface PaginatedObjects<T> {
-    pager: Pager,
+    pager: Pager;
     objects: T[];
 }
 
 export interface OrganisationUnitPathOnly {
     id: string;
     path: string;
-};
+}
 
 export interface OrganisationUnit {
     id: string;
@@ -29,7 +29,16 @@ export interface OrganisationUnit {
     level: number;
     path: string;
     ancestors: Maybe<OrganisationUnit[]>;
-};
+}
+
+export interface Category {
+    id: string;
+    code: string;
+    displayName: string;
+    categoryOptions: CategoryOption[];
+    dataDimensionType: "DISAGGREGATION" | "ATTRIBUTE";
+    dataDimension: boolean;
+}
 
 export interface CategoryOption {
     id: string;
@@ -37,10 +46,28 @@ export interface CategoryOption {
     displayName: string;
 }
 
+export interface CategoryOptionGroup {
+    id: string;
+    code: string;
+    displayName: string;
+    categoryOptions: CategoryOption[];
+}
+
 export interface CategoryCombo {
     id: string;
     code: string;
-    displayName: string,
+    displayName: string;
+    categories: Category[];
+    categoryOptionCombos: { id: string; name: string; categoryOptions: Ref[] }[];
+}
+
+export interface Attribute {
+    id: string;
+}
+
+export interface AttributeValue {
+    value: string;
+    attribute: Ref;
 }
 
 export interface DataElement {
@@ -54,43 +81,54 @@ export interface DataElementGroup {
     id: string;
     code: string;
     displayName: string;
-    dataElements: DataElement[],
+    dataElements: DataElement[];
 }
 
-interface Ref {id: string};
+export interface Ref {
+    id: string;
+}
 
 export interface Metadata {
-    dataSets?: Array<DataSet>,
-    sections?: Array<Section>,
+    dataSets?: Array<DataSet>;
+    sections?: Array<Section>;
 }
 
 export interface Section {
-    name: string,
-    showRowTotals: boolean,
-    showColumnTotals: boolean,
-    dataSet: Ref,
-    dataElements: DataElement[],
+    name: string;
+    showRowTotals: boolean;
+    showColumnTotals: boolean;
+    dataSet: Ref;
+    dataElements: Ref[];
 }
 
 export interface DataSet {
-    id: string,
-    name: string,
-    publicAccess: string,
-    periodType: string
-    categoryCombo: Ref,
-    dataElementDecoration: boolean,
-    renderAsTabs: boolean,
-    organisationUnits: Array<Ref>,
-    dataSetElements: Array<{dataSet: Ref, dataElement: Ref, categoryCombo: Ref}>,
-    openFuturePeriods: number,
-    timelyDays: number,
-    expiryDays: number,
-    sections?: Section[],
-    dataInputPeriods: DataInputPeriod[],
+    id: string;
+    name: string;
+    publicAccess: string;
+    periodType: string;
+    categoryCombo: Ref;
+    dataElementDecoration: boolean;
+    renderAsTabs: boolean;
+    organisationUnits: Array<Ref>;
+    dataSetElements: Array<{ dataSet: Ref; dataElement: Ref; categoryCombo: Ref }>;
+    openFuturePeriods: number;
+    timelyDays: number;
+    expiryDays: number;
+    sections?: Section[];
+    dataInputPeriods: DataInputPeriod[];
+    attributeValues: AttributeValue[];
+    formType: "DEFAULT" | "CUSTOM";
+}
+
+export interface DataEntryForm {
+    id: string;
+    name: string;
+    htmlCode: string;
+    style: "NORMAL" | "COMFORTABLE" | "COMPACT" | "NONE";
 }
 
 export interface DataInputPeriod {
-    period: {id: string}
+    period: { id: string };
 }
 
 export interface ImportParams {
@@ -142,3 +180,23 @@ export interface MetadataResponse {
     stats: Stats;
     typeReports: TypeReport[];
 }
+
+export type MetadataFields = { [key in ModelName]: ModelFields };
+
+export interface ModelFields {
+    [key: string]: boolean | ModelFields | ((fields: MetadataFields) => ModelFields);
+}
+
+export type ModelName =
+    | "categories"
+    | "categoryCombos"
+    | "categoryOptions"
+    | "categoryOptionGroups"
+    | "dataElements"
+    | "dataElementGroups";
+
+export interface MetadataGetModelParams {
+    filters?: string[];
+}
+
+export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams | undefined };

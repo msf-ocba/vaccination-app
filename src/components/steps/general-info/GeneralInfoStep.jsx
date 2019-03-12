@@ -1,13 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
+
 import { withStyles } from "@material-ui/core/styles";
+import { Card, CardContent } from "@material-ui/core";
 
 import { TextField } from "@dhis2/d2-ui-core";
 import { FormBuilder } from "@dhis2/d2-ui-forms";
 import { Validators } from "@dhis2/d2-ui-forms";
-import { Card, CardContent } from "@material-ui/core";
-import DatePicker from "../../date-picker/DatePicker";
+
+import { DatePicker } from "d2-ui-components";
 
 class GeneralInfoStep extends React.Component {
     state = {
@@ -17,6 +19,7 @@ class GeneralInfoStep extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         campaign: PropTypes.object.isRequired,
+        onChange: PropTypes.func.isRequired,
     };
 
     onUpdateField = (fieldName, newValue) => {
@@ -94,6 +97,6 @@ class GeneralInfoStep extends React.Component {
     }
 }
 
-const styles = theme => ({});
+const styles = _theme => ({});
 
 export default withStyles(styles)(GeneralInfoStep);

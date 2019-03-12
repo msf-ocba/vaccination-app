@@ -1,13 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
 import _ from "lodash";
-import { withStyles } from "@material-ui/core/styles";
-import MultiSelector from "../../multi-selector/MultiSelector";
-
-const styles = theme => ({});
+import { MultiSelector } from "d2-ui-components";
 
 class AntigenSelectionStep extends React.Component {
-    state = { categoryOptions: null };
+    state = { antigens: null };
 
     static propTypes = {
         d2: PropTypes.object.isRequired,
@@ -17,14 +14,13 @@ class AntigenSelectionStep extends React.Component {
 
     async componentDidMount() {
         const { campaign } = this.props;
-        const categoryOptions = await campaign.getAvailableAntigens();
-        //await new Promise(resolve => setTimeout(resolve, 2000));
-        this.setState({ categoryOptions });
+        const antigens = await campaign.getAvailableAntigens();
+        this.setState({ antigens });
     }
 
     onChange = selected => {
-        const antigens = _(this.state.categoryOptions)
-            .keyBy("id")
+        const antigens = _(this.state.antigens)
+            .keyBy("code")
             .at(selected)
             .value();
         const newCampaign = this.props.campaign.setAntigens(antigens);
@@ -33,12 +29,12 @@ class AntigenSelectionStep extends React.Component {
 
     render() {
         const { d2, campaign } = this.props;
-        const { categoryOptions } = this.state;
+        const { antigens } = this.state;
 
-        if (!categoryOptions) return null;
+        if (!antigens) return null;
 
-        const options = categoryOptions.map(co => ({ value: co.id, text: co.displayName }));
-        const selected = campaign.antigens.map(co => co.id);
+        const options = antigens.map(antigen => ({ value: antigen.code, text: antigen.name }));
+        const selected = campaign.antigens.map(antigen => antigen.code);
 
         return (
             <div>
@@ -55,4 +51,4 @@ class AntigenSelectionStep extends React.Component {
     }
 }
 
-export default withStyles(styles)(AntigenSelectionStep);
+export default AntigenSelectionStep;

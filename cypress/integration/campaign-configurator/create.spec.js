@@ -1,11 +1,11 @@
 import moment from "moment";
 
-describe("Campaign configurator - Create", () => {
+describe("Campaign configuration - Create", () => {
     before(() => {
         cy.login("admin");
         cy.loadPage();
-        cy.contains("Campaign Configurator").click();
-        cy.get("[data-test=create-campaign]").click();
+        cy.contains("Campaign Configuration").click();
+        cy.get("[data-test=list-action-bar]").click();
     });
 
     beforeEach(() => {});
@@ -14,7 +14,7 @@ describe("Campaign configurator - Create", () => {
         cy.contains("New vaccination campaign");
 
         // Organisation Units Step
-        cy.contains("For all organisation units");
+        cy.contains("Select the organization units which will implement the campaign");
 
         cy.contains("Next").click();
         cy.contains("Select at least one organisation unit");
@@ -53,6 +53,13 @@ describe("Campaign configurator - Create", () => {
 
         cy.contains("Next").click();
 
+        // Disaggregation
+
+        cy.contains("Measles");
+        cy.contains("Cholera");
+
+        cy.contains("Next").click();
+
         // Save step
 
         cy.get("[data-test-current=true]").contains("Save");
@@ -67,7 +74,8 @@ describe("Campaign configurator - Create", () => {
         cy.contains(`${expectedDataStart} -> ${expectedDataEnd}`);
 
         cy.contains("Antigens");
-        cy.contains("Measles, Cholera");
+        cy.contains("Measles");
+        cy.contains("Cholera");
 
         cy.contains("Organisation Units");
         cy.contains(
@@ -90,7 +98,8 @@ function expandOrgUnit(label) {
     cy.server()
         .route("GET", "/api/organisationUnits/*")
         .as("getChildrenOrgUnits");
-    cy.contains(label)
+    cy.get("[data-wizard-contents]")
+        .contains(label)
         .parents(".label")
         .prev()
         .click();
@@ -105,7 +114,7 @@ function selectOrgUnit(label) {
 
 function clickDay(dayOfMonth) {
     cy.xpath(`//span[contains(text(), '${dayOfMonth}')]`).then(spans => {
-        const span = spans[0];
+        const span = spans[spans.length - 1];
         if (span && span.parentElement) {
             span.parentElement.click();
         }

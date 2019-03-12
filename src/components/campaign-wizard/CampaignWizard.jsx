@@ -13,58 +13,90 @@ import SaveStep from "../steps/save/SaveStep";
 import { getValidationMessages } from "../../utils/validations";
 import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
-
-const stepsBaseInfo = [
-    {
-        key: "organisation-units",
-        label: i18n.t("Organisation Units"),
-        component: OrganisationUnitsStep,
-        validationKeys: ["organisationUnits"],
-        help: i18n.t(`Select organisation units assigned to this campaign.
-At least one must be selected.
-Only organisation units of level 6 (service) can be selected`),
-    },
-    {
-        key: "general-info",
-        label: i18n.t("General info"),
-        component: GeneralInfoStep,
-        validationKeys: ["name", "startDate", "endDate"],
-        help: i18n.t(
-            `Set the name of the campaign and the period in which data entry will be enabled`
-        ),
-    },
-    {
-        key: "antigen-selection",
-        label: i18n.t("Antigen selection"),
-        component: AntigenSelectionStep,
-        validationKeys: ["antigens"],
-        help: i18n.t(`Select the antigens included in the campaign`),
-    },
-    {
-        key: "save",
-        label: i18n.t("Save"),
-        component: SaveStep,
-        validationKeys: [],
-        help: i18n.t(`Press the button to create the \
-dataset and all the metadata associated with this vaccination campaign`),
-    },
-];
+import ConfirmationDialog from "../confirmation-dialog/ConfirmationDialog";
+import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         history: PropTypes.object.isRequired,
+        config: PropTypes.object.isRequired,
     };
 
     constructor(props) {
         super(props);
+        const campaign = Campaign.create(props.config, new DbD2(props.d2));
         this.state = {
-            campaign: Campaign.create(new DbD2(props.d2)),
+            campaign: campaign,
+            dialogOpen: false,
         };
     }
 
-    goToList = () => {
-        this.props.history.push("/campaign-configurator");
+    getStepsBaseInfo() {
+        return [
+            {
+                key: "organisation-units",
+                label: i18n.t("Organisation Units"),
+                component: OrganisationUnitsStep,
+                validationKeys: ["organisationUnits"],
+                description: i18n.t(
+                    `Select the organization units which will implement the campaign`
+                ),
+                help: i18n.t(`Select the organization units which will implement the campaign.
+At least one must be selected.
+Only organisation units of level 6 (service) can be selected`),
+            },
+            {
+                key: "general-info",
+                label: i18n.t("General info"),
+                component: GeneralInfoStep,
+                validationKeys: ["name", "startDate", "endDate"],
+                description: i18n.t(
+                    `Name your campaign and choose dates for which data entry will be enabled`
+                ),
+                help: i18n.t(
+                    `Name your campaign and choose dates for which data entry will be enabled`
+                ),
+            },
+            {
+                key: "antigen-selection",
+                label: i18n.t("Antigen selection"),
+                component: AntigenSelectionStep,
+                validationKeys: ["antigens"],
+                description: i18n.t(`Select the antigens which will be administered`),
+                help: i18n.t(`Select the antigens which will be administered`),
+            },
+            {
+                key: "disaggregation",
+                label: i18n.t("Indicators Configuration"),
+                component: DisaggregationStep,
+                validationKeys: [],
+                description: i18n.t(`Select indicators and categories for each antigen`),
+                help: i18n.t(`Select indicators and categories for each antigen`),
+            },
+            {
+                key: "save",
+                label: i18n.t("Save"),
+                component: SaveStep,
+                validationKeys: [],
+                description: i18n.t("Setup is finished. Press the button Save to save the data"),
+                help: i18n.t(`Press the button to create the \
+dataset and all the metadata associated with this vaccination campaign`),
+            },
+        ];
+    }
+
+    cancelSave = () => {
+        this.setState({ dialogOpen: true });
+    };
+
+    handleConfirm = () => {
+        this.setState({ dialogOpen: false });
+        this.props.history.push("/campaign-configuration");
+    };
+
+    handleDialogCancel = () => {
+        this.setState({ dialogOpen: false });
     };
 
     onChange = campaign => {
@@ -77,10 +109,10 @@ class CampaignWizard extends React.Component {
 
     render() {
         const { d2, location } = this.props;
-        const { campaign } = this.state;
+        const { campaign, dialogOpen } = this.state;
         window.campaign = campaign;
 
-        const steps = stepsBaseInfo.map(step => ({
+        const steps = this.getStepsBaseInfo().map(step => ({
             ...step,
             props: {
                 d2,
@@ -96,9 +128,18 @@ class CampaignWizard extends React.Component {
 
         return (
             <React.Fragment>
+                <ConfirmationDialog
+                    dialogOpen={dialogOpen}
+                    handleConfirm={this.handleConfirm}
+                    handleCancel={this.handleDialogCancel}
+                    title={i18n.t("Cancel Campaign Creation?")}
+                    contents={i18n.t(
+                        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
+                    )}
+                />
                 <FormHeading
                     title={i18n.t("New vaccination campaign")}
-                    onBackClick={this.goToList}
+                    onBackClick={this.cancelSave}
                 />
 
                 <Wizard

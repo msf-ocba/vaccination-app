@@ -1,5 +1,7 @@
 {
     "projectId": "8yuvg9",
     "baseUrl": "http://localhost:8081",
-    "defaultCommandTimeout": 15000
+    "defaultCommandTimeout": 15000,
+    "chromeWebSecurity": false,
+    "_comment": "chromeWebSecurity flag disabled to allow cypress to test redirection to external pages - TEMPORARY"
 }

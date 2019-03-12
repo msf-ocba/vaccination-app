@@ -1,20 +1,13 @@
 import { Dictionary } from "lodash";
+import { Ref } from "./db.types";
 
 export interface D2 {
     Api: {
-        getApi(): D2Api,
-    }
-}
-
-export interface Params {
-    paging?: boolean;
-    pageSize?: number;
-    filter?: string[];
-    fields?: string[];
-    order?: string;
+        getApi(): D2Api;
+    };
 }
 
 export interface D2Api {
-    get(url: string, data: Params): Dictionary<any>;
+    get(url: string, data: Dictionary<any>): Dictionary<any>;
     post(url: string, data: Dictionary<any>): Dictionary<any>;
 }

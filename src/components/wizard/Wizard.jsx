@@ -11,32 +11,45 @@ import StepButton from "@material-ui/core/StepButton";
 import Button from "@material-ui/core/Button";
 import { IconButton } from "@material-ui/core";
 import Icon from "@material-ui/core/Icon";
-import { withFeedback, levels } from "../feedback";
-import DialogHandler from "../dialog-handler/DialogHandler";
+import { DialogHandler, withSnackbar } from "d2-ui-components";
 
 const styles = theme => ({
     root: {
         width: "100%",
     },
+    description: {
+        marginBottom: 15,
+        marginLeft: 3,
+        fontSize: "1.1em",
+    },
     button: {
         margin: theme.spacing.unit,
-        marginRight: 30,
+        marginRight: 5,
         padding: 10,
     },
     buttonDisabled: {
         color: "grey !important",
+    },
+    buttonContainer: {
+        display: "flex",
+        justifyContent: "flex-end",
+        paddingTop: 10,
     },
     stepButton: {
         width: "auto",
     },
     contents: {
         margin: 10,
-        padding: 20,
+        padding: 25,
     },
     messages: {
         padding: 0,
         listStyleType: "none",
         color: "red",
+    },
+    stepper: {
+        marginLeft: 10,
+        marginRight: 10,
     },
 });
 
@@ -51,7 +64,7 @@ class Wizard extends React.Component {
         initialStepKey: PropTypes.string.isRequired,
         onStepChangeRequest: PropTypes.func.isRequired,
         useSnackFeedback: PropTypes.bool,
-        feedback: PropTypes.func,
+        snackbar: PropTypes.object.isRequired,
         steps: PropTypes.arrayOf(
             PropTypes.shape({
                 key: PropTypes.string.isRequired,
@@ -86,7 +99,7 @@ class Wizard extends React.Component {
             this.setStep(nextStepKey);
         } else {
             if (this.props.useSnackFeedback) {
-                this.props.feedback(levels.ERROR, errorMessages.join("\n"), {
+                this.props.snackbar.error(errorMessages.join("\n"), {
                     autoHideDuration: null,
                 });
             } else {
@@ -172,7 +185,7 @@ class Wizard extends React.Component {
 
         return (
             <div className={classes.root}>
-                <Stepper nonLinear={true} activeStep={currentStepIndex}>
+                <Stepper nonLinear={true} activeStep={currentStepIndex} className={classes.stepper}>
                     {steps.map((step, index) => (
                         <Step
                             key={step.key}
@@ -196,25 +209,27 @@ class Wizard extends React.Component {
                 <FeedbackMessages />
 
                 <Paper className={classes.contents} data-wizard-contents={true}>
+                    {currentStep.description && (
+                        <div className={classes.description}>{currentStep.description}.</div>
+                    )}
                     {<currentStep.component {...currentStep.props} />}
+                    <div className={classes.buttonContainer}>
+                        <NavigationButton
+                            stepKey={prevStepKey}
+                            onClick={this.prevStep}
+                            label={"← " + i18n.t("Previous")}
+                        />
+
+                        <NavigationButton
+                            stepKey={nextStepKey}
+                            onClick={this.nextStep}
+                            label={i18n.t("Next") + " →"}
+                        />
+                    </div>
                 </Paper>
-
-                <div>
-                    <NavigationButton
-                        stepKey={prevStepKey}
-                        onClick={this.prevStep}
-                        label={"← " + i18n.t("Previous")}
-                    />
-
-                    <NavigationButton
-                        stepKey={nextStepKey}
-                        onClick={this.nextStep}
-                        label={i18n.t("Next") + " →"}
-                    />
-                </div>
             </div>
         );
     }
 }
 
-export default withFeedback(withStyles(styles)(Wizard));
+export default withSnackbar(withStyles(styles)(Wizard));

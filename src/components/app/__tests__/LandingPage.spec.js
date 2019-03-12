@@ -1,7 +1,7 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { unwrap } from "@material-ui/core/test-utils";
-import MenuItem from "@material-ui/core/MenuItem";
+import GridListTile from "@material-ui/core/GridListTile";
 
 import LandingPage from "../LandingPage";
 import { getD2Stub } from "utils/testing";
@@ -14,6 +14,6 @@ describe("Landing page", () => {
 
     it("renders 4 menu items", () => {
         const component = renderWithProps();
-        expect(component.find(MenuItem)).toHaveLength(4);
+        expect(component.find(GridListTile)).toHaveLength(4);
     });
 });

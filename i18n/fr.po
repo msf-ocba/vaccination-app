@@ -1,14 +1,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-11T09:53:29.505Z\n"
+"POT-Creation-Date: 2019-03-11T11:33:36.984Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-msgid "Campaign Configurator"
+msgid "Vaccination"
+msgstr ""
+
+msgid "Campaign Configuration"
 msgstr ""
 
 msgid "Data Entry"
@@ -20,59 +23,13 @@ msgstr ""
 msgid "Maintenance"
 msgstr ""
 
-msgid "Organisation Units"
-msgstr ""
-
-msgid ""
-"Select organisation units assigned to this campaign.\n"
-"At least one must be selected.\n"
-"Only organisation units of level 6 (service) can be selected"
-msgstr ""
-
-msgid "General info"
-msgstr ""
-
-msgid ""
-"Set the name of the campaign and the period in which data entry will be "
-"enabled"
-msgstr ""
-
-msgid "Antigen selection"
-msgstr ""
-
-msgid "Select the antigens included in the campaign"
-msgstr ""
-
-msgid "Save"
-msgstr ""
-
-msgid ""
-"Press the button to create the dataset and all the metadata associated with "
-"this vaccination campaign"
-msgstr ""
-
-msgid "New vaccination campaign"
-msgstr ""
-
-msgid "Back"
-msgstr ""
-
-msgid "View/edit"
-msgstr ""
-
-msgid "View only"
-msgstr ""
-
-msgid "Private"
-msgstr ""
-
-msgid "Actions"
-msgstr ""
-
-msgid "of"
-msgstr ""
-
 msgid "Name"
+msgstr ""
+
+msgid "Public access"
+msgstr ""
+
+msgid "Last updated"
 msgstr ""
 
 msgid "Short name"
@@ -81,7 +38,7 @@ msgstr ""
 msgid "Code"
 msgstr ""
 
-msgid "Display description"
+msgid "Description"
 msgstr ""
 
 msgid "Created"
@@ -94,18 +51,6 @@ msgid "Id"
 msgstr ""
 
 msgid "API link"
-msgstr ""
-
-msgid "Close"
-msgstr ""
-
-msgid "Public access"
-msgstr ""
-
-msgid "Last updated"
-msgstr ""
-
-msgid "Only my campaigns"
 msgstr ""
 
 msgid "Details"
@@ -129,13 +74,72 @@ msgstr ""
 msgid "Download data"
 msgstr ""
 
-msgid "For organisation units within"
+msgid "Cannot find dashboard associated to the campaign"
 msgstr ""
 
-msgid "For all organisation units"
+msgid "Only my campaigns"
 msgstr ""
 
-msgid "Search by name"
+msgid "Organisation Units"
+msgstr ""
+
+msgid "Select the organization units which will implement the campaign"
+msgstr ""
+
+msgid ""
+"Select the organization units which will implement the campaign.\n"
+"At least one must be selected.\n"
+"Only organisation units of level 6 (service) can be selected"
+msgstr ""
+
+msgid "General info"
+msgstr ""
+
+msgid ""
+"Name your campaign and choose dates for which data entry will be enabled"
+msgstr ""
+
+msgid "Antigen selection"
+msgstr ""
+
+msgid "Select the antigens which will be administered"
+msgstr ""
+
+msgid "Indicators Configuration"
+msgstr ""
+
+msgid "Select indicators and categories for each antigen"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Setup is finished. Press the button Save to save the data"
+msgstr ""
+
+msgid ""
+"Press the button to create the dataset and all the metadata associated with "
+"this vaccination campaign"
+msgstr ""
+
+msgid "Cancel Campaign Creation?"
+msgstr ""
+
+msgid ""
+"You are about to exit the campaign creation wizard. All your changes will be "
+"lost. Are you sure?"
+msgstr ""
+
+msgid "New vaccination campaign"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Ok"
 msgstr ""
 
 msgid "Field cannot be blank"
@@ -159,13 +163,10 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
-msgid "Setup is finished. Press the button Save to save the data"
+msgid "Period dates"
 msgstr ""
 
 msgid "Antigens"
-msgstr ""
-
-msgid "Period dates"
 msgstr ""
 
 msgid "Help"
@@ -175,45 +176,6 @@ msgid "Previous"
 msgstr ""
 
 msgid "Next"
-msgstr ""
-
-msgid "Search apps"
-msgstr ""
-
-msgid "Manage my apps"
-msgstr ""
-
-msgid "No results found"
-msgstr ""
-
-msgid "Select"
-msgstr ""
-
-msgid "Unselect"
-msgstr ""
-
-msgid "Select all"
-msgstr ""
-
-msgid "Unselect all"
-msgstr ""
-
-msgid "Organisation Unit Level"
-msgstr ""
-
-msgid "Organisation Unit Group"
-msgstr ""
-
-msgid "Assign all"
-msgstr ""
-
-msgid "Remove all"
-msgstr ""
-
-msgid "Hidden by filters"
-msgstr ""
-
-msgid "selected"
 msgstr ""
 
 msgid "Select at least one organisation unit"
