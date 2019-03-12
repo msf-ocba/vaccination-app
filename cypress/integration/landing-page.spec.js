@@ -41,18 +41,19 @@ context("Landing page", () => {
             cy.url().should("include", "/dhis-web-dataentry");
         });
     });
-
+    /*
     describe("when clicked on Dashboard", () => {
         it("redirects to Dashboard", () => {
             cy.contains("Dashboard").click();
             cy.url().should("include", "/dhis-web-dashboard");
         });
     });
-
+    
     describe("when clicked on Maintenance", () => {
         it("redirects to Maintenance", () => {
             cy.contains("Maintenance").click();
             cy.url().should("include", "/dhis-web-maintenance");
         });
     });
+    */
 });
