@@ -26,6 +26,7 @@ import {
 } from "./dashboard-items";
 import { getDaysRange } from "../utils/date";
 import { Antigen } from "./campaign";
+import "../utils/lodash-mixins";
 
 function getDbFields(modelFields: ModelFields): string[] {
     return _(modelFields)
@@ -236,7 +237,6 @@ export default class DbD2 {
             endDate,
             dashboardItemsMetadata
         );
-
         const dashboard = { id: generateUid(), name: `${name}_DASHBOARD`, dashboardItems: items };
 
         return { dashboard, charts, reportTables };
@@ -259,11 +259,12 @@ export default class DbD2 {
         const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
         const periodRange = getDaysRange(periodStart, periodEnd);
         const period = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
-        const { antigensMeta } = dashboardItemsMetadata;
+        const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
-        const { antigenCategory, ...elements } = dashboardItemsElements;
 
-        const { charts, reportTables } = buildDashboardItems(
+        const { antigenCategory, ...elements } = dashboardItemsElements; // Ask Arnau
+
+        const dashboardItems = buildDashboardItems(
             antigensMeta,
             name,
             datasetId,
@@ -273,6 +274,8 @@ export default class DbD2 {
             antigenCategory,
             elements
         );
+        const charts = _(dashboardItems).getOrFail("charts");
+        const reportTables = _(dashboardItems).getOrFail("reportTables");
 
         const chartIds = charts.map(chart => chart.id);
         const reportTableIds = reportTables.map(table => table.id);
