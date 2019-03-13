@@ -5,6 +5,7 @@ import { ObjectsTable, withSnackbar } from "d2-ui-components";
 
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
+import PageHeader from "../shared/PageHeader";
 import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/auth";
 import { list, getDashboardId } from "../../models/datasets";
 import { goToDhis2Url } from "../../utils/routes";
@@ -127,11 +128,16 @@ class CampaignConfigurator extends React.Component {
         return list(config, ...listArgs);
     };
 
+    backHome = () => {
+        this.props.history.push("/");
+    };
+
     render() {
         const { d2 } = this.props;
 
         return (
-            <div>
+            <React.Fragment>
+                <PageHeader title={i18n.t("Campaigns")} onBackClick={this.backHome} />
                 <ObjectsTable
                     d2={d2}
                     model={d2.models.dataSet}
@@ -145,7 +151,7 @@ class CampaignConfigurator extends React.Component {
                     customFiltersComponent={this.renderCustomFilters}
                     customFilters={this.state.filters}
                 />
-            </div>
+            </React.Fragment>
         );
     }
 }

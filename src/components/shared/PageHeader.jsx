@@ -8,7 +8,7 @@ import Icon from "@material-ui/core/Icon";
 
 const iconStyle = { marginBottom: 7 };
 
-function FormHeading({ variant, title, onBackClick }) {
+function PageHeader({ variant, title, onBackClick }) {
     return (
         <div>
             <IconButton
@@ -27,14 +27,14 @@ function FormHeading({ variant, title, onBackClick }) {
     );
 }
 
-FormHeading.propTypes = {
+PageHeader.propTypes = {
     variant: PropTypes.string,
     title: PropTypes.string.isRequired,
     onBackClick: PropTypes.func.isRequired,
 };
 
-FormHeading.defaultProps = {
+PageHeader.defaultProps = {
     variant: "h5",
 };
 
-export default FormHeading;
+export default PageHeader;
