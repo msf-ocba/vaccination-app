@@ -105,17 +105,15 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const { dataElements, indicators, antigenCategory } = dashboardItemsMetadata;
     const { tablesDataCodes, chartsDataCodes } = dashboardItemsConfig;
 
-    const chartKeys = _.keys(chartsDataCodes);
-    const tableKeys = _.keys(tablesDataCodes);
+    const { vaccinesTable, qsIndicatorsTable } = _(tablesDataCodes)
+        .map((codes, key) => [key, dataMapper(dataElements, codes)])
+        .fromPairs()
+        .value();
 
-    const { vaccinesTable, qsIndicatorsTable } = tableKeys.reduce(
-        (acc, tb) => ({ ...acc, [tb]: dataMapper(dataElements, tablesDataCodes[tb]) }),
-        {}
-    );
-    const { indicatorChart, utilizationRateChart } = chartKeys.reduce(
-        (acc, tb) => ({ ...acc, [tb]: dataMapper(indicators, chartsDataCodes[tb]) }),
-        {}
-    );
+    const { indicatorChart, utilizationRateChart } = _(chartsDataCodes)
+        .map((codes, key) => [key, dataMapper(indicators, codes)])
+        .fromPairs()
+        .value();
 
     const dashboardItemsElements = {
         antigenCategory,
@@ -140,6 +138,7 @@ const chartConstructor = (
     type,
     appendCode
 ) => ({
+    id,
     name: [name, antigen.name, appendCode].join("-"),
     code: buildDashboardItemsCode(datasetId, antigen.id, appendCode),
     showData: true,
@@ -254,6 +253,7 @@ const tableConstructor = (
     data,
     appendCode
 ) => ({
+    id,
     name: [name, antigen.name, appendCode].join("-"),
     code: buildDashboardItemsCode(datasetId, antigen.id, appendCode),
     numberType: "VALUE",
