@@ -138,19 +138,21 @@ class CampaignConfigurator extends React.Component {
         return (
             <React.Fragment>
                 <PageHeader title={i18n.t("Campaigns")} onBackClick={this.backHome} />
-                <ObjectsTable
-                    d2={d2}
-                    model={d2.models.dataSet}
-                    columns={this.columns}
-                    detailsFields={this.detailsFields}
-                    pageSize={20}
-                    initialSorting={this.initialSorting}
-                    actions={this.actions}
-                    onCreate={this.canCreateDataSets ? this.onCreate : null}
-                    list={this.list}
-                    customFiltersComponent={this.renderCustomFilters}
-                    customFilters={this.state.filters}
-                />
+                <div style={styles.objectsTableContainer}>
+                    <ObjectsTable
+                        model={d2.models.dataSet}
+                        columns={this.columns}
+                        d2={d2}
+                        detailsFields={this.detailsFields}
+                        pageSize={20}
+                        initialSorting={this.initialSorting}
+                        actions={this.actions}
+                        onCreate={this.canCreateDataSets ? this.onCreate : null}
+                        list={this.list}
+                        customFiltersComponent={this.renderCustomFilters}
+                        customFilters={this.state.filters}
+                    />
+                </div>
             </React.Fragment>
         );
     }
@@ -159,6 +161,7 @@ class CampaignConfigurator extends React.Component {
 const styles = {
     checkbox: { float: "left", width: "25%", paddingTop: 18, marginLeft: 30 },
     checkboxIcon: { marginRight: 8 },
+    objectsTableContainer: { marginTop: -10 },
 };
 
 export default withSnackbar(CampaignConfigurator);

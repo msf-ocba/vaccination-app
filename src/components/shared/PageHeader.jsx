@@ -6,7 +6,7 @@ import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import Icon from "@material-ui/core/Icon";
 
-const iconStyle = { marginBottom: 7 };
+const iconStyle = { paddingTop: 10, marginBottom: 5 };
 
 function PageHeader({ variant, title, onBackClick }) {
     return (
@@ -20,7 +20,7 @@ function PageHeader({ variant, title, onBackClick }) {
                 <Icon color="primary">arrow_back</Icon>
             </IconButton>
 
-            <Typography variant={variant} gutterBottom style={{ display: "inline-block" }}>
+            <Typography variant={variant} style={{ display: "inline-block", fontWeight: 300 }}>
                 {title}
             </Typography>
         </div>
