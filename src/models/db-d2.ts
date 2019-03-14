@@ -229,7 +229,7 @@ export default class DbD2 {
     ): Promise<DashboardData> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(antigens);
 
-        const { items, charts, reportTables } = this.createDashboardItems(
+        const dashboardItems = this.createDashboardItems(
             name,
             organisationUnits,
             datasetId,
@@ -237,6 +237,12 @@ export default class DbD2 {
             endDate,
             dashboardItemsMetadata
         );
+
+        const { items, charts, reportTables } = _(["items", "charts", "reportTables"])
+            .map(key => [key, _(dashboardItems).getOrFail(key)])
+            .fromPairs()
+            .value();
+    
         const dashboard = { id: generateUid(), name: `${name}_DASHBOARD`, dashboardItems: items };
 
         return { dashboard, charts, reportTables };
@@ -262,7 +268,12 @@ export default class DbD2 {
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
 
-        const { antigenCategory, ...elements } = dashboardItemsElements; // Ask Arnau
+        const expectedCharts = _(dashboardItemsConfig.appendCodes).keys().value();
+
+        const { antigenCategory, ...elements } = _(["antigenCategory", ...expectedCharts ])
+            .map((key) => [key, _(dashboardItemsElements).getOrFail(key)])
+            .fromPairs()
+            .value(); 
 
         const dashboardItems = buildDashboardItems(
             antigensMeta,
