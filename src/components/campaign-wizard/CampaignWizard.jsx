@@ -7,7 +7,7 @@ import Campaign from "models/campaign";
 import DbD2 from "models/db-d2";
 
 import Wizard from "../wizard/Wizard";
-import FormHeading from "./FormHeading";
+import PageHeader from "../shared/PageHeader";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
 import SaveStep from "../steps/save/SaveStep";
 import { getValidationMessages } from "../../utils/validations";
@@ -137,7 +137,7 @@ dataset and all the metadata associated with this vaccination campaign`),
                         "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
                     )}
                 />
-                <FormHeading
+                <PageHeader
                     title={i18n.t("New vaccination campaign")}
                     onBackClick={this.cancelSave}
                 />

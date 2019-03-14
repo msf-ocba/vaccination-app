@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-03-11T11:33:36.984Z\n"
-"PO-Revision-Date: 2019-03-11T11:33:36.984Z\n"
+"POT-Creation-Date: 2019-03-13T12:10:59.421Z\n"
+"PO-Revision-Date: 2019-03-13T12:10:59.421Z\n"
 
 msgid "Vaccination"
 msgstr ""
@@ -80,6 +80,9 @@ msgstr ""
 msgid "Only my campaigns"
 msgstr ""
 
+msgid "Campaigns"
+msgstr ""
+
 msgid "Organisation Units"
 msgstr ""
 
@@ -132,13 +135,13 @@ msgstr ""
 msgid "New vaccination campaign"
 msgstr ""
 
-msgid "Back"
-msgstr ""
-
 msgid "Cancel"
 msgstr ""
 
 msgid "Ok"
+msgstr ""
+
+msgid "Back"
 msgstr ""
 
 msgid "Field cannot be blank"

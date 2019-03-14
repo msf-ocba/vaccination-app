@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-03-11T11:33:36.984Z\n"
+"POT-Creation-Date: 2019-03-13T12:10:59.421Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -80,6 +80,9 @@ msgstr ""
 msgid "Only my campaigns"
 msgstr ""
 
+msgid "Campaigns"
+msgstr ""
+
 msgid "Organisation Units"
 msgstr ""
 
@@ -133,13 +136,13 @@ msgstr ""
 msgid "New vaccination campaign"
 msgstr ""
 
-msgid "Back"
-msgstr ""
-
 msgid "Cancel"
 msgstr ""
 
 msgid "Ok"
+msgstr ""
+
+msgid "Back"
 msgstr ""
 
 msgid "Field cannot be blank"
