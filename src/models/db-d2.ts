@@ -242,7 +242,7 @@ export default class DbD2 {
             .map(key => [key, _(dashboardItems).getOrFail(key)])
             .fromPairs()
             .value();
-    
+
         const dashboard = { id: generateUid(), name: `${name}_DASHBOARD`, dashboardItems: items };
 
         return { dashboard, charts, reportTables };
@@ -268,12 +268,14 @@ export default class DbD2 {
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
 
-        const expectedCharts = _(dashboardItemsConfig.appendCodes).keys().value();
+        const expectedCharts = _(dashboardItemsConfig.appendCodes)
+            .keys()
+            .value();
 
-        const { antigenCategory, ...elements } = _(["antigenCategory", ...expectedCharts ])
-            .map((key) => [key, _(dashboardItemsElements).getOrFail(key)])
+        const { antigenCategory, ...elements } = _(["antigenCategory", ...expectedCharts])
+            .map(key => [key, _(dashboardItemsElements).getOrFail(key)])
             .fromPairs()
-            .value(); 
+            .value();
 
         const dashboardItems = buildDashboardItems(
             antigensMeta,
