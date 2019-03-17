@@ -11,7 +11,7 @@ declare module "lodash" {
     interface LoDashImplicitWrapper<TValue> {
         getOrFail<TObject extends object, TKey extends keyof TObject>(
             this: LoDashImplicitWrapper<TObject | null | undefined>,
-            path: TKey | [TKey] | string
+            path: TKey | [TKey]
         ): TObject[TKey];
     }
 }
