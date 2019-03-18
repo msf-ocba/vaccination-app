@@ -1,5 +1,5 @@
-import { DataElement } from "./db.types";
-import _ from "lodash";
+import { DataElement, CategoryCombo } from "./db.types";
+import _, { Dictionary } from "lodash";
 import { AntigenDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig } from "./config";
 import { Antigen } from "./campaign";
@@ -13,6 +13,7 @@ export interface AntigenDisaggregation {
     dataElements: Array<{
         name: string;
         code: string;
+        id: string;
         selected: boolean;
         optional: boolean;
 
@@ -30,17 +31,27 @@ export interface AntigenDisaggregation {
     }>;
 }
 
+export type AntigenDisaggregationDataElement = AntigenDisaggregation["dataElements"][0];
+
 export type AntigenDisaggregationCategoriesData = AntigenDisaggregation["dataElements"][0]["categories"];
 
 export type AntigenDisaggregationOptionGroup = AntigenDisaggregationCategoriesData[0]["options"][0];
 
 export type AntigenDisaggregationEnabled = Array<{
-    code: string;
+    antigen: Antigen;
     dataElements: Array<{
+        id: string;
+        name: string;
         code: string;
         categories: Array<{ code: string; categoryOptions: string[] }>;
     }>;
 }>;
+
+export type CustomFormMetadata = {
+    [antigenDataElementCode: string]: {
+        cocIdByName: Dictionary<string>;
+    };
+};
 
 type AntigensDisaggregationData = {
     [code: string]: AntigenDisaggregation;
@@ -111,7 +122,7 @@ export class AntigensDisaggregation {
             .compact()
             .value();
 
-        return antigenDisaggregations.map(antigenDisaggregation => {
+        const enabled = antigenDisaggregations.map(antigenDisaggregation => {
             const dataElements = _(antigenDisaggregation.dataElements)
                 .filter("selected")
                 .map(dataElement => {
@@ -126,11 +137,21 @@ export class AntigensDisaggregation {
                             return { code: category.code, categoryOptions };
                         })
                         .value();
-                    return { code: dataElement.code, categories };
+                    return {
+                        id: dataElement.id,
+                        code: dataElement.code,
+                        name: dataElement.name,
+                        categories,
+                    };
                 })
                 .value();
-            return { code: antigenDisaggregation.code, dataElements };
+            return {
+                antigen: { code: antigenDisaggregation.code, name: antigenDisaggregation.name },
+                dataElements,
+            };
         });
+
+        return enabled;
     }
 
     buildForAntigen(antigenCode: string): AntigenDisaggregation {
@@ -153,6 +174,7 @@ export class AntigensDisaggregation {
             );
 
             return {
+                id: dataElementConfig.id,
                 name: dataElementConfig.name,
                 code: dataElementConfig.code,
                 categories: categoriesDisaggregation,
@@ -168,6 +190,44 @@ export class AntigensDisaggregation {
         };
 
         return res;
+    }
+
+    public async getCustomFormMetadata(db: DbD2, antigens: Antigen[]): Promise<CustomFormMetadata> {
+        const data = _.flatMap(this.getEnabled(antigens), ({ dataElements, antigen }) => {
+            return dataElements.map(({ code, categories }) => ({
+                antigenCode: antigen.code,
+                dataElementCode: code,
+                categoryComboCode: [
+                    this.config.categoryCodeForAntigens,
+                    ...categories.map(category => category.code),
+                ].join("_"),
+            }));
+        });
+
+        const categoryCodesString = _(data)
+            .map(({ categoryComboCode }) => categoryComboCode)
+            .uniq()
+            .join(",");
+
+        const { categoryCombos } = await db.getMetadata<{ categoryCombos: CategoryCombo[] }>({
+            categoryCombos: { filters: [`code:in:[${categoryCodesString}]`] },
+        });
+
+        const categoryCombosByCode = _.keyBy(categoryCombos, "code");
+        const customFormMetadata = _(data)
+            .map(({ antigenCode, dataElementCode, categoryComboCode }) => {
+                const categoryCombo = _(categoryCombosByCode).getOrFail(categoryComboCode);
+                const cocIdByName: Dictionary<string> = _(categoryCombo.categoryOptionCombos)
+                    .map(coc => [coc.name, coc.id])
+                    .fromPairs()
+                    .value();
+
+                return [antigenCode + "-" + dataElementCode, { cocIdByName }];
+            })
+            .fromPairs()
+            .value();
+
+        return customFormMetadata;
     }
 }
 

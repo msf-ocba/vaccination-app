@@ -7,7 +7,7 @@ import Campaign from "models/campaign";
 import DbD2 from "models/db-d2";
 
 import Wizard from "../wizard/Wizard";
-import FormHeading from "./FormHeading";
+import PageHeader from "../shared/PageHeader";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
 import SaveStep from "../steps/save/SaveStep";
 import { getValidationMessages } from "../../utils/validations";
@@ -39,7 +39,10 @@ class CampaignWizard extends React.Component {
                 label: i18n.t("Organisation Units"),
                 component: OrganisationUnitsStep,
                 validationKeys: ["organisationUnits"],
-                help: i18n.t(`Select organisation units assigned to this campaign.
+                description: i18n.t(
+                    `Select the organization units which will implement the campaign`
+                ),
+                help: i18n.t(`Select the organization units which will implement the campaign.
 At least one must be selected.
 Only organisation units of level 6 (service) can be selected`),
             },
@@ -48,8 +51,11 @@ Only organisation units of level 6 (service) can be selected`),
                 label: i18n.t("General info"),
                 component: GeneralInfoStep,
                 validationKeys: ["name", "startDate", "endDate"],
+                description: i18n.t(
+                    `Name your campaign and choose dates for which data entry will be enabled`
+                ),
                 help: i18n.t(
-                    `Set the name of the campaign and the period in which data entry will be enabled`
+                    `Name your campaign and choose dates for which data entry will be enabled`
                 ),
             },
             {
@@ -57,20 +63,23 @@ Only organisation units of level 6 (service) can be selected`),
                 label: i18n.t("Antigen selection"),
                 component: AntigenSelectionStep,
                 validationKeys: ["antigens"],
-                help: i18n.t(`Select the antigens included in the campaign`),
+                description: i18n.t(`Select the antigens which will be administered`),
+                help: i18n.t(`Select the antigens which will be administered`),
             },
             {
                 key: "disaggregation",
-                label: i18n.t("Disaggregation"),
+                label: i18n.t("Indicators Configuration"),
                 component: DisaggregationStep,
                 validationKeys: [],
-                help: i18n.t(`Define disaggregation categories for each antigen`),
+                description: i18n.t(`Select indicators and categories for each antigen`),
+                help: i18n.t(`Select indicators and categories for each antigen`),
             },
             {
                 key: "save",
                 label: i18n.t("Save"),
                 component: SaveStep,
                 validationKeys: [],
+                description: i18n.t("Setup is finished. Press the button Save to save the data"),
                 help: i18n.t(`Press the button to create the \
 dataset and all the metadata associated with this vaccination campaign`),
             },
@@ -83,7 +92,7 @@ dataset and all the metadata associated with this vaccination campaign`),
 
     handleConfirm = () => {
         this.setState({ dialogOpen: false });
-        this.props.history.push("/campaign-configurator");
+        this.props.history.push("/campaign-configuration");
     };
 
     handleDialogCancel = () => {
@@ -128,7 +137,7 @@ dataset and all the metadata associated with this vaccination campaign`),
                         "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
                     )}
                 />
-                <FormHeading
+                <PageHeader
                     title={i18n.t("New vaccination campaign")}
                     onBackClick={this.cancelSave}
                 />

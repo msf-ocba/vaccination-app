@@ -39,15 +39,18 @@ const DataElement: SFC<DataElementProps> = props => {
 
     return (
         <div className={classes.categories}>
+            <div className={classes.categoriesTitle}>{i18n.t("Disaggregation")}</div>
             {categories.map((category, categoryIdx) => (
                 <div key={category.code} className={classes.categoriesWrapper}>
-                    <SimpleCheckbox
-                        key={category.code}
-                        checked={category.selected}
-                        disabled={!category.optional}
-                        label={category.name}
-                        onChange={update([...basePath, categoryIdx, "selected"])}
-                    />
+                    <div className={classes.categoriesInnerWrapper}>
+                        <SimpleCheckbox
+                            key={category.code}
+                            checked={category.selected}
+                            disabled={!category.optional}
+                            label={category.name}
+                            onChange={update([...basePath, categoryIdx, "selected"])}
+                        />
+                    </div>
 
                     {category.selected && (
                         <div className={classes.categoryWrapper}>
@@ -95,20 +98,31 @@ const styles = (_theme: Theme) =>
         categories: {
             marginLeft: 40,
         },
+        categoriesTitle: {
+            display: "flex",
+            fontSize: "0.9rem",
+            borderBottom: "1px solid #e0e0e0",
+            padding: "15px 0px",
+            color: "#494949",
+            fontWeight: 500,
+        },
         categoriesWrapper: {
             display: "flex",
         },
         categoryWrapper: {
             display: "flex",
         },
+        categoriesInnerWrapper: {
+            width: "200px",
+        },
         optionGroupWrapper: {
             textAlign: "center",
         },
         optionGroup: {
-            border: "1px solid #CCC",
-            paddingLeft: 7,
-            paddingRight: 7,
-            paddingBottom: 5,
+            backgroundColor: "rgb(243, 243, 243)",
+            paddingLeft: 10,
+            paddingRight: 10,
+            paddingBottom: 8,
             marginRight: 5,
         },
     });

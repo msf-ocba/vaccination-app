@@ -6,6 +6,7 @@ declare module "lodash" {
             object: TObject | null | undefined,
             path: TKey | [TKey]
         ): TObject[TKey];
+        cartesianProduct<T>(arr: T[][]): T[][];
     }
 
     interface LoDashImplicitWrapper<TValue> {
@@ -16,6 +17,21 @@ declare module "lodash" {
     }
 }
 
+function cartesianProduct<T>(arr: T[][]): T[][] {
+    return arr.reduce(
+        (a, b) => {
+            return a
+                .map(x => {
+                    return b.map(y => {
+                        return x.concat(y);
+                    });
+                })
+                .reduce((c, d) => c.concat(d), []);
+        },
+        [[]] as T[][]
+    );
+}
+
 function getOrFail(obj: any, key: string): any {
     const value = _.get(obj, key);
     if (value === undefined) {
@@ -24,6 +40,8 @@ function getOrFail(obj: any, key: string): any {
         return value;
     }
 }
+
+_.mixin({ cartesianProduct });
 
 _.mixin(
     {

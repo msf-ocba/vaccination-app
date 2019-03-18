@@ -1,15 +1,20 @@
 import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
-import { ObjectsTable } from "d2-ui-components";
+import { ObjectsTable, withSnackbar } from "d2-ui-components";
+
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
+import PageHeader from "../shared/PageHeader";
 import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/auth";
-import { list } from "../../models/datasets";
+import { list, getDashboardId } from "../../models/datasets";
+import { goToDhis2Url } from "../../utils/routes";
 
 class CampaignConfigurator extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
+        config: PropTypes.object.isRequired,
+        snackbar: PropTypes.object.isRequired,
     };
 
     state = {
@@ -75,6 +80,7 @@ class CampaignConfigurator extends React.Component {
             name: "dashboard",
             text: i18n.t("Go to Dashboard"),
             multiple: false,
+            onClick: dataSet => this.goToDashboard(dataSet),
         },
         {
             name: "download",
@@ -84,8 +90,17 @@ class CampaignConfigurator extends React.Component {
         },
     ];
 
+    goToDashboard = dataSet => {
+        const dashboardId = getDashboardId(dataSet, this.props.config);
+        if (dashboardId) {
+            goToDhis2Url(`/dhis-web-dashboard/#/${dashboardId}`);
+        } else {
+            this.props.snackbar.error(i18n.t("Cannot find dashboard associated to the campaign"));
+        }
+    };
+
     onCreate = () => {
-        this.props.history.push("/campaign-configurator/new");
+        this.props.history.push("/campaign-configuration/new");
     };
 
     toggleShowOnlyUserCampaigns = ev => {
@@ -108,25 +123,37 @@ class CampaignConfigurator extends React.Component {
         );
     };
 
+    list = (...listArgs) => {
+        const { config } = this.props;
+        return list(config, ...listArgs);
+    };
+
+    backHome = () => {
+        this.props.history.push("/");
+    };
+
     render() {
         const { d2 } = this.props;
 
         return (
-            <div>
-                <ObjectsTable
-                    d2={d2}
-                    model={d2.models.dataSet}
-                    columns={this.columns}
-                    detailsFields={this.detailsFields}
-                    pageSize={20}
-                    initialSorting={this.initialSorting}
-                    actions={this.actions}
-                    onCreate={this.canCreateDataSets ? this.onCreate : null}
-                    list={list}
-                    customFiltersComponent={this.renderCustomFilters}
-                    customFilters={this.state.filters}
-                />
-            </div>
+            <React.Fragment>
+                <PageHeader title={i18n.t("Campaigns")} onBackClick={this.backHome} />
+                <div style={styles.objectsTableContainer}>
+                    <ObjectsTable
+                        model={d2.models.dataSet}
+                        columns={this.columns}
+                        d2={d2}
+                        detailsFields={this.detailsFields}
+                        pageSize={20}
+                        initialSorting={this.initialSorting}
+                        actions={this.actions}
+                        onCreate={this.canCreateDataSets ? this.onCreate : null}
+                        list={this.list}
+                        customFiltersComponent={this.renderCustomFilters}
+                        customFilters={this.state.filters}
+                    />
+                </div>
+            </React.Fragment>
         );
     }
 }
@@ -134,6 +161,7 @@ class CampaignConfigurator extends React.Component {
 const styles = {
     checkbox: { float: "left", width: "25%", paddingTop: 18, marginLeft: 30 },
     checkboxIcon: { marginRight: 8 },
+    objectsTableContainer: { marginTop: -10 },
 };
 
-export default CampaignConfigurator;
+export default withSnackbar(CampaignConfigurator);

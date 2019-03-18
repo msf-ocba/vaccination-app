@@ -1,7 +1,6 @@
-import { list } from "../datasets";
+import { list, getDashboardId } from "../datasets";
 import { getD2Stub } from "../../utils/testing";
-
-const metadataConfig = { attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP" };
+import metadataConfig from "./config-mock";
 
 const expectedFields = [
     "id",
@@ -30,7 +29,7 @@ describe("DataSets", () => {
         describe("without filters nor pagination", () => {
             it("returns datasets", async () => {
                 const d2 = getD2Stub({ models: { dataSets: { list: listMock } } });
-                await list(d2, {}, {});
+                await list(metadataConfig, d2, {}, {});
 
                 expect(d2.models.dataSets.list).toHaveBeenNthCalledWith(1, {
                     fields: ["id", "attributeValues[value, attribute[code]]"],
@@ -66,7 +65,7 @@ describe("DataSets", () => {
                     pageSize: 10,
                     sorting: ["displayName", "desc"],
                 };
-                await list(d2, filters, pagination);
+                await list(metadataConfig, d2, filters, pagination);
 
                 expect(d2.models.dataSets.list).toHaveBeenCalledWith({
                     fields: expectedFields,
@@ -92,7 +91,7 @@ describe("DataSets", () => {
                     Promise.resolve({ toArray: () => testDataSets, pager: {} })
                 );
                 const d2 = getD2Stub({ models: { dataSets: { list: listMock } } });
-                await list(d2, {}, {});
+                await list(metadataConfig, d2, {}, {});
 
                 expect(d2.models.dataSets.list).toHaveBeenLastCalledWith({
                     fields: expectedFields,
@@ -102,6 +101,27 @@ describe("DataSets", () => {
                     filter: [`id:in:[${testIds[0]},${testIds[2]}]`],
                 });
             });
+        });
+    });
+
+    describe("getDashboardId", () => {
+        it("returns ID for related dashboard", () => {
+            const dataSet = {
+                attributeValues: [
+                    { value: "545", attribute: { code: "SOME_CODE" } },
+                    { value: "1234", attribute: { code: "RVC_DASHBOARD_ID" } },
+                ],
+            };
+
+            expect(getDashboardId(dataSet, metadataConfig)).toEqual("1234");
+        });
+
+        it("returns nothing if there is no dashboard related", () => {
+            const dataSet = {
+                attributeValues: [{ value: "1234", attribute: { code: "SOME_OTHER_CODE" } }],
+            };
+
+            expect(getDashboardId(dataSet, metadataConfig)).toBeFalsy();
         });
     });
 });

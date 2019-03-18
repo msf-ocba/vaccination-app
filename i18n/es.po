@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-03-06T14:39:38.948Z\n"
+"POT-Creation-Date: 2019-03-13T12:10:59.421Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -11,7 +11,7 @@ msgstr ""
 msgid "Vaccination"
 msgstr "Vacunación"
 
-msgid "Campaign Configurator"
+msgid "Campaign Configuration"
 msgstr "Configurador de campaña"
 
 msgid "Data Entry"
@@ -74,14 +74,23 @@ msgstr "Ir a tablero"
 msgid "Download data"
 msgstr "Descargar datos"
 
+msgid "Cannot find dashboard associated to the campaign"
+msgstr "No hay ningún tablero asociado a la campaña"
+
 msgid "Only my campaigns"
 msgstr "Solo mis campañas"
+
+msgid "Campaigns"
+msgstr "Campañas"
 
 msgid "Organisation Units"
 msgstr "Unidades organizativas"
 
+msgid "Select the organization units which will implement the campaign"
+msgstr "Seleccione las unidades organizativas asignadas a esta campaña"
+
 msgid ""
-"Select organisation units assigned to this campaign.\n"
+"Select the organization units which will implement the campaign.\n"
 "At least one must be selected.\n"
 "Only organisation units of level 6 (service) can be selected"
 msgstr ""
@@ -93,8 +102,7 @@ msgid "General info"
 msgstr "Información general"
 
 msgid ""
-"Set the name of the campaign and the period in which data entry will be "
-"enabled"
+"Name your campaign and choose dates for which data entry will be enabled"
 msgstr ""
 "Establezca el nombre de la campaña y el periodo de tiempo en el cual "
 "seráposible añadir datos"
@@ -102,17 +110,20 @@ msgstr ""
 msgid "Antigen selection"
 msgstr "Antígenos"
 
-msgid "Select the antigens included in the campaign"
+msgid "Select the antigens which will be administered"
 msgstr "Seleccione los antígenos incluídos en la campaña"
 
-msgid "Disaggregation"
-msgstr "Desagregaciones"
+msgid "Indicators Configuration"
+msgstr "Configuración de indicadores"
 
-msgid "Define disaggregation categories for each antigen"
-msgstr "Define la desagregación de categorías para cada antígeno"
+msgid "Select indicators and categories for each antigen"
+msgstr "Seleccione los indicadores y las categorías para cada antígeno"
 
 msgid "Save"
 msgstr "Guardar"
+
+msgid "Setup is finished. Press the button Save to save the data"
+msgstr "La configuración ha terminado. Pulse el botón para guardar los datos"
 
 msgid ""
 "Press the button to create the dataset and all the metadata associated with "
@@ -134,14 +145,14 @@ msgstr ""
 msgid "New vaccination campaign"
 msgstr "Nueva campaña"
 
-msgid "Back"
-msgstr "Atrás"
-
 msgid "Cancel"
 msgstr "Cancelar"
 
 msgid "Ok"
 msgstr "Aceptar"
+
+msgid "Back"
+msgstr "Atrás"
 
 msgid "Field cannot be blank"
 msgstr "El campo no puede estar vacío"
@@ -163,9 +174,6 @@ msgstr "[Vacío]"
 
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr "[{{total}}] {{names}} y {{othersCount}} otros"
-
-msgid "Setup is finished. Press the button Save to save the data"
-msgstr "La configuración ha terminado. Pulse el botón para guardar los datos"
 
 msgid "Period dates"
 msgstr "Periodo"

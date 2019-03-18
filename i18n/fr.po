@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-03-06T14:39:38.948Z\n"
+"POT-Creation-Date: 2019-03-13T12:10:59.421Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -11,7 +11,7 @@ msgstr ""
 msgid "Vaccination"
 msgstr ""
 
-msgid "Campaign Configurator"
+msgid "Campaign Configuration"
 msgstr ""
 
 msgid "Data Entry"
@@ -74,14 +74,23 @@ msgstr ""
 msgid "Download data"
 msgstr ""
 
+msgid "Cannot find dashboard associated to the campaign"
+msgstr ""
+
 msgid "Only my campaigns"
+msgstr ""
+
+msgid "Campaigns"
 msgstr ""
 
 msgid "Organisation Units"
 msgstr ""
 
+msgid "Select the organization units which will implement the campaign"
+msgstr ""
+
 msgid ""
-"Select organisation units assigned to this campaign.\n"
+"Select the organization units which will implement the campaign.\n"
 "At least one must be selected.\n"
 "Only organisation units of level 6 (service) can be selected"
 msgstr ""
@@ -90,23 +99,25 @@ msgid "General info"
 msgstr ""
 
 msgid ""
-"Set the name of the campaign and the period in which data entry will be "
-"enabled"
+"Name your campaign and choose dates for which data entry will be enabled"
 msgstr ""
 
 msgid "Antigen selection"
 msgstr ""
 
-msgid "Select the antigens included in the campaign"
+msgid "Select the antigens which will be administered"
 msgstr ""
 
-msgid "Disaggregation"
+msgid "Indicators Configuration"
 msgstr ""
 
-msgid "Define disaggregation categories for each antigen"
+msgid "Select indicators and categories for each antigen"
 msgstr ""
 
 msgid "Save"
+msgstr ""
+
+msgid "Setup is finished. Press the button Save to save the data"
 msgstr ""
 
 msgid ""
@@ -125,13 +136,13 @@ msgstr ""
 msgid "New vaccination campaign"
 msgstr ""
 
-msgid "Back"
-msgstr ""
-
 msgid "Cancel"
 msgstr ""
 
 msgid "Ok"
+msgstr ""
+
+msgid "Back"
 msgstr ""
 
 msgid "Field cannot be blank"
@@ -153,9 +164,6 @@ msgid "[None]"
 msgstr ""
 
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
-msgstr ""
-
-msgid "Setup is finished. Press the button Save to save the data"
 msgstr ""
 
 msgid "Period dates"
