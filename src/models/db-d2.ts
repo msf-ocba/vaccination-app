@@ -238,7 +238,7 @@ export default class DbD2 {
             dashboardItemsMetadata
         );
 
-        const keys: Array<keyof DashboardData> = ["items", "charts", "reportTables"]
+        const keys: Array<keyof DashboardData> = ["items", "charts", "reportTables"];
         const { items, charts, reportTables } = _(keys)
             .map(key => [key, _(dashboardItems).getOrFail(key)])
             .fromPairs()
@@ -273,8 +273,9 @@ export default class DbD2 {
             .keys()
             .value();
 
-        
-        const keys = ["antigenCategory", ...expectedCharts] as Array<keyof typeof dashboardItemsElements>
+        const keys = ["antigenCategory", ...expectedCharts] as Array<
+            keyof typeof dashboardItemsElements
+        >;
         const { antigenCategory, ...elements } = _(keys)
             .map(key => [key, _(dashboardItemsElements).getOrFail(key)])
             .fromPairs()
