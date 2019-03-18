@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { generateUid } from "d2/uid";
 
 export const dashboardItemsConfig = {
     appendCodes: {
@@ -41,6 +42,7 @@ export function buildDashboardItems(
     const { appendCodes } = dashboardItemsConfig;
     const charts = antigensMeta.map(antigen => [
         chartConstructor(
+            generateUid(),
             name,
             antigen,
             datasetId,
@@ -53,6 +55,7 @@ export function buildDashboardItems(
             appendCodes.indicatorChart
         ),
         chartConstructor(
+            generateUid(),
             name,
             antigen,
             datasetId,
@@ -67,23 +70,25 @@ export function buildDashboardItems(
     ]);
     const tables = antigensMeta.map(antigen => [
         tableConstructor(
+            generateUid(),
             name,
             antigen,
             datasetId,
             organisationUnitsIds,
             period,
             antigenCategory,
-            elements.qsTable,
+            elements.qsIndicatorsTable,
             appendCodes.qsIndicatorsTable
         ),
         tableConstructor(
+            generateUid(),
             name,
             antigen,
             datasetId,
             organisationUnitsIds,
             period,
             antigenCategory,
-            elements.vaccineTable,
+            elements.vaccinesTable,
             appendCodes.vaccinesTable
         ),
     ]);
@@ -98,27 +103,30 @@ const dataMapper = (dataList, filterList) =>
 
 export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const { dataElements, indicators, antigenCategory } = dashboardItemsMetadata;
-    const {
-        tablesDataCodes: { vaccinesTable, qsIndicatorsTable },
-        chartsDataCodes: { indicatorChart, utilizationRateChart },
-    } = dashboardItemsConfig;
+    const { tablesDataCodes, chartsDataCodes } = dashboardItemsConfig;
 
-    const vaccineTableDE = dataMapper(dataElements, vaccinesTable);
-    const qsTableDE = dataMapper(dataElements, qsIndicatorsTable);
-    const indicatorChartInd = dataMapper(indicators, indicatorChart);
-    const utilizationRateChartInd = dataMapper(indicators, utilizationRateChart);
+    const { vaccinesTable, qsIndicatorsTable } = _(tablesDataCodes)
+        .map((codes, key) => [key, dataMapper(dataElements, codes)])
+        .fromPairs()
+        .value();
+
+    const { indicatorChart, utilizationRateChart } = _(chartsDataCodes)
+        .map((codes, key) => [key, dataMapper(indicators, codes)])
+        .fromPairs()
+        .value();
 
     const dashboardItemsElements = {
         antigenCategory,
-        vaccineTable: vaccineTableDE,
-        qsTable: qsTableDE,
-        indicatorChart: indicatorChartInd,
-        utilizationRateChart: utilizationRateChartInd,
+        vaccinesTable,
+        qsIndicatorsTable,
+        indicatorChart,
+        utilizationRateChart,
     };
     return dashboardItemsElements;
 }
 
 const chartConstructor = (
+    id,
     name,
     antigen,
     datasetId,
@@ -130,6 +138,7 @@ const chartConstructor = (
     type,
     appendCode
 ) => ({
+    id,
     name: [name, antigen.name, appendCode].join("-"),
     code: buildDashboardItemsCode(datasetId, antigen.id, appendCode),
     showData: true,
@@ -209,7 +218,7 @@ const chartConstructor = (
     dataElementGroupSetDimensions: [],
     attributeDimensions: [],
     translations: [],
-    filterDimensions: ["ou", antigenCategory], // Filter by orgUnits and Antigen category
+    filterDimensions: ["ou", antigenCategory],
     interpretations: [],
     itemOrganisationUnitGroups: [],
     userGroupAccesses: [],
@@ -227,13 +236,14 @@ const chartConstructor = (
     periods: period,
     organisationUnits: organisationUnitsIds,
     categoryDimensions: [
-        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] }, // TODO get antigen categorID from metadata
+        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] },
     ],
     filters: [{ id: "ou" }, { id: antigenCategory }],
     rows: [{ id: "pe" }],
 });
 
 const tableConstructor = (
+    id,
     name,
     antigen,
     datasetId,
@@ -243,6 +253,7 @@ const tableConstructor = (
     data,
     appendCode
 ) => ({
+    id,
     name: [name, antigen.name, appendCode].join("-"),
     code: buildDashboardItemsCode(datasetId, antigen.id, appendCode),
     numberType: "VALUE",
@@ -354,7 +365,7 @@ const tableConstructor = (
     periods: period,
     organisationUnits: organisationUnitsIds,
     categoryDimensions: [
-        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] }, //  TODO: Same as chart
+        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] },
     ],
     filters: [],
     rows: [],

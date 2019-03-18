@@ -1,5 +1,6 @@
 import { Dictionary } from "lodash";
 import moment from "moment";
+import { generateUid } from "d2/uid";
 import { D2, D2Api } from "./d2.types";
 import {
     OrganisationUnit,
@@ -16,16 +17,17 @@ import {
     Ref,
     DataEntryForm,
     OrganisationUnitPathOnly,
+    DashboardData,
 } from "./db.types";
 import _ from "lodash";
 import {
     dashboardItemsConfig,
     itemsMetadataConstructor,
     buildDashboardItems,
-    buildDashboardItemsCode,
 } from "./dashboard-items";
 import { getDaysRange } from "../utils/date";
 import { Antigen } from "./campaign";
+import "../utils/lodash-mixins";
 
 function getDbFields(modelFields: ModelFields): string[] {
     return _(modelFields)
@@ -212,6 +214,7 @@ export default class DbD2 {
             },
             antigensMeta,
         };
+
         return dashboardMetadata;
     }
 
@@ -222,10 +225,10 @@ export default class DbD2 {
         datasetId: String,
         startDate: Date | null,
         endDate: Date | null
-    ): Promise<Ref | undefined> {
+    ): Promise<DashboardData> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(antigens);
 
-        const dashboardItems = await this.createDashboardItems(
+        const dashboardItems = this.createDashboardItems(
             name,
             organisationUnits,
             datasetId,
@@ -234,22 +237,25 @@ export default class DbD2 {
             dashboardItemsMetadata
         );
 
-        const dashboard = { name: `${name}_DASHBOARD`, dashboardItems };
-        const {
-            response: { uid },
-        } = await this.api.post("/dashboards", dashboard);
+        const keys: Array<keyof DashboardData> = ["items", "charts", "reportTables"];
+        const { items, charts, reportTables } = _(keys)
+            .map(key => [key, _(dashboardItems).getOrFail(key)])
+            .fromPairs()
+            .value();
 
-        return { id: uid };
+        const dashboard = { id: generateUid(), name: `${name}_DASHBOARD`, dashboardItems: items };
+
+        return { dashboard, charts, reportTables };
     }
 
-    async createDashboardItems(
+    createDashboardItems(
         name: String,
         organisationUnits: OrganisationUnitPathOnly[],
         datasetId: String,
         startDate: Date | null,
         endDate: Date | null,
         dashboardItemsMetadata: Dictionary<any>
-    ): Promise<Ref[]> {
+    ): DashboardData {
         const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
         const organizationUnitsParents = _(organisationUnits)
             .map(ou => [ou.id, ou.path])
@@ -259,11 +265,22 @@ export default class DbD2 {
         const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
         const periodRange = getDaysRange(periodStart, periodEnd);
         const period = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
-        const { antigensMeta } = dashboardItemsMetadata;
+        const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
-        const { antigenCategory, ...elements } = dashboardItemsElements;
 
-        const { charts, reportTables } = buildDashboardItems(
+        const expectedCharts = _(dashboardItemsConfig.appendCodes)
+            .keys()
+            .value();
+
+        const keys = ["antigenCategory", ...expectedCharts] as Array<
+            keyof typeof dashboardItemsElements
+        >;
+        const { antigenCategory, ...elements } = _(keys)
+            .map(key => [key, _(dashboardItemsElements).getOrFail(key)])
+            .fromPairs()
+            .value();
+
+        const dashboardItems = buildDashboardItems(
             antigensMeta,
             name,
             datasetId,
@@ -273,42 +290,27 @@ export default class DbD2 {
             antigenCategory,
             elements
         );
+        const charts = _(dashboardItems).getOrFail("charts");
+        const reportTables = _(dashboardItems).getOrFail("reportTables");
 
-        await this.api.post("/metadata", { charts, reportTables });
+        const chartIds = charts.map(chart => chart.id);
+        const reportTableIds = reportTables.map(table => table.id);
 
-        // Search for dashboardItems ids
-        const appendCodes: { [key: string]: string } = dashboardItemsConfig.appendCodes;
-        const chartKeys = _.keys(dashboardItemsConfig.chartsDataCodes);
-        const tableKeys = _.keys(dashboardItemsConfig.tablesDataCodes);
-
-        const chartCodes = chartKeys.map(key =>
-            antigensMeta.map(({ id }: { id: string }) =>
-                buildDashboardItemsCode(datasetId, id, appendCodes[key])
-            )
-        );
-
-        const tableCodes = tableKeys.map(key =>
-            antigensMeta.map(({ id }: { id: string }) =>
-                buildDashboardItemsCode(datasetId, id, appendCodes[key])
-            )
-        );
-
-        const { charts: chartIds, reportTables: tableIds } = await this.api.get("/metadata", {
-            "charts:fields": "id",
-            "charts:filter": `code:in:[${chartCodes.join(",")}]`,
-            "reportTables:fields": "id",
-            "reportTables:filter": `code:in:[${tableCodes.join(",")}]`,
-        });
-
-        const dashboardCharts = chartIds.map(({ id }: { id: string }) => ({
+        const dashboardCharts = chartIds.map((id: string) => ({
             type: "CHART",
             chart: { id },
         }));
-        const dashboardTables = tableIds.map(({ id }: { id: string }) => ({
+        const dashboardTables = reportTableIds.map((id: string) => ({
             type: "REPORT_TABLE",
             reportTable: { id },
         }));
 
-        return [...dashboardCharts, ...dashboardTables];
+        const dashboardData = {
+            items: [...dashboardCharts, ...dashboardTables],
+            charts,
+            reportTables,
+        };
+
+        return dashboardData;
     }
 }
