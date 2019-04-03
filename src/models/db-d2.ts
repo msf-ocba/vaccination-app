@@ -182,21 +182,25 @@ export default class DbD2 {
     }
 
     async getMetadataForDashboardItems(antigens: Antigen[]) {
-        const { categoryCode, tablesDataCodes, chartsDataCodes } = dashboardItemsConfig;
-        const allDataElementCodes = _(tablesDataCodes)
+        const dashboardItems = [dashboardItemsConfig.charts, dashboardItemsConfig.tables];
+        const elements = _(dashboardItems)
             .values()
-            .flatten();
-        const allIndicatorCodes = _(chartsDataCodes)
-            .values()
-            .flatten();
+            .flatMap(_.values)
+            .groupBy("dataType")
+            .mapValues(objs => _.flatMap(objs, "elements"))
+            .value();
+
+        const allDataElementCodes = elements["DATA_ELEMENT"].join(",");
+        const allIndicatorCodes = elements["INDICATOR"].join(",");
+
         const antigenCodes = antigens.map(an => an.code);
         const { dataElements, categories, indicators } = await this.api.get("/metadata", {
             "categories:fields": "id,categoryOptions[id,code,name]",
-            "categories:filter": `code:in:[${categoryCode}]`,
+            "categories:filter": `code:in:[${dashboardItemsConfig.categoryCode}]`,
             "dataElements:fields": "id,code",
-            "dataElements:filter": `code:in:[${allDataElementCodes.join(",")}]`,
+            "dataElements:filter": `code:in:[${allDataElementCodes}]`,
             "indicators:fields": "id,code",
-            "indicators:filter": `code:in:[${allIndicatorCodes.join(",")}]`,
+            "indicators:filter": `code:in:[${allIndicatorCodes}]`,
         });
         const { id: categoryId, categoryOptions } = categories[0];
         const antigensMeta = _.filter(categoryOptions, op => _.includes(antigenCodes, op.code));
@@ -219,7 +223,7 @@ export default class DbD2 {
     }
 
     public async createDashboard(
-        name: String,
+        datasetName: String,
         organisationUnits: OrganisationUnitPathOnly[],
         antigens: Antigen[],
         datasetId: String,
@@ -229,7 +233,7 @@ export default class DbD2 {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(antigens);
 
         const dashboardItems = this.createDashboardItems(
-            name,
+            datasetName,
             organisationUnits,
             datasetId,
             startDate,
@@ -243,13 +247,17 @@ export default class DbD2 {
             .fromPairs()
             .value();
 
-        const dashboard = { id: generateUid(), name: `${name}_DASHBOARD`, dashboardItems: items };
+        const dashboard = {
+            id: generateUid(),
+            name: `${datasetName}_DASHBOARD`,
+            dashboardItems: items,
+        };
 
         return { dashboard, charts, reportTables };
     }
 
     createDashboardItems(
-        name: String,
+        datasetName: String,
         organisationUnits: OrganisationUnitPathOnly[],
         datasetId: String,
         startDate: Date | null,
@@ -268,9 +276,8 @@ export default class DbD2 {
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
 
-        const expectedCharts = _(dashboardItemsConfig.appendCodes)
-            .keys()
-            .value();
+        const { categoryCode, ...itemsConfig } = dashboardItemsConfig;
+        const expectedCharts = _.flatMap(itemsConfig, _.keys);
 
         const keys = ["antigenCategory", ...expectedCharts] as Array<
             keyof typeof dashboardItemsElements
@@ -282,7 +289,7 @@ export default class DbD2 {
 
         const dashboardItems = buildDashboardItems(
             antigensMeta,
-            name,
+            datasetName,
             datasetId,
             organisationUnitsIds,
             organizationUnitsParents,

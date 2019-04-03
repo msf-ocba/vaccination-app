@@ -2,26 +2,38 @@ import _ from "lodash";
 import { generateUid } from "d2/uid";
 
 export const dashboardItemsConfig = {
-    appendCodes: {
-        indicatorChart: "indicatorChart",
-        qsIndicatorsTable: "qsTable",
-        vaccinesTable: "vTable",
-        utilizationRateChart: "utilizationRateChart",
-    },
     categoryCode: "RVC_ANTIGEN",
-    tablesDataCodes: {
-        vaccinesTable: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
-        qsIndicatorsTable: [
-            "RVC_ADS_USED",
-            "RVC_SYRINGES",
-            "RVC_SAFETY_BOXES",
-            "RVC_NEEDLES",
-            "RVC_AEB",
-        ],
+    tables: {
+        vaccines: {
+            elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
+            dataType: "DATA_ELEMENT",
+            appendCode: "vTable",
+        },
+        qsIndicators: {
+            elements: [
+                "RVC_ADS_USED",
+                "RVC_SYRINGES",
+                "RVC_SAFETY_BOXES",
+                "RVC_NEEDLES",
+                "RVC_AEB",
+            ],
+            dataType: "DATA_ELEMENT",
+            appendCode: "qsTable",
+        },
     },
-    chartsDataCodes: {
-        indicatorChart: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
-        utilizationRateChart: ["RVC_VACCINE_UTILIZATION"],
+    charts: {
+        utilizationRate: {
+            elements: ["RVC_VACCINE_UTILIZATION"],
+            dataType: "INDICATOR",
+            appendCode: "utilizationRateChart",
+            type: "LINE",
+        },
+        indicator: {
+            elements: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
+            dataType: "INDICATOR",
+            appendCode: "indicatorChart",
+            type: "COLUMN",
+        },
     },
 };
 
@@ -29,105 +41,101 @@ export function buildDashboardItemsCode(datasetId, antigenId, appendCode) {
     return [datasetId, antigenId, appendCode].join("_");
 }
 
+function getCharts(antigen, elements, itemsMetadata) {
+    return _(dashboardItemsConfig.charts)
+        .map((c, key) =>
+            chartConstructor({
+                id: generateUid(),
+                antigen,
+                data: elements[key],
+                type: c.type,
+                appendCode: c.appendCode,
+                ...itemsMetadata,
+            })
+        )
+        .value();
+}
+
+function getTables(antigen, elements, itemsMetadata) {
+    return _(dashboardItemsConfig.tables)
+        .map((c, key) =>
+            tableConstructor({
+                id: generateUid(),
+                antigen,
+                data: elements[key],
+                appendCode: c.appendCode,
+                ...itemsMetadata,
+            })
+        )
+        .value();
+}
+
 export function buildDashboardItems(
     antigensMeta,
-    name,
+    datasetName,
     datasetId,
     organisationUnitsIds,
-    organizationUnitsParents,
+    organisationUnitsParents,
     period,
     antigenCategory,
     elements
 ) {
-    const { appendCodes } = dashboardItemsConfig;
-    const charts = antigensMeta.map(antigen => [
-        chartConstructor(
-            generateUid(),
-            name,
-            antigen,
-            datasetId,
-            organisationUnitsIds,
-            organizationUnitsParents,
-            period,
-            antigenCategory,
-            elements.indicatorChart,
-            "COLUMN",
-            appendCodes.indicatorChart
-        ),
-        chartConstructor(
-            generateUid(),
-            name,
-            antigen,
-            datasetId,
-            organisationUnitsIds,
-            organizationUnitsParents,
-            period,
-            antigenCategory,
-            elements.utilizationRateChart,
-            "LINE",
-            appendCodes.utilizationRateChart
-        ),
-    ]);
-    const tables = antigensMeta.map(antigen => [
-        tableConstructor(
-            generateUid(),
-            name,
-            antigen,
-            datasetId,
-            organisationUnitsIds,
-            period,
-            antigenCategory,
-            elements.qsIndicatorsTable,
-            appendCodes.qsIndicatorsTable
-        ),
-        tableConstructor(
-            generateUid(),
-            name,
-            antigen,
-            datasetId,
-            organisationUnitsIds,
-            period,
-            antigenCategory,
-            elements.vaccinesTable,
-            appendCodes.vaccinesTable
-        ),
-    ]);
+    const itemsMetadata = {
+        datasetName,
+        datasetId,
+        organisationUnitsIds,
+        organisationUnitsParents,
+        period,
+        antigenCategory,
+    };
+
+    const charts = antigensMeta.map(antigen => getCharts(antigen, elements, itemsMetadata));
+    const tables = antigensMeta.map(antigen => getTables(antigen, elements, itemsMetadata));
+
     return { charts: _.flatten(charts), reportTables: _.flatten(tables) };
 }
 
 const dataMapper = (dataList, filterList) =>
-    dataList.data.filter(({ code }) => _.includes(filterList, code)).map(({ id }) => ({
-        dataDimensionItemType: dataList.type,
-        [dataList.key]: { id },
-    }));
+    dataList.data
+        .filter(({ code }) => _.includes(filterList, code))
+        .map(({ id }) => ({
+            dataDimensionItemType: dataList.type,
+            [dataList.key]: { id },
+        }));
 
 export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const { dataElements, indicators, antigenCategory } = dashboardItemsMetadata;
-    const { tablesDataCodes, chartsDataCodes } = dashboardItemsConfig;
+    const { tables, charts } = dashboardItemsConfig;
 
-    const { vaccinesTable, qsIndicatorsTable } = _(tablesDataCodes)
-        .map((codes, key) => [key, dataMapper(dataElements, codes)])
+    const tableElements = _(tables)
+        .map((item, key) =>
+            item.dataType === "INDICATOR"
+                ? [key, dataMapper(indicators, item.elements)]
+                : [key, dataMapper(dataElements, item.elements)]
+        )
         .fromPairs()
         .value();
 
-    const { indicatorChart, utilizationRateChart } = _(chartsDataCodes)
-        .map((codes, key) => [key, dataMapper(indicators, codes)])
+    const chartElements = _(charts)
+        .map((item, key) =>
+            item.dataType === "INDICATOR"
+                ? [key, dataMapper(indicators, item.elements)]
+                : [key, dataMapper(dataElements, item.elements)]
+        )
         .fromPairs()
         .value();
 
     const dashboardItemsElements = {
         antigenCategory,
-        vaccinesTable,
-        qsIndicatorsTable,
-        indicatorChart,
-        utilizationRateChart,
+        ...tableElements,
+        ...chartElements,
     };
     return dashboardItemsElements;
 }
 
-const chartConstructor = (
+const chartConstructor = ({
     id,
-    name,
+    datasetName,
     antigen,
     datasetId,
     organisationUnitsIds,
@@ -136,10 +144,10 @@ const chartConstructor = (
     antigenCategory,
     data,
     type,
-    appendCode
-) => ({
+    appendCode,
+}) => ({
     id,
-    name: [name, antigen.name, appendCode].join("-"),
+    name: [datasetName, antigen.name, appendCode].join("-"),
     code: buildDashboardItemsCode(datasetId, antigen.id, appendCode),
     showData: true,
     publicAccess: "rw------",
@@ -157,7 +165,7 @@ const chartConstructor = (
     hideEmptyRowItems: "AFTER_LAST",
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: [name, antigen.name, appendCode].join("-"),
+    displayName: [datasetName, antigen.name, appendCode].join("-"),
     hideSubtitle: false,
     hideLegend: false,
     externalAccess: false,
@@ -242,19 +250,19 @@ const chartConstructor = (
     rows: [{ id: "pe" }],
 });
 
-const tableConstructor = (
+const tableConstructor = ({
     id,
-    name,
+    datasetName,
     antigen,
     datasetId,
     organisationUnitsIds,
     period,
     antigenCategory,
     data,
-    appendCode
-) => ({
+    appendCode,
+}) => ({
     id,
-    name: [name, antigen.name, appendCode].join("-"),
+    name: [datasetName, antigen.name, appendCode].join("-"),
     code: buildDashboardItemsCode(datasetId, antigen.id, appendCode),
     numberType: "VALUE",
     publicAccess: "rw------",
@@ -276,7 +284,7 @@ const tableConstructor = (
     topLimit: 0,
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: [name, antigen.name, appendCode].join("-"),
+    displayName: [datasetName, antigen.name, appendCode].join("-"),
     hideSubtitle: false,
     externalAccess: false,
     legendDisplayStrategy: "FIXED",
