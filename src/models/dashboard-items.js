@@ -16,6 +16,7 @@ export const dashboardItemsConfig = {
                 "RVC_SAFETY_BOXES",
                 "RVC_NEEDLES",
                 "RVC_AEB",
+                "RVC_AEFI",
             ],
             dataType: "DATA_ELEMENT",
             appendCode: "qsTable",
