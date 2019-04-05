@@ -181,7 +181,18 @@ export default class DbD2 {
         return attributes[0];
     }
 
-    async getMetadataForDashboardItems(antigens: Antigen[]) {
+    async getMetadataForDashboardItems(
+        antigens: Antigen[],
+        organisationUnits: OrganisationUnitPathOnly[],
+        categoryCodeForTeams: string
+    ) {
+        const allAncestorsIds = _(organisationUnits)
+            .map("path")
+            .flatMap(path => path.split("/").slice(1))
+            .uniq()
+            .value()
+            .join(",");
+
         const dashboardItems = [dashboardItemsConfig.charts, dashboardItemsConfig.tables];
         const elements = _(dashboardItems)
             .values()
@@ -192,18 +203,42 @@ export default class DbD2 {
 
         const allDataElementCodes = elements["DATA_ELEMENT"].join(",");
         const allIndicatorCodes = elements["INDICATOR"].join(",");
-
         const antigenCodes = antigens.map(an => an.code);
-        const { dataElements, categories, indicators } = await this.api.get("/metadata", {
-            "categories:fields": "id,categoryOptions[id,code,name]",
-            "categories:filter": `code:in:[${dashboardItemsConfig.categoryCode}]`,
-            "dataElements:fields": "id,code",
-            "dataElements:filter": `code:in:[${allDataElementCodes}]`,
-            "indicators:fields": "id,code",
-            "indicators:filter": `code:in:[${allIndicatorCodes}]`,
-        });
-        const { id: categoryId, categoryOptions } = categories[0];
-        const antigensMeta = _.filter(categoryOptions, op => _.includes(antigenCodes, op.code));
+        const { categories, dataElements, indicators, categoryOptions } = await this.api.get(
+            "/metadata",
+            {
+                "categories:fields": "id,categoryOptions[id,code,name]",
+                "categories:filter": `code:in:[${dashboardItemsConfig.categoryCode}]`,
+                "dataElements:fields": "id,code",
+                "dataElements:filter": `code:in:[${allDataElementCodes}]`,
+                "indicators:fields": "id,code",
+                "indicators:filter": `code:in:[${allIndicatorCodes}]`,
+                "categoryOptions:fields": "id,categories[id,code],organisationUnits",
+                "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`, //Missing categoryTeamCode
+            }
+        );
+
+        const { id: categoryId } = categories[0];
+        const antigensMeta = _.filter(categories[0].categoryOptions, op =>
+            _.includes(antigenCodes, op.code)
+        );
+
+        const teamsByOrgUnit = organisationUnits.reduce((acc, ou) => {
+            let teams: string[] = [];
+            categoryOptions.forEach((opt: { id: string; organisationUnits: string[] }) => {
+                const categoryOptOU = _.map(opt.organisationUnits, "id");
+                if (_.some(categoryOptOU, (o: string) => ou.path.includes(o))) {
+                    teams.push(opt.id);
+                }
+            });
+            return { ...acc, [ou.id]: teams };
+        }, {});
+
+        const teamsMetadata = {
+            ...teamsByOrgUnit,
+            categoryId: categoryOptions[0].categories[0].id,
+        };
+
         const dashboardMetadata = {
             antigenCategory: categoryId,
             dataElements: {
@@ -217,6 +252,7 @@ export default class DbD2 {
                 key: "indicator",
             },
             antigensMeta,
+            teamsMetadata,
         };
 
         return dashboardMetadata;
@@ -228,10 +264,15 @@ export default class DbD2 {
         antigens: Antigen[],
         datasetId: String,
         startDate: Date | null,
-        endDate: Date | null
+        endDate: Date | null,
+        categoryCodeForTeams: string
     ): Promise<DashboardData> {
-        const dashboardItemsMetadata = await this.getMetadataForDashboardItems(antigens);
-
+        const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
+            antigens,
+            organisationUnits,
+            categoryCodeForTeams
+        );
+        /// Remove datesetID if we don't end up using CODE in tables and charts
         const dashboardItems = this.createDashboardItems(
             datasetName,
             organisationUnits,
@@ -264,11 +305,10 @@ export default class DbD2 {
         endDate: Date | null,
         dashboardItemsMetadata: Dictionary<any>
     ): DashboardData {
-        const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
-        const organizationUnitsParents = _(organisationUnits)
-            .map(ou => [ou.id, ou.path])
-            .fromPairs()
-            .value();
+        const organisationUnitsMetadata = organisationUnits.map(ou => ({
+            id: ou.id,
+            parents: { [ou.id]: ou.path },
+        }));
         const periodStart = startDate ? moment(startDate) : moment();
         const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
         const periodRange = getDaysRange(periodStart, periodEnd);
@@ -279,10 +319,10 @@ export default class DbD2 {
         const { categoryCode, ...itemsConfig } = dashboardItemsConfig;
         const expectedCharts = _.flatMap(itemsConfig, _.keys);
 
-        const keys = ["antigenCategory", ...expectedCharts] as Array<
+        const keys = ["antigenCategory", "teamsMetadata", ...expectedCharts] as Array<
             keyof typeof dashboardItemsElements
         >;
-        const { antigenCategory, ...elements } = _(keys)
+        const { antigenCategory, teamsMetadata, ...elements } = _(keys)
             .map(key => [key, _(dashboardItemsElements).getOrFail(key)])
             .fromPairs()
             .value();
@@ -291,10 +331,10 @@ export default class DbD2 {
             antigensMeta,
             datasetName,
             datasetId,
-            organisationUnitsIds,
-            organizationUnitsParents,
+            organisationUnitsMetadata,
             period,
             antigenCategory,
+            teamsMetadata,
             elements
         );
         const charts = _(dashboardItems).getOrFail("charts");

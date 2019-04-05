@@ -20,6 +20,7 @@ export const dashboardItemsConfig = {
             ],
             dataType: "DATA_ELEMENT",
             appendCode: "qsTable",
+            disaggregatedBy: "RVC_TEAM",
         },
         indicator: {
             elements: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
@@ -43,11 +44,11 @@ export const dashboardItemsConfig = {
     },
 };
 
-export function buildDashboardItemsCode(datasetId, antigenId, appendCode) {
-    return [datasetId, antigenId, appendCode].join("_");
+export function buildDashboardItemsCode(datasetId, orgUnitId, antigenId, appendCode) {
+    return [datasetId, orgUnitId, antigenId, appendCode].join("_");
 }
 
-function getCharts(antigen, elements, itemsMetadata) {
+function getCharts(antigen, elements, organisationUnit, itemsMetadata) {
     return _(dashboardItemsConfig.charts)
         .map((c, key) =>
             chartConstructor({
@@ -56,13 +57,14 @@ function getCharts(antigen, elements, itemsMetadata) {
                 data: elements[key],
                 type: c.type,
                 appendCode: c.appendCode,
+                organisationUnit,
                 ...itemsMetadata,
             })
         )
         .value();
 }
 
-function getTables(antigen, elements, itemsMetadata) {
+function getTables(antigen, elements, organisationUnit, itemsMetadata, teamsMetadata) {
     return _(dashboardItemsConfig.tables)
         .map((c, key) =>
             tableConstructor({
@@ -70,6 +72,8 @@ function getTables(antigen, elements, itemsMetadata) {
                 antigen,
                 data: elements[key],
                 appendCode: c.appendCode,
+                organisationUnit,
+                teamsMetadata: c.disaggregatedBy === "RVC_TEAM" ? teamsMetadata : null,
                 ...itemsMetadata,
             })
         )
@@ -80,23 +84,39 @@ export function buildDashboardItems(
     antigensMeta,
     datasetName,
     datasetId,
-    organisationUnitsIds,
-    organisationUnitsParents,
+    organisationUnitsMetadata,
     period,
     antigenCategory,
+    teamsMetadata,
     elements
 ) {
     const itemsMetadata = {
         datasetName,
         datasetId,
-        organisationUnitsIds,
-        organisationUnitsParents,
         period,
         antigenCategory,
     };
 
-    const charts = antigensMeta.map(antigen => getCharts(antigen, elements, itemsMetadata));
-    const tables = antigensMeta.map(antigen => getTables(antigen, elements, itemsMetadata));
+    const charts = antigensMeta
+        .map(antigen =>
+            organisationUnitsMetadata.map(ou => getCharts(antigen, elements, ou, itemsMetadata))
+        )
+        .flat();
+    const tables = antigensMeta
+        .map(antigen =>
+            organisationUnitsMetadata.map(ou =>
+                getTables(
+                    antigen,
+                    elements,
+                    ou,
+                    itemsMetadata,
+                    teamsMetadata[ou.id]
+                        ? { teams: teamsMetadata[ou.id], categoryId: teamsMetadata.categoryId }
+                        : null
+                )
+            )
+        )
+        .flat();
 
     return { charts: _.flatten(charts), reportTables: _.flatten(tables) };
 }
@@ -110,7 +130,7 @@ const dataMapper = (dataList, filterList) =>
         }));
 
 export function itemsMetadataConstructor(dashboardItemsMetadata) {
-    const { dataElements, indicators, antigenCategory } = dashboardItemsMetadata;
+    const { dataElements, indicators, antigenCategory, teamsMetadata } = dashboardItemsMetadata;
     const { tables, charts } = dashboardItemsConfig;
 
     const tableElements = _(tables)
@@ -133,6 +153,7 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
 
     const dashboardItemsElements = {
         antigenCategory,
+        teamsMetadata,
         ...tableElements,
         ...chartElements,
     };
@@ -143,24 +164,21 @@ const chartConstructor = ({
     id,
     datasetName,
     antigen,
-    datasetId,
-    organisationUnitsIds,
-    organisationUnitsParents,
     period,
     antigenCategory,
     data,
     type,
     appendCode,
+    organisationUnit,
 }) => ({
     id,
-    name: [datasetName, antigen.name, appendCode].join("-"),
-    code: buildDashboardItemsCode(datasetId, antigen.id, appendCode),
+    name: buildDashboardItemsCode(datasetName, organisationUnit.id, antigen.name, appendCode),
     showData: true,
     publicAccess: "rw------",
     userOrganisationUnitChildren: false,
     type,
     subscribed: false,
-    parentGraphMap: organisationUnitsParents,
+    parentGraphMap: organisationUnit.parents,
     userOrganisationUnit: false,
     regressionType: "NONE",
     completedOnly: false,
@@ -171,7 +189,12 @@ const chartConstructor = ({
     hideEmptyRowItems: "AFTER_LAST",
     aggregationType: "DEFAULT",
     userOrganisationUnitGrandChildren: false,
-    displayName: [datasetName, antigen.name, appendCode].join("-"),
+    displayName: buildDashboardItemsCode(
+        datasetName,
+        organisationUnit.id,
+        antigen.name,
+        appendCode
+    ),
     hideSubtitle: false,
     hideLegend: false,
     externalAccess: false,
@@ -248,7 +271,7 @@ const chartConstructor = ({
     organisationUnitLevels: [],
     dataElementDimensions: [],
     periods: period,
-    organisationUnits: organisationUnitsIds,
+    organisationUnits: [{ id: organisationUnit.id }],
     categoryDimensions: [
         { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] },
     ],
@@ -260,128 +283,153 @@ const tableConstructor = ({
     id,
     datasetName,
     antigen,
-    datasetId,
-    organisationUnitsIds,
     period,
     antigenCategory,
     data,
     appendCode,
-}) => ({
-    id,
-    name: [datasetName, antigen.name, appendCode].join("-"),
-    code: buildDashboardItemsCode(datasetId, antigen.id, appendCode),
-    numberType: "VALUE",
-    publicAccess: "rw------",
-    userOrganisationUnitChildren: false,
-    legendDisplayStyle: "FILL",
-    hideEmptyColumns: false,
-    subscribed: false,
-    hideEmptyRows: true,
-    parentGraphMap: {},
-    userOrganisationUnit: false,
-    rowSubTotals: false,
-    displayDensity: "NORMAL",
-    completedOnly: false,
-    colTotals: true,
-    showDimensionLabels: true,
-    sortOrder: 0,
-    fontSize: "NORMAL",
-    favorite: false,
-    topLimit: 0,
-    aggregationType: "DEFAULT",
-    userOrganisationUnitGrandChildren: false,
-    displayName: [datasetName, antigen.name, appendCode].join("-"),
-    hideSubtitle: false,
-    externalAccess: false,
-    legendDisplayStrategy: "FIXED",
-    colSubTotals: false,
-    showHierarchy: false,
-    rowTotals: false,
-    cumulative: false,
-    digitGroupSeparator: "NONE",
-    hideTitle: false,
-    regression: false,
-    skipRounding: false,
-    reportParams: {
-        paramGrandParentOrganisationUnit: false,
-        paramReportingPeriod: false,
-        paramOrganisationUnit: false,
-        paramParentOrganisationUnit: false,
-    },
-    access: {
-        read: true,
-        update: true,
-        externalize: true,
-        delete: true,
-        write: true,
-        manage: true,
-    },
-    relativePeriods: {
-        thisYear: false,
-        quartersLastYear: false,
-        last52Weeks: false,
-        thisWeek: false,
-        lastMonth: false,
-        last14Days: false,
-        biMonthsThisYear: false,
-        monthsThisYear: false,
-        last2SixMonths: false,
-        yesterday: false,
-        thisQuarter: false,
-        last12Months: false,
-        last5FinancialYears: false,
-        thisSixMonth: false,
-        lastQuarter: false,
-        thisFinancialYear: false,
-        last4Weeks: false,
-        last3Months: false,
-        thisDay: false,
-        thisMonth: false,
-        last5Years: false,
-        last6BiMonths: false,
-        last4BiWeeks: false,
-        lastFinancialYear: false,
-        lastBiWeek: false,
-        weeksThisYear: false,
-        last6Months: false,
-        last3Days: false,
-        quartersThisYear: false,
-        monthsLastYear: false,
-        lastWeek: false,
-        last7Days: false,
-        thisBimonth: false,
-        lastBimonth: false,
-        lastSixMonth: false,
-        thisBiWeek: false,
-        lastYear: false,
-        last12Weeks: false,
-        last4Quarters: false,
-    },
-    dataElementGroupSetDimensions: [],
-    attributeDimensions: [],
-    translations: [],
-    filterDimensions: ["ou", antigenCategory],
-    interpretations: [],
-    itemOrganisationUnitGroups: [],
-    userGroupAccesses: [],
-    programIndicatorDimensions: [],
-    subscribers: [],
-    attributeValues: [],
-    columnDimensions: ["dx"],
-    userAccesses: [],
-    favorites: [],
-    dataDimensionItems: data,
-    categoryOptionGroupSetDimensions: [],
-    columns: [],
-    organisationUnitGroupSetDimensions: [],
-    organisationUnitLevels: [],
-    dataElementDimensions: [],
-    periods: period,
-    organisationUnits: organisationUnitsIds,
-    categoryDimensions: [
-        { category: { id: antigenCategory }, categoryOptions: [{ id: antigen.id }] },
-    ],
-    filters: [],
-    rows: [],
-    rowDimensions: ["pe"],
-});
+    organisationUnit,
+    teamsMetadata,
+}) => {
+    const antigenCategoryElement = {
+        category: { id: antigenCategory },
+        categoryOptions: [{ id: antigen.id }],
+    };
+    /// WIP
+    const teamCategoryId = teamsMetadata && teamsMetadata.categoryId;
+    const categoryDimensions = teamsMetadata
+        ? [
+              antigenCategoryElement,
+              {
+                  category: { id: teamCategoryId },
+                  categoryOptions: _(teamsMetadata.teams)
+                      .map(t => ({ id: t }))
+                      .value(),
+              },
+          ]
+        : [antigenCategoryElement];
+
+    const columnDimensions = ["dx", teamCategoryId || null];
+    const columns = [{ id: "dx" }, teamCategoryId ? { id: teamCategoryId } : null];
+    /// WIP
+    return {
+        id,
+        name: buildDashboardItemsCode(datasetName, organisationUnit.id, antigen.name, appendCode),
+        numberType: "VALUE",
+        publicAccess: "rw------",
+        userOrganisationUnitChildren: false,
+        legendDisplayStyle: "FILL",
+        hideEmptyColumns: false,
+        subscribed: false,
+        hideEmptyRows: true,
+        parentGraphMap: {},
+        userOrganisationUnit: false,
+        rowSubTotals: !!teamsMetadata,
+        displayDensity: "NORMAL",
+        completedOnly: false,
+        colTotals: true,
+        showDimensionLabels: true,
+        sortOrder: 0,
+        fontSize: "NORMAL",
+        favorite: false,
+        topLimit: 0,
+        aggregationType: "DEFAULT",
+        userOrganisationUnitGrandChildren: false,
+        displayName: buildDashboardItemsCode(
+            datasetName,
+            organisationUnit.id,
+            antigen.name,
+            appendCode
+        ),
+        hideSubtitle: false,
+        externalAccess: false,
+        legendDisplayStrategy: "FIXED",
+        colSubTotals: false,
+        showHierarchy: false,
+        rowTotals: false,
+        cumulative: false,
+        digitGroupSeparator: "NONE",
+        hideTitle: false,
+        regression: false,
+        skipRounding: false,
+        reportParams: {
+            paramGrandParentOrganisationUnit: false,
+            paramReportingPeriod: false,
+            paramOrganisationUnit: false,
+            paramParentOrganisationUnit: false,
+        },
+        access: {
+            read: true,
+            update: true,
+            externalize: true,
+            delete: true,
+            write: true,
+            manage: true,
+        },
+        relativePeriods: {
+            thisYear: false,
+            quartersLastYear: false,
+            last52Weeks: false,
+            thisWeek: false,
+            lastMonth: false,
+            last14Days: false,
+            biMonthsThisYear: false,
+            monthsThisYear: false,
+            last2SixMonths: false,
+            yesterday: false,
+            thisQuarter: false,
+            last12Months: false,
+            last5FinancialYears: false,
+            thisSixMonth: false,
+            lastQuarter: false,
+            thisFinancialYear: false,
+            last4Weeks: false,
+            last3Months: false,
+            thisDay: false,
+            thisMonth: false,
+            last5Years: false,
+            last6BiMonths: false,
+            last4BiWeeks: false,
+            lastFinancialYear: false,
+            lastBiWeek: false,
+            weeksThisYear: false,
+            last6Months: false,
+            last3Days: false,
+            quartersThisYear: false,
+            monthsLastYear: false,
+            lastWeek: false,
+            last7Days: false,
+            thisBimonth: false,
+            lastBimonth: false,
+            lastSixMonth: false,
+            thisBiWeek: false,
+            lastYear: false,
+            last12Weeks: false,
+            last4Quarters: false,
+        },
+        dataElementGroupSetDimensions: [],
+        attributeDimensions: [],
+        translations: [],
+        filterDimensions: ["ou", antigenCategory],
+        interpretations: [],
+        itemOrganisationUnitGroups: [],
+        userGroupAccesses: [],
+        programIndicatorDimensions: [],
+        subscribers: [],
+        attributeValues: [],
+        columnDimensions,
+        userAccesses: [],
+        favorites: [],
+        dataDimensionItems: data,
+        categoryOptionGroupSetDimensions: [],
+        columns,
+        organisationUnitGroupSetDimensions: [],
+        organisationUnitLevels: [],
+        dataElementDimensions: [],
+        periods: period,
+        organisationUnits: [{ id: organisationUnit.id }],
+        categoryDimensions,
+        filters: [],
+        rows: [],
+        rowDimensions: ["pe"],
+    };
+};

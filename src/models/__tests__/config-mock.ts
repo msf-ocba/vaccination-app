@@ -5,6 +5,7 @@ const metadataConfig: MetadataConfig = {
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
+    categoryCodeForTeams: "RVC_TEAM",
     attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     attributeCodeForDashboard: "RVC_DASHBOARD_ID",
     categories: [
