@@ -21,6 +21,11 @@ export const dashboardItemsConfig = {
             dataType: "DATA_ELEMENT",
             appendCode: "qsTable",
         },
+        indicator: {
+            elements: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
+            dataType: "INDICATOR",
+            appendCode: "indicatorTable",
+        },
     },
     charts: {
         utilizationRate: {
