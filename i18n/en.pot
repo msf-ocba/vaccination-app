@@ -5,11 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-03-13T12:10:59.421Z\n"
-"PO-Revision-Date: 2019-03-13T12:10:59.421Z\n"
-
-msgid "Vaccination"
-msgstr ""
+"POT-Creation-Date: 2019-04-09T20:54:37.763Z\n"
+"PO-Revision-Date: 2019-04-09T20:54:37.763Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
