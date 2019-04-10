@@ -27,6 +27,11 @@ export const dashboardItemsConfig = {
             dataType: "INDICATOR",
             appendCode: "indicatorTable",
         },
+        campaignCoverage: {
+            elements: ["RVC_CAMPAIGN_COVERAGE"],
+            dataType: "INDICATOR",
+            appendCode: "campaignCoverageTable",
+        },
     },
     charts: {
         utilizationRate: {
@@ -40,6 +45,12 @@ export const dashboardItemsConfig = {
             dataType: "INDICATOR",
             appendCode: "indicatorChart",
             type: "COLUMN",
+        },
+        campaignCoverage: {
+            elements: ["RVC_CAMPAIGN_COVERAGE"],
+            dataType: "INDICATOR",
+            appendCode: "campaignCoverageChart",
+            type: "LINE",
         },
     },
 };
