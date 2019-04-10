@@ -44,7 +44,7 @@ class CampaignWizard extends React.Component {
                 ),
                 help: i18n.t(`Select the organization units which will implement the campaign.
 At least one must be selected.
-Only organisation units of level 6 (service) can be selected`),
+Only organisation units of level 5 (Health site) can be selected`),
             },
             {
                 key: "general-info",
