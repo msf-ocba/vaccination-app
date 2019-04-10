@@ -22,10 +22,10 @@ describe("Campaign configuration - Create", () => {
         expandOrgUnit("OCBA");
         expandOrgUnit("ANGOLA");
         expandOrgUnit("HUAMBO");
-        expandOrgUnit("Hospital central de Huambo");
+        expandOrgUnit("LUNDA NORTE");
 
-        selectOrgUnit("Emergency Room");
-        selectOrgUnit("Paediatric Ward");
+        selectOrgUnit("Hospital central de Huambo");
+        selectOrgUnit("Cacanda Camp");
 
         cy.contains("Next").click();
 
@@ -81,8 +81,8 @@ describe("Campaign configuration - Create", () => {
         cy.contains(
             "[2] " +
                 [
-                    "MSF-OCBA-ANGOLA-HUAMBO, Malaria outbreak-Hospital central de Huambo-Emergency Room",
-                    "MSF-OCBA-ANGOLA-HUAMBO, Malaria outbreak-Hospital central de Huambo-Paediatric Ward",
+                    "MSF-OCBA-ANGOLA-HUAMBO, Malaria outbreak-Hospital central de Huambo",
+                    "MSF-OCBA-ANGOLA-LUNDA NORTE, Refugees-Cacanda Camp",
                 ].join(", ")
         );
 
