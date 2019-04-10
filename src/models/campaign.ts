@@ -28,7 +28,7 @@ export interface Data {
 }
 
 export default class Campaign {
-    public selectableLevels: number[] = [6];
+    public selectableLevels: number[] = [5];
 
     constructor(private db: DbD2, public config: MetadataConfig, private data: Data) {}
 

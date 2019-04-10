@@ -89,7 +89,7 @@ msgstr ""
 msgid ""
 "Select the organization units which will implement the campaign.\n"
 "At least one must be selected.\n"
-"Only organisation units of level 6 (service) can be selected"
+"Only organisation units of level 5 (Health site) can be selected"
 msgstr ""
 
 msgid "General info"
