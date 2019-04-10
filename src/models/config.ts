@@ -1,27 +1,45 @@
 import _ from "lodash";
 import "../utils/lodash-mixins";
 import DbD2 from "./db-d2";
-import { Category, DataElementGroup, CategoryCombo, CategoryOptionGroup } from "./db.types";
+import {
+    Category,
+    DataElementGroup,
+    CategoryCombo,
+    CategoryOptionGroup,
+    DataElement,
+    OrganisationUnitLevel,
+} from "./db.types";
 
 export interface BaseConfig {
     categoryCodeForAntigens: string;
     categoryCodeForAgeGroup: string;
+    categoryComboCodeForAgeGroup: string;
+    categoryComboCodeForAntigenAgeGroup: string;
     dataElementGroupCodeForAntigens: string;
     categoryComboCodeForTeams: string;
     attibuteCodeForApp: string;
     attributeCodeForDashboard: string;
+    dataElementCodeForTotalPopulation: string;
+    dataElementCodeForAgeDistribution: string;
+    dataElementCodeForPopulationByAge: string;
 }
 
 const baseConfig: BaseConfig = {
     categoryCodeForAntigens: "RVC_ANTIGEN",
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
+    categoryComboCodeForAgeGroup: "RVC_AGE_GROUP",
+    categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_RVC_AGE_GROUP",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     attributeCodeForDashboard: "RVC_DASHBOARD_ID",
+    dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
+    dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
+    dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
 };
 
 export interface MetadataConfig extends BaseConfig {
+    organisationUnitLevels: OrganisationUnitLevel[];
     categories: Array<{
         name: string;
         code: string;
@@ -32,6 +50,13 @@ export interface MetadataConfig extends BaseConfig {
             | { kind: "fromAgeGroups" }
             | { kind: "values"; values: string[] };
     }>;
+    categoryCombos: CategoryCombo[];
+    population: {
+        totalPopulationDataElement: DataElement;
+        ageDistributionDataElement: DataElement;
+        populationByAgeDataElement: DataElement;
+        ageGroupCategory: Category;
+    };
     dataElements: Array<{
         name: string;
         code: string;
@@ -103,12 +128,31 @@ function getConfigDataElements(
     });
 }
 
-function sortAgeGroups(names: string[]): string[] {
-    const timeUnits = ["d", "w", "m", "y"];
+function sortAgeGroups(names: string[]) {
+    const timeUnits: _.Dictionary<number> = { d: 1, w: 7, m: 30, y: 365 };
+    const getOrThrow = _.getOrFail;
+
     return _.sortBy(names, name => {
         const parts = name.split(" ");
-        const timeOrder = timeUnits.indexOf(_.last(parts) || "y") || timeUnits.length;
-        return 1000 * timeOrder + parseInt(parts[0]);
+        let pair;
+        if (parts.length === 4) {
+            // "2 - 5 y"
+            const days = getOrThrow(timeUnits, parts[3]);
+            pair = [parseInt(parts[0]) * days, parseInt(parts[2]) * days];
+        } else if (parts.length === 5) {
+            // "2 w - 3 y" {
+            const days1 = getOrThrow(timeUnits, parts[1]);
+            const days2 = getOrThrow(timeUnits, parts[4]);
+            pair = [parseInt(parts[0]) * days1, parseInt(parts[3]) * days2];
+        } else if (parts.length === 3) {
+            // ""> 30 y"
+            const days = getOrThrow(timeUnits, parts[2]);
+            pair = [parseInt(parts[1]) * days, 0];
+        } else {
+            throw new Error(`Invalid age range format: ${name}`);
+        }
+
+        return 100000 * pair[0] + pair[1];
     });
 }
 
@@ -160,6 +204,33 @@ function getAntigens(
     });
 }
 
+function getPopulationMetadata(
+    dataElements: DataElement[],
+    categories: Category[]
+): MetadataConfig["population"] {
+    const codes = [
+        baseConfig.dataElementCodeForTotalPopulation,
+        baseConfig.dataElementCodeForAgeDistribution,
+        baseConfig.dataElementCodeForPopulationByAge,
+    ];
+    const [totalPopulationDataElement, ageDistributionDataElement, populationByAgeDataElement] = _(
+        dataElements
+    )
+        .keyBy(de => de.code)
+        .at(codes)
+        .value();
+
+    const ageGroupCategory = _(categories)
+        .keyBy("code")
+        .getOrFail(baseConfig.categoryCodeForAgeGroup);
+    return {
+        totalPopulationDataElement,
+        ageDistributionDataElement,
+        populationByAgeDataElement,
+        ageGroupCategory,
+    };
+}
+
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
     const codeFilter = "code:startsWith:RVC_";
     const modelParams = { filters: [codeFilter] };
@@ -169,6 +240,8 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         categoryCombos: modelParams,
         categoryOptionGroups: modelParams,
         dataElementGroups: modelParams,
+        dataElements: modelParams,
+        organisationUnitLevels: {},
     };
 
     const metadata = await db.getMetadata<{
@@ -176,16 +249,23 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         categoryCombos: CategoryCombo[];
         categoryOptionGroups: CategoryOptionGroup[];
         dataElementGroups: DataElementGroup[];
+        dataElements: DataElement[];
+        organisationUnitLevels: OrganisationUnitLevel[];
     }>(metadataParams);
 
-    return {
+    const metadataConfig = {
         ...baseConfig,
+        organisationUnitLevels: metadata.organisationUnitLevels,
         categories: getConfigCategories(metadata.categories),
+        categoryCombos: metadata.categoryCombos,
         dataElements: getConfigDataElements(metadata.dataElementGroups, metadata.categoryCombos),
         antigens: getAntigens(
             metadata.dataElementGroups,
             metadata.categories,
             metadata.categoryOptionGroups
         ),
+        population: getPopulationMetadata(metadata.dataElements, metadata.categories),
     };
+
+    return metadataConfig;
 }

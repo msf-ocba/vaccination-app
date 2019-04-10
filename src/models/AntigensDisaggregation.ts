@@ -39,6 +39,7 @@ export type AntigenDisaggregationOptionGroup = AntigenDisaggregationCategoriesDa
 
 export type AntigenDisaggregationEnabled = Array<{
     antigen: Antigen;
+    ageGroups: Array<string>;
     dataElements: Array<{
         id: string;
         name: string;
@@ -123,7 +124,9 @@ export class AntigensDisaggregation {
             .value();
 
         const enabled = antigenDisaggregations.map(antigenDisaggregation => {
-            const dataElements = _(antigenDisaggregation.dataElements)
+            const dataElements: AntigenDisaggregationEnabled[0]["dataElements"] = _(
+                antigenDisaggregation.dataElements
+            )
                 .filter("selected")
                 .map(dataElement => {
                     const categories = _(dataElement.categories)
@@ -145,7 +148,14 @@ export class AntigensDisaggregation {
                     };
                 })
                 .value();
+            const ageGroups = _(dataElements)
+                .flatMap(dataElement => dataElement.categories)
+                .filter(category => category.code === this.config.categoryCodeForAgeGroup)
+                .flatMap(category => category.categoryOptions)
+                .value();
+
             return {
+                ageGroups: ageGroups,
                 antigen: { code: antigenDisaggregation.code, name: antigenDisaggregation.name },
                 dataElements,
             };
