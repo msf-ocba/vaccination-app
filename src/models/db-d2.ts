@@ -87,6 +87,8 @@ export interface AnalyticsResponse {
     height: number;
 }
 
+const ref = { id: true };
+
 const metadataFields: MetadataFields = {
     categories: {
         id: true,
@@ -128,7 +130,7 @@ const metadataFields: MetadataFields = {
         id: true,
         displayName: true,
         code: true,
-        dataElements: metadataFields => metadataFields.dataElements,
+        dataElements: ref,
     },
     organisationUnits: {
         id: true,

@@ -85,7 +85,7 @@ export interface DataElementGroup {
     id: string;
     code: string;
     displayName: string;
-    dataElements: DataElement[];
+    dataElements: Ref[];
 }
 
 export interface Ref {

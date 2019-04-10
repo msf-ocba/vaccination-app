@@ -8,6 +8,7 @@ import {
     CategoryOptionGroup,
     DataElement,
     OrganisationUnitLevel,
+    Ref,
 } from "./db.types";
 
 export interface BaseConfig {
@@ -100,15 +101,24 @@ function getCode(parts: string[]): string {
     return parts.map(part => part.replace(/\s*/g, "").toUpperCase()).join("_");
 }
 
+function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
+    const objectsById = _.keyBy(objects, "id");
+    return refs.map(ref => _(objectsById).getOrFail(ref.id));
+}
+
 function getConfigDataElements(
     dataElementGroups: DataElementGroup[],
+    dataElements: DataElement[],
     categoryCombos: CategoryCombo[]
 ): MetadataConfig["dataElements"] {
     const groupsByCode = _.keyBy(dataElementGroups, "code");
     const catCombosByCode = _.keyBy(categoryCombos, "code");
-    const dataElements = _(groupsByCode).getOrFail("RVC_ANTIGEN").dataElements;
+    const dataElementsForAntigens = getFromRefs(
+        _(groupsByCode).getOrFail("RVC_ANTIGEN").dataElements,
+        dataElements
+    );
 
-    return dataElements.map(dataElement => {
+    return dataElementsForAntigens.map(dataElement => {
         const getCategories = (typeString: string) => {
             const code = "RVC_DE_" + dataElement.code + "_" + typeString;
             return (catCombosByCode[code] || { categories: [] }).categories;
@@ -158,6 +168,7 @@ function sortAgeGroups(names: string[]) {
 
 function getAntigens(
     dataElementGroups: DataElementGroup[],
+    dataElements: DataElement[],
     categories: Category[],
     categoryOptionGroups: CategoryOptionGroup[]
 ): MetadataConfig["antigens"] {
@@ -166,18 +177,21 @@ function getAntigens(
     const dataElementGroupsByCode = _.keyBy(dataElementGroups, "code");
     const categoryOptionGroupsByCode = _.keyBy(categoryOptionGroups, "code");
 
-    return categoryOptions.map(categoryOption => {
+    const antigensMetadata = categoryOptions.map(categoryOption => {
         const getDataElements = (typeString: string) => {
             const code = getCode([categoryOption.code, typeString]);
-            return _(dataElementGroupsByCode).getOrFail(code).dataElements;
+            return getFromRefs(
+                _(dataElementGroupsByCode).getOrFail(code).dataElements,
+                dataElements
+            );
         };
 
-        const dataElements = _.concat(
+        const dataElementsForAntigens = _.concat(
             getDataElements("REQUIRED").map(({ code }) => ({ code, optional: false })),
             getDataElements("OPTIONAL").map(({ code }) => ({ code, optional: true }))
         );
 
-        const dataElementSorted = _(dataElements)
+        const dataElementSorted = _(dataElementsForAntigens)
             .orderBy([de => de.code.match(/DOSES/), "code"], ["asc", "asc"])
             .value();
 
@@ -202,6 +216,8 @@ function getAntigens(
             ageGroups: ageGroups,
         };
     });
+
+    return antigensMetadata;
 }
 
 function getPopulationMetadata(
@@ -258,9 +274,14 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         organisationUnitLevels: metadata.organisationUnitLevels,
         categories: getConfigCategories(metadata.categories),
         categoryCombos: metadata.categoryCombos,
-        dataElements: getConfigDataElements(metadata.dataElementGroups, metadata.categoryCombos),
+        dataElements: getConfigDataElements(
+            metadata.dataElementGroups,
+            metadata.dataElements,
+            metadata.categoryCombos
+        ),
         antigens: getAntigens(
             metadata.dataElementGroups,
+            metadata.dataElements,
             metadata.categories,
             metadata.categoryOptionGroups
         ),
