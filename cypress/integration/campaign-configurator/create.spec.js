@@ -85,7 +85,7 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Period dates");
         const now = moment();
         const expectedDataStart = now.set("date", 11).format("LL");
-        const expectedDataEnd = now.set("date", 25).format("LL");
+        const expectedDataEnd = now.set("date", 13).format("LL");
         cy.contains(`${expectedDataStart} -> ${expectedDataEnd}`);
 
         cy.contains("Antigens");
