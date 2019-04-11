@@ -5,9 +5,9 @@ html {
 }
 
 body {
-    margin: 0px;
+    margin: 0;
 }
 
 .content {
-    margin: 15px;
+    margin: 4rem 15px 15px;
 }
