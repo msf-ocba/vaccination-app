@@ -277,7 +277,7 @@ export default class Campaign {
                 period: { id: date.format("YYYYMMDD") },
             }));
 
-            const customForm = await DataSetCustomForm.build(this, this.db);
+            const customForm = await DataSetCustomForm.build(this);
             const customFormHtml = customForm.generate();
             const dataEntryForm: DataEntryForm = {
                 id: generateUid(),

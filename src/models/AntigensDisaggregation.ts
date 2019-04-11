@@ -202,7 +202,10 @@ export class AntigensDisaggregation {
         return res;
     }
 
-    public async getCustomFormMetadata(db: DbD2, antigens: Antigen[]): Promise<CustomFormMetadata> {
+    public async getCustomFormMetadata(
+        antigens: Antigen[],
+        categoryCombos: CategoryCombo[]
+    ): Promise<CustomFormMetadata> {
         const data = _.flatMap(this.getEnabled(antigens), ({ dataElements, antigen }) => {
             return dataElements.map(({ code, categories }) => ({
                 antigenCode: antigen.code,
@@ -212,15 +215,6 @@ export class AntigensDisaggregation {
                     ...categories.map(category => category.code),
                 ].join("_"),
             }));
-        });
-
-        const categoryCodesString = _(data)
-            .map(({ categoryComboCode }) => categoryComboCode)
-            .uniq()
-            .join(",");
-
-        const { categoryCombos } = await db.getMetadata<{ categoryCombos: CategoryCombo[] }>({
-            categoryCombos: { filters: [`code:in:[${categoryCodesString}]`] },
         });
 
         const categoryCombosByCode = _.keyBy(categoryCombos, "code");
