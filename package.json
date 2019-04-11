@@ -21,10 +21,12 @@
         "@dhis2/d2-ui-org-unit-select": "^5.1.0",
         "@material-ui/core": "^3.9.1",
         "@material-ui/icons": "^3.0.1",
+        "@types/classnames": "^2.2.7",
         "babel-eslint": "9.x",
+        "classnames": "^2.2.6",
         "d2": "^31",
         "d2-manifest": "^1.0.0",
-        "d2-ui-components": "0.0.12",
+        "d2-ui-components": "0.0.13",
         "enzyme": "^3.7.0",
         "enzyme-adapter-react-16": "^1.6.0",
         "enzyme-to-json": "^3.3.4",
@@ -89,7 +91,7 @@
         "prop-types": "^15.6.0",
         "sinon": "^7.1.1",
         "ts-jest": "^23.10.5",
-        "typescript": "3.2.2",
+        "typescript": "3.2.4",
         "wait-on": "^3.2.0"
     },
     "manifest.webapp": {

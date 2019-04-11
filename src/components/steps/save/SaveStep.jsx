@@ -8,6 +8,9 @@ import { withStyles } from "@material-ui/core/styles";
 import { Button, LinearProgress } from "@material-ui/core";
 import { withSnackbar } from "d2-ui-components";
 import ConfirmationDialog from "../../confirmation-dialog/ConfirmationDialog";
+import { getFullOrgUnitName } from "../../../models/organisation-units";
+import { getShowValue } from "../target-population/utils";
+import { getFinalPopulationDistribution } from "../../../models/TargetPopulation";
 
 const styles = _theme => ({
     wrapper: {
@@ -23,7 +26,7 @@ const styles = _theme => ({
 class SaveStep extends React.Component {
     state = {
         isSaving: false,
-        orgUnitNames: null,
+        orgUnits: null,
         errorMessage: [],
         dialogOpen: false,
     };
@@ -37,12 +40,13 @@ class SaveStep extends React.Component {
 
     async componentDidMount() {
         const { campaign } = this.props;
-        const orgUnitNames = await campaign.getOrganisationUnitsFullName();
-        this.setState({ orgUnitNames });
+        const { objects: orgUnits } = await campaign.getOrganisationUnitsWithName();
+        const campaignWithTargetPopulation = await campaign.withTargetPopulation();
+        this.setState({ orgUnits, campaign: campaignWithTargetPopulation });
     }
 
     save = async () => {
-        const { campaign } = this.props;
+        const { campaign } = this.state;
         this.setState({ isSaving: true, errorMessage: "" });
         const saveResponse = await campaign.save();
         this.setState({ isSaving: false });
@@ -97,7 +101,7 @@ class SaveStep extends React.Component {
         return (
             <li key={label}>
                 {label}
-                {value || children ? ":" : ""}
+                {value || children ? ": " : ""}
                 {value}
                 {children}
             </li>
@@ -105,7 +109,7 @@ class SaveStep extends React.Component {
     };
 
     getCampaignPeriodDateString = () => {
-        const { campaign } = this.props;
+        const { campaign } = this.state;
         const { startDate, endDate } = campaign;
 
         if (startDate && endDate) {
@@ -127,9 +131,40 @@ class SaveStep extends React.Component {
         });
     }
 
+    renderOrgUnit = orgUnit => {
+        const { targetPopulation } = this.state.campaign;
+        const LiEntry = this.renderLiEntry;
+        const byOrgUnit = _.keyBy(
+            targetPopulation.targetPopulationList,
+            item => item.organisationUnit.id
+        );
+        const targetPopOu = _(byOrgUnit).getOrFail(orgUnit.id);
+        const totalPopulation = getShowValue(targetPopOu.populationTotal.pairValue);
+        const populationDistribution = getFinalPopulationDistribution(
+            targetPopulation.ageGroups,
+            targetPopOu
+        );
+        const ageDistribution = targetPopulation.ageGroups
+            .map(ageGroup => {
+                return [ageGroup, " = ", populationDistribution[ageGroup], "%"].join("");
+            })
+            .join(", ");
+
+        return (
+            <LiEntry key={orgUnit.id} label={getFullOrgUnitName(orgUnit)}>
+                <ul>
+                    <LiEntry label={i18n.t("Total population")} value={totalPopulation} />
+                    <LiEntry label={i18n.t("Age distribution (%)")} value={ageDistribution} />
+                </ul>
+            </LiEntry>
+        );
+    };
+
     render() {
-        const { classes, campaign } = this.props;
-        const { orgUnitNames, errorMessage, isSaving, dialogOpen } = this.state;
+        const { classes } = this.props;
+        const { campaign, orgUnits, errorMessage, isSaving, dialogOpen } = this.state;
+        if (!campaign) return null;
+
         const LiEntry = this.renderLiEntry;
         const disaggregation = campaign.getEnabledAntigensDisaggregation();
 
@@ -152,12 +187,17 @@ class SaveStep extends React.Component {
                             label={i18n.t("Period dates")}
                             value={this.getCampaignPeriodDateString()}
                         />
-                        <LiEntry
-                            label={i18n.t("Organisation Units")}
-                            value={this.getMessageFromPaginated(orgUnitNames)}
-                        />
+
+                        <LiEntry label={i18n.t("Organisation Units")}>
+                            {orgUnits && (
+                                <React.Fragment>
+                                    [{orgUnits.length}]<ul>{orgUnits.map(this.renderOrgUnit)}</ul>
+                                </React.Fragment>
+                            )}
+                        </LiEntry>
 
                         <LiEntry label={i18n.t("Antigens")}>
+                            [{disaggregation.length}]
                             <ul>
                                 {disaggregation.map(({ antigen, dataElements }) => (
                                     <LiEntry key={antigen.code} label={antigen.name}>

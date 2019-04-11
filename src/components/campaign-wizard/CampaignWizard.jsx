@@ -15,6 +15,7 @@ import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
 import ConfirmationDialog from "../confirmation-dialog/ConfirmationDialog";
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
+import TargetPopulationStep from "../steps/target-population/TargetPopulationStep";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
@@ -25,7 +26,13 @@ class CampaignWizard extends React.Component {
 
     constructor(props) {
         super(props);
+        const startDate = new Date();
+        const endDate = new Date();
+        startDate.setDate(startDate.getDate() - 1);
+        endDate.setDate(endDate.getDate() + 1);
+
         const campaign = Campaign.create(props.config, new DbD2(props.d2));
+
         this.state = {
             campaign: campaign,
             dialogOpen: false,
@@ -73,6 +80,22 @@ Only organisation units of level 5 (Health site) can be selected`),
                 validationKeys: [],
                 description: i18n.t(`Select indicators and categories for each antigen`),
                 help: i18n.t(`Select indicators and categories for each antigen`),
+            },
+            {
+                key: "target-population",
+                label: i18n.t("Target Population"),
+                component: TargetPopulationStep,
+                validationKeys: ["targetPopulation"],
+                description: i18n.t(
+                    `Specify target population, totals and age percentages for the age ranges
+required by all selected antigens. The source of those values are the DHIS2
+analytics endpoint. Like-wise, any change you make in this step will only be
+applied once you run the analytics.`
+                ),
+                help: i18n.t(
+                    `Specify target population, totals and age percentages for the age ranges
+required by all selected antigens`
+                ),
             },
             {
                 key: "save",

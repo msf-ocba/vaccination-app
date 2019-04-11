@@ -1,3 +1,4 @@
+import { AnalyticsResponse } from "./db-d2";
 import { Dictionary } from "lodash";
 import moment from "moment";
 import { generateUid } from "d2/uid";
@@ -14,10 +15,13 @@ import {
     ModelName,
     MetadataFields,
     Attribute,
-    Ref,
     DataEntryForm,
     OrganisationUnitPathOnly,
     DashboardData,
+    DataValueRequest,
+    DataValueResponse,
+    Response,
+    DataValue,
 } from "./db.types";
 import _ from "lodash";
 import {
@@ -28,6 +32,7 @@ import {
 import { getDaysRange } from "../utils/date";
 import { Antigen } from "./campaign";
 import "../utils/lodash-mixins";
+import { promiseMap } from "../utils/promises";
 
 function getDbFields(modelFields: ModelFields): string[] {
     return _(modelFields)
@@ -59,6 +64,27 @@ function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
         })
         .fromPairs()
         .value();
+}
+
+export interface AnalyticsRequest {
+    dimension: string[];
+    filter?: string[];
+    skipMeta?: boolean;
+}
+
+export interface AnalyticsResponse {
+    headers: Array<{
+        name: "dx" | "dy";
+        column: "Data";
+        valueType: "TEXT" | "NUMBER";
+        type: "java.lang.String" | "java.lang.Double";
+        hidden: boolean;
+        meta: boolean;
+    }>;
+
+    rows: Array<string[]>;
+    width: number;
+    height: number;
 }
 
 const metadataFields: MetadataFields = {
@@ -104,6 +130,23 @@ const metadataFields: MetadataFields = {
         code: true,
         dataElements: metadataFields => metadataFields.dataElements,
     },
+    organisationUnits: {
+        id: true,
+        displayName: true,
+        path: true,
+        level: true,
+        ancestors: {
+            id: true,
+            displayName: true,
+            path: true,
+            level: true,
+        },
+    },
+    organisationUnitLevels: {
+        id: true,
+        displayName: true,
+        level: true,
+    },
 };
 
 export default class DbD2 {
@@ -117,19 +160,25 @@ export default class DbD2 {
 
     public async getMetadata<T>(params: MetadataGetParams): Promise<T> {
         const options = { translate: true, ...toDbParams(params) };
-        return this.api.get("/metadata", options) as T;
+        const metadata = await this.api.get("/metadata", options);
+        const metadataWithEmptyRecords = _(params)
+            .keys()
+            .map(key => [key, metadata[key] || []])
+            .fromPairs()
+            .value();
+        return metadataWithEmptyRecords as T;
     }
 
     public async getOrganisationUnitsFromIds(
-        ids: string[]
+        ids: string[],
+        options: { pageSize?: number }
     ): Promise<PaginatedObjects<OrganisationUnit>> {
-        const pageSize = 10;
         const { pager, organisationUnits } = await this.api.get("/organisationUnits", {
             paging: true,
-            pageSize: pageSize,
+            pageSize: options.pageSize || 10,
             filter: [
                 `id:in:[${_(ids)
-                    .take(pageSize)
+                    .take(options.pageSize)
                     .join(",")}]`,
             ],
             fields: ["id", "displayName", "path", "level", "ancestors[id,displayName,path,level]"],
@@ -163,12 +212,55 @@ export default class DbD2 {
     }
 
     public async postMetadata(metadata: Metadata): Promise<MetadataResponse> {
-        return this.api.post("/metadata", metadata) as MetadataResponse;
+        return this.api.post("/metadata", metadata) as Promise<MetadataResponse>;
     }
 
     public async postForm(dataSetId: string, dataEntryForm: DataEntryForm): Promise<boolean> {
         await this.api.post(["dataSets", dataSetId, "form"].join("/"), dataEntryForm);
         return true;
+    }
+
+    public async postDataValues(dataValues: DataValue[]): Promise<Response<string[]>> {
+        const dataValueRequests: DataValueRequest[] = _(dataValues)
+            .groupBy(dv => {
+                const parts = [
+                    dv.dataSet,
+                    dv.completeDate,
+                    dv.period,
+                    dv.orgUnit,
+                    dv.attributeOptionCombo,
+                ];
+                return parts.join("-");
+            })
+            .values()
+            .map(group => {
+                const dv0 = group[0];
+                return {
+                    dataSet: dv0.dataSet,
+                    completeDate: dv0.completeDate,
+                    period: dv0.period,
+                    orgUnit: dv0.orgUnit,
+                    attributeOptionCombo: dv0.attributeOptionCombo,
+                    dataValues: group.map(dv => ({
+                        dataElement: dv.dataElement,
+                        categoryOptionCombo: dv.categoryOptionCombo,
+                        value: dv.value,
+                        comment: dv.comment,
+                    })),
+                };
+            })
+            .value();
+
+        const responses = await promiseMap(dataValueRequests, dataValueRequest => {
+            return this.api.post("dataValueSets", dataValueRequest) as Promise<DataValueResponse>;
+        });
+        const errorResponses = responses.filter(response => response.status !== "SUCCESS");
+
+        if (_(errorResponses).isEmpty()) {
+            return { status: true };
+        } else {
+            return { status: false, error: errorResponses.map(response => response.description) };
+        }
     }
 
     public async getAttributeIdByCode(code: string): Promise<Attribute | undefined> {
@@ -312,5 +404,9 @@ export default class DbD2 {
         };
 
         return dashboardData;
+    }
+
+    public getAnalytics(request: AnalyticsRequest): Promise<AnalyticsResponse> {
+        return this.api.get("/analytics", request) as Promise<AnalyticsResponse>;
     }
 }

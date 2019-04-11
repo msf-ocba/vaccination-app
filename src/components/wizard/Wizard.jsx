@@ -11,7 +11,7 @@ import StepButton from "@material-ui/core/StepButton";
 import Button from "@material-ui/core/Button";
 import { IconButton } from "@material-ui/core";
 import Icon from "@material-ui/core/Icon";
-import { DialogHandler, withSnackbar } from "d2-ui-components";
+import { DialogButton, withSnackbar } from "d2-ui-components";
 
 const styles = theme => ({
     root: {
@@ -145,7 +145,7 @@ class Wizard extends React.Component {
         );
 
         return (
-            <DialogHandler
+            <DialogButton
                 buttonComponent={Button}
                 title={`${step.label} - ${i18n.t("Help")}`}
                 contents={step.help}
