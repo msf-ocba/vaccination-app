@@ -61,15 +61,16 @@ describe("Campaign configuration - Create", () => {
 
         cy.contains("Cholera Intervention Addis 2016");
 
-        cy.contains("Next").click();
-        cy.contains("Cholera Intervention Addis 2016 has an invalid total population value");
-
         cy.get("[test-total-population=0] [aria-label=Edit]").click();
-        cy.get("[test-total-population=0] input").type(1000);
+        cy.get("[test-total-population=0] input")
+            .clear()
+            .type(1000);
 
         cy.get("[test-population-distribution=0] [aria-label=Edit]").click();
         cy.get("[test-population-distribution=0] input").each(($el, idx) => {
-            cy.wrap($el).type(idx + 1);
+            cy.wrap($el)
+                .clear()
+                .type(idx + 1);
         });
         cy.get("#root")
             .contains("Next")
