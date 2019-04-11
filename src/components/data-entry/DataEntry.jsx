@@ -5,9 +5,7 @@ import { withSnackbar } from "d2-ui-components";
 import ReactDOM from "react-dom";
 
 import PageHeader from "../shared/PageHeader";
-// import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/auth";
-// import { list, getDashboardId } from "../../models/datasets";
-// import { goToDhis2Url } from "../../utils/routes";
+import { getOrganisationUnitsById } from "../../models/datasets";
 
 class DataEntry extends React.Component {
     static propTypes = {
@@ -15,53 +13,73 @@ class DataEntry extends React.Component {
         config: PropTypes.object.isRequired,
     };
 
-    // canCreateDataSets = canCreate(this.props.d2, this.props.d2.models.dataSet, "public");
-
     componentDidMount() {
         let iframe = ReactDOM.findDOMNode(this.refs.iframe);
-        console.log(process.env.REACT_APP_DHIS2_BASE_URL);
-        iframe.addEventListener("load", this.setDatasetParameters.bind(this));
+        iframe.addEventListener("load", this.setDatasetParameters.bind(this, iframe));
+
     }
 
-    async setDatasetParameters() {
+    waitforOUSelection(element) {
+        return new Promise(resolve => {
+            var check = () => {
+                if (element.value === "-1") {
+                    resolve();
+                }
+                else {
+                    setTimeout(check, 1000)
+                }
+
+            }
+
+            check()
+        })
+    }
+
+    styleFrame(iframeDocument) {
+        iframeDocument.querySelector(`#header`).remove();
+        iframeDocument.querySelector(`#leftBar`).style.top = '-10px';
+        iframeDocument.querySelector(`body`).style.marginTop = '-55px';
+        iframeDocument.querySelector(`#moduleHeader`).remove();
+    }
+
+    async setDatasetParameters(iframe) {
         const {
             d2,
             match: { params },
         } = this.props;
 
-        const fields = ["id,organisationUnits[id,name]"].join(",");
-        const dataSet = await d2.models.dataSets.get(params.id, { fields });
-        const organisationUnitId = dataSet.organisationUnits.toArray()[0].id;
-        let iframe = ReactDOM.findDOMNode(this.refs.iframe);
-        iframe.contentWindow.selection.select(organisationUnitId);
-        setTimeout(function() {
-            // selection.getSelected()
-            // selection.isBusy()
-            iframe.contentWindow.document.querySelector(
-                `#selectedDataSetId [value="${params.id}"]`
-            ).selected = true;
-            iframe.contentWindow.dataSetSelected();
-        }, 10000);
+        const iframeDocument = iframe.contentWindow.document;
+        const iframeSelection = iframe.contentWindow.selection;
+
+        //Styling
+        this.styleFrame(iframeDocument);
+
+        // Select OU in the tree
+        const organisationUnits = await getOrganisationUnitsById(params.id, d2)
+        iframeSelection.select(organisationUnits);
+
+        // Wait for OU to be selected and select the dataset
+        await this.waitforOUSelection(iframeDocument.querySelector(`#selectedDataSetId`));
+        iframeDocument.querySelector(
+            `#selectedDataSetId [value="${params.id}"]`
+        ).selected = true;
+        iframe.contentWindow.dataSetSelected();
     }
 
-    onCreate = () => {
-        this.props.history.push("/campaign-configuration/new");
-    };
-
-    backHome = () => {
-        this.props.history.push("/");
+    backCampaignConfigurator = () => {
+        this.props.history.push("/campaign-configuration");
     };
 
     render() {
-        // const { d2 } = this.props;
+        console.log(process.env.REACT_APP_DHIS2_BASE_URL);
         return (
             <React.Fragment>
-                <PageHeader title={i18n.t("Data Entry")} onBackClick={this.backHome} />
+                <PageHeader title={i18n.t("Data Entry")} onBackClick={this.backCampaignConfigurator} />
                 <div>
                     <iframe
                         ref="iframe"
                         title={i18n.t("Data Entry")}
-                        src="http://localhost:8080/dhis-web-dataentry/index.action"
+                        src={"/dhis-web-dataentry/index.action"}
                         style={styles.iframe}
                     />
                 </div>

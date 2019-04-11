@@ -67,3 +67,9 @@ export function getDashboardId(dataSet, config) {
         .map(av => av.value)
         .first();
 }
+
+export async function getOrganisationUnitsById(id, d2) {
+    const fields = ["id,organisationUnits[id,name]"].join(",");
+    const dataSet = await d2.models.dataSets.get(id, { fields });
+    return dataSet.organisationUnits.toArray()[0].id;
+}
