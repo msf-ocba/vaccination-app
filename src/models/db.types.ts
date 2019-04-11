@@ -61,8 +61,8 @@ export interface CategoryCombo {
     id: string;
     code: string;
     displayName: string;
-    categories: Category[];
-    categoryOptionCombos: { id: string; name: string; categoryOptions: Ref[] }[];
+    categories: Ref[];
+    categoryOptionCombos: { id: string; name: string }[];
 }
 
 export interface Attribute {
@@ -85,7 +85,7 @@ export interface DataElementGroup {
     id: string;
     code: string;
     displayName: string;
-    dataElements: DataElement[];
+    dataElements: Ref[];
 }
 
 export interface Ref {
