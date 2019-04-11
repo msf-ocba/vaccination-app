@@ -130,7 +130,11 @@ class TargetPopulationComponent extends React.Component<
                                 <CardContent>
                                     <PopulationDistribution
                                         organisationUnitLevels={organisationUnitLevels}
-                                        rowEditing={_(editAgeGroupRow).get("distributionIdx")}
+                                        rowEditing={
+                                            editAgeGroupRow && editAgeGroupRow.ouIndex == ouIndex
+                                                ? editAgeGroupRow.distributionIdx
+                                                : undefined
+                                        }
                                         ageGroups={targetPopulation.ageGroups}
                                         targetPopOu={targetPopOu}
                                         onChange={this.onAgeGroupPopulationChange(ouIndex)}
