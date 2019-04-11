@@ -88,13 +88,13 @@ Only organisation units of level 5 (Health site) can be selected`),
                 validationKeys: ["targetPopulation"],
                 description: i18n.t(
                     `Specify target population, totals and age percentages for the age ranges
-                    required by all selected antigens. The source of those values are the DHIS2
-                    analytics endpoint. Like-wise, any change you make in this step will only be
-                    applied once you run the analytics.
-                    `
+required by all selected antigens. The source of those values are the DHIS2
+analytics endpoint. Like-wise, any change you make in this step will only be
+applied once you run the analytics.`
                 ),
                 help: i18n.t(
-                    `Specify target population, totals and age percentages for the age ranges required by all selected antigens`
+                    `Specify target population, totals and age percentages for the age ranges
+required by all selected antigens`
                 ),
             },
             {
