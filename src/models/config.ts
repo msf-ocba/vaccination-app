@@ -109,7 +109,8 @@ function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
 function getConfigDataElements(
     dataElementGroups: DataElementGroup[],
     dataElements: DataElement[],
-    categoryCombos: CategoryCombo[]
+    categoryCombos: CategoryCombo[],
+    categories: Category[]
 ): MetadataConfig["dataElements"] {
     const groupsByCode = _.keyBy(dataElementGroups, "code");
     const catCombosByCode = _.keyBy(categoryCombos, "code");
@@ -119,12 +120,13 @@ function getConfigDataElements(
     );
 
     return dataElementsForAntigens.map(dataElement => {
-        const getCategories = (typeString: string) => {
+        const getCategories = (typeString: string): Category[] => {
             const code = "RVC_DE_" + dataElement.code + "_" + typeString;
-            return (catCombosByCode[code] || { categories: [] }).categories;
+            const categoryRefs = (catCombosByCode[code] || { categories: [] }).categories;
+            return getFromRefs(categoryRefs, categories);
         };
 
-        const categories = _.concat(
+        const categoriesForAntigens = _.concat(
             getCategories("REQUIRED").map(({ code }) => ({ code, optional: false })),
             getCategories("OPTIONAL").map(({ code }) => ({ code, optional: true }))
         );
@@ -133,7 +135,7 @@ function getConfigDataElements(
             id: dataElement.id,
             name: dataElement.displayName,
             code: dataElement.code,
-            categories,
+            categories: categoriesForAntigens,
         };
     });
 }
@@ -277,7 +279,8 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         dataElements: getConfigDataElements(
             metadata.dataElementGroups,
             metadata.dataElements,
-            metadata.categoryCombos
+            metadata.categoryCombos,
+            metadata.categories
         ),
         antigens: getAntigens(
             metadata.dataElementGroups,
