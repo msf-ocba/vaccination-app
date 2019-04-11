@@ -16,12 +16,15 @@ import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
 import ConfirmationDialog from "../confirmation-dialog/ConfirmationDialog";
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
+import { memoize } from "../../utils/memoize";
+import { withSnackbar } from "d2-ui-components";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         history: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
+        snackbar: PropTypes.object.isRequired,
     };
 
     constructor(props) {
