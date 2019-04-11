@@ -51,7 +51,14 @@ export default class Campaign {
     }
 
     public validate() {
-        const { organisationUnits, name, startDate, endDate, antigens } = this.data;
+        const {
+            organisationUnits,
+            name,
+            startDate,
+            endDate,
+            antigens,
+            antigensDisaggregation,
+        } = this.data;
 
         const allOrgUnitsInAcceptedLevels = _(organisationUnits).every(ou =>
             _(this.selectableLevels).includes(
@@ -96,6 +103,8 @@ export default class Campaign {
                       key: "no_antigens_selected",
                   }
                 : null,
+
+            antigensDisaggregation: antigensDisaggregation.validate(),
         });
     }
 
@@ -186,7 +195,7 @@ export default class Campaign {
     }
 
     public getEnabledAntigensDisaggregation(): AntigenDisaggregationEnabled {
-        return this.antigensDisaggregation.getEnabled(this.antigens);
+        return this.antigensDisaggregation.getEnabled();
     }
 
     /* Save */

@@ -31,10 +31,7 @@ export class DataSetCustomForm {
     constructor(public campaign: Campaign, private metadata: CustomFormMetadata) {}
 
     static async build(campaign: Campaign, db: DbD2): Promise<DataSetCustomForm> {
-        const metadata = await campaign.antigensDisaggregation.getCustomFormMetadata(
-            db,
-            campaign.antigens
-        );
+        const metadata = await campaign.antigensDisaggregation.getCustomFormMetadata(db);
         return new DataSetCustomForm(campaign, metadata);
     }
 
