@@ -9,6 +9,8 @@ import App from "./components/app/App";
 
 import "./locales";
 
+config.schemas = ["dataSet", "organisationUnit"];
+
 function isLangRTL(code) {
     const langs = ["ar", "fa", "ur"];
     const prefixed = langs.map(c => `${c}-`);
