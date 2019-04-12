@@ -1,12 +1,8 @@
-import React, { SFC } from "react";
+import React from "react";
 import _ from "lodash";
 
 import { withStyles } from "@material-ui/core/styles";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
+import { Table, TableBody, TableCell, TableHead, TableRow } from "@material-ui/core";
 import { createStyles, WithStyles, Theme } from "@material-ui/core";
 
 import i18n from "../../../locales";
@@ -70,22 +66,21 @@ class AntigenSection extends React.Component<AntigenSectionProps, Disaggregation
                             </TableCell>
                         </TableRow>,
 
-                        dataElement.selected &&
-                            !_(dataElement.categories).isEmpty() && (
-                                <TableRow key={dataElementIdx + "-dis"}>
-                                    <TableCell colSpan={2}>
-                                        <DataElement
-                                            antigenCode={antigenCode}
-                                            dataElementIdx={dataElementIdx}
-                                            categories={dataElement.categories}
-                                            basePath={[antigenCode, "dataElements", dataElementIdx]}
-                                            update={update}
-                                            isEditing={this.isEditing}
-                                            toggleEdit={this.toggleEdit}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            ),
+                        dataElement.selected && !_(dataElement.categories).isEmpty() && (
+                            <TableRow key={dataElementIdx + "-dis"}>
+                                <TableCell colSpan={2}>
+                                    <DataElement
+                                        antigenCode={antigenCode}
+                                        dataElementIdx={dataElementIdx}
+                                        categories={dataElement.categories}
+                                        basePath={[antigenCode, "dataElements", dataElementIdx]}
+                                        update={update}
+                                        isEditing={this.isEditing}
+                                        toggleEdit={this.toggleEdit}
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        ),
                     ])}
                 </TableBody>
             </Table>

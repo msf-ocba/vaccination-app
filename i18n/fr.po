@@ -1,15 +1,12 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-03-13T12:10:59.421Z\n"
+"POT-Creation-Date: 2019-04-11T10:13:25.271Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-
-msgid "Vaccination"
-msgstr ""
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -92,7 +89,7 @@ msgstr ""
 msgid ""
 "Select the organization units which will implement the campaign.\n"
 "At least one must be selected.\n"
-"Only organisation units of level 6 (service) can be selected"
+"Only organisation units of level 5 (Health site) can be selected"
 msgstr ""
 
 msgid "General info"
@@ -112,6 +109,22 @@ msgid "Indicators Configuration"
 msgstr ""
 
 msgid "Select indicators and categories for each antigen"
+msgstr ""
+
+msgid "Target Population"
+msgstr ""
+
+msgid ""
+"Specify target population, totals and age percentages for the age ranges\n"
+"required by all selected antigens. The source of those values are the DHIS2\n"
+"analytics endpoint. Like-wise, any change you make in this step will only "
+"be\n"
+"applied once you run the analytics."
+msgstr ""
+
+msgid ""
+"Specify target population, totals and age percentages for the age ranges\n"
+"required by all selected antigens"
 msgstr ""
 
 msgid "Save"
@@ -166,6 +179,12 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
+msgid "Total population"
+msgstr ""
+
+msgid "Age distribution (%)"
+msgstr ""
+
 msgid "Period dates"
 msgstr ""
 
@@ -194,4 +213,10 @@ msgid "Field {{field}} cannot be blank if field {{other}} is set"
 msgstr ""
 
 msgid "Select at least one antigen"
+msgstr ""
+
+msgid "You must select at least one option of the category"
+msgstr ""
+
+msgid "No target population defined"
 msgstr ""

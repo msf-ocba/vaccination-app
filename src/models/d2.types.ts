@@ -1,5 +1,4 @@
 import { Dictionary } from "lodash";
-import { Ref } from "./db.types";
 
 export interface D2 {
     Api: {
@@ -8,6 +7,6 @@ export interface D2 {
 }
 
 export interface D2Api {
-    get(url: string, data: Dictionary<any>): Dictionary<any>;
-    post(url: string, data: Dictionary<any>): Dictionary<any>;
+    get(url: string, data: Dictionary<any>): Promise<Dictionary<any>>;
+    post(url: string, data: Dictionary<any>): Promise<Dictionary<any>>;
 }
