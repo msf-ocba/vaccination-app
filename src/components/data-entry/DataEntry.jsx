@@ -13,9 +13,25 @@ class DataEntry extends React.Component {
         config: PropTypes.object.isRequired,
     };
 
-    componentDidMount() {
-        let iframe = ReactDOM.findDOMNode(this.refs.iframe);
-        iframe.addEventListener("load", this.setDatasetParameters.bind(this, iframe));
+    state = {
+        isDataEntryIdValid: true,
+    };
+
+    async componentDidMount() {
+        const {
+            d2,
+            match: { params },
+        } = this.props;
+        const dataSetId = params.id;
+        const organisationUnits = await getOrganisationUnitsById(dataSetId, d2);
+
+        if (organisationUnits) {
+            let iframe = ReactDOM.findDOMNode(this.refs.iframe);
+            iframe.addEventListener("load", this.setDatasetParameters.bind(this, iframe, dataSetId, organisationUnits));
+        } else {
+            this.props.snackbar.error(i18n.t("Cannot find dataset associated to the campaign"));
+            this.setState({ isDataEntryIdValid: false })
+        }
     }
 
     waitforOUSelection(element) {
@@ -39,31 +55,20 @@ class DataEntry extends React.Component {
         iframeDocument.querySelector(`#moduleHeader`).remove();
     }
 
-    async setDatasetParameters(iframe) {
-        const {
-            d2,
-            match: { params },
-        } = this.props;
-
+    async setDatasetParameters(iframe, dataSetId, organisationUnits) {
         const iframeDocument = iframe.contentWindow.document;
-        const iframeSelection = iframe.contentWindow.selection;
-
-        //Styling
         this.styleFrame(iframeDocument);
-
+        
         // Select OU in the tree
-        const organisationUnits = await getOrganisationUnitsById(params.id, d2);
-        if (organisationUnits){
-            iframeSelection.select(organisationUnits);
+        const iframeSelection = iframe.contentWindow.selection;
+        iframeSelection.select(organisationUnits);
 
-            // Wait for OU to be selected and select the dataset
-            await this.waitforOUSelection(iframeDocument.querySelector(`#selectedDataSetId`));
-            iframeDocument.querySelector(`#selectedDataSetId [value="${params.id}"]`).selected = true;
-            iframe.contentWindow.dataSetSelected();
-        }
-        else{
-            this.props.snackbar.error(i18n.t("Cannot find dataset associated to the campaign"));
-        }
+        // Wait for OU to be selected and select the dataset
+        await this.waitforOUSelection(iframeDocument.querySelector(`#selectedDataSetId`));
+        iframeDocument.querySelector(
+            `#selectedDataSetId [value="${dataSetId}"]`
+        ).selected = true;
+        iframe.contentWindow.dataSetSelected();
     }
 
     backCampaignConfigurator = () => {
@@ -71,6 +76,7 @@ class DataEntry extends React.Component {
     };
 
     render() {
+        const { isDataEntryIdValid } = this.state;
         return (
             <React.Fragment>
                 <PageHeader
@@ -78,12 +84,12 @@ class DataEntry extends React.Component {
                     onBackClick={this.backCampaignConfigurator}
                 />
                 <div>
-                    <iframe
+                    {isDataEntryIdValid && <iframe
                         ref="iframe"
                         title={i18n.t("Data Entry")}
                         src={"/dhis-web-dataentry/index.action"}
                         style={styles.iframe}
-                    />
+                    />}
                 </div>
             </React.Fragment>
         );
