@@ -71,9 +71,6 @@ msgstr ""
 msgid "Download data"
 msgstr ""
 
-msgid "Cannot find dashboard associated to the campaign"
-msgstr ""
-
 msgid "Only my campaigns"
 msgstr ""
 
@@ -168,6 +165,12 @@ msgid "Cancel"
 msgstr ""
 
 msgid "Ok"
+msgstr ""
+
+msgid "Cannot find dashboard associated to the campaign"
+msgstr ""
+
+msgid "Cannot find dataset associated to the campaign"
 msgstr ""
 
 msgid "Back"
