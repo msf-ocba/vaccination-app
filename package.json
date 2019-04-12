@@ -88,6 +88,7 @@
         "eslint-plugin-jsx-a11y": "^6.2.0",
         "eslint-plugin-react": "^7.12.4",
         "loglevel": "^1.6.1",
+        "prettier": "1.16.3",
         "prop-types": "^15.6.0",
         "sinon": "^7.1.1",
         "ts-jest": "^23.10.5",
