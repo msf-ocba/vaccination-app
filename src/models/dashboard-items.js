@@ -2,7 +2,7 @@ import _ from "lodash";
 import { generateUid } from "d2/uid";
 
 export const dashboardItemsConfig = {
-    categoryCode: "RVC_ANTIGEN",
+    antigenCategoryCode: "RVC_ANTIGEN",
     tables: {
         vaccines: {
             elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
@@ -20,12 +20,12 @@ export const dashboardItemsConfig = {
             ],
             dataType: "DATA_ELEMENT",
             appendCode: "qsTable",
-            disaggregatedBy: "RVC_TEAM",
+            disaggregatedBy: ["team"],
         },
-        indicator: {
+        indicators: {
             elements: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
             dataType: "INDICATOR",
-            appendCode: "indicatorTable",
+            appendCode: "indicatorsTable",
         },
         campaignCoverage: {
             elements: ["RVC_CAMPAIGN_COVERAGE"],
@@ -40,10 +40,10 @@ export const dashboardItemsConfig = {
             appendCode: "utilizationRateChart",
             type: "LINE",
         },
-        indicator: {
+        indicators: {
             elements: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
             dataType: "INDICATOR",
-            appendCode: "indicatorChart",
+            appendCode: "indicatorsChart",
             type: "COLUMN",
         },
         campaignCoverage: {
@@ -55,8 +55,8 @@ export const dashboardItemsConfig = {
     },
 };
 
-export function buildDashboardItemsCode(datasetId, orgUnitId, antigenId, appendCode) {
-    return [datasetId, orgUnitId, antigenId, appendCode].join("_");
+export function buildDashboardItemsCode(datasetName, orgUnitId, antigenName, appendCode) {
+    return [datasetName, orgUnitId, antigenName, appendCode].join("_");
 }
 
 function getCharts(antigen, elements, organisationUnit, itemsMetadata) {
@@ -75,7 +75,7 @@ function getCharts(antigen, elements, organisationUnit, itemsMetadata) {
         .value();
 }
 
-function getTables(antigen, elements, organisationUnit, itemsMetadata, teamsMetadata) {
+function getTables(antigen, elements, organisationUnit, itemsMetadata, disaggregationMetadata) {
     return _(dashboardItemsConfig.tables)
         .map((c, key) =>
             tableConstructor({
@@ -84,7 +84,10 @@ function getTables(antigen, elements, organisationUnit, itemsMetadata, teamsMeta
                 data: elements[key],
                 appendCode: c.appendCode,
                 organisationUnit,
-                teamsMetadata: c.disaggregatedBy === "RVC_TEAM" ? teamsMetadata : null,
+                teamsMetadata:
+                    c.disaggregatedBy && c.disaggregatedBy.includes("team")
+                        ? disaggregationMetadata.teams(null, organisationUnit)
+                        : null,
                 ...itemsMetadata,
             })
         )
@@ -94,16 +97,14 @@ function getTables(antigen, elements, organisationUnit, itemsMetadata, teamsMeta
 export function buildDashboardItems(
     antigensMeta,
     datasetName,
-    datasetId,
     organisationUnitsMetadata,
     period,
     antigenCategory,
-    teamsMetadata,
+    disaggregationMetadata,
     elements
 ) {
     const itemsMetadata = {
         datasetName,
-        datasetId,
         period,
         antigenCategory,
     };
@@ -116,15 +117,7 @@ export function buildDashboardItems(
     const tables = antigensMeta
         .map(antigen =>
             organisationUnitsMetadata.map(ou =>
-                getTables(
-                    antigen,
-                    elements,
-                    ou,
-                    itemsMetadata,
-                    teamsMetadata[ou.id]
-                        ? { teams: teamsMetadata[ou.id], categoryId: teamsMetadata.categoryId }
-                        : null
-                )
+                getTables(antigen, elements, ou, itemsMetadata, disaggregationMetadata)
             )
         )
         .flat();
@@ -141,7 +134,12 @@ const dataMapper = (dataList, filterList) =>
         }));
 
 export function itemsMetadataConstructor(dashboardItemsMetadata) {
-    const { dataElements, indicators, antigenCategory, teamsMetadata } = dashboardItemsMetadata;
+    const {
+        dataElements,
+        indicators,
+        antigenCategory,
+        disaggregationMetadata,
+    } = dashboardItemsMetadata;
     const { tables, charts } = dashboardItemsConfig;
 
     const tableElements = _(tables)
@@ -164,7 +162,7 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
 
     const dashboardItemsElements = {
         antigenCategory,
-        teamsMetadata,
+        disaggregationMetadata,
         ...tableElements,
         ...chartElements,
     };
@@ -299,13 +297,14 @@ const tableConstructor = ({
     data,
     appendCode,
     organisationUnit,
-    teamsMetadata,
+    teamsMetadata = null,
 }) => {
     const antigenCategoryElement = {
         category: { id: antigenCategory },
         categoryOptions: [{ id: antigen.id }],
     };
-    /// WIP
+
+    /// WIP - Better to adjust this one we are taking into consideration all disaggregation types
     const teamCategoryId = teamsMetadata && teamsMetadata.categoryId;
     const categoryDimensions = teamsMetadata
         ? [
@@ -322,6 +321,7 @@ const tableConstructor = ({
     const columnDimensions = ["dx", teamCategoryId || null];
     const columns = [{ id: "dx" }, teamCategoryId ? { id: teamCategoryId } : null];
     /// WIP
+
     return {
         id,
         name: buildDashboardItemsCode(datasetName, organisationUnit.id, antigen.name, appendCode),

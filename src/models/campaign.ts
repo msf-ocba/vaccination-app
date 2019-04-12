@@ -211,7 +211,6 @@ export default class Campaign {
             this.name,
             this.organisationUnits,
             this.antigens,
-            dataSetId,
             this.startDate,
             this.endDate,
             categoryCodeForTeams

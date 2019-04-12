@@ -208,7 +208,7 @@ export default class DbD2 {
             "/metadata",
             {
                 "categories:fields": "id,categoryOptions[id,code,name]",
-                "categories:filter": `code:in:[${dashboardItemsConfig.categoryCode}]`,
+                "categories:filter": `code:in:[${dashboardItemsConfig.antigenCategoryCode}]`,
                 "dataElements:fields": "id,code",
                 "dataElements:filter": `code:in:[${allDataElementCodes}]`,
                 "indicators:fields": "id,code",
@@ -218,10 +218,14 @@ export default class DbD2 {
             }
         );
 
-        const { id: categoryId } = categories[0];
+        const { id: antigenCategory } = categories[0];
         const antigensMeta = _.filter(categories[0].categoryOptions, op =>
             _.includes(antigenCodes, op.code)
         );
+
+        if (!categoryOptions || !categoryOptions[0].categories) {
+            throw new Error("Organization Units chosen have no teams associated"); // TEMP: Check will be made dynamically on orgUnit selection step
+        }
 
         const teamsByOrgUnit = organisationUnits.reduce((acc, ou) => {
             let teams: string[] = [];
@@ -234,13 +238,13 @@ export default class DbD2 {
             return { ...acc, [ou.id]: teams };
         }, {});
 
-        const teamsMetadata = {
+        const teamsMetadata: Dictionary<any> = {
             ...teamsByOrgUnit,
             categoryId: categoryOptions[0].categories[0].id,
         };
 
         const dashboardMetadata = {
-            antigenCategory: categoryId,
+            antigenCategory,
             dataElements: {
                 type: "DATA_ELEMENT",
                 data: dataElements,
@@ -252,7 +256,12 @@ export default class DbD2 {
                 key: "indicator",
             },
             antigensMeta,
-            teamsMetadata,
+            disaggregationMetadata: {
+                teams: (antigen = null, orgUnit: { id: string }) => ({
+                    categoryId: teamsMetadata.categoryId,
+                    teams: teamsMetadata[orgUnit.id],
+                }),
+            },
         };
 
         return dashboardMetadata;
@@ -262,7 +271,6 @@ export default class DbD2 {
         datasetName: String,
         organisationUnits: OrganisationUnitPathOnly[],
         antigens: Antigen[],
-        datasetId: String,
         startDate: Date | null,
         endDate: Date | null,
         categoryCodeForTeams: string
@@ -272,11 +280,10 @@ export default class DbD2 {
             organisationUnits,
             categoryCodeForTeams
         );
-        /// Remove datesetID if we don't end up using CODE in tables and charts
+
         const dashboardItems = this.createDashboardItems(
             datasetName,
             organisationUnits,
-            datasetId,
             startDate,
             endDate,
             dashboardItemsMetadata
@@ -300,7 +307,6 @@ export default class DbD2 {
     createDashboardItems(
         datasetName: String,
         organisationUnits: OrganisationUnitPathOnly[],
-        datasetId: String,
         startDate: Date | null,
         endDate: Date | null,
         dashboardItemsMetadata: Dictionary<any>
@@ -316,13 +322,13 @@ export default class DbD2 {
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
 
-        const { categoryCode, ...itemsConfig } = dashboardItemsConfig;
+        const { antigenCategoryCode, ...itemsConfig } = dashboardItemsConfig;
         const expectedCharts = _.flatMap(itemsConfig, _.keys);
 
-        const keys = ["antigenCategory", "teamsMetadata", ...expectedCharts] as Array<
+        const keys = ["antigenCategory", "disaggregationMetadata", ...expectedCharts] as Array<
             keyof typeof dashboardItemsElements
         >;
-        const { antigenCategory, teamsMetadata, ...elements } = _(keys)
+        const { antigenCategory, disaggregationMetadata, ...elements } = _(keys)
             .map(key => [key, _(dashboardItemsElements).getOrFail(key)])
             .fromPairs()
             .value();
@@ -330,11 +336,10 @@ export default class DbD2 {
         const dashboardItems = buildDashboardItems(
             antigensMeta,
             datasetName,
-            datasetId,
             organisationUnitsMetadata,
             period,
             antigenCategory,
-            teamsMetadata,
+            disaggregationMetadata,
             elements
         );
         const charts = _(dashboardItems).getOrFail("charts");
