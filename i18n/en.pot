@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-12T12:27:25.671Z\n"
-"PO-Revision-Date: 2019-04-12T12:27:25.671Z\n"
+"POT-Creation-Date: 2019-04-12T14:19:28.624Z\n"
+"PO-Revision-Date: 2019-04-12T14:19:28.624Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -27,12 +27,6 @@ msgid "Public access"
 msgstr ""
 
 msgid "Last updated"
-msgstr ""
-
-msgid "Short name"
-msgstr ""
-
-msgid "Code"
 msgstr ""
 
 msgid "Description"
