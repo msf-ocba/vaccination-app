@@ -445,7 +445,7 @@ export class TargetPopulation {
 
         const populationDistributions = _.mapValues(
             organisationUnitsForAgeDistribution,
-            (ous, campaingOuId) =>
+            (ous, mainOrgUnitId) =>
                 ous.map((ou, distributionIdx) => {
                     const rows = _(rowsByOrgUnit).get(ou.id);
 
@@ -463,11 +463,11 @@ export class TargetPopulation {
                     const ageDistributionWithAllAgeGroups = _(ageGroupsForAllAntigens)
                         .map(ageGroup => {
                             const newValueExisting =
-                                existing[campaingOuId] &&
-                                existing[campaingOuId].populationDistributions[distributionIdx] &&
-                                existing[campaingOuId].populationDistributions[distributionIdx]
+                                existing[mainOrgUnitId] &&
+                                existing[mainOrgUnitId].populationDistributions[distributionIdx] &&
+                                existing[mainOrgUnitId].populationDistributions[distributionIdx]
                                     .ageDistribution[ageGroup]
-                                    ? existing[campaingOuId].populationDistributions[
+                                    ? existing[mainOrgUnitId].populationDistributions[
                                           distributionIdx
                                       ].ageDistribution[ageGroup].newValue
                                     : undefined;
