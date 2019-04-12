@@ -63,7 +63,14 @@ export default class Campaign {
     }
 
     public validate() {
-        const { name, startDate, endDate, antigens, targetPopulation } = this.data;
+        const {
+            name,
+            startDate,
+            endDate,
+            antigens,
+            targetPopulation,
+            antigensDisaggregation,
+        } = this.data;
 
         const validation = {
             name: !name.trim() ? getError("cannot_be_blank", { field: "name" }) : [],
@@ -83,6 +90,8 @@ export default class Campaign {
             targetPopulation: !targetPopulation
                 ? getError("no_target_population_defined")
                 : targetPopulation.validate(),
+
+            antigensDisaggregation: antigensDisaggregation.validate(),
         };
 
         return validation;
@@ -191,7 +200,7 @@ export default class Campaign {
     }
 
     public getEnabledAntigensDisaggregation(): AntigenDisaggregationEnabled {
-        return this.antigensDisaggregation.getEnabled(this.antigens);
+        return this.antigensDisaggregation.getEnabled();
     }
 
     /* Target population */

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-11T09:12:34.258Z\n"
-"PO-Revision-Date: 2019-04-11T09:12:34.258Z\n"
+"POT-Creation-Date: 2019-04-11T10:13:25.271Z\n"
+"PO-Revision-Date: 2019-04-11T10:13:25.271Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -212,6 +212,9 @@ msgid "Field {{field}} cannot be blank if field {{other}} is set"
 msgstr ""
 
 msgid "Select at least one antigen"
+msgstr ""
+
+msgid "You must select at least one option of the category"
 msgstr ""
 
 msgid "No target population defined"
