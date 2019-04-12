@@ -13,20 +13,19 @@ class Dashboard extends React.Component {
         config: PropTypes.object.isRequired,
     };
 
-
     state = {
-        iFrameSrc: ""
+        iFrameSrc: "",
     };
 
     async componentDidMount() {
         const dashboardURL = await this.getDashboardURL();
-        console.log(dashboardURL)
+        console.log(dashboardURL);
         this.setState({ iFrameSrc: dashboardURL });
     }
 
     componentDidUpdate() {
         const { iFrameSrc } = this.state;
-        if (iFrameSrc){
+        if (iFrameSrc) {
             let iframe = ReactDOM.findDOMNode(this.refs.iframe);
             iframe.addEventListener("load", this.setDashboardStyling.bind(this, iframe));
         }
@@ -49,10 +48,10 @@ class Dashboard extends React.Component {
     async setDashboardStyling(iframe) {
         const iframeDocument = iframe.contentWindow.document;
 
-        await this.waitforDashboardToLoad(iframeDocument)
-        let iFrameRoot = iframeDocument.querySelector(`#root`)
+        await this.waitforDashboardToLoad(iframeDocument);
+        let iFrameRoot = iframeDocument.querySelector(`#root`);
         iFrameRoot.style.marginTop = "-110px";
-        let iFrameWrapper = iframeDocument.querySelector(`.app-wrapper`)
+        let iFrameWrapper = iframeDocument.querySelector(`.app-wrapper`);
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
     }
@@ -65,19 +64,18 @@ class Dashboard extends React.Component {
         const {
             d2,
             match: { params },
-            config
+            config,
         } = this.props;
-        const dataSet = await getDatasetById(params.id, d2)
+        const dataSet = await getDatasetById(params.id, d2);
         const dashboardId = getDashboardId(dataSet, config);
         if (dashboardId) {
             return `/dhis-web-dashboard/#/${dashboardId}`;
         } else {
             this.props.snackbar.error(i18n.t("Cannot find dashboard associated to the campaign"));
         }
-    };
+    }
 
     render() {
-
         const { iFrameSrc } = this.state;
         return (
             <React.Fragment>
@@ -86,12 +84,14 @@ class Dashboard extends React.Component {
                     onBackClick={this.backCampaignConfigurator}
                 />
                 <div>
-                    {iFrameSrc && <iframe
-                        ref="iframe"
-                        title={i18n.t("Dashboard")}
-                        src={iFrameSrc}
-                        style={styles.iframe}
-                    />}
+                    {iFrameSrc && (
+                        <iframe
+                            ref="iframe"
+                            title={i18n.t("Dashboard")}
+                            src={iFrameSrc}
+                            style={styles.iframe}
+                        />
+                    )}
                 </div>
             </React.Fragment>
         );
