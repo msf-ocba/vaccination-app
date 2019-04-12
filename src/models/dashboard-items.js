@@ -96,12 +96,10 @@ export function buildDashboardItems(
 }
 
 const dataMapper = (dataList, filterList) =>
-    dataList.data
-        .filter(({ code }) => _.includes(filterList, code))
-        .map(({ id }) => ({
-            dataDimensionItemType: dataList.type,
-            [dataList.key]: { id },
-        }));
+    dataList.data.filter(({ code }) => _.includes(filterList, code)).map(({ id }) => ({
+        dataDimensionItemType: dataList.type,
+        [dataList.key]: { id },
+    }));
 
 export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const { dataElements, indicators, antigenCategory } = dashboardItemsMetadata;

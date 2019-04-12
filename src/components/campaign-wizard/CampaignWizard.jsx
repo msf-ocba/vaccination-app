@@ -51,11 +51,9 @@ class CampaignWizard extends React.Component {
                 component: OrganisationUnitsStep,
                 validationKeys: ["organisationUnits"],
                 description: i18n.t(
-                    `Select the organization units which will implement the campaign`
+                    `Select the health facilities or health area where the campaign will be implemented`
                 ),
-                help: i18n.t(`Select the organization units which will implement the campaign.
-At least one must be selected.
-Only organisation units of level 5 (Health site) can be selected`),
+                help: i18n.t(`Select the organization units which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`),
             },
             {
                 key: "general-info",
@@ -66,7 +64,8 @@ Only organisation units of level 5 (Health site) can be selected`),
                     `Name your campaign and choose dates for which data entry will be enabled`
                 ),
                 help: i18n.t(
-                    `Name your campaign and choose dates for which data entry will be enabled`
+                    `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format: REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH_YEAR\n
+                    The start and end date should define the period for which you expect to enter data - i.e .the first and last day of your campaign. If you are not certain of the end date, enter a date a few weeks later than the expected date of completion (refer to your microplan). It is possible to edit the dates at any point.`
                 ),
             },
             {
@@ -75,16 +74,17 @@ Only organisation units of level 5 (Health site) can be selected`),
                 component: AntigenSelectionStep,
                 validationKeys: ["antigens"],
                 description: i18n.t(`Select the antigens which will be administered`),
-                help: i18n.t(`Select the antigens which will be administered`),
+                help: i18n.t(`Select the antigens which will be administered.`),
             },
             {
                 key: "disaggregation",
-                label: i18n.t("Indicators Configuration"),
+                label: i18n.t("Configure Indicators"),
                 component: DisaggregationStep,
                 validationKeys: ["antigensDisaggregation"],
                 validationKeysLive: ["antigensDisaggregation"],
                 description: i18n.t(`Select indicators and categories for each antigen`),
-                help: i18n.t(`Select indicators and categories for each antigen`),
+                help: i18n.t(`Select the indicators and breakdowns that you wish to monitor for each antigen in your campaign.\n
+                Standard age groups for each antigen appear by default. In some cases, you may click on an age group to select subdivisions if that information is important for your campaign. Compulsory indicators may not be un-selected.`),
             },
             {
                 key: "target-population",
@@ -92,14 +92,10 @@ Only organisation units of level 5 (Health site) can be selected`),
                 component: TargetPopulationStep,
                 validationKeys: ["targetPopulation"],
                 description: i18n.t(
-                    `Specify target population, totals and age percentages for the age ranges
-required by all selected antigens. The source of those values are the DHIS2
-analytics endpoint. Like-wise, any change you make in this step will only be
-applied once you run the analytics.`
+                    `Specify target population, totals and age percentages for the age ranges required by all selected antigens. The source of those values are the DHIS2 analytics endpoint. Like-wise, any change you make in this step will only be applied once you run the analytics.`
                 ),
                 help: i18n.t(
-                    `Specify target population, totals and age percentages for the age ranges
-required by all selected antigens`
+                    `Specify target population, totals and age percentages for the age ranges required by all selected antigens.`
                 ),
             },
             {
@@ -107,9 +103,9 @@ required by all selected antigens`
                 label: i18n.t("Save"),
                 component: SaveStep,
                 validationKeys: [],
-                description: i18n.t("Setup is finished. Press the button Save to save the data"),
+                description: i18n.t("Setup of your campaign is complete. Click the \"Save\" button to save your campaign and access tally sheets, data entry or analysis"),
                 help: i18n.t(`Press the button to create the \
-dataset and all the metadata associated with this vaccination campaign`),
+dataset and all the metadata associated with this vaccination campaign.`),
             },
         ];
     }
