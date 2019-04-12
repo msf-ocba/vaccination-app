@@ -53,12 +53,17 @@ class DataEntry extends React.Component {
 
         // Select OU in the tree
         const organisationUnits = await getOrganisationUnitsById(params.id, d2);
-        iframeSelection.select(organisationUnits);
+        if (organisationUnits){
+            iframeSelection.select(organisationUnits);
 
-        // Wait for OU to be selected and select the dataset
-        await this.waitforOUSelection(iframeDocument.querySelector(`#selectedDataSetId`));
-        iframeDocument.querySelector(`#selectedDataSetId [value="${params.id}"]`).selected = true;
-        iframe.contentWindow.dataSetSelected();
+            // Wait for OU to be selected and select the dataset
+            await this.waitforOUSelection(iframeDocument.querySelector(`#selectedDataSetId`));
+            iframeDocument.querySelector(`#selectedDataSetId [value="${params.id}"]`).selected = true;
+            iframe.contentWindow.dataSetSelected();
+        }
+        else{
+            this.props.snackbar.error(i18n.t("Cannot find dataset associated to the campaign"));
+        }
     }
 
     backCampaignConfigurator = () => {

@@ -72,7 +72,7 @@ class CampaignConfigurator extends React.Component {
         {
             name: "dataEntry",
             icon: "library_books",
-            // isActive: (d2, dataSet) => canUpdate(d2, d2.models.dataSet, [dataSet]),
+            // TODO: isActive: (d2, dataSet) => canUpdate(d2, d2.models.dataSet, [dataSet]),
             text: i18n.t("Go to Data Entry"),
             multiple: false,
             onClick: dataSet => this.props.history.push(`/data-entry/${dataSet.id}`),
