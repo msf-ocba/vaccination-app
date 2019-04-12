@@ -85,11 +85,12 @@ describe("Campaign configuration - Create", () => {
                     "MSF-OCBA-ANGOLA-HUAMBO, Malaria outbreak-Hospital central de Huambo-Paediatric Ward",
                 ].join(", ")
         );
+        cy.route("POST", "/api/metadata").as("metadataRequest");
 
         cy.get("[data-wizard-contents] button")
             .contains("Save")
             .click();
-
+        cy.wait("@metadataRequest");
         cy.contains("Campaign created: Test vaccination campaign");
     });
 });
