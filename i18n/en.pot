@@ -217,5 +217,8 @@ msgstr ""
 msgid "Select at least one antigen"
 msgstr ""
 
+msgid "You must select at least one option of the category"
+msgstr ""
+
 msgid "No target population defined"
 msgstr ""

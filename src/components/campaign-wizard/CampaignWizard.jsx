@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { withRouter } from "react-router";
+import _ from "lodash";
 
 import Campaign from "models/campaign";
 import DbD2 from "models/db-d2";
@@ -15,6 +16,8 @@ import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
 import ConfirmationDialog from "../confirmation-dialog/ConfirmationDialog";
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
+import { memoize } from "../../utils/memoize";
+import { withSnackbar } from "d2-ui-components";
 import TargetPopulationStep from "../steps/target-population/TargetPopulationStep";
 
 class CampaignWizard extends React.Component {
@@ -22,6 +25,7 @@ class CampaignWizard extends React.Component {
         d2: PropTypes.object.isRequired,
         history: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
+        snackbar: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -77,7 +81,8 @@ Only organisation units of level 5 (Health site) can be selected`),
                 key: "disaggregation",
                 label: i18n.t("Indicators Configuration"),
                 component: DisaggregationStep,
-                validationKeys: [],
+                validationKeys: ["antigensDisaggregation"],
+                validationKeysLive: ["antigensDisaggregation"],
                 description: i18n.t(`Select indicators and categories for each antigen`),
                 help: i18n.t(`Select indicators and categories for each antigen`),
             },
@@ -122,9 +127,14 @@ dataset and all the metadata associated with this vaccination campaign`),
         this.setState({ dialogOpen: false });
     };
 
-    onChange = campaign => {
-        this.setState({ campaign });
-    };
+    onChange = memoize(step => campaign => {
+        const errors = getValidationMessages(campaign, step.validationKeysLive || []);
+        if (_(errors).isEmpty()) {
+            this.setState({ campaign });
+        } else {
+            this.props.snackbar.error(errors.join("\n"));
+        }
+    });
 
     onStepChangeRequest = currentStep => {
         return getValidationMessages(this.state.campaign, currentStep.validationKeys);
@@ -140,7 +150,7 @@ dataset and all the metadata associated with this vaccination campaign`),
             props: {
                 d2,
                 campaign,
-                onChange: this.onChange,
+                onChange: this.onChange(step),
             },
         }));
 
@@ -176,4 +186,4 @@ dataset and all the metadata associated with this vaccination campaign`),
     }
 }
 
-export default withRouter(CampaignWizard);
+export default withSnackbar(withRouter(CampaignWizard));

@@ -12,6 +12,9 @@ const translations = {
 
     no_antigens_selected: () => i18n.t("Select at least one antigen"),
 
+    select_at_least_one_option_for_category: () =>
+        i18n.t("You must select at least one option of the category"),
+
     no_target_population_defined: () => i18n.t("No target population defined"),
     total_population_invalid: namespace =>
         i18n.t(
@@ -33,6 +36,8 @@ const translations = {
 };
 
 export function getValidationMessages(campaign, validationKeys) {
+    if (_(validationKeys).isEmpty()) return [];
+
     const validationObj = campaign.validate();
 
     return _(validationObj)
@@ -44,7 +49,7 @@ export function getValidationMessages(campaign, validationKeys) {
             if (translation) {
                 return i18n.t(translation(error.namespace));
             } else {
-                return `Missing translations: ${error.key}`;
+                return `Missing translation: ${error.key}`;
             }
         })
         .value();

@@ -31,7 +31,6 @@ export class DataSetCustomForm {
 
     static async build(campaign: Campaign): Promise<DataSetCustomForm> {
         const metadata = await campaign.antigensDisaggregation.getCustomFormMetadata(
-            campaign.antigens,
             campaign.config.categoryCombos
         );
         return new DataSetCustomForm(campaign, metadata);

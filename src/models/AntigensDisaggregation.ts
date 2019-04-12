@@ -1,5 +1,6 @@
 import { DataElement, CategoryCombo } from "./db.types";
 import _, { Dictionary } from "lodash";
+const fp = require("lodash/fp");
 import { AntigenDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig } from "./config";
 import { Antigen } from "./campaign";
@@ -55,35 +56,52 @@ export type CustomFormMetadata = {
 };
 
 type AntigensDisaggregationData = {
-    [code: string]: AntigenDisaggregation;
+    antigens: Antigen[];
+    disaggregation: { [code: string]: AntigenDisaggregation };
 };
 
 export class AntigensDisaggregation {
     constructor(private config: MetadataConfig, public data: AntigensDisaggregationData) {}
 
     static build(config: MetadataConfig, antigens: Antigen[]): AntigensDisaggregation {
-        const initial = new AntigensDisaggregation(config, {});
+        const initial = new AntigensDisaggregation(config, { antigens: [], disaggregation: {} });
         return initial.setAntigens(antigens);
     }
 
     public setAntigens(antigens: Antigen[]): AntigensDisaggregation {
-        const disaggregationByCode = _.keyBy(this.data, "code");
-        const dataUpdated = _(antigens)
+        const disaggregationByCode = _.keyBy(this.data.disaggregation, "code");
+        const disaggregationUpdated = _(antigens)
             .keyBy("code")
             .mapValues(
                 antigen => disaggregationByCode[antigen.code] || this.buildForAntigen(antigen.code)
             )
             .value();
+        const dataUpdated = { antigens, disaggregation: disaggregationUpdated };
         return new AntigensDisaggregation(this.config, dataUpdated);
     }
 
     public forAntigen(antigen: Antigen): AntigenDisaggregation | undefined {
-        return this.data[antigen.code];
+        return this.data.disaggregation[antigen.code];
     }
 
     public set(path: (number | string)[], value: any): AntigensDisaggregation {
-        const dataUpdated = _.set(this.data, path, value);
+        const dataUpdated = fp.set(["disaggregation", ...path], value, this.data);
         return new AntigensDisaggregation(this.config, dataUpdated);
+    }
+
+    public validate(): Array<{ key: string; namespace: object }> {
+        const errors = _(this.getEnabled())
+            .flatMap(antigen => antigen.dataElements)
+            .flatMap(dataElement => dataElement.categories)
+            .map(category =>
+                _(category.categoryOptions).isEmpty()
+                    ? { key: "select_at_least_one_option_for_category", namespace: {} }
+                    : null
+            )
+            .compact()
+            .value();
+
+        return errors;
     }
 
     static getCategories(
@@ -117,8 +135,8 @@ export class AntigensDisaggregation {
         });
     }
 
-    getEnabled(antigens: Antigen[]): AntigenDisaggregationEnabled {
-        const antigenDisaggregations = _(antigens)
+    getEnabled(): AntigenDisaggregationEnabled {
+        const antigenDisaggregations = _(this.data.antigens)
             .map(this.forAntigen.bind(this))
             .compact()
             .value();
@@ -203,10 +221,9 @@ export class AntigensDisaggregation {
     }
 
     public async getCustomFormMetadata(
-        antigens: Antigen[],
         categoryCombos: CategoryCombo[]
     ): Promise<CustomFormMetadata> {
-        const data = _.flatMap(this.getEnabled(antigens), ({ dataElements, antigen }) => {
+        const data = _.flatMap(this.getEnabled(), ({ dataElements, antigen }) => {
             return dataElements.map(({ code, categories }) => ({
                 antigenCode: antigen.code,
                 dataElementCode: code,
