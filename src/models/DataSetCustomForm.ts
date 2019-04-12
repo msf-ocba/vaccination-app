@@ -98,14 +98,87 @@ export class DataSetCustomForm {
     renderDataElement(
         antigen: Antigen,
         deDis: DataElementDis,
-        categoryOptionGroups: string[][]
+        categoryOptionGroups: string[][],
+        idx: number
     ): string {
-        return h("tr", {}, [
+        const trClass = ["derow", `de-${deDis.id}`, idx === 0 ? "primary" : "secondary"].join(" ");
+
+        return h("tr", { class: trClass }, [
             h("td", { class: "data-element" }, deDis.name),
             ..._.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
                 h("td", {}, this.getCocId(antigen, deDis, categoryOptionNames))
             ),
         ]);
+    }
+
+    getDataElementByCategoryOptionsLists(dataElements: DataElementDis[]) {
+        return _(sortDataElements(dataElements))
+            .groupBy(({ categories }) =>
+                categories.map(category => [category.code, ...category.categoryOptions])
+            )
+            .values()
+            .map(dataElementsGroup => {
+                const categoryOptionGroups = _(dataElementsGroup[0].categories)
+                    .map(cat => cat.categoryOptions)
+                    .value();
+
+                // Tables may be too wide to fit in the screen, so here we return a second
+                // group of tables (one table per category option) to reduce the width.
+                // On dataentry render, JS code (processWideTables) -run in the client-
+                // will show only the table that better fits the viewport.
+
+                return {
+                    dataElements: dataElementsGroup,
+                    categoryOptionGroupsList: _.compact([
+                        [categoryOptionGroups],
+                        _(categoryOptionGroups).isEmpty()
+                            ? null
+                            : categoryOptionGroups[0].map(group => [
+                                  [group],
+                                  ..._.tail(categoryOptionGroups),
+                              ]),
+                    ]),
+                };
+            })
+            .value();
+    }
+
+    renderGroupWrapper(
+        antigen: Antigen,
+        data: {
+            dataElements: DataElementDis[];
+            categoryOptionGroupsList: string[][][][];
+        }
+    ) {
+        const { dataElements, categoryOptionGroupsList } = data;
+
+        return h(
+            "div",
+            { class: "tableGroupWrapper" },
+            _.flatMap(categoryOptionGroupsList, categoryOptionGroupsArray =>
+                h(
+                    "div",
+                    { class: "tableGroup" },
+                    categoryOptionGroupsArray.map((categoryOptionGroups, idx) =>
+                        h("table", { class: "dataValuesTable" }, [
+                            h("thead", {}, this.renderHeaderForGroup(categoryOptionGroups)),
+                            h(
+                                "tbody",
+                                {},
+                                dataElements.map(dataElement =>
+                                    this.renderDataElement(
+                                        antigen,
+                                        dataElement,
+                                        categoryOptionGroups,
+                                        idx
+                                    )
+                                )
+                            ),
+                        ])
+                    )
+                )
+            )
+        );
     }
 
     renderAntigen(disaggregation: Disaggregations[0]): string {
@@ -119,20 +192,6 @@ export class DataSetCustomForm {
             { title: i18n.t("Doses administered"), dataElements: dosesDataElements },
             { title: i18n.t("Quality and safety indicators"), dataElements: otherDataElements },
         ];
-
-        const dataElementByCategoryOptions = (dataElements: DataElementDis[]) =>
-            _(sortDataElements(dataElements))
-                .groupBy(({ categories }) =>
-                    categories.map(category => [category.code, ...category.categoryOptions])
-                )
-                .values()
-                .map(group => {
-                    const categoryOptionGroups = _(group[0].categories)
-                        .map(cat => cat.categoryOptions)
-                        .value();
-                    return { dataElements: group, categoryOptionGroups };
-                })
-                .value();
 
         return h(
             "div",
@@ -149,22 +208,8 @@ export class DataSetCustomForm {
                     h(
                         "div",
                         { class: "formSection sectionContainer" },
-                        dataElementByCategoryOptions(dataElements).map(
-                            ({ categoryOptionGroups, dataElements }) =>
-                                h("table", { class: "sectionTable" }, [
-                                    h("thead", {}, this.renderHeaderForGroup(categoryOptionGroups)),
-                                    h(
-                                        "tbody",
-                                        {},
-                                        dataElements.map(deDis =>
-                                            this.renderDataElement(
-                                                disaggregation.antigen,
-                                                deDis,
-                                                categoryOptionGroups
-                                            )
-                                        )
-                                    ),
-                                ])
+                        _.flatMap(this.getDataElementByCategoryOptionsLists(dataElements), data =>
+                            this.renderGroupWrapper(disaggregation.antigen, data)
                         )
                     ),
                 ])
@@ -220,7 +265,83 @@ export class DataSetCustomForm {
 }
 
 const script = `
-   $("#tabs").tabs();
+    var processWideTables = function() {
+        const contentWidth = $(window).width() - $("#orgUnitTreeContainer").width();
+
+        $(".tableGroupWrapper")
+            .get()
+            .forEach(tableGroupWrapper => {
+                const tableGroups = $(tableGroupWrapper)
+                    .find(".tableGroup")
+                    .get();
+
+                if (tableGroups.length <= 1) return;
+
+                /* Show contents temporally so we can get actual rendered width of tables */
+
+                $("#contentDiv").show();
+                const groups = _.chain(tableGroups)
+                    .map(tableGroup => ({
+                        element: tableGroup,
+                        width: $(tableGroup)
+                            .find("table:first-child tr:first-child th")
+                            .get()
+                            .map(th => $(th).width())
+                            .reduce((acc, w) => acc + w, 0),
+                    }))
+                    .sortBy(group => group.width)
+                    .reverse()
+                    .value();
+                $("#contentDiv").hide();
+
+                const groupToShow = groups.find(group => group.width <= contentWidth) || groups[0];
+
+                tableGroups.forEach(tableGroup => {
+                    if (tableGroup !== groupToShow.element) {
+                        $(tableGroup).remove();
+                    }
+                });
+            });
+    };
+
+    var highlightDataElementRows = function() {
+        var setClass = function(ev, className, isActive) {
+            var tr = $(ev.currentTarget);
+            var de_class = (tr.attr("class") || "")
+                .split(" ")
+                .filter(cl => cl.startsWith("de-"))[0];
+            if (de_class) {
+                var deId = de_class.split("-")[1];
+                var el = $(".de-" + deId);
+                el.toggleClass(className, isActive);
+                if (tr.hasClass("secondary")) {
+                    var opacity = isActive ? 1 : 0;
+                    tr.find(".data-element")
+                        .clearQueue()
+                        .delay(500)
+                        .animate({ opacity: opacity }, 100);
+                }
+            }
+        };
+
+        $("tr.derow")
+            .mouseover(ev => setClass(ev, "hover", true))
+            .mouseout(ev => setClass(ev, "hover", false))
+            .focusin(ev => setClass(ev, "focus", true))
+            .focusout(ev => setClass(ev, "focus", false));
+    };
+
+    var applyChangesToForm = function() {
+        highlightDataElementRows();
+        processWideTables();
+        $("#tabs").tabs();
+    };
+
+    var init = function() {
+        $(document).on("dhis2.de.event.formLoaded", applyChangesToForm);
+    }
+
+    init();
 `;
 
 const css = `
@@ -283,18 +404,19 @@ const css = `
 
     #contentDiv tr {
         border-color: transparent;
+        transition: background-color 500ms linear;
     }
 
     #contentDiv tr.derow {
         background-color: #FFF;
     }
 
-    #contentDiv tr.focus {
-        background-color: #e5f5e5;
-    }
-
     #contentDiv tr.hover, #contentDiv tr:hover {
         background-color: #e5e5e5;
+    }
+
+    #contentDiv tr.focus {
+        background-color: #e5f5e5;
     }
 
     #contentDiv th {
@@ -316,6 +438,7 @@ const css = `
 
     #contentDiv tr.secondary td.data-element {
         font-style: italic;
+        opacity: 0;
     }
 
     #contentDiv .header-first-column {
@@ -359,7 +482,7 @@ const css = `
         background-color: #2f3867;
     }
 
-    #contentDiv .sectionTable {
+    #contentDiv .dataValuesTable {
         margin-bottom: 0px !important;
         margin-top: 5px;
     }
