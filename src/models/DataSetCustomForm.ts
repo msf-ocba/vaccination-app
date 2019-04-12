@@ -4,11 +4,14 @@ const { createElement } = require("typed-html");
 import Campaign, { Antigen } from "./campaign";
 import { AntigenDisaggregationEnabled, CustomFormMetadata } from "./AntigensDisaggregation";
 import "../utils/lodash-mixins";
+import i18n from "../locales";
 
 type Children = string[];
 
 type Disaggregations = AntigenDisaggregationEnabled;
 type DataElementDis = Disaggregations[0]["dataElements"][0];
+
+const dataElementCodeDosesRegexp = /DOSES/;
 
 function h(tagName: string, attributes: object, children: string | string[]) {
     const attrs = Object.keys(attributes).length === 0 ? undefined : attributes;
@@ -18,7 +21,7 @@ function h(tagName: string, attributes: object, children: string | string[]) {
 
 function sortDataElements(dataElements: DataElementDis[]): DataElementDis[] {
     return _(dataElements)
-        .orderBy([de => de.code.match(/DOSES/), "code"], ["asc", "asc"])
+        .orderBy([de => de.code.match(dataElementCodeDosesRegexp), "code"], ["asc", "asc"])
         .value();
 }
 
@@ -106,20 +109,30 @@ export class DataSetCustomForm {
     }
 
     renderAntigen(disaggregation: Disaggregations[0]): string {
-        const { antigen, dataElements } = disaggregation;
+        const { antigen, dataElements: allDataElements } = disaggregation;
 
-        const groups = _(sortDataElements(dataElements))
-            .groupBy(({ categories }) =>
-                categories.map(category => [category.code, ...category.categoryOptions])
-            )
-            .values()
-            .map(group => {
-                const categoryOptionGroups = _(group[0].categories)
-                    .map(cat => cat.categoryOptions)
-                    .value();
-                return { dataElements: group, categoryOptionGroups };
-            })
-            .value();
+        const [dosesDataElements, otherDataElements] = _.partition(allDataElements, de =>
+            de.code.match(dataElementCodeDosesRegexp)
+        );
+
+        const groups = [
+            { title: i18n.t("Doses administered"), dataElements: dosesDataElements },
+            { title: i18n.t("Quality and safety indicators"), dataElements: otherDataElements },
+        ];
+
+        const dataElementByCategoryOptions = (dataElements: DataElementDis[]) =>
+            _(sortDataElements(dataElements))
+                .groupBy(({ categories }) =>
+                    categories.map(category => [category.code, ...category.categoryOptions])
+                )
+                .values()
+                .map(group => {
+                    const categoryOptionGroups = _(group[0].categories)
+                        .map(cat => cat.categoryOptions)
+                        .value();
+                    return { dataElements: group, categoryOptionGroups };
+                })
+                .value();
 
         return h(
             "div",
@@ -130,23 +143,31 @@ export class DataSetCustomForm {
             },
             h(
                 "div",
-                { class: "formSection sectionContainer" },
-                groups.map(group =>
-                    h("table", { class: "sectionTable" }, [
-                        h("thead", {}, this.renderHeaderForGroup(group.categoryOptionGroups)),
-                        h(
-                            "tbody",
-                            {},
-                            group.dataElements.map(deDis =>
-                                this.renderDataElement(
-                                    disaggregation.antigen,
-                                    deDis,
-                                    group.categoryOptionGroups
-                                )
-                            )
-                        ),
-                    ])
-                )
+                {},
+                _.flatMap(groups, ({ title, dataElements }) => [
+                    h("div", { class: "dataelement-group" }, title),
+                    h(
+                        "div",
+                        { class: "formSection sectionContainer" },
+                        dataElementByCategoryOptions(dataElements).map(
+                            ({ categoryOptionGroups, dataElements }) =>
+                                h("table", { class: "sectionTable" }, [
+                                    h("thead", {}, this.renderHeaderForGroup(categoryOptionGroups)),
+                                    h(
+                                        "tbody",
+                                        {},
+                                        dataElements.map(deDis =>
+                                            this.renderDataElement(
+                                                disaggregation.antigen,
+                                                deDis,
+                                                categoryOptionGroups
+                                            )
+                                        )
+                                    ),
+                                ])
+                        )
+                    ),
+                ])
             )
         );
     }
@@ -260,6 +281,10 @@ const css = `
         padding: 2px;
     }
 
+    #contentDiv tr {
+        border-color: transparent;
+    }
+
     #contentDiv tr.derow {
         background-color: #FFF;
     }
@@ -294,7 +319,7 @@ const css = `
     }
 
     #contentDiv .header-first-column {
-        backgroud-color: #e0e0e0;
+        background-color: #e0e0e0;
         text-align: left;
         border-bottom-style: hidden;
         border-left-style: hidden;
@@ -348,5 +373,12 @@ const css = `
         border-collapse: collapse;
         border-bottom: 1px solid #cad5e5;
         min-height: 28px;
+    }
+
+    .dataelement-group {
+        color: #544;
+        font-size: 1.2em;
+        font-weight: bold;
+        margin: 5px 0px;
     }
 `;
