@@ -93,11 +93,10 @@ export class AntigensDisaggregation {
         const errors = _(this.getEnabled())
             .flatMap(antigen => antigen.dataElements)
             .flatMap(dataElement => dataElement.categories)
-            .map(
-                category =>
-                    _(category.categoryOptions).isEmpty()
-                        ? { key: "select_at_least_one_option_for_category", namespace: {} }
-                        : null
+            .map(category =>
+                _(category.categoryOptions).isEmpty()
+                    ? { key: "select_at_least_one_option_for_category", namespace: {} }
+                    : null
             )
             .compact()
             .value();

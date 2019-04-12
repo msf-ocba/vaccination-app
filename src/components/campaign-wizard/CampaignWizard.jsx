@@ -53,7 +53,9 @@ class CampaignWizard extends React.Component {
                 description: i18n.t(
                     `Select the health facilities or health area where the campaign will be implemented`
                 ),
-                help: i18n.t(`Select the organization units which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`),
+                help: i18n.t(
+                    `Select the organization units which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
+                ),
             },
             {
                 key: "general-info",
@@ -103,7 +105,9 @@ class CampaignWizard extends React.Component {
                 label: i18n.t("Save"),
                 component: SaveStep,
                 validationKeys: [],
-                description: i18n.t("Setup of your campaign is complete. Click the \"Save\" button to save your campaign and access tally sheets, data entry or analysis"),
+                description: i18n.t(
+                    'Setup of your campaign is complete. Click the "Save" button to save your campaign and access tally sheets, data entry or analysis'
+                ),
                 help: i18n.t(`Press the button to create the \
 dataset and all the metadata associated with this vaccination campaign.`),
             },

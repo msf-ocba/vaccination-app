@@ -253,13 +253,3 @@ msgstr "Debes seleccionar al menos una opción de la categoría"
 
 msgid "No target population defined"
 msgstr "Población objetivo no definida"
-
-#~ msgid "Select the organization units which will implement the campaign"
-#~ msgstr "Seleccione las unidades organizativas asignadas a esta campaña"
-
-#~ msgid "Indicators Configuration"
-#~ msgstr "Configuración de indicadores"
-
-#~ msgid "Setup is finished. Press the button Save to save the data"
-#~ msgstr ""
-#~ "La configuración ha terminado. Pulse el botón para guardar los datos"
