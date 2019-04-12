@@ -149,7 +149,8 @@ export class TargetPopulation {
 
     public async update(
         orgUnitsPathOnly: OrganisationUnitPathOnly[],
-        antigensDisaggregation: AntigenDisaggregationEnabled
+        antigensDisaggregation: AntigenDisaggregationEnabled,
+        period: string
     ): Promise<TargetPopulation> {
         const ouIds = orgUnitsPathOnly.map(ou => ou.id);
         const ageGroupsForAllAntigens = _(antigensDisaggregation)
@@ -163,10 +164,11 @@ export class TargetPopulation {
             organisationUnits: { filters: [`id:in:[${ouIds}]`] },
         });
 
-        const totalPopulationsByOrgUnit = await this.getTotalPopulation(organisationUnits);
+        const totalPopulationsByOrgUnit = await this.getTotalPopulation(organisationUnits, period);
         const ageDistributionByOrgUnit = await this.getPopulationDistributions(
             organisationUnits,
-            ageGroupsForAllAntigens
+            ageGroupsForAllAntigens,
+            period
         );
 
         const targetPopulationList: TargetPopulationItem[] = organisationUnits.map(orgUnit => {
@@ -331,7 +333,8 @@ export class TargetPopulation {
     }
 
     private async getTotalPopulation(
-        organisationUnits: OrganisationUnit[]
+        organisationUnits: OrganisationUnit[],
+        period: string
     ): Promise<{ [ouId: string]: PopulationTotal }> {
         const organisationUnitsForTotalPopulation: { [ouId: string]: OrganisationUnit } = _(
             organisationUnits
@@ -350,7 +353,7 @@ export class TargetPopulation {
         const { headers, rows } = await this.db.getAnalytics({
             dimension: [
                 "dx:" + this.config.population.totalPopulationDataElement.id,
-                "pe:TODAY",
+                "pe:" + period,
                 "ou:" +
                     _(organisationUnitsForTotalPopulation)
                         .values()
@@ -389,7 +392,8 @@ export class TargetPopulation {
 
     private async getPopulationDistributions(
         organisationUnits: OrganisationUnit[],
-        ageGroupsForAllAntigens: string[]
+        ageGroupsForAllAntigens: string[],
+        period: string
     ): Promise<{ [ouId: string]: PopulationDistribution[] }> {
         const organisationUnitsForAgeDistribution: { [ouId: string]: OrganisationUnit[] } = _(
             organisationUnits
@@ -415,7 +419,7 @@ export class TargetPopulation {
             dimension: [
                 "dx:" + ageDistributionDataElement.id,
                 ageGroupCategory.id,
-                "pe:TODAY",
+                "pe:" + period,
                 "ou:" +
                     _(organisationUnitsForAgeDistribution)
                         .values()
@@ -441,7 +445,7 @@ export class TargetPopulation {
 
         const populationDistributions = _.mapValues(
             organisationUnitsForAgeDistribution,
-            (ous, campaingOuId) =>
+            (ous, mainOrgUnitId) =>
                 ous.map((ou, distributionIdx) => {
                     const rows = _(rowsByOrgUnit).get(ou.id);
 
@@ -459,11 +463,11 @@ export class TargetPopulation {
                     const ageDistributionWithAllAgeGroups = _(ageGroupsForAllAntigens)
                         .map(ageGroup => {
                             const newValueExisting =
-                                existing[campaingOuId] &&
-                                existing[campaingOuId].populationDistributions[distributionIdx] &&
-                                existing[campaingOuId].populationDistributions[distributionIdx]
+                                existing[mainOrgUnitId] &&
+                                existing[mainOrgUnitId].populationDistributions[distributionIdx] &&
+                                existing[mainOrgUnitId].populationDistributions[distributionIdx]
                                     .ageDistribution[ageGroup]
-                                    ? existing[campaingOuId].populationDistributions[
+                                    ? existing[mainOrgUnitId].populationDistributions[
                                           distributionIdx
                                       ].ageDistribution[ageGroup].newValue
                                     : undefined;
