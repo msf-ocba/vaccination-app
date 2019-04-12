@@ -19,22 +19,19 @@ class Dashboard extends React.Component {
 
     async componentDidMount() {
         const dashboardURL = await this.getDashboardURL();
-        console.log(dashboardURL);
-        this.setState({ iFrameSrc: dashboardURL });
-    }
-
-    componentDidUpdate() {
-        const { iFrameSrc } = this.state;
-        if (iFrameSrc) {
-            let iframe = ReactDOM.findDOMNode(this.refs.iframe);
-            iframe.addEventListener("load", this.setDashboardStyling.bind(this, iframe));
-        }
+        this.setState({ iFrameSrc: dashboardURL }, () => {
+            const { iFrameSrc } = this.state;
+            if (iFrameSrc) {
+                const iframe = ReactDOM.findDOMNode(this.refs.iframe);
+                iframe.addEventListener("load", this.setDashboardStyling.bind(this, iframe));
+            }
+        });
     }
 
     waitforDashboardToLoad(iframeDocument) {
         return new Promise(resolve => {
-            var check = () => {
-                if (iframeDocument.querySelector(`.app-wrapper`)) {
+            const check = () => {
+                if (iframeDocument.querySelector('.app-wrapper')) {
                     resolve();
                 } else {
                     setTimeout(check, 1000);
@@ -49,9 +46,9 @@ class Dashboard extends React.Component {
         const iframeDocument = iframe.contentWindow.document;
 
         await this.waitforDashboardToLoad(iframeDocument);
-        let iFrameRoot = iframeDocument.querySelector(`#root`);
+        const iFrameRoot = iframeDocument.querySelector('#root');
         iFrameRoot.style.marginTop = "-110px";
-        let iFrameWrapper = iframeDocument.querySelector(`.app-wrapper`);
+        const iFrameWrapper = iframeDocument.querySelector('.app-wrapper');
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
     }

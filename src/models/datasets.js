@@ -70,7 +70,7 @@ export function getDashboardId(dataSet, config) {
 
 export async function getOrganisationUnitsById(id, d2) {
     try {
-        const fields = ["id,organisationUnits[id,name]"].join(",");
+        const fields = ["id","organisationUnits[id,name]"].join(",");
         const dataSet = await d2.models.dataSets.get(id, { fields });
         return dataSet.organisationUnits.toArray()[0].id;
     } catch (err) {
@@ -80,7 +80,7 @@ export async function getOrganisationUnitsById(id, d2) {
 
 export async function getDatasetById(id, d2) {
     try {
-        const fields = ["id,attributeValues[value, attribute[code]]"].join(",");
+        const fields = ["id","attributeValues[value, attribute[code]]"].join(",");
         const dataSet = await d2.models.dataSets.get(id, { fields });
         return dataSet;
     } catch (err) {
