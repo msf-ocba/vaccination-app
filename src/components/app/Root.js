@@ -4,6 +4,7 @@ import { Switch, Route } from "react-router-dom";
 
 import CampaignConfigurator from "../campaign-configurator/CampaignConfigurator";
 import DataEntry from "../data-entry/DataEntry";
+import Dashboard from "../dashboard/Dashboard";
 import LandingPage from "./LandingPage";
 import CampaignWizard from "../campaign-wizard/CampaignWizard";
 import { getMetadataConfig } from "../../models/config";
@@ -50,6 +51,12 @@ class Root extends React.Component {
                     path="/data-entry/:id"
                     render={props => <DataEntry d2={d2} config={this.state.config} {...props} />}
                 />
+
+                <Route
+                    path="/dashboard/:id"
+                    render={props => <Dashboard d2={d2} config={this.state.config} {...props} />}
+                />
+
                 <Route render={() => <LandingPage d2={d2} />} />
             </Switch>
         );

@@ -16,7 +16,6 @@ class DataEntry extends React.Component {
     componentDidMount() {
         let iframe = ReactDOM.findDOMNode(this.refs.iframe);
         iframe.addEventListener("load", this.setDatasetParameters.bind(this, iframe));
-
     }
 
     waitforOUSelection(element) {
@@ -24,21 +23,19 @@ class DataEntry extends React.Component {
             var check = () => {
                 if (element.value === "-1") {
                     resolve();
+                } else {
+                    setTimeout(check, 1000);
                 }
-                else {
-                    setTimeout(check, 1000)
-                }
+            };
 
-            }
-
-            check()
-        })
+            check();
+        });
     }
 
     styleFrame(iframeDocument) {
         iframeDocument.querySelector(`#header`).remove();
-        iframeDocument.querySelector(`#leftBar`).style.top = '-10px';
-        iframeDocument.querySelector(`body`).style.marginTop = '-55px';
+        iframeDocument.querySelector(`#leftBar`).style.top = "-10px";
+        iframeDocument.querySelector(`body`).style.marginTop = "-55px";
         iframeDocument.querySelector(`#moduleHeader`).remove();
     }
 
@@ -55,14 +52,12 @@ class DataEntry extends React.Component {
         this.styleFrame(iframeDocument);
 
         // Select OU in the tree
-        const organisationUnits = await getOrganisationUnitsById(params.id, d2)
+        const organisationUnits = await getOrganisationUnitsById(params.id, d2);
         iframeSelection.select(organisationUnits);
 
         // Wait for OU to be selected and select the dataset
         await this.waitforOUSelection(iframeDocument.querySelector(`#selectedDataSetId`));
-        iframeDocument.querySelector(
-            `#selectedDataSetId [value="${params.id}"]`
-        ).selected = true;
+        iframeDocument.querySelector(`#selectedDataSetId [value="${params.id}"]`).selected = true;
         iframe.contentWindow.dataSetSelected();
     }
 
@@ -71,10 +66,12 @@ class DataEntry extends React.Component {
     };
 
     render() {
-        console.log(process.env.REACT_APP_DHIS2_BASE_URL);
         return (
             <React.Fragment>
-                <PageHeader title={i18n.t("Data Entry")} onBackClick={this.backCampaignConfigurator} />
+                <PageHeader
+                    title={i18n.t("Data Entry")}
+                    onBackClick={this.backCampaignConfigurator}
+                />
                 <div>
                     <iframe
                         ref="iframe"
