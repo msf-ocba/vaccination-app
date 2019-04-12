@@ -7,8 +7,7 @@ import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import PageHeader from "../shared/PageHeader";
 import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/auth";
-import { list, getDashboardId } from "../../models/datasets";
-import { goToDhis2Url } from "../../utils/routes";
+import { list } from "../../models/datasets";
 
 class CampaignConfigurator extends React.Component {
     static propTypes = {
@@ -73,14 +72,16 @@ class CampaignConfigurator extends React.Component {
         {
             name: "dataEntry",
             icon: "library_books",
+            // TODO: isActive: (d2, dataSet) => canUpdate(d2, d2.models.dataSet, [dataSet]),
             text: i18n.t("Go to Data Entry"),
             multiple: false,
+            onClick: dataSet => this.props.history.push(`/data-entry/${dataSet.id}`),
         },
         {
             name: "dashboard",
             text: i18n.t("Go to Dashboard"),
             multiple: false,
-            onClick: dataSet => this.goToDashboard(dataSet),
+            onClick: dataSet => this.props.history.push(`/dashboard/${dataSet.id}`),
         },
         {
             name: "download",
@@ -89,15 +90,6 @@ class CampaignConfigurator extends React.Component {
             multiple: false,
         },
     ];
-
-    goToDashboard = dataSet => {
-        const dashboardId = getDashboardId(dataSet, this.props.config);
-        if (dashboardId) {
-            goToDhis2Url(`/dhis-web-dashboard/#/${dashboardId}`);
-        } else {
-            this.props.snackbar.error(i18n.t("Cannot find dashboard associated to the campaign"));
-        }
-    };
 
     onCreate = () => {
         this.props.history.push("/campaign-configuration/new");

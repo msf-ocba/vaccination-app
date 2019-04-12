@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-11T10:13:25.271Z\n"
-"PO-Revision-Date: 2019-04-11T10:13:25.271Z\n"
+"POT-Creation-Date: 2019-04-12T08:32:31.101Z\n"
+"PO-Revision-Date: 2019-04-12T08:32:31.101Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -69,9 +69,6 @@ msgid "Go to Dashboard"
 msgstr ""
 
 msgid "Download data"
-msgstr ""
-
-msgid "Cannot find dashboard associated to the campaign"
 msgstr ""
 
 msgid "Only my campaigns"
@@ -152,6 +149,12 @@ msgid "Cancel"
 msgstr ""
 
 msgid "Ok"
+msgstr ""
+
+msgid "Cannot find dashboard associated to the campaign"
+msgstr ""
+
+msgid "Cannot find dataset associated to the campaign"
 msgstr ""
 
 msgid "Back"

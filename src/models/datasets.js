@@ -67,3 +67,16 @@ export function getDashboardId(dataSet, config) {
         .map(av => av.value)
         .first();
 }
+
+export async function getOrganisationUnitsById(id, d2) {
+    const fields = ["id", "organisationUnits[id,name]"].join(",");
+    const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
+    const organisationUnits = dataSet ? dataSet.organisationUnits.toArray() : null;
+    return _(organisationUnits).isEmpty() ? undefined : organisationUnits[0].id;
+}
+
+export async function getDatasetById(id, d2) {
+    const fields = ["id", "attributeValues[value, attribute[code]]"].join(",");
+    const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
+    return dataSet;
+}
