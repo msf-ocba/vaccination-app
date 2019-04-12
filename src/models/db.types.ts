@@ -4,8 +4,6 @@ export type Maybe<T> = T | undefined;
 
 export type Response<T> = { status: true } | { status: false; error: T };
 
-type Partial<T> = { [P in keyof T]?: T[P] };
-
 export interface Pager {
     page: number;
     pageCount: number;
@@ -29,6 +27,12 @@ export interface OrganisationUnit {
     level: number;
     path: string;
     ancestors: Maybe<OrganisationUnit[]>;
+}
+
+export interface OrganisationUnitLevel {
+    id: string;
+    displayName: string;
+    level: number;
 }
 
 export interface Category {
@@ -57,8 +61,8 @@ export interface CategoryCombo {
     id: string;
     code: string;
     displayName: string;
-    categories: Category[];
-    categoryOptionCombos: { id: string; name: string; categoryOptions: Ref[] }[];
+    categories: Ref[];
+    categoryOptionCombos: { id: string; name: string }[];
 }
 
 export interface Attribute {
@@ -74,14 +78,14 @@ export interface DataElement {
     id: string;
     code: string;
     displayName: string;
-    categoryCombo: CategoryCombo;
+    categoryCombo: Ref;
 }
 
 export interface DataElementGroup {
     id: string;
     code: string;
     displayName: string;
-    dataElements: DataElement[];
+    dataElements: Ref[];
 }
 
 export interface Ref {
@@ -184,6 +188,39 @@ export interface MetadataResponse {
     typeReports: TypeReport[];
 }
 
+export interface DataValue {
+    dataSet?: string;
+    completeDate?: string;
+    period?: string;
+    orgUnit: string;
+    attributeOptionCombo?: string;
+
+    dataElement: string;
+    categoryOptionCombo?: string;
+    value: string;
+    comment?: string;
+}
+
+export interface DataValueRequest {
+    dataSet?: string;
+    completeDate?: string;
+    period?: string;
+    orgUnit: string;
+    attributeOptionCombo?: string;
+    dataValues: Array<{
+        dataElement: string;
+        categoryOptionCombo?: string;
+        value: string;
+        comment?: string;
+    }>;
+}
+
+export interface DataValueResponse {
+    responseType: "ImportSummary";
+    status: "SUCCESS" | "ERROR";
+    description: string;
+}
+
 export type MetadataFields = { [key in ModelName]: ModelFields };
 
 export interface ModelFields {
@@ -196,7 +233,9 @@ export type ModelName =
     | "categoryOptions"
     | "categoryOptionGroups"
     | "dataElements"
-    | "dataElementGroups";
+    | "dataElementGroups"
+    | "organisationUnits"
+    | "organisationUnitLevels";
 
 export interface MetadataGetModelParams {
     filters?: string[];

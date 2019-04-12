@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import { withStyles } from "@material-ui/core/styles";
 import { createStyles, WithStyles, Theme } from "@material-ui/core";
-import { MuiThemeProvider, IconButton, Icon } from "@material-ui/core";
+import { IconButton, Icon } from "@material-ui/core";
 
 import i18n from "../../../locales";
 import { AntigenDisaggregationCategoriesData } from "../../../models/AntigensDisaggregation";

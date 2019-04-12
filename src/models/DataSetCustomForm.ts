@@ -3,7 +3,6 @@ const { createElement } = require("typed-html");
 
 import Campaign, { Antigen } from "./campaign";
 import { AntigenDisaggregationEnabled, CustomFormMetadata } from "./AntigensDisaggregation";
-import DbD2 from "./db-d2";
 import "../utils/lodash-mixins";
 
 type Children = string[];
@@ -30,8 +29,10 @@ function repeatArray<T>(xs: T[], count: number): T[] {
 export class DataSetCustomForm {
     constructor(public campaign: Campaign, private metadata: CustomFormMetadata) {}
 
-    static async build(campaign: Campaign, db: DbD2): Promise<DataSetCustomForm> {
-        const metadata = await campaign.antigensDisaggregation.getCustomFormMetadata(db);
+    static async build(campaign: Campaign): Promise<DataSetCustomForm> {
+        const metadata = await campaign.antigensDisaggregation.getCustomFormMetadata(
+            campaign.config.categoryCombos
+        );
         return new DataSetCustomForm(campaign, metadata);
     }
 

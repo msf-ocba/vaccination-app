@@ -14,10 +14,12 @@ describe("Campaign", () => {
             const messages = campaign.validate();
             expect(messages).toEqual(
                 expect.objectContaining({
-                    name: {
-                        key: "cannot_be_blank",
-                        namespace: { field: "name" },
-                    },
+                    name: [
+                        {
+                            key: "cannot_be_blank",
+                            namespace: { field: "name" },
+                        },
+                    ],
                 })
             );
         });
