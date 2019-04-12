@@ -31,7 +31,7 @@ class Dashboard extends React.Component {
     waitforDashboardToLoad(iframeDocument) {
         return new Promise(resolve => {
             const check = () => {
-                if (iframeDocument.querySelector('.app-wrapper')) {
+                if (iframeDocument.querySelector(".app-wrapper")) {
                     resolve();
                 } else {
                     setTimeout(check, 1000);
@@ -46,9 +46,9 @@ class Dashboard extends React.Component {
         const iframeDocument = iframe.contentWindow.document;
 
         await this.waitforDashboardToLoad(iframeDocument);
-        const iFrameRoot = iframeDocument.querySelector('#root');
+        const iFrameRoot = iframeDocument.querySelector("#root");
         iFrameRoot.style.marginTop = "-110px";
-        const iFrameWrapper = iframeDocument.querySelector('.app-wrapper');
+        const iFrameWrapper = iframeDocument.querySelector(".app-wrapper");
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
     }

@@ -69,21 +69,14 @@ export function getDashboardId(dataSet, config) {
 }
 
 export async function getOrganisationUnitsById(id, d2) {
-    try {
-        const fields = ["id","organisationUnits[id,name]"].join(",");
-        const dataSet = await d2.models.dataSets.get(id, { fields });
-        return dataSet.organisationUnits.toArray()[0].id;
-    } catch (err) {
-        console.error(err);
-    }
+    const fields = ["id", "organisationUnits[id,name]"].join(",");
+    const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
+    const organisationUnits = dataSet ? dataSet.organisationUnits.toArray() : null;
+    return _(organisationUnits).isEmpty() ? undefined : organisationUnits[0].id;
 }
 
 export async function getDatasetById(id, d2) {
-    try {
-        const fields = ["id","attributeValues[value, attribute[code]]"].join(",");
-        const dataSet = await d2.models.dataSets.get(id, { fields });
-        return dataSet;
-    } catch (err) {
-        console.error(err);
-    }
+    const fields = ["id", "attributeValues[value, attribute[code]]"].join(",");
+    const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
+    return dataSet;
 }

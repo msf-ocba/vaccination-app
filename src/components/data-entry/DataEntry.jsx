@@ -35,7 +35,6 @@ class DataEntry extends React.Component {
             });
         } else {
             this.props.snackbar.error(i18n.t("Cannot find dataset associated to the campaign"));
-            
         }
     }
 
@@ -54,10 +53,10 @@ class DataEntry extends React.Component {
     }
 
     styleFrame(iframeDocument) {
-        iframeDocument.querySelector('#header').remove();
-        iframeDocument.querySelector('#leftBar').style.top = "-10px";
-        iframeDocument.querySelector('body').style.marginTop = "-55px";
-        iframeDocument.querySelector('#moduleHeader').remove();
+        iframeDocument.querySelector("#header").remove();
+        iframeDocument.querySelector("#leftBar").style.top = "-10px";
+        iframeDocument.querySelector("body").style.marginTop = "-55px";
+        iframeDocument.querySelector("#moduleHeader").remove();
     }
 
     async setDatasetParameters(iframe, dataSetId, organisationUnits) {
@@ -69,7 +68,7 @@ class DataEntry extends React.Component {
         iframeSelection.select(organisationUnits);
 
         // Wait for OU to be selected and select the dataset
-        await this.waitforOUSelection(iframeDocument.querySelector('#selectedDataSetId'));
+        await this.waitforOUSelection(iframeDocument.querySelector("#selectedDataSetId"));
         iframeDocument.querySelector(`#selectedDataSetId [value="${dataSetId}"]`).selected = true;
         iframe.contentWindow.dataSetSelected();
     }
