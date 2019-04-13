@@ -55,8 +55,8 @@ export const dashboardItemsConfig = {
     },
 };
 
-export function buildDashboardItemsCode(datasetName, orgUnitId, antigenName, appendCode) {
-    return [datasetName, orgUnitId, antigenName, appendCode].join("_");
+export function buildDashboardItemsCode(datasetName, orgUnitName, antigenName, appendCode) {
+    return [datasetName, orgUnitName, antigenName, appendCode].join("_");
 }
 
 function getCharts(antigen, elements, organisationUnit, itemsMetadata) {
@@ -126,12 +126,10 @@ export function buildDashboardItems(
 }
 
 const dataMapper = (dataList, filterList) =>
-    dataList.data
-        .filter(({ code }) => _.includes(filterList, code))
-        .map(({ id }) => ({
-            dataDimensionItemType: dataList.type,
-            [dataList.key]: { id },
-        }));
+    dataList.data.filter(({ code }) => _.includes(filterList, code)).map(({ id }) => ({
+        dataDimensionItemType: dataList.type,
+        [dataList.key]: { id },
+    }));
 
 export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const {
@@ -143,19 +141,21 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const { tables, charts } = dashboardItemsConfig;
 
     const tableElements = _(tables)
-        .map((item, key) =>
-            item.dataType === "INDICATOR"
-                ? [key, dataMapper(indicators, item.elements)]
-                : [key, dataMapper(dataElements, item.elements)]
+        .map(
+            (item, key) =>
+                item.dataType === "INDICATOR"
+                    ? [key, dataMapper(indicators, item.elements)]
+                    : [key, dataMapper(dataElements, item.elements)]
         )
         .fromPairs()
         .value();
 
     const chartElements = _(charts)
-        .map((item, key) =>
-            item.dataType === "INDICATOR"
-                ? [key, dataMapper(indicators, item.elements)]
-                : [key, dataMapper(dataElements, item.elements)]
+        .map(
+            (item, key) =>
+                item.dataType === "INDICATOR"
+                    ? [key, dataMapper(indicators, item.elements)]
+                    : [key, dataMapper(dataElements, item.elements)]
         )
         .fromPairs()
         .value();
@@ -181,7 +181,7 @@ const chartConstructor = ({
     organisationUnit,
 }) => ({
     id,
-    name: buildDashboardItemsCode(datasetName, organisationUnit.id, antigen.name, appendCode),
+    name: buildDashboardItemsCode(datasetName, organisationUnit.name, antigen.name, appendCode),
     showData: true,
     publicAccess: "rw------",
     userOrganisationUnitChildren: false,
@@ -200,7 +200,7 @@ const chartConstructor = ({
     userOrganisationUnitGrandChildren: false,
     displayName: buildDashboardItemsCode(
         datasetName,
-        organisationUnit.id,
+        organisationUnit.name,
         antigen.name,
         appendCode
     ),
@@ -324,7 +324,7 @@ const tableConstructor = ({
 
     return {
         id,
-        name: buildDashboardItemsCode(datasetName, organisationUnit.id, antigen.name, appendCode),
+        name: buildDashboardItemsCode(datasetName, organisationUnit.name, antigen.name, appendCode),
         numberType: "VALUE",
         publicAccess: "rw------",
         userOrganisationUnitChildren: false,
@@ -347,7 +347,7 @@ const tableConstructor = ({
         userOrganisationUnitGrandChildren: false,
         displayName: buildDashboardItemsCode(
             datasetName,
-            organisationUnit.id,
+            organisationUnit.name,
             antigen.name,
             appendCode
         ),

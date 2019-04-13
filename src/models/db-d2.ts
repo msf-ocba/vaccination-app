@@ -277,16 +277,17 @@ export default class DbD2 {
 
     async getMetadataForDashboardItems(
         antigens: Antigen[],
-        organisationUnits: OrganisationUnitPathOnly[],
+        organisationUnitsPathOnly: OrganisationUnitPathOnly[],
         categoryCodeForTeams: string
     ) {
-        const allAncestorsIds = _(organisationUnits)
+        const allAncestorsIds = _(organisationUnitsPathOnly)
             .map("path")
             .flatMap(path => path.split("/").slice(1))
             .uniq()
             .value()
             .join(",");
 
+        const orgUnitsId = _(organisationUnitsPathOnly).map('id');
         const dashboardItems = [dashboardItemsConfig.charts, dashboardItemsConfig.tables];
         const elements = _(dashboardItems)
             .values()
@@ -298,7 +299,7 @@ export default class DbD2 {
         const allDataElementCodes = elements["DATA_ELEMENT"].join(",");
         const allIndicatorCodes = elements["INDICATOR"].join(",");
         const antigenCodes = antigens.map(an => an.code);
-        const { categories, dataElements, indicators, categoryOptions } = await this.api.get(
+        const { categories, dataElements, indicators, categoryOptions, organisationUnits: organisationUnitsWithName } = await this.api.get(
             "/metadata",
             {
                 "categories:fields": "id,categoryOptions[id,code,name]",
@@ -309,6 +310,8 @@ export default class DbD2 {
                 "indicators:filter": `code:in:[${allIndicatorCodes}]`,
                 "categoryOptions:fields": "id,categories[id,code],organisationUnits",
                 "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`, //Missing categoryTeamCode
+                "organisationUnits:fields": "id,displayName,path",
+                "organisationUnits:filter": `id:in:[${orgUnitsId}]`,
             }
         );
 
@@ -321,7 +324,7 @@ export default class DbD2 {
             throw new Error("Organization Units chosen have no teams associated"); // TEMP: Check will be made dynamically on orgUnit selection step
         }
 
-        const teamsByOrgUnit = organisationUnits.reduce((acc, ou) => {
+        const teamsByOrgUnit = organisationUnitsPathOnly.reduce((acc, ou) => {
             let teams: string[] = [];
             categoryOptions.forEach((opt: { id: string; organisationUnits: string[] }) => {
                 const categoryOptOU = _.map(opt.organisationUnits, "id");
@@ -350,6 +353,7 @@ export default class DbD2 {
                 key: "indicator",
             },
             antigensMeta,
+            organisationUnitsWithName,
             disaggregationMetadata: {
                 teams: (antigen = null, orgUnit: { id: string }) => ({
                     categoryId: teamsMetadata.categoryId,
@@ -377,7 +381,6 @@ export default class DbD2 {
 
         const dashboardItems = this.createDashboardItems(
             datasetName,
-            organisationUnits,
             startDate,
             endDate,
             dashboardItemsMetadata
@@ -400,14 +403,15 @@ export default class DbD2 {
 
     createDashboardItems(
         datasetName: String,
-        organisationUnits: OrganisationUnitPathOnly[],
         startDate: Date | null,
         endDate: Date | null,
         dashboardItemsMetadata: Dictionary<any>
     ): DashboardData {
-        const organisationUnitsMetadata = organisationUnits.map(ou => ({
+        const { organisationUnitsWithName } = dashboardItemsMetadata;
+        const organisationUnitsMetadata = organisationUnitsWithName.map((ou: OrganisationUnit) => ({
             id: ou.id,
             parents: { [ou.id]: ou.path },
+            name: ou.displayName,
         }));
         const periodStart = startDate ? moment(startDate) : moment();
         const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
