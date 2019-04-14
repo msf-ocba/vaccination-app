@@ -204,14 +204,17 @@ export class DataSetCustomForm {
                 "div",
                 {},
                 _.flatMap(groups, ({ title, dataElements }) => [
-                    h("div", { class: "dataelement-group" }, title),
-                    h(
-                        "div",
-                        { class: "formSection sectionContainer" },
-                        _.flatMap(this.getDataElementByCategoryOptionsLists(dataElements), data =>
-                            this.renderGroupWrapper(disaggregation.antigen, data)
-                        )
-                    ),
+                    h("div", { class: "dataelement-group" }, [
+                        h("div", { class: "title" }, title),
+                        h(
+                            "div",
+                            { class: "formSection sectionContainer" },
+                            _.flatMap(
+                                this.getDataElementByCategoryOptionsLists(dataElements),
+                                data => this.renderGroupWrapper(disaggregation.antigen, data)
+                            )
+                        ),
+                    ]),
                 ])
             )
         );
@@ -484,8 +487,8 @@ const css = `
         white-space: nowrap;
         padding-top: 2px !important;
         padding-bottom: 2px !important;
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: 5px;
+        padding-right: 5px;
         word-wrap: break-word;
     }
 
@@ -523,9 +526,13 @@ const css = `
     }
 
     .dataelement-group {
+        margin-bottom: 20px
+    }
+
+    .dataelement-group .title {
         color: #544;
         font-size: 1.2em;
         font-weight: bold;
-        margin: 5px 0px;
+        margin: 5px 0px 5px 0px;
     }
 `;
