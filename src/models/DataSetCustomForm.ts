@@ -4,11 +4,14 @@ const { createElement } = require("typed-html");
 import Campaign, { Antigen } from "./campaign";
 import { AntigenDisaggregationEnabled, CustomFormMetadata } from "./AntigensDisaggregation";
 import "../utils/lodash-mixins";
+import i18n from "../locales";
 
 type Children = string[];
 
 type Disaggregations = AntigenDisaggregationEnabled;
 type DataElementDis = Disaggregations[0]["dataElements"][0];
+
+const dataElementCodeDosesRegexp = /DOSES/;
 
 function h(tagName: string, attributes: object, children: string | string[]) {
     const attrs = Object.keys(attributes).length === 0 ? undefined : attributes;
@@ -18,7 +21,7 @@ function h(tagName: string, attributes: object, children: string | string[]) {
 
 function sortDataElements(dataElements: DataElementDis[]): DataElementDis[] {
     return _(dataElements)
-        .orderBy([de => de.code.match(/DOSES/), "code"], ["asc", "asc"])
+        .orderBy([de => de.code.match(dataElementCodeDosesRegexp), "code"], ["asc", "asc"])
         .value();
 }
 
@@ -94,9 +97,12 @@ export class DataSetCustomForm {
     renderDataElement(
         antigen: Antigen,
         deDis: DataElementDis,
-        categoryOptionGroups: string[][]
+        categoryOptionGroups: string[][],
+        idx: number
     ): string {
-        return h("tr", {}, [
+        const trClass = ["derow", `de-${deDis.id}`, idx === 0 ? "primary" : "secondary"].join(" ");
+
+        return h("tr", { class: trClass }, [
             h("td", { class: "data-element" }, deDis.name),
             ..._.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
                 h("td", {}, this.getCocId(antigen, deDis, categoryOptionNames))
@@ -104,21 +110,87 @@ export class DataSetCustomForm {
         ]);
     }
 
-    renderAntigen(disaggregation: Disaggregations[0]): string {
-        const { antigen, dataElements } = disaggregation;
-
-        const groups = _(sortDataElements(dataElements))
+    getDataElementByCategoryOptionsLists(dataElements: DataElementDis[]) {
+        return _(sortDataElements(dataElements))
             .groupBy(({ categories }) =>
                 categories.map(category => [category.code, ...category.categoryOptions])
             )
             .values()
-            .map(group => {
-                const categoryOptionGroups = _(group[0].categories)
+            .map(dataElementsGroup => {
+                const categoryOptionGroups = _(dataElementsGroup[0].categories)
                     .map(cat => cat.categoryOptions)
                     .value();
-                return { dataElements: group, categoryOptionGroups };
+
+                // Tables may be too wide to fit in the screen, so here we return a second
+                // group of tables (one table per category option) to reduce the width.
+                // On dataentry render, JS code (processWideTables) -run in the client-
+                // will show only the table that better fits the viewport.
+
+                return {
+                    dataElements: dataElementsGroup,
+                    categoryOptionGroupsList: _.compact([
+                        [categoryOptionGroups],
+                        _(categoryOptionGroups).size() <= 1
+                            ? null
+                            : categoryOptionGroups[0].map(group => [
+                                  [group],
+                                  ..._.tail(categoryOptionGroups),
+                              ]),
+                    ]),
+                };
             })
             .value();
+    }
+
+    renderGroupWrapper(
+        antigen: Antigen,
+        data: {
+            dataElements: DataElementDis[];
+            categoryOptionGroupsList: string[][][][];
+        }
+    ) {
+        const { dataElements, categoryOptionGroupsList } = data;
+
+        return h(
+            "div",
+            { class: "tableGroupWrapper" },
+            _.flatMap(categoryOptionGroupsList, categoryOptionGroupsArray =>
+                h(
+                    "div",
+                    { class: "tableGroup" },
+                    categoryOptionGroupsArray.map((categoryOptionGroups, idx) =>
+                        h("table", { class: "dataValuesTable" }, [
+                            h("thead", {}, this.renderHeaderForGroup(categoryOptionGroups)),
+                            h(
+                                "tbody",
+                                {},
+                                dataElements.map(dataElement =>
+                                    this.renderDataElement(
+                                        antigen,
+                                        dataElement,
+                                        categoryOptionGroups,
+                                        idx
+                                    )
+                                )
+                            ),
+                        ])
+                    )
+                )
+            )
+        );
+    }
+
+    renderAntigen(disaggregation: Disaggregations[0]): string {
+        const { antigen, dataElements: allDataElements } = disaggregation;
+
+        const [dosesDataElements, otherDataElements] = _.partition(allDataElements, de =>
+            de.code.match(dataElementCodeDosesRegexp)
+        );
+
+        const groups = [
+            { title: i18n.t("Doses administered"), dataElements: dosesDataElements },
+            { title: i18n.t("Quality and safety indicators"), dataElements: otherDataElements },
+        ];
 
         return h(
             "div",
@@ -129,23 +201,20 @@ export class DataSetCustomForm {
             },
             h(
                 "div",
-                { class: "formSection sectionContainer" },
-                groups.map(group =>
-                    h("table", { class: "sectionTable" }, [
-                        h("thead", {}, this.renderHeaderForGroup(group.categoryOptionGroups)),
+                {},
+                _.flatMap(groups, ({ title, dataElements }) => [
+                    h("div", { class: "dataelement-group" }, [
+                        h("div", { class: "title" }, title),
                         h(
-                            "tbody",
-                            {},
-                            group.dataElements.map(deDis =>
-                                this.renderDataElement(
-                                    disaggregation.antigen,
-                                    deDis,
-                                    group.categoryOptionGroups
-                                )
+                            "div",
+                            { class: "formSection sectionContainer" },
+                            _.flatMap(
+                                this.getDataElementByCategoryOptionsLists(dataElements),
+                                data => this.renderGroupWrapper(disaggregation.antigen, data)
                             )
                         ),
-                    ])
-                )
+                    ]),
+                ])
             )
         );
     }
@@ -198,7 +267,104 @@ export class DataSetCustomForm {
 }
 
 const script = `
-   $("#tabs").tabs();
+    var getRealDimensions = function($el_, parent) {
+        var $el = $($el_.get(0));
+
+        if ($el.length == 0) {
+            return {width: 0, height: 0};
+        } else {
+            var $clone = $el.clone()
+                .show()
+                .css('visibility','hidden')
+                .appendTo(parent);
+            var dimensions = {
+                width: $clone.outerWidth(),
+                height: $clone.outerHeight(),
+            };
+            $clone.remove();
+            return dimensions;
+        }
+    }
+
+    var processWideTables = function() {
+        $("#contentDiv").show();
+        const contentWidth = $(".ui-tabs-panel").width();
+        console.log("Content box width:", contentWidth);
+
+        $(".tableGroupWrapper")
+            .get()
+            .forEach(tableGroupWrapper => {
+                const tableGroups = $(tableGroupWrapper)
+                    .find(".tableGroup")
+                    .get();
+
+                if (tableGroups.length <= 1) return;
+
+                /* Show contents temporally so we can get actual rendered width of tables */
+
+                const groups = _.chain(tableGroups)
+                    .map(tableGroup => ({
+                        element: tableGroup,
+                        width: getRealDimensions($(tableGroup).find("table"), $("#contentDiv")).width,
+                    }))
+                    .sortBy(group => group.width)
+                    .reverse()
+                    .value();
+
+                console.log("Tables width: " +
+                    groups.map((group, idx) => "idx=" + idx + " width=" + group.width).join(" - "));
+
+                const groupToShow = groups.find(group => group.width <= contentWidth) || groups[0];
+
+                tableGroups.forEach(tableGroup => {
+                    if (tableGroup !== groupToShow.element) {
+                        $(tableGroup).remove();
+                    }
+                });
+            });
+        $("#contentDiv").hide();
+    };
+
+    var highlightDataElementRows = function() {
+        var setClass = function(ev, className, isActive) {
+            var tr = $(ev.currentTarget);
+            var de_class = (tr.attr("class") || "")
+                .split(" ")
+                .filter(cl => cl.startsWith("de-"))[0];
+            if (de_class) {
+                var deId = de_class.split("-")[1];
+                var el = $(".de-" + deId);
+                el.toggleClass(className, isActive);
+                if (tr.hasClass("secondary")) {
+                    var opacity = isActive ? 1 : 0;
+                    tr.find(".data-element")
+                        .clearQueue()
+                        .delay(500)
+                        .animate({ opacity: opacity }, 100);
+                }
+            }
+        };
+
+        $("tr.derow")
+            .mouseover(ev => setClass(ev, "hover", true))
+            .mouseout(ev => setClass(ev, "hover", false))
+            .focusin(ev => setClass(ev, "focus", true))
+            .focusout(ev => setClass(ev, "focus", false));
+    };
+
+    var applyChangesToForm = function() {
+        highlightDataElementRows();
+        processWideTables();
+        $("#tabs").tabs();
+        // Set full width to data elements columns after table width has been calculated
+        $(".header-first-column").addClass("full-width");
+    };
+
+    var init = function() {
+        $(document).on("dhis2.de.event.formLoaded", applyChangesToForm);
+    }
+
+    init();
 `;
 
 const css = `
@@ -259,16 +425,21 @@ const css = `
         padding: 2px;
     }
 
+    #contentDiv tr {
+        border-color: transparent;
+        transition: background-color 500ms linear;
+    }
+
     #contentDiv tr.derow {
         background-color: #FFF;
     }
 
-    #contentDiv tr.focus {
-        background-color: #e5f5e5;
-    }
-
     #contentDiv tr.hover, #contentDiv tr:hover {
         background-color: #e5e5e5;
+    }
+
+    #contentDiv tr.focus {
+        background-color: #e5f5e5;
     }
 
     #contentDiv th {
@@ -290,18 +461,22 @@ const css = `
 
     #contentDiv tr.secondary td.data-element {
         font-style: italic;
+        opacity: 0;
     }
 
     #contentDiv .header-first-column {
-        backgroud-color: #e0e0e0;
+        background-color: #e0e0e0;
         text-align: left;
         border-bottom-style: hidden;
         border-left-style: hidden;
         border-top-style: hidden;
-        width: 100%;
         white-space: nowrap;
         background-color: #fff;
         padding: 2px !important;
+    }
+
+    #contentDiv .header-first-column.full-width {
+        width: 100%;
     }
 
     #contentDiv th.data-header {
@@ -311,8 +486,8 @@ const css = `
         white-space: nowrap;
         padding-top: 2px !important;
         padding-bottom: 2px !important;
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: 5px;
+        padding-right: 5px;
         word-wrap: break-word;
     }
 
@@ -333,7 +508,7 @@ const css = `
         background-color: #2f3867;
     }
 
-    #contentDiv .sectionTable {
+    #contentDiv .dataValuesTable {
         margin-bottom: 0px !important;
         margin-top: 5px;
     }
@@ -347,5 +522,16 @@ const css = `
         border-collapse: collapse;
         border-bottom: 1px solid #cad5e5;
         min-height: 28px;
+    }
+
+    .dataelement-group {
+        margin-bottom: 20px
+    }
+
+    .dataelement-group .title {
+        color: #544;
+        font-size: 1.2em;
+        font-weight: bold;
+        margin: 5px 0px 5px 0px;
     }
 `;
