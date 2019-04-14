@@ -37,8 +37,16 @@ class CampaignConfigurator extends React.Component {
     detailsFields = [
         { name: "displayName", text: i18n.t("Name") },
         { name: "displayDescription", text: i18n.t("Description") },
-        { name: "startDate", text: i18n.t("Start Date"), getValue: dataSet => this.getDateValue("startDate", dataSet) },
-        { name: "endDate", text: i18n.t("End Date"), getValue: dataSet => this.getDateValue("endDate", dataSet) },
+        {
+            name: "startDate",
+            text: i18n.t("Start Date"),
+            getValue: dataSet => this.getDateValue("startDate", dataSet),
+        },
+        {
+            name: "endDate",
+            text: i18n.t("End Date"),
+            getValue: dataSet => this.getDateValue("endDate", dataSet),
+        },
         { name: "created", text: i18n.t("Created") },
         { name: "lastUpdated", text: i18n.t("Last update") },
         { name: "id", text: i18n.t("Id") },
@@ -111,7 +119,7 @@ class CampaignConfigurator extends React.Component {
                 console.error(`Date type not supported: ${dateType}`);
         }
         return dateValue;
-    }
+    };
 
     onCreate = () => {
         this.props.history.push("/campaign-configuration/new");
