@@ -131,7 +131,7 @@ export class DataSetCustomForm {
                     dataElements: dataElementsGroup,
                     categoryOptionGroupsList: _.compact([
                         [categoryOptionGroups],
-                        _(categoryOptionGroups).isEmpty()
+                        _(categoryOptionGroups).size() <= 1
                             ? null
                             : categoryOptionGroups[0].map(group => [
                                   [group],
@@ -265,8 +265,29 @@ export class DataSetCustomForm {
 }
 
 const script = `
+    var getRealDimensions = function($el_, parent) {
+        var $el = $($el_.get(0));
+
+        if ($el.length == 0) {
+            return {width: 0, height: 0};
+        } else {
+            var $clone = $el.clone()
+                .show()
+                .css('visibility','hidden')
+                .appendTo(parent);
+            var dimensions = {
+                width: $clone.outerWidth(),
+                height: $clone.outerHeight(),
+            };
+            $clone.remove();
+            return dimensions;
+        }
+    }
+
     var processWideTables = function() {
-        const contentWidth = $(window).width() - $("#orgUnitTreeContainer").width();
+        $("#contentDiv").show();
+        const contentWidth = $(".ui-tabs-panel").width();
+        console.log("Content box width:", contentWidth);
 
         $(".tableGroupWrapper")
             .get()
@@ -279,20 +300,17 @@ const script = `
 
                 /* Show contents temporally so we can get actual rendered width of tables */
 
-                $("#contentDiv").show();
                 const groups = _.chain(tableGroups)
                     .map(tableGroup => ({
                         element: tableGroup,
-                        width: $(tableGroup)
-                            .find("table:first-child tr:first-child th")
-                            .get()
-                            .map(th => $(th).width())
-                            .reduce((acc, w) => acc + w, 0),
+                        width: getRealDimensions($(tableGroup).find("table"), $("#contentDiv")).width,
                     }))
                     .sortBy(group => group.width)
                     .reverse()
                     .value();
-                $("#contentDiv").hide();
+
+                console.log("Tables width: " +
+                    groups.map((group, idx) => "idx=" + idx + " width=" + group.width).join(" - "));
 
                 const groupToShow = groups.find(group => group.width <= contentWidth) || groups[0];
 
@@ -302,6 +320,7 @@ const script = `
                     }
                 });
             });
+        $("#contentDiv").hide();
     };
 
     var highlightDataElementRows = function() {
@@ -335,6 +354,8 @@ const script = `
         highlightDataElementRows();
         processWideTables();
         $("#tabs").tabs();
+        // Set full width to data elements columns after table width has been calculated
+        $(".header-first-column").addClass("full-width");
     };
 
     var init = function() {
@@ -447,10 +468,13 @@ const css = `
         border-bottom-style: hidden;
         border-left-style: hidden;
         border-top-style: hidden;
-        width: 100%;
         white-space: nowrap;
         background-color: #fff;
         padding: 2px !important;
+    }
+
+    #contentDiv .header-first-column.full-width {
+        width: 100%;
     }
 
     #contentDiv th.data-header {
