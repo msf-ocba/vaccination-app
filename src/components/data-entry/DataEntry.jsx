@@ -3,9 +3,10 @@ import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { withSnackbar } from "d2-ui-components";
 import ReactDOM from "react-dom";
+import moment from "moment";
 
 import PageHeader from "../shared/PageHeader";
-import { getOrganisationUnitsById } from "../../models/datasets";
+import { getOrganisationUnitsById, getDataInputPeriodsById } from "../../models/datasets";
 
 class DataEntry extends React.Component {
     static propTypes = {
@@ -30,7 +31,7 @@ class DataEntry extends React.Component {
                 const iframe = ReactDOM.findDOMNode(this.refs.iframe);
                 iframe.addEventListener(
                     "load",
-                    this.setDatasetParameters.bind(this, iframe, dataSetId, organisationUnits)
+                    this.setDatasetParameters.bind(this, iframe, dataSetId, organisationUnits, d2)
                 );
             });
         } else {
@@ -59,7 +60,7 @@ class DataEntry extends React.Component {
         iframeDocument.querySelector("#moduleHeader").remove();
     }
 
-    async setDatasetParameters(iframe, dataSetId, organisationUnits) {
+    async setDatasetParameters(iframe, dataSetId, organisationUnits, d2) {
         const iframeDocument = iframe.contentWindow.document;
         this.styleFrame(iframeDocument);
 
@@ -71,6 +72,25 @@ class DataEntry extends React.Component {
         await this.waitforOUSelection(iframeDocument.querySelector("#selectedDataSetId"));
         iframeDocument.querySelector(`#selectedDataSetId [value="${dataSetId}"]`).selected = true;
         iframe.contentWindow.dataSetSelected();
+
+        // Remove filters
+        const dataInputPeriods = await getDataInputPeriodsById(dataSetId, d2);
+        // .openingDate, dataInputPeriods[0].closingDate]
+        iframeDocument.querySelector("#selectedPeriodId").addEventListener("change", function(a) {
+            const today = moment(new Date());
+            console.log("taka");
+            console.log(a);
+            console.log(this.value);
+            console.log(dataInputPeriods.openingDate);
+            console.log(dataInputPeriods.closingDate);
+            if (!today.isBetween(dataInputPeriods.openingDate, dataInputPeriods.closingDate)) {
+                this.props.snackbar.error(
+                    i18n.t(
+                        "This is not a valid period for this campaign. Choose a period between and "
+                    )
+                );
+            }
+        });
     }
 
     backCampaignConfigurator = () => {
