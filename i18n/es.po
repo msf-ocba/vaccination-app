@@ -32,7 +32,6 @@ msgstr "Última actualización"
 msgid "Description"
 msgstr "Descripción"
 
-#, fuzzy
 msgid "Start Date"
 msgstr "Fecha de inicio"
 
@@ -187,9 +186,8 @@ msgstr "Aceptar"
 msgid "Cannot find dashboard associated to the campaign"
 msgstr "No hay ningún tablero asociado a la campaña"
 
-#, fuzzy
 msgid "Cannot find dataset associated to the campaign"
-msgstr "No hay ningún tablero asociado a la campaña"
+msgstr "No hay ningún dataset asociado a la campaña"
 
 msgid "Back"
 msgstr "Atrás"
@@ -254,9 +252,3 @@ msgstr "Debes seleccionar al menos una opción de la categoría"
 
 msgid "No target population defined"
 msgstr "Población objetivo no definida"
-
-#~ msgid "Short name"
-#~ msgstr "Nombre corto"
-
-#~ msgid "Code"
-#~ msgstr "Código"
