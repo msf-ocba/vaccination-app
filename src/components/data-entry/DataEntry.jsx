@@ -75,19 +75,23 @@ class DataEntry extends React.Component {
 
         // Remove filters
         const dataInputPeriods = await getDataInputPeriodsById(dataSetId, d2);
-        if (dataInputPeriods){
-            iframeDocument.querySelector("#selectedPeriodId").addEventListener("change", function(a) {
-                const today = moment(new Date());
-                if (!today.isBetween(dataInputPeriods.openingDate, dataInputPeriods.closingDate)) {
-                    this.props.snackbar.error(
-                        i18n.t(
-                            "This is not a valid period for this campaign. Choose a period between and "
-                        )
-                    );
-                }
-            });
+        if (dataInputPeriods) {
+            iframeDocument
+                .querySelector("#selectedPeriodId")
+                .addEventListener("change", function(a) {
+                    const today = moment(new Date());
+                    if (
+                        !today.isBetween(dataInputPeriods.openingDate, dataInputPeriods.closingDate)
+                    ) {
+                        this.props.snackbar.error(
+                            i18n.t(
+                                "This is not a valid period for this campaign. Choose a period between and "
+                            )
+                        );
+                    }
+                });
         }
-    };
+    }
 
     backCampaignConfigurator = () => {
         this.props.history.push("/campaign-configuration");
