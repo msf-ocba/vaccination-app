@@ -4,8 +4,6 @@ import metadataConfig from "./config-mock";
 
 const expectedFields = [
     "id",
-    "name",
-    "code",
     "displayName",
     "displayDescription",
     "shortName",
@@ -18,6 +16,7 @@ const expectedFields = [
     "user",
     "access",
     "attributeValues[value, attribute[code]]",
+    "dataInputPeriods",
     "href",
 ];
 
