@@ -2,12 +2,14 @@ import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { ObjectsTable, withSnackbar } from "d2-ui-components";
+import _ from "lodash";
 
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import PageHeader from "../shared/PageHeader";
 import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/auth";
 import { list } from "../../models/datasets";
+import { formatDateLong } from "../../utils/date";
 
 class CampaignConfigurator extends React.Component {
     static propTypes = {
@@ -35,8 +37,8 @@ class CampaignConfigurator extends React.Component {
     detailsFields = [
         { name: "displayName", text: i18n.t("Name") },
         { name: "displayDescription", text: i18n.t("Description") },
-        { name: "startDate", text: i18n.t("Start Date") },
-        { name: "endDate", text: i18n.t("End Date") },
+        { name: "startDate", text: i18n.t("Start Date"), getValue: dataSet => this.getDateValue("startDate", dataSet) },
+        { name: "endDate", text: i18n.t("End Date"), getValue: dataSet => this.getDateValue("endDate", dataSet) },
         { name: "created", text: i18n.t("Created") },
         { name: "lastUpdated", text: i18n.t("Last update") },
         { name: "id", text: i18n.t("Id") },
@@ -90,6 +92,26 @@ class CampaignConfigurator extends React.Component {
             multiple: false,
         },
     ];
+
+    getDateValue = (dateType, dataSet) => {
+        const dataInputPeriods = dataSet.dataInputPeriods;
+        let dateValue;
+        switch (dateType) {
+            case "startDate":
+                if (!_(dataInputPeriods).isEmpty()) {
+                    dateValue = formatDateLong(dataInputPeriods[0].openingDate);
+                }
+                break;
+            case "endDate":
+                if (!_(dataInputPeriods).isEmpty()) {
+                    dateValue = formatDateLong(dataInputPeriods[0].closingDate);
+                }
+                break;
+            default:
+                console.error(`Date type not supported: ${dateType}`);
+        }
+        return dateValue;
+    }
 
     onCreate = () => {
         this.props.history.push("/campaign-configuration/new");

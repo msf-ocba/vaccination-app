@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { formatDateLong } from "../utils/date";
 
 const fields = [
     "id",
@@ -37,13 +36,6 @@ export async function list(config, d2, filters, pagination) {
     ]);
     const listOptions = { fields, filter, page, pageSize, order };
     const collection = await d2.models.dataSets.list(cleanOptions(listOptions));
-    collection.toArray().forEach(dataSet => {
-        const dataInputPeriods = dataSet.dataInputPeriods;
-        if (!_(dataInputPeriods).isEmpty()) {
-            dataSet.startDate = formatDateLong(dataInputPeriods[0].openingDate);
-            dataSet.endDate = formatDateLong(dataInputPeriods[0].closingDate);
-        }
-    });
     return { pager: collection.pager, objects: collection.toArray() };
 }
 

@@ -77,6 +77,7 @@ class GeneralInfoStep extends React.Component {
                     style: { width: "33%" },
                     changeEvent: "onBlur",
                     "data-field": "description",
+                    multiLine: true,
                 },
             },
             {
