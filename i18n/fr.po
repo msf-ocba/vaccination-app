@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-12T12:27:25.671Z\n"
+"POT-Creation-Date: 2019-04-14T09:53:55.397Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -29,13 +29,13 @@ msgstr ""
 msgid "Last updated"
 msgstr ""
 
-msgid "Short name"
-msgstr ""
-
-msgid "Code"
-msgstr ""
-
 msgid "Description"
+msgstr ""
+
+msgid "Start Date"
+msgstr ""
+
+msgid "End Date"
 msgstr ""
 
 msgid "Created"
@@ -69,9 +69,6 @@ msgid "Go to Dashboard"
 msgstr ""
 
 msgid "Download data"
-msgstr ""
-
-msgid "Cannot find dashboard associated to the campaign"
 msgstr ""
 
 msgid "Only my campaigns"
@@ -171,6 +168,12 @@ msgstr ""
 msgid "Ok"
 msgstr ""
 
+msgid "Cannot find dashboard associated to the campaign"
+msgstr ""
+
+msgid "Cannot find dataset associated to the campaign"
+msgstr ""
+
 msgid "Back"
 msgstr ""
 
@@ -178,9 +181,6 @@ msgid "Field cannot be blank"
 msgstr ""
 
 msgid "Start date"
-msgstr ""
-
-msgid "End Date"
 msgstr ""
 
 msgid "Error saving campaign"

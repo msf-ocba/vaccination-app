@@ -35,6 +35,8 @@ class CampaignConfigurator extends React.Component {
     detailsFields = [
         { name: "displayName", text: i18n.t("Name") },
         { name: "displayDescription", text: i18n.t("Description") },
+        { name: "startDate", text: i18n.t("Start Date") },
+        { name: "endDate", text: i18n.t("End Date") },
         { name: "created", text: i18n.t("Created") },
         { name: "lastUpdated", text: i18n.t("Last update") },
         { name: "id", text: i18n.t("Id") },

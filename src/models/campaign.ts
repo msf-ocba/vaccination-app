@@ -150,6 +150,8 @@ export default class Campaign {
         return this.data.name;
     }
 
+    /* Description */
+
     public setDescription(description: string): Campaign {
         return this.update({ ...this.data, description });
     }

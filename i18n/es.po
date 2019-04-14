@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-12T12:27:25.671Z\n"
+"POT-Creation-Date: 2019-04-14T09:53:55.397Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -29,14 +29,15 @@ msgstr "Acceso público"
 msgid "Last updated"
 msgstr "Última actualización"
 
-msgid "Short name"
-msgstr "Nombre corto"
-
-msgid "Code"
-msgstr "Código"
-
 msgid "Description"
 msgstr "Descripción"
+
+#, fuzzy
+msgid "Start Date"
+msgstr "Fecha de inicio"
+
+msgid "End Date"
+msgstr "Fecha de fin"
 
 msgid "Created"
 msgstr "Fecha de creación"
@@ -71,9 +72,6 @@ msgstr "Ir a tablero"
 msgid "Download data"
 msgstr "Descargar datos"
 
-msgid "Cannot find dashboard associated to the campaign"
-msgstr "No hay ningún tablero asociado a la campaña"
-
 msgid "Only my campaigns"
 msgstr "Solo mis campañas"
 
@@ -93,9 +91,9 @@ msgid ""
 "one must be selected. Only organisation units of level 5 (Health site) can "
 "be selected."
 msgstr ""
-"Seleccione las unidades organizativas asignadas a esta campaña. "
-"Debe seleccionar al menos una unidad."
-"Únicamente unidades de nivel 5 (Puesto de salud) pueden seleccionarse"
+"Seleccione las unidades organizativas asignadas a esta campaña. Debe "
+"seleccionar al menos una unidad.Únicamente unidades de nivel 5 (Puesto de "
+"salud) pueden seleccionarse"
 
 msgid "General info"
 msgstr "Información general"
@@ -140,11 +138,10 @@ msgid ""
 "analytics endpoint. Like-wise, any change you make in this step will only be "
 "applied once you run the analytics."
 msgstr ""
-"Especifique la población objetivo, totales y porcentajes por edad "
-"requeridos por los antígenos seleccionados. La fuente de estos valores son "
-"las análiticas de DHIS2. "
-"De igual modo, cualquier cambio que haga en este paso, se "
-"aplicará únicamente cuando ejecute las analíticas."
+"Especifique la población objetivo, totales y porcentajes por edad requeridos "
+"por los antígenos seleccionados. La fuente de estos valores son las "
+"análiticas de DHIS2. De igual modo, cualquier cambio que haga en este paso, "
+"se aplicará únicamente cuando ejecute las analíticas."
 
 msgid ""
 "Specify target population, totals and age percentages for the age ranges "
@@ -187,6 +184,13 @@ msgstr "Cancelar"
 msgid "Ok"
 msgstr "Aceptar"
 
+msgid "Cannot find dashboard associated to the campaign"
+msgstr "No hay ningún tablero asociado a la campaña"
+
+#, fuzzy
+msgid "Cannot find dataset associated to the campaign"
+msgstr "No hay ningún tablero asociado a la campaña"
+
 msgid "Back"
 msgstr "Atrás"
 
@@ -195,9 +199,6 @@ msgstr "El campo no puede estar vacío"
 
 msgid "Start date"
 msgstr "Fecha de inicio"
-
-msgid "End Date"
-msgstr "Fecha de fin"
 
 msgid "Error saving campaign"
 msgstr "Se produjo un error al guardar la campaña"
@@ -253,3 +254,9 @@ msgstr "Debes seleccionar al menos una opción de la categoría"
 
 msgid "No target population defined"
 msgstr "Población objetivo no definida"
+
+#~ msgid "Short name"
+#~ msgstr "Nombre corto"
+
+#~ msgid "Code"
+#~ msgstr "Código"
