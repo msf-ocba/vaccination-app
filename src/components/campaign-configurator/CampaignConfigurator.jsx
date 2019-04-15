@@ -9,7 +9,7 @@ import Checkbox from "material-ui/Checkbox/Checkbox";
 import PageHeader from "../shared/PageHeader";
 import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/auth";
 import { list } from "../../models/datasets";
-import { formatDateLong } from "../../utils/date";
+import { formatDateShort } from "../../utils/date";
 
 class CampaignConfigurator extends React.Component {
     static propTypes = {
@@ -107,12 +107,12 @@ class CampaignConfigurator extends React.Component {
         switch (dateType) {
             case "startDate":
                 if (!_(dataInputPeriods).isEmpty()) {
-                    dateValue = formatDateLong(dataInputPeriods[0].openingDate);
+                    dateValue = formatDateShort(dataInputPeriods[0].openingDate);
                 }
                 break;
             case "endDate":
                 if (!_(dataInputPeriods).isEmpty()) {
-                    dateValue = formatDateLong(dataInputPeriods[0].closingDate);
+                    dateValue = formatDateShort(dataInputPeriods[0].closingDate);
                 }
                 break;
             default:
