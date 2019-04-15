@@ -312,8 +312,8 @@ export default class DbD2 {
             "dataElements:filter": `code:in:[${allDataElementCodes}]`,
             "indicators:fields": "id,code",
             "indicators:filter": `code:in:[${allIndicatorCodes}]`,
-            "categoryOptions:fields": "id,categories[id,code],organisationUnits",
-            "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`, //Missing categoryTeamCode
+            "categoryOptions:fields": "id,categories[id,code],organisationUnits[id]",
+            "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`,
             "organisationUnits:fields": "id,displayName,path",
             "organisationUnits:filter": `id:in:[${orgUnitsId}]`,
         });
@@ -329,12 +329,20 @@ export default class DbD2 {
 
         const teamsByOrgUnit = organisationUnitsPathOnly.reduce((acc, ou) => {
             let teams: string[] = [];
-            categoryOptions.forEach((opt: { id: string; organisationUnits: string[] }) => {
-                const categoryOptOU = _.map(opt.organisationUnits, "id");
-                if (_.some(categoryOptOU, (o: string) => ou.path.includes(o))) {
-                    teams.push(opt.id);
+            categoryOptions.forEach(
+                (co: { id: string; organisationUnits: object[]; categories: object[] }) => {
+                    const coIsTeam = _(co.categories)
+                        .map("code")
+                        .includes(categoryCodeForTeams);
+                    const coIncludesOrgUnit = _(co.organisationUnits)
+                        .map("id")
+                        .some((coOu: string) => ou.path.includes(coOu));
+
+                    if (coIsTeam && coIncludesOrgUnit) {
+                        teams.push(co.id);
+                    }
                 }
-            });
+            );
             return { ...acc, [ou.id]: teams };
         }, {});
 
