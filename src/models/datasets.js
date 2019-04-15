@@ -2,8 +2,6 @@ import _ from "lodash";
 
 const fields = [
     "id",
-    "name",
-    "code",
     "displayName",
     "displayDescription",
     "shortName",
@@ -16,6 +14,7 @@ const fields = [
     "user",
     "access",
     "attributeValues[value, attribute[code]]",
+    "dataInputPeriods~paging=(1;1)",
     "href",
 ];
 

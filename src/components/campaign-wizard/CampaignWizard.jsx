@@ -30,10 +30,6 @@ class CampaignWizard extends React.Component {
 
     constructor(props) {
         super(props);
-        const startDate = new Date();
-        const endDate = new Date();
-        startDate.setDate(startDate.getDate() - 1);
-        endDate.setDate(endDate.getDate() + 1);
 
         const campaign = Campaign.create(props.config, new DbD2(props.d2));
 
@@ -54,7 +50,7 @@ class CampaignWizard extends React.Component {
                     `Select the health facilities or health area where the campaign will be implemented`
                 ),
                 help: i18n.t(
-                    `Select the organization units which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
+                    `Select the organisation units which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
                 ),
             },
             {
