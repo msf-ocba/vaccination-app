@@ -24,6 +24,7 @@ export interface Antigen {
 
 export interface Data {
     name: string;
+    description: string;
     organisationUnits: OrganisationUnitPathOnly[];
     startDate: Date | null;
     endDate: Date | null;
@@ -47,6 +48,7 @@ export default class Campaign {
 
         const initialData = {
             name: "",
+            description: "",
             organisationUnits: organisationUnits,
             startDate: null,
             endDate: null,
@@ -146,6 +148,16 @@ export default class Campaign {
 
     public get name(): string {
         return this.data.name;
+    }
+
+    /* Description */
+
+    public setDescription(description: string): Campaign {
+        return this.update({ ...this.data, description });
+    }
+
+    public get description(): string {
+        return this.data.description;
     }
 
     /* Period dates */
@@ -302,6 +314,7 @@ export default class Campaign {
             const dataSet: DataSet = {
                 id: dataSetId,
                 name: this.name,
+                description: this.description,
                 publicAccess: "r-r-----", // Metadata can view-only, Data can view-only
                 periodType: "Daily",
                 categoryCombo: { id: categoryComboTeams.id },

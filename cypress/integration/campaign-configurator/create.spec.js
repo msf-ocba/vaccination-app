@@ -34,7 +34,7 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Field name cannot be blank");
 
         cy.get("[data-field='name']").type("Test vaccination campaign");
-        cy.contains("Start date").click({ force: true });
+        cy.contains("Start Date").click({ force: true });
         clickDay(11);
 
         cy.contains("End Date").click({ force: true });

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-15T11:53:17.746Z\n"
-"PO-Revision-Date: 2019-04-15T11:53:17.746Z\n"
+"POT-Creation-Date: 2019-04-15T12:15:23.972Z\n"
+"PO-Revision-Date: 2019-04-15T12:15:23.972Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -29,13 +29,13 @@ msgstr ""
 msgid "Last updated"
 msgstr ""
 
-msgid "Short name"
-msgstr ""
-
-msgid "Code"
-msgstr ""
-
 msgid "Description"
+msgstr ""
+
+msgid "Start Date"
+msgstr ""
+
+msgid "End Date"
 msgstr ""
 
 msgid "Created"
@@ -177,12 +177,6 @@ msgid "Back"
 msgstr ""
 
 msgid "Field cannot be blank"
-msgstr ""
-
-msgid "Start date"
-msgstr ""
-
-msgid "End Date"
 msgstr ""
 
 msgid "Error saving campaign"

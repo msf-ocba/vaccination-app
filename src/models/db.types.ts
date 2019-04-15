@@ -111,6 +111,7 @@ export interface Section {
 export interface DataSet {
     id: string;
     name: string;
+    description: string;
     publicAccess: string;
     periodType: string;
     categoryCombo: Ref;
