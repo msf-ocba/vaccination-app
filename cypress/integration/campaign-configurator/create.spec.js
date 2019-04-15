@@ -34,7 +34,7 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Field name cannot be blank");
 
         cy.get("[data-field='name']").type("Test vaccination campaign");
-        cy.contains("Start date").click({ force: true });
+        cy.contains("Start Date").click({ force: true });
         clickDay(11);
 
         cy.contains("End Date").click({ force: true });
@@ -98,11 +98,13 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Organisation Units");
         cy.contains("MSF -> OCBA -> ETHIOPIA -> ETHIOPIA, MERT -> Cholera Intervention Addis 2016");
 
+        cy.route("POST", "/api/metadata").as("metadataRequest");
         cy.get("[data-wizard-contents] button")
             .contains("Save")
             .click();
 
-        cy.contains("Campaign created: Test vaccination campaign", { timeout: 30000 });
+        cy.wait("@metadataRequest");
+        cy.contains("Campaign created: Test vaccination campaign");
     });
 });
 

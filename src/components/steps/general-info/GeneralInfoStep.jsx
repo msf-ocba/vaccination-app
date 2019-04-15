@@ -77,6 +77,7 @@ class GeneralInfoStep extends React.Component {
                     style: { width: "33%" },
                     changeEvent: "onBlur",
                     "data-field": "description",
+                    multiLine: true,
                 },
             },
             {
@@ -84,7 +85,7 @@ class GeneralInfoStep extends React.Component {
                 value: campaign.startDate,
                 component: DatePicker,
                 props: {
-                    label: i18n.t("Start date"),
+                    label: i18n.t("Start Date"),
                     value: campaign.startDate,
                     onChange: value => this.onUpdateField("startDate", value),
                 },

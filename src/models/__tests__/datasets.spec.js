@@ -16,7 +16,7 @@ const expectedFields = [
     "user",
     "access",
     "attributeValues[value, attribute[code]]",
-    "dataInputPeriods",
+    "dataInputPeriods~paging=(1;1)",
     "href",
 ];
 

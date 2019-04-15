@@ -275,27 +275,84 @@ export default class DbD2 {
         return attributes[0];
     }
 
-    async getMetadataForDashboardItems(antigens: Antigen[]) {
-        const { categoryCode, tablesDataCodes, chartsDataCodes } = dashboardItemsConfig;
-        const allDataElementCodes = _(tablesDataCodes)
+    async getMetadataForDashboardItems(
+        antigens: Antigen[],
+        organisationUnitsPathOnly: OrganisationUnitPathOnly[],
+        categoryCodeForTeams: string
+    ) {
+        const allAncestorsIds = _(organisationUnitsPathOnly)
+            .map("path")
+            .flatMap(path => path.split("/").slice(1))
+            .uniq()
+            .value()
+            .join(",");
+
+        const orgUnitsId = _(organisationUnitsPathOnly).map("id");
+        const dashboardItems = [dashboardItemsConfig.charts, dashboardItemsConfig.tables];
+        const elements = _(dashboardItems)
             .values()
-            .flatten();
-        const allIndicatorCodes = _(chartsDataCodes)
-            .values()
-            .flatten();
+            .flatMap(_.values)
+            .groupBy("dataType")
+            .mapValues(objs => _.flatMap(objs, "elements"))
+            .value();
+
+        const allDataElementCodes = elements["DATA_ELEMENT"].join(",");
+        const allIndicatorCodes = elements["INDICATOR"].join(",");
         const antigenCodes = antigens.map(an => an.code);
-        const { dataElements, categories, indicators } = await this.api.get("/metadata", {
+        const {
+            categories,
+            dataElements,
+            indicators,
+            categoryOptions,
+            organisationUnits: organisationUnitsWithName,
+        } = await this.api.get("/metadata", {
             "categories:fields": "id,categoryOptions[id,code,name]",
-            "categories:filter": `code:in:[${categoryCode}]`,
+            "categories:filter": `code:in:[${dashboardItemsConfig.antigenCategoryCode}]`,
             "dataElements:fields": "id,code",
-            "dataElements:filter": `code:in:[${allDataElementCodes.join(",")}]`,
+            "dataElements:filter": `code:in:[${allDataElementCodes}]`,
             "indicators:fields": "id,code",
-            "indicators:filter": `code:in:[${allIndicatorCodes.join(",")}]`,
+            "indicators:filter": `code:in:[${allIndicatorCodes}]`,
+            "categoryOptions:fields": "id,categories[id,code],organisationUnits[id]",
+            "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`,
+            "organisationUnits:fields": "id,displayName,path",
+            "organisationUnits:filter": `id:in:[${orgUnitsId}]`,
         });
-        const { id: categoryId, categoryOptions } = categories[0];
-        const antigensMeta = _.filter(categoryOptions, op => _.includes(antigenCodes, op.code));
+
+        const { id: antigenCategory } = categories[0];
+        const antigensMeta = _.filter(categories[0].categoryOptions, op =>
+            _.includes(antigenCodes, op.code)
+        );
+
+        if (!categoryOptions || !categoryOptions[0].categories) {
+            throw new Error("Organization Units chosen have no teams associated"); // TEMP: Check will be made dynamically on orgUnit selection step
+        }
+
+        const teamsByOrgUnit = organisationUnitsPathOnly.reduce((acc, ou) => {
+            let teams: string[] = [];
+            categoryOptions.forEach(
+                (co: { id: string; organisationUnits: object[]; categories: object[] }) => {
+                    const coIsTeam = _(co.categories)
+                        .map("code")
+                        .includes(categoryCodeForTeams);
+                    const coIncludesOrgUnit = _(co.organisationUnits)
+                        .map("id")
+                        .some((coOu: string) => ou.path.includes(coOu));
+
+                    if (coIsTeam && coIncludesOrgUnit) {
+                        teams.push(co.id);
+                    }
+                }
+            );
+            return { ...acc, [ou.id]: teams };
+        }, {});
+
+        const teamsMetadata: Dictionary<any> = {
+            ...teamsByOrgUnit,
+            categoryId: categoryOptions[0].categories[0].id,
+        };
+
         const dashboardMetadata = {
-            antigenCategory: categoryId,
+            antigenCategory,
             dataElements: {
                 type: "DATA_ELEMENT",
                 data: dataElements,
@@ -307,25 +364,34 @@ export default class DbD2 {
                 key: "indicator",
             },
             antigensMeta,
+            organisationUnitsWithName,
+            disaggregationMetadata: {
+                teams: (antigen = null, orgUnit: { id: string }) => ({
+                    categoryId: teamsMetadata.categoryId,
+                    teams: teamsMetadata[orgUnit.id],
+                }),
+            },
         };
 
         return dashboardMetadata;
     }
 
     public async createDashboard(
-        name: String,
+        datasetName: String,
         organisationUnits: OrganisationUnitPathOnly[],
         antigens: Antigen[],
-        datasetId: String,
         startDate: Date | null,
-        endDate: Date | null
+        endDate: Date | null,
+        categoryCodeForTeams: string
     ): Promise<DashboardData> {
-        const dashboardItemsMetadata = await this.getMetadataForDashboardItems(antigens);
+        const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
+            antigens,
+            organisationUnits,
+            categoryCodeForTeams
+        );
 
         const dashboardItems = this.createDashboardItems(
-            name,
-            organisationUnits,
-            datasetId,
+            datasetName,
             startDate,
             endDate,
             dashboardItemsMetadata
@@ -337,24 +403,27 @@ export default class DbD2 {
             .fromPairs()
             .value();
 
-        const dashboard = { id: generateUid(), name: `${name}_DASHBOARD`, dashboardItems: items };
+        const dashboard = {
+            id: generateUid(),
+            name: `${datasetName}_DASHBOARD`,
+            dashboardItems: items,
+        };
 
         return { dashboard, charts, reportTables };
     }
 
     createDashboardItems(
-        name: String,
-        organisationUnits: OrganisationUnitPathOnly[],
-        datasetId: String,
+        datasetName: String,
         startDate: Date | null,
         endDate: Date | null,
         dashboardItemsMetadata: Dictionary<any>
     ): DashboardData {
-        const organisationUnitsIds = organisationUnits.map(ou => ({ id: ou.id }));
-        const organizationUnitsParents = _(organisationUnits)
-            .map(ou => [ou.id, ou.path])
-            .fromPairs()
-            .value();
+        const { organisationUnitsWithName } = dashboardItemsMetadata;
+        const organisationUnitsMetadata = organisationUnitsWithName.map((ou: OrganisationUnit) => ({
+            id: ou.id,
+            parents: { [ou.id]: ou.path },
+            name: ou.displayName,
+        }));
         const periodStart = startDate ? moment(startDate) : moment();
         const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
         const periodRange = getDaysRange(periodStart, periodEnd);
@@ -362,26 +431,24 @@ export default class DbD2 {
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
 
-        const expectedCharts = _(dashboardItemsConfig.appendCodes)
-            .keys()
-            .value();
+        const { antigenCategoryCode, ...itemsConfig } = dashboardItemsConfig;
+        const expectedCharts = _.flatMap(itemsConfig, _.keys);
 
-        const keys = ["antigenCategory", ...expectedCharts] as Array<
+        const keys = ["antigenCategory", "disaggregationMetadata", ...expectedCharts] as Array<
             keyof typeof dashboardItemsElements
         >;
-        const { antigenCategory, ...elements } = _(keys)
+        const { antigenCategory, disaggregationMetadata, ...elements } = _(keys)
             .map(key => [key, _(dashboardItemsElements).getOrFail(key)])
             .fromPairs()
             .value();
 
         const dashboardItems = buildDashboardItems(
             antigensMeta,
-            name,
-            datasetId,
-            organisationUnitsIds,
-            organizationUnitsParents,
+            datasetName,
+            organisationUnitsMetadata,
             period,
             antigenCategory,
+            disaggregationMetadata,
             elements
         );
         const charts = _(dashboardItems).getOrFail("charts");
