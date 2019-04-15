@@ -30,10 +30,6 @@ class CampaignWizard extends React.Component {
 
     constructor(props) {
         super(props);
-        const startDate = new Date();
-        const endDate = new Date();
-        startDate.setDate(startDate.getDate() - 1);
-        endDate.setDate(endDate.getDate() + 1);
 
         const campaign = Campaign.create(props.config, new DbD2(props.d2));
 

@@ -234,26 +234,26 @@ export default class Campaign {
     public async save(): Promise<Response<string>> {
         const dataSetId = generateUid();
         const metadataConfig = this.config;
-        const teamsCode = metadataConfig.categoryComboCodeForTeams;
+        const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
         const vaccinationAttribute = await this.db.getAttributeIdByCode(
             metadataConfig.attibuteCodeForApp
         );
         const dashboardAttribute = await this.db.getAttributeIdByCode(
             metadataConfig.attributeCodeForDashboard
         );
-        const categoryCombos = await this.db.getCategoryCombosByCode([teamsCode]);
+        const categoryCombos = await this.db.getCategoryCombosByCode([categoryComboCodeForTeams]);
         const categoryCombosByCode = _(categoryCombos)
             .keyBy("code")
             .value();
-        const categoryComboTeams = _(categoryCombosByCode).get(teamsCode);
+        const categoryComboTeams = _(categoryCombosByCode).get(categoryComboCodeForTeams);
 
         const { dashboard, charts, reportTables } = await this.db.createDashboard(
             this.name,
             this.organisationUnits,
             this.antigens,
-            dataSetId,
             this.startDate,
-            this.endDate
+            this.endDate,
+            categoryCodeForTeams
         );
 
         const { targetPopulation } = this.data;
@@ -261,7 +261,10 @@ export default class Campaign {
         if (!vaccinationAttribute || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: Attributes" };
         } else if (!categoryComboTeams) {
-            return { status: false, error: `Metadata not found: categoryCombo.code=${teamsCode}` };
+            return {
+                status: false,
+                error: `Metadata not found: categoryCombo.code=${categoryComboCodeForTeams}`,
+            };
         } else if (!dashboard) {
             return { status: false, error: "Error creating dashboard" };
         } else if (!targetPopulation) {
