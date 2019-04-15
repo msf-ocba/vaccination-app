@@ -54,7 +54,7 @@ class CampaignWizard extends React.Component {
                     `Select the health facilities or health area where the campaign will be implemented`
                 ),
                 help: i18n.t(
-                    `Select the organization units which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
+                    `Select the organisation units which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
                 ),
             },
             {

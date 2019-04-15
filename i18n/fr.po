@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-12T12:27:25.671Z\n"
+"POT-Creation-Date: 2019-04-15T11:53:17.746Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -71,9 +71,6 @@ msgstr ""
 msgid "Download data"
 msgstr ""
 
-msgid "Cannot find dashboard associated to the campaign"
-msgstr ""
-
 msgid "Only my campaigns"
 msgstr ""
 
@@ -89,7 +86,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Select the organization units which will implement the campaign. At least "
+"Select the organisation units which will implement the campaign. At least "
 "one must be selected. Only organisation units of level 5 (Health site) can "
 "be selected."
 msgstr ""
@@ -169,6 +166,12 @@ msgid "Cancel"
 msgstr ""
 
 msgid "Ok"
+msgstr ""
+
+msgid "Cannot find dashboard associated to the campaign"
+msgstr ""
+
+msgid "Cannot find dataset associated to the campaign"
 msgstr ""
 
 msgid "Back"
