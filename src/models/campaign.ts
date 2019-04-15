@@ -254,12 +254,16 @@ export default class Campaign {
             .keyBy("code")
             .value();
         const categoryComboTeams = _(categoryCombosByCode).get(categoryComboCodeForTeams);
-        
+
         if (!this.startDate || !this.endDate) {
             return { status: false, error: "Campaign Dates not set" };
         }
-        const startDate = moment(this.startDate).utc().startOf("day");
-        const endDate = moment(this.endDate).utc().endOf("day");
+        const startDate = moment(this.startDate)
+            .utc()
+            .startOf("day");
+        const endDate = moment(this.endDate)
+            .utc()
+            .endOf("day");
         const { dashboard, charts, reportTables } = await this.db.createDashboard(
             this.name,
             this.organisationUnits,
