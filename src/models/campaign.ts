@@ -258,12 +258,8 @@ export default class Campaign {
         if (!this.startDate || !this.endDate) {
             return { status: false, error: "Campaign Dates not set" };
         }
-        const startDate = moment(this.startDate)
-            .utc()
-            .startOf("day");
-        const endDate = moment(this.endDate)
-            .utc()
-            .endOf("day");
+        const startDate = moment(this.startDate).startOf("day");
+        const endDate = moment(this.endDate).endOf("day");
         const { dashboard, charts, reportTables } = await this.db.createDashboard(
             this.name,
             this.organisationUnits,
@@ -297,8 +293,8 @@ export default class Campaign {
             }));
 
             const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
-                openingDate: this.startDate ? this.startDate.toISOString() : undefined,
-                closingDate: endDate ? endDate.toISOString() : undefined,
+                openingDate: startDate.toISOString(),
+                closingDate: endDate.toISOString(),
                 period: { id: date.format("YYYYMMDD") },
             }));
 
