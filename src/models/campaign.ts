@@ -77,13 +77,9 @@ export default class Campaign {
         const validation = {
             name: !name.trim() ? getError("cannot_be_blank", { field: "name" }) : [],
 
-            startDate:
-                !startDate && endDate
-                    ? getError("cannot_be_blank_if_other_set", {
-                          field: "startDate",
-                          other: "endDate",
-                      })
-                    : [],
+            startDate: !startDate ? getError("cannot_be_blank", { field: "start date" }) : [],
+
+            endDate: !endDate ? getError("cannot_be_blank", { field: "end date" }) : [],
 
             organisationUnits: this.validateOrganisationUnits(),
 
@@ -293,8 +289,7 @@ export default class Campaign {
 
             const toMoment = (date: Date | null) => (date ? moment(date) : null);
             const startDate = toMoment(this.startDate);
-            const endDate =
-                !this.endDate && this.startDate ? moment().endOf("year") : toMoment(this.endDate);
+            const endDate = toMoment(this.endDate);
 
             const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
                 openingDate: this.startDate ? this.startDate.toISOString() : undefined,
