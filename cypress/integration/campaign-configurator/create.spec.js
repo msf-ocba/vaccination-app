@@ -14,7 +14,9 @@ describe("Campaign configuration - Create", () => {
         cy.contains("New vaccination campaign");
 
         // Organisation Units Step
-        cy.contains("Select the organization units which will implement the campaign");
+        cy.contains(
+            "Select the health facilities or health area where the campaign will be implemented"
+        );
 
         cy.contains("Next").click();
         cy.contains("Select at least one organisation unit");
