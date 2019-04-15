@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-14T09:53:55.397Z\n"
+"POT-Creation-Date: 2019-04-15T12:15:23.972Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -70,6 +70,7 @@ msgstr "Ir a tablero"
 
 msgid "Download data"
 msgstr "Descargar datos"
+
 msgid "Only my campaigns"
 msgstr "Solo mis campañas"
 
@@ -204,9 +205,6 @@ msgstr "Atrás"
 
 msgid "Field cannot be blank"
 msgstr "El campo no puede estar vacío"
-
-msgid "Start date"
-msgstr "Fecha de inicio"
 
 msgid "Error saving campaign"
 msgstr "Se produjo un error al guardar la campaña"

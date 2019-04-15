@@ -85,7 +85,7 @@ class GeneralInfoStep extends React.Component {
                 value: campaign.startDate,
                 component: DatePicker,
                 props: {
-                    label: i18n.t("Start date"),
+                    label: i18n.t("Start Date"),
                     value: campaign.startDate,
                     onChange: value => this.onUpdateField("startDate", value),
                 },
