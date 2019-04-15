@@ -254,13 +254,18 @@ export default class Campaign {
             .keyBy("code")
             .value();
         const categoryComboTeams = _(categoryCombosByCode).get(categoryComboCodeForTeams);
-
+        
+        if (!this.startDate || !this.endDate) {
+            return { status: false, error: "Campaign Dates not set" };
+        }
+        const startDate = moment(this.startDate).utc().startOf("day");
+        const endDate = moment(this.endDate).utc().endOf("day");
         const { dashboard, charts, reportTables } = await this.db.createDashboard(
             this.name,
             this.organisationUnits,
             this.antigens,
-            this.startDate,
-            this.endDate,
+            startDate,
+            endDate,
             categoryCodeForTeams
         );
 
@@ -286,10 +291,6 @@ export default class Campaign {
                 dataElement: { id: dataElement.id },
                 categoryCombo: { id: dataElement.categoryCombo.id },
             }));
-
-            const toMoment = (date: Date | null) => (date ? moment(date) : null);
-            const startDate = toMoment(this.startDate);
-            const endDate = toMoment(this.endDate);
 
             const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
                 openingDate: this.startDate ? this.startDate.toISOString() : undefined,
