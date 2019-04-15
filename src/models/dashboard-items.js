@@ -109,27 +109,29 @@ export function buildDashboardItems(
         antigenCategory,
     };
 
-    const charts = antigensMeta
-        .map(antigen =>
+    const charts = _(antigensMeta)
+        .flatMap(antigen =>
             organisationUnitsMetadata.map(ou => getCharts(antigen, elements, ou, itemsMetadata))
         )
-        .flat();
-    const tables = antigensMeta
-        .map(antigen =>
+        .value();
+    const tables = _(antigensMeta)
+        .flatMap(antigen =>
             organisationUnitsMetadata.map(ou =>
                 getTables(antigen, elements, ou, itemsMetadata, disaggregationMetadata)
             )
         )
-        .flat();
+        .value();
 
     return { charts: _.flatten(charts), reportTables: _.flatten(tables) };
 }
 
 const dataMapper = (dataList, filterList) =>
-    dataList.data.filter(({ code }) => _.includes(filterList, code)).map(({ id }) => ({
-        dataDimensionItemType: dataList.type,
-        [dataList.key]: { id },
-    }));
+    dataList.data
+        .filter(({ code }) => _.includes(filterList, code))
+        .map(({ id }) => ({
+            dataDimensionItemType: dataList.type,
+            [dataList.key]: { id },
+        }));
 
 export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const {
@@ -141,21 +143,19 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const { tables, charts } = dashboardItemsConfig;
 
     const tableElements = _(tables)
-        .map(
-            (item, key) =>
-                item.dataType === "INDICATOR"
-                    ? [key, dataMapper(indicators, item.elements)]
-                    : [key, dataMapper(dataElements, item.elements)]
+        .map((item, key) =>
+            item.dataType === "INDICATOR"
+                ? [key, dataMapper(indicators, item.elements)]
+                : [key, dataMapper(dataElements, item.elements)]
         )
         .fromPairs()
         .value();
 
     const chartElements = _(charts)
-        .map(
-            (item, key) =>
-                item.dataType === "INDICATOR"
-                    ? [key, dataMapper(indicators, item.elements)]
-                    : [key, dataMapper(dataElements, item.elements)]
+        .map((item, key) =>
+            item.dataType === "INDICATOR"
+                ? [key, dataMapper(indicators, item.elements)]
+                : [key, dataMapper(dataElements, item.elements)]
         )
         .fromPairs()
         .value();
