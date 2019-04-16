@@ -1,6 +1,6 @@
 import { AnalyticsResponse } from "./db-d2";
+import { Moment } from "moment";
 import { Dictionary } from "lodash";
-import moment from "moment";
 import { generateUid } from "d2/uid";
 import { D2, D2Api } from "./d2.types";
 import {
@@ -380,8 +380,8 @@ export default class DbD2 {
         datasetName: String,
         organisationUnits: OrganisationUnitPathOnly[],
         antigens: Antigen[],
-        startDate: Date | null,
-        endDate: Date | null,
+        startDate: Moment,
+        endDate: Moment,
         categoryCodeForTeams: string
     ): Promise<DashboardData> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
@@ -414,8 +414,8 @@ export default class DbD2 {
 
     createDashboardItems(
         datasetName: String,
-        startDate: Date | null,
-        endDate: Date | null,
+        startDate: Moment,
+        endDate: Moment,
         dashboardItemsMetadata: Dictionary<any>
     ): DashboardData {
         const { organisationUnitsWithName } = dashboardItemsMetadata;
@@ -424,9 +424,7 @@ export default class DbD2 {
             parents: { [ou.id]: ou.path },
             name: ou.displayName,
         }));
-        const periodStart = startDate ? moment(startDate) : moment();
-        const periodEnd = endDate ? moment(endDate) : moment().endOf("year");
-        const periodRange = getDaysRange(periodStart, periodEnd);
+        const periodRange = getDaysRange(startDate, endDate);
         const period = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
