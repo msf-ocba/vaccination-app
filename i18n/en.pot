@@ -5,11 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-03-11T11:33:36.984Z\n"
-"PO-Revision-Date: 2019-03-11T11:33:36.984Z\n"
-
-msgid "Vaccination"
-msgstr ""
+"POT-Creation-Date: 2019-04-15T23:07:26.532Z\n"
+"PO-Revision-Date: 2019-04-15T23:07:26.532Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -32,13 +29,13 @@ msgstr ""
 msgid "Last updated"
 msgstr ""
 
-msgid "Short name"
-msgstr ""
-
-msgid "Code"
-msgstr ""
-
 msgid "Description"
+msgstr ""
+
+msgid "Start Date"
+msgstr ""
+
+msgid "End Date"
 msgstr ""
 
 msgid "Created"
@@ -74,22 +71,24 @@ msgstr ""
 msgid "Download data"
 msgstr ""
 
-msgid "Cannot find dashboard associated to the campaign"
+msgid "Only my campaigns"
 msgstr ""
 
-msgid "Only my campaigns"
+msgid "Campaigns"
 msgstr ""
 
 msgid "Organisation Units"
 msgstr ""
 
-msgid "Select the organization units which will implement the campaign"
+msgid ""
+"Select the health facilities or health area where the campaign will be "
+"implemented"
 msgstr ""
 
 msgid ""
-"Select the organization units which will implement the campaign.\n"
-"At least one must be selected.\n"
-"Only organisation units of level 6 (service) can be selected"
+"Select the organisation units which will implement the campaign. At least "
+"one must be selected. Only organisation units of level 5 (Health site) can "
+"be selected."
 msgstr ""
 
 msgid "General info"
@@ -104,21 +103,51 @@ msgstr ""
 msgid "Select the antigens which will be administered"
 msgstr ""
 
-msgid "Indicators Configuration"
+msgid "Select the antigens which will be administered."
+msgstr ""
+
+msgid "Configure Indicators"
 msgstr ""
 
 msgid "Select indicators and categories for each antigen"
 msgstr ""
 
+msgid ""
+"Select the indicators and breakdowns that you wish to monitor for each "
+"antigen in your campaign.\n"
+"\n"
+"                Standard age groups for each antigen appear by default. In "
+"some cases, you may click on an age group to select subdivisions if that "
+"information is important for your campaign. Compulsory indicators may not "
+"be un-selected."
+msgstr ""
+
+msgid "Target Population"
+msgstr ""
+
+msgid ""
+"Specify target population, totals and age percentages for the age ranges "
+"required by all selected antigens. The source of those values are the DHIS2 "
+"analytics endpoint. Like-wise, any change you make in this step will only "
+"be applied once you run the analytics."
+msgstr ""
+
+msgid ""
+"Specify target population, totals and age percentages for the age ranges "
+"required by all selected antigens."
+msgstr ""
+
 msgid "Save"
 msgstr ""
 
-msgid "Setup is finished. Press the button Save to save the data"
+msgid ""
+"Setup of your campaign is complete. Click the \"Save\" button to save your "
+"campaign and access tally sheets, data entry or analysis"
 msgstr ""
 
 msgid ""
 "Press the button to create the dataset and all the metadata associated with "
-"this vaccination campaign"
+"this vaccination campaign."
 msgstr ""
 
 msgid "Cancel Campaign Creation?"
@@ -132,22 +161,22 @@ msgstr ""
 msgid "New vaccination campaign"
 msgstr ""
 
-msgid "Back"
-msgstr ""
-
 msgid "Cancel"
 msgstr ""
 
 msgid "Ok"
 msgstr ""
 
+msgid "Cannot find dashboard associated to the campaign"
+msgstr ""
+
+msgid "Cannot find dataset associated to the campaign"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
 msgid "Field cannot be blank"
-msgstr ""
-
-msgid "Start date"
-msgstr ""
-
-msgid "End Date"
 msgstr ""
 
 msgid "Error saving campaign"
@@ -160,6 +189,12 @@ msgid "[None]"
 msgstr ""
 
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
+msgstr ""
+
+msgid "Total population"
+msgstr ""
+
+msgid "Age distribution (%)"
 msgstr ""
 
 msgid "Period dates"
@@ -190,4 +225,10 @@ msgid "Field {{field}} cannot be blank if field {{other}} is set"
 msgstr ""
 
 msgid "Select at least one antigen"
+msgstr ""
+
+msgid "You must select at least one option of the category"
+msgstr ""
+
+msgid "No target population defined"
 msgstr ""

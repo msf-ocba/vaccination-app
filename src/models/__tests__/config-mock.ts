@@ -3,10 +3,18 @@ import { MetadataConfig } from "../config";
 const metadataConfig: MetadataConfig = {
     categoryCodeForAntigens: "RVC_ANTIGEN",
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
+    categoryComboCodeForAgeGroup: "RVC_AGE_GROUP",
+    categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_RVC_AGE_GROUP",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
+    categoryCodeForTeams: "RVC_TEAM",
     attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     attributeCodeForDashboard: "RVC_DASHBOARD_ID",
+    dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
+    dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
+    dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
+    organisationUnitLevels: [],
+    categoryCombos: [],
     categories: [
         {
             name: "Antigens",
@@ -61,6 +69,34 @@ const metadataConfig: MetadataConfig = {
             $categoryOptions: { kind: "values", values: [] },
         },
     ],
+    population: {
+        totalPopulationDataElement: {
+            id: "1",
+            code: "CODE",
+            displayName: "Total population",
+            categoryCombo: { id: "1" },
+        },
+        ageDistributionDataElement: {
+            id: "2",
+            code: "CODE",
+            displayName: "Age distribution (%)",
+            categoryCombo: { id: "1" },
+        },
+        populationByAgeDataElement: {
+            id: "3",
+            code: "CODE",
+            displayName: "Population By age",
+            categoryCombo: { id: "1" },
+        },
+        ageGroupCategory: {
+            id: "1",
+            code: "RVC_AGE_GROUP",
+            displayName: "Age Group",
+            categoryOptions: [],
+            dataDimensionType: "DISAGGREGATION",
+            dataDimension: true,
+        },
+    },
     dataElements: [
         {
             id: "1",

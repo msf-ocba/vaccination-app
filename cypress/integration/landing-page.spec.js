@@ -7,7 +7,6 @@ context("Landing page", () => {
     });
 
     beforeEach(() => {
-        cy.login("admin");
         cy.visit("/");
     });
 
@@ -37,7 +36,7 @@ context("Landing page", () => {
 
     describe("when clicked on Data Entry", () => {
         it("redirects to Data Entry", () => {
-            cy.contains("Data Entry").click();
+            cy.contains("Data Entry").click({ force: true });
             cy.url().should("include", "/dhis-web-dataentry");
         });
     });

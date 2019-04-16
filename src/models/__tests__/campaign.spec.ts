@@ -14,10 +14,12 @@ describe("Campaign", () => {
             const messages = campaign.validate();
             expect(messages).toEqual(
                 expect.objectContaining({
-                    name: {
-                        key: "cannot_be_blank",
-                        namespace: { field: "name" },
-                    },
+                    name: [
+                        {
+                            key: "cannot_be_blank",
+                            namespace: { field: "name" },
+                        },
+                    ],
                 })
             );
         });
@@ -31,7 +33,7 @@ describe("Campaign", () => {
             );
         });
 
-        it("requires at orgunits of level 6", () => {
+        it("requires at least one orgunit of level 5", () => {
             const ids = [
                 "zOyMxdCLXBM",
                 "G7g4TvbjFlX",
@@ -63,7 +65,7 @@ describe("Campaign", () => {
                     ]);
                     const messages = campaignWithOrgUnit.validate();
 
-                    if (level == 6) {
+                    if (level == 5) {
                         expect(messages).toEqual(
                             expect.objectContaining({
                                 organisationUnits: [],
@@ -75,7 +77,7 @@ describe("Campaign", () => {
                                 organisationUnits: [
                                     {
                                         key: "organisation_units_only_of_levels",
-                                        namespace: { levels: "6" },
+                                        namespace: { levels: "5" },
                                     },
                                 ],
                             })

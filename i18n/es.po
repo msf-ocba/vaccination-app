@@ -1,15 +1,12 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-03-11T11:33:36.984Z\n"
+"POT-Creation-Date: 2019-04-15T12:15:23.972Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-
-msgid "Vaccination"
-msgstr "Vacunación"
 
 msgid "Campaign Configuration"
 msgstr "Configurador de campaña"
@@ -32,14 +29,14 @@ msgstr "Acceso público"
 msgid "Last updated"
 msgstr "Última actualización"
 
-msgid "Short name"
-msgstr "Nombre corto"
-
-msgid "Code"
-msgstr "Código"
-
 msgid "Description"
 msgstr "Descripción"
+
+msgid "Start Date"
+msgstr "Fecha de inicio"
+
+msgid "End Date"
+msgstr "Fecha de fin"
 
 msgid "Created"
 msgstr "Fecha de creación"
@@ -74,26 +71,29 @@ msgstr "Ir a tablero"
 msgid "Download data"
 msgstr "Descargar datos"
 
-msgid "Cannot find dashboard associated to the campaign"
-msgstr "No hay ningún tablero asociado a la campaña"
-
 msgid "Only my campaigns"
 msgstr "Solo mis campañas"
+
+msgid "Campaigns"
+msgstr "Campañas"
 
 msgid "Organisation Units"
 msgstr "Unidades organizativas"
 
-msgid "Select the organization units which will implement the campaign"
-msgstr "Seleccione las unidades organizativas asignadas a esta campaña"
+msgid ""
+"Select the health facilities or health area where the campaign will be "
+"implemented"
+msgstr ""
+"Seleccione los centros o áreas de salud donde la campaña se llevara a cabo"
 
 msgid ""
-"Select the organization units which will implement the campaign.\n"
-"At least one must be selected.\n"
-"Only organisation units of level 6 (service) can be selected"
+"Select the organisation units which will implement the campaign. At least "
+"one must be selected. Only organisation units of level 5 (Health site) can "
+"be selected."
 msgstr ""
-"Seleccione las unidades organizativas asignadas a esta campaña.\n"
-"Debe seleccionar al menos una unidad.\n"
-"Únicamente unidades de nivel 6 (Servicio) pueden seleccionarse"
+"Seleccione las unidades organizativas asignadas a esta campaña. Debe "
+"seleccionar al menos una unidad. Únicamente unidades de nivel 5 (Puesto de "
+"salud) pueden seleccionarse"
 
 msgid "General info"
 msgstr "Información general"
@@ -110,21 +110,67 @@ msgstr "Antígenos"
 msgid "Select the antigens which will be administered"
 msgstr "Seleccione los antígenos incluídos en la campaña"
 
-msgid "Indicators Configuration"
-msgstr "Configuración de indicadores"
+msgid "Select the antigens which will be administered."
+msgstr "Seleccione los antígenos que seran administrados"
+
+msgid "Configure Indicators"
+msgstr "Configurar Indicadores"
 
 msgid "Select indicators and categories for each antigen"
 msgstr "Seleccione los indicadores y las categorías para cada antígeno"
 
+msgid ""
+"Select the indicators and breakdowns that you wish to monitor for each "
+"antigen in your campaign.\n"
+"\n"
+"                Standard age groups for each antigen appear by default. In "
+"some cases, you may click on an age group to select subdivisions if that "
+"information is important for your campaign. Compulsory indicators may not be "
+"un-selected."
+msgstr ""
+"Selecciones los indicadores y desagregaciones que desea monitorizar para "
+"cada uno en su campaña.\n"
+"\n"
+"           Los grupos de edad estándar para cada antígeno son seleccionados "
+"por defecto. En algunos casos es posible hacer click sobre un grupo de edad "
+"para seleccionar subdivisiones si esa información es importante para su "
+"campaña. Los indicadores obligatorios no pueden ser de-seleccionados."
+
+msgid "Target Population"
+msgstr "Población objetivo"
+
+msgid ""
+"Specify target population, totals and age percentages for the age ranges "
+"required by all selected antigens. The source of those values are the DHIS2 "
+"analytics endpoint. Like-wise, any change you make in this step will only be "
+"applied once you run the analytics."
+msgstr ""
+"Especifique la población objetivo, totales y porcentajes por edad requeridos "
+"por los antígenos seleccionados. La fuente de estos valores son las "
+"análiticas de DHIS2. De igual modo, cualquier cambio que haga en este paso, "
+"se aplicará únicamente cuando ejecute las analíticas."
+
+msgid ""
+"Specify target population, totals and age percentages for the age ranges "
+"required by all selected antigens."
+msgstr ""
+"Especifique la población objetivo, totales y porcentajes por edad requeridos "
+"por los antígenos seleccionados."
+
 msgid "Save"
 msgstr "Guardar"
 
-msgid "Setup is finished. Press the button Save to save the data"
-msgstr "La configuración ha terminado. Pulse el botón para guardar los datos"
+msgid ""
+"Setup of your campaign is complete. Click the \"Save\" button to save your "
+"campaign and access tally sheets, data entry or analysis"
+msgstr ""
+"La configuración de la campaña esta completa. Presione \"Guardar\" para "
+"almacenarla campaña y acceder a las hojas de calculo, el ingreso de datos o "
+"análisis dela campaña."
 
 msgid ""
 "Press the button to create the dataset and all the metadata associated with "
-"this vaccination campaign"
+"this vaccination campaign."
 msgstr ""
 "Pulse el botón guardar para crear el dataset y todos los metadatos asociados "
 "con esta campaña de vacunación"
@@ -142,23 +188,23 @@ msgstr ""
 msgid "New vaccination campaign"
 msgstr "Nueva campaña"
 
-msgid "Back"
-msgstr "Atrás"
-
 msgid "Cancel"
 msgstr "Cancelar"
 
 msgid "Ok"
 msgstr "Aceptar"
 
+msgid "Cannot find dashboard associated to the campaign"
+msgstr "No hay ningún tablero asociado a la campaña"
+
+msgid "Cannot find dataset associated to the campaign"
+msgstr "No hay ningún dataset asociado a la campaña"
+
+msgid "Back"
+msgstr "Atrás"
+
 msgid "Field cannot be blank"
 msgstr "El campo no puede estar vacío"
-
-msgid "Start date"
-msgstr "Fecha de inicio"
-
-msgid "End Date"
-msgstr "Fecha de fin"
 
 msgid "Error saving campaign"
 msgstr "Se produjo un error al guardar la campaña"
@@ -171,6 +217,12 @@ msgstr "[Vacío]"
 
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr "[{{total}}] {{names}} y {{othersCount}} otros"
+
+msgid "Total population"
+msgstr "Población total"
+
+msgid "Age distribution (%)"
+msgstr "Distribución por edades (%)"
 
 msgid "Period dates"
 msgstr "Periodo"
@@ -202,3 +254,9 @@ msgstr "El campo {{field}} no puede estar vacío si {{other}} tiene un valor"
 
 msgid "Select at least one antigen"
 msgstr "Seleccione al menos un antígeno"
+
+msgid "You must select at least one option of the category"
+msgstr "Debes seleccionar al menos una opción de la categoría"
+
+msgid "No target population defined"
+msgstr "Población objetivo no definida"

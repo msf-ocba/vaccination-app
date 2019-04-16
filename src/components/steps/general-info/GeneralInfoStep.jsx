@@ -30,6 +30,9 @@ class GeneralInfoStep extends React.Component {
             case "name":
                 newCampaign = campaign.setName(newValue);
                 break;
+            case "description":
+                newCampaign = campaign.setDescription(newValue);
+                break;
             case "startDate":
                 newCampaign = campaign.setStartDate(newValue);
                 break;
@@ -66,11 +69,23 @@ class GeneralInfoStep extends React.Component {
                 ],
             },
             {
+                name: "description",
+                value: campaign.description,
+                component: TextField,
+                props: {
+                    floatingLabelText: i18n.t("Description"),
+                    style: { width: "33%" },
+                    changeEvent: "onBlur",
+                    "data-field": "description",
+                    multiLine: true,
+                },
+            },
+            {
                 name: "startDate",
                 value: campaign.startDate,
                 component: DatePicker,
                 props: {
-                    label: i18n.t("Start date"),
+                    label: i18n.t("Start Date"),
                     value: campaign.startDate,
                     onChange: value => this.onUpdateField("startDate", value),
                 },

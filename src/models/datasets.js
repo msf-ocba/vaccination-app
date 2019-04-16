@@ -2,8 +2,6 @@ import _ from "lodash";
 
 const fields = [
     "id",
-    "name",
-    "code",
     "displayName",
     "displayDescription",
     "shortName",
@@ -16,6 +14,7 @@ const fields = [
     "user",
     "access",
     "attributeValues[value, attribute[code]]",
+    "dataInputPeriods~paging=(1;1)",
     "href",
 ];
 
@@ -66,4 +65,25 @@ export function getDashboardId(dataSet, config) {
         .filter(av => av.attribute.code === config.attributeCodeForDashboard)
         .map(av => av.value)
         .first();
+}
+
+export async function getOrganisationUnitsById(id, d2) {
+    const fields = "organisationUnits[id,name]";
+    const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
+    const organisationUnits = dataSet ? dataSet.organisationUnits.toArray() : null;
+    //TODO: Make it so the user can choose the OU
+    return _(organisationUnits).isEmpty() ? undefined : organisationUnits[0].id;
+}
+
+export async function getDataInputPeriodsById(id, d2) {
+    const fields = "dataInputPeriods";
+    const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
+    const dataInputPeriods = dataSet.dataInputPeriods;
+    return _(dataInputPeriods).isEmpty() ? undefined : dataInputPeriods[0];
+}
+
+export async function getDatasetById(id, d2) {
+    const fields = ["id", "attributeValues[value, attribute[code]]"].join(",");
+    const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
+    return dataSet;
 }

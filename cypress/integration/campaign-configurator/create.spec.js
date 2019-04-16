@@ -14,18 +14,17 @@ describe("Campaign configuration - Create", () => {
         cy.contains("New vaccination campaign");
 
         // Organisation Units Step
-        cy.contains("Select the organization units which will implement the campaign");
+        cy.contains(
+            "Select the health facilities or health area where the campaign will be implemented"
+        );
 
         cy.contains("Next").click();
         cy.contains("Select at least one organisation unit");
 
         expandOrgUnit("OCBA");
-        expandOrgUnit("ANGOLA");
-        expandOrgUnit("HUAMBO");
-        expandOrgUnit("Hospital central de Huambo");
-
-        selectOrgUnit("Emergency Room");
-        selectOrgUnit("Paediatric Ward");
+        expandOrgUnit("ETHIOPIA");
+        expandOrgUnit("ETHIOPIA, MERT");
+        selectOrgUnit("Cholera Intervention Addis 2016");
 
         cy.contains("Next").click();
 
@@ -35,11 +34,11 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Field name cannot be blank");
 
         cy.get("[data-field='name']").type("Test vaccination campaign");
-        cy.contains("Start date").click({ force: true });
+        cy.contains("Start Date").click({ force: true });
         clickDay(11);
 
         cy.contains("End Date").click({ force: true });
-        clickDay(25);
+        clickDay(13);
 
         cy.contains("Next").click();
 
@@ -60,6 +59,25 @@ describe("Campaign configuration - Create", () => {
 
         cy.contains("Next").click();
 
+        // Target population
+
+        cy.contains("Cholera Intervention Addis 2016");
+
+        cy.get("[test-total-population=0] [aria-label=Edit]").click();
+        cy.get("[test-total-population=0] input")
+            .clear()
+            .type(1000);
+
+        cy.get("[test-population-distribution=0] [aria-label=Edit]").click();
+        cy.get("[test-population-distribution=0] input").each(($el, idx) => {
+            cy.wrap($el)
+                .clear()
+                .type(idx + 1);
+        });
+        cy.get("#root")
+            .contains("Next")
+            .click();
+
         // Save step
 
         cy.get("[data-test-current=true]").contains("Save");
@@ -70,7 +88,7 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Period dates");
         const now = moment();
         const expectedDataStart = now.set("date", 11).format("LL");
-        const expectedDataEnd = now.set("date", 25).format("LL");
+        const expectedDataEnd = now.set("date", 13).format("LL");
         cy.contains(`${expectedDataStart} -> ${expectedDataEnd}`);
 
         cy.contains("Antigens");
@@ -78,18 +96,14 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Cholera");
 
         cy.contains("Organisation Units");
-        cy.contains(
-            "[2] " +
-                [
-                    "MSF-OCBA-ANGOLA-HUAMBO, Malaria outbreak-Hospital central de Huambo-Emergency Room",
-                    "MSF-OCBA-ANGOLA-HUAMBO, Malaria outbreak-Hospital central de Huambo-Paediatric Ward",
-                ].join(", ")
-        );
+        cy.contains("MSF -> OCBA -> ETHIOPIA -> ETHIOPIA, MERT -> Cholera Intervention Addis 2016");
 
+        cy.route("POST", "/api/metadata").as("metadataRequest");
         cy.get("[data-wizard-contents] button")
             .contains("Save")
             .click();
 
+        cy.wait("@metadataRequest");
         cy.contains("Campaign created: Test vaccination campaign");
     });
 });
