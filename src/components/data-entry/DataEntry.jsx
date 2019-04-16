@@ -42,7 +42,7 @@ class DataEntry extends React.Component {
     waitforOUSelection(element) {
         return new Promise(resolve => {
             const check = () => {
-                if (element.value === "-1") {
+                if (element.childNodes.length > 0) {
                     resolve();
                 } else {
                     setTimeout(check, 500);
