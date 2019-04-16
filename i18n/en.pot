@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-15T12:15:23.972Z\n"
-"PO-Revision-Date: 2019-04-15T12:15:23.972Z\n"
+"POT-Creation-Date: 2019-04-15T23:07:26.532Z\n"
+"PO-Revision-Date: 2019-04-15T23:07:26.532Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -171,9 +171,6 @@ msgid "Cannot find dashboard associated to the campaign"
 msgstr ""
 
 msgid "Cannot find dataset associated to the campaign"
-msgstr ""
-
-msgid "This is not a valid period for this campaign. Choose a period between and "
 msgstr ""
 
 msgid "Back"

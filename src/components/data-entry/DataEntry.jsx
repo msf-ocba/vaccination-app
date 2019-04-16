@@ -45,7 +45,7 @@ class DataEntry extends React.Component {
                 if (element.value === "-1") {
                     resolve();
                 } else {
-                    setTimeout(check, 1000);
+                    setTimeout(check, 500);
                 }
             };
 
@@ -73,24 +73,29 @@ class DataEntry extends React.Component {
         iframeDocument.querySelector(`#selectedDataSetId [value="${dataSetId}"]`).selected = true;
         iframe.contentWindow.dataSetSelected();
 
-        // Remove filters
+        // Remove non-valid periods
         const dataInputPeriods = await getDataInputPeriodsById(dataSetId, d2);
-        if (dataInputPeriods) {
-            iframeDocument
-                .querySelector("#selectedPeriodId")
-                .addEventListener("change", function(a) {
-                    const today = moment(new Date());
+        const removeNonValidPeriods = () => {
+            const selectedDataSetId = iframeDocument.querySelector('#selectedDataSetId').selectedOptions[0].value
+            if (selectedDataSetId === dataSetId) {
+                const selectPeriod = iframeDocument.querySelector("#selectedPeriodId");
+                const optionPeriods = Array.from(selectPeriod.childNodes)
+                optionPeriods.forEach(option => {
+                    const optionFormat = moment(option.value)
                     if (
-                        !today.isBetween(dataInputPeriods.openingDate, dataInputPeriods.closingDate)
+                        optionFormat.isValid() && !optionFormat.isBetween(dataInputPeriods.openingDate, dataInputPeriods.closingDate)
                     ) {
-                        this.props.snackbar.error(
-                            i18n.t(
-                                "This is not a valid period for this campaign. Choose a period between and "
-                            )
-                        );
+                        selectPeriod.removeChild(option);
                     }
-                });
+                })
+            }
         }
+        removeNonValidPeriods();
+        iframeDocument.querySelectorAll('#selectedDataSetId, #prevButton, #nextButton').forEach(element => {
+            element.addEventListener("click", () => {
+                removeNonValidPeriods()
+            })
+        });
     }
 
     backCampaignConfigurator = () => {
