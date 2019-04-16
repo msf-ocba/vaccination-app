@@ -87,7 +87,9 @@ class DataEntry extends React.Component {
                         optionFormat.isValid() &&
                         !optionFormat.isBetween(
                             dataInputPeriods.openingDate,
-                            dataInputPeriods.closingDate
+                            dataInputPeriods.closingDate,
+                            null,
+                            "[]"
                         )
                     ) {
                         selectPeriod.removeChild(option);
