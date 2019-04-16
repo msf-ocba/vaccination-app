@@ -76,26 +76,33 @@ class DataEntry extends React.Component {
         // Remove non-valid periods
         const dataInputPeriods = await getDataInputPeriodsById(dataSetId, d2);
         const removeNonValidPeriods = () => {
-            const selectedDataSetId = iframeDocument.querySelector('#selectedDataSetId').selectedOptions[0].value
+            const selectedDataSetId = iframeDocument.querySelector("#selectedDataSetId")
+                .selectedOptions[0].value;
             if (selectedDataSetId === dataSetId) {
                 const selectPeriod = iframeDocument.querySelector("#selectedPeriodId");
-                const optionPeriods = Array.from(selectPeriod.childNodes)
+                const optionPeriods = Array.from(selectPeriod.childNodes);
                 optionPeriods.forEach(option => {
-                    const optionFormat = moment(option.value)
+                    const optionFormat = moment(option.value);
                     if (
-                        optionFormat.isValid() && !optionFormat.isBetween(dataInputPeriods.openingDate, dataInputPeriods.closingDate)
+                        optionFormat.isValid() &&
+                        !optionFormat.isBetween(
+                            dataInputPeriods.openingDate,
+                            dataInputPeriods.closingDate
+                        )
                     ) {
                         selectPeriod.removeChild(option);
                     }
-                })
+                });
             }
-        }
+        };
         removeNonValidPeriods();
-        iframeDocument.querySelectorAll('#selectedDataSetId, #prevButton, #nextButton').forEach(element => {
-            element.addEventListener("click", () => {
-                removeNonValidPeriods()
-            })
-        });
+        iframeDocument
+            .querySelectorAll("#selectedDataSetId, #prevButton, #nextButton")
+            .forEach(element => {
+                element.addEventListener("click", () => {
+                    removeNonValidPeriods();
+                });
+            });
     }
 
     backCampaignConfigurator = () => {
