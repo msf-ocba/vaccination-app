@@ -3,9 +3,10 @@ import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { withSnackbar } from "d2-ui-components";
 import ReactDOM from "react-dom";
+import moment from "moment";
 
 import PageHeader from "../shared/PageHeader";
-import { getOrganisationUnitsById } from "../../models/datasets";
+import { getOrganisationUnitsById, getDataInputPeriodsById } from "../../models/datasets";
 
 class DataEntry extends React.Component {
     static propTypes = {
@@ -30,7 +31,7 @@ class DataEntry extends React.Component {
                 const iframe = ReactDOM.findDOMNode(this.refs.iframe);
                 iframe.addEventListener(
                     "load",
-                    this.setDatasetParameters.bind(this, iframe, dataSetId, organisationUnits)
+                    this.setDatasetParameters.bind(this, iframe, dataSetId, organisationUnits, d2)
                 );
             });
         } else {
@@ -41,10 +42,10 @@ class DataEntry extends React.Component {
     waitforOUSelection(element) {
         return new Promise(resolve => {
             const check = () => {
-                if (element.value === "-1") {
+                if (element.childNodes.length > 0) {
                     resolve();
                 } else {
-                    setTimeout(check, 1000);
+                    setTimeout(check, 500);
                 }
             };
 
@@ -59,7 +60,7 @@ class DataEntry extends React.Component {
         iframeDocument.querySelector("#moduleHeader").remove();
     }
 
-    async setDatasetParameters(iframe, dataSetId, organisationUnits) {
+    async setDatasetParameters(iframe, dataSetId, organisationUnits, d2) {
         const iframeDocument = iframe.contentWindow.document;
         this.styleFrame(iframeDocument);
 
@@ -71,6 +72,39 @@ class DataEntry extends React.Component {
         await this.waitforOUSelection(iframeDocument.querySelector("#selectedDataSetId"));
         iframeDocument.querySelector(`#selectedDataSetId [value="${dataSetId}"]`).selected = true;
         iframe.contentWindow.dataSetSelected();
+
+        // Remove non-valid periods
+        const dataInputPeriods = await getDataInputPeriodsById(dataSetId, d2);
+        const removeNonValidPeriods = () => {
+            const selectedDataSetId = iframeDocument.querySelector("#selectedDataSetId")
+                .selectedOptions[0].value;
+            if (selectedDataSetId === dataSetId) {
+                const selectPeriod = iframeDocument.querySelector("#selectedPeriodId");
+                const optionPeriods = Array.from(selectPeriod.childNodes);
+                optionPeriods.forEach(option => {
+                    const optionFormat = moment(option.value);
+                    if (
+                        optionFormat.isValid() &&
+                        !optionFormat.isBetween(
+                            dataInputPeriods.openingDate,
+                            dataInputPeriods.closingDate,
+                            null,
+                            "[]"
+                        )
+                    ) {
+                        selectPeriod.removeChild(option);
+                    }
+                });
+            }
+        };
+        removeNonValidPeriods();
+        iframeDocument
+            .querySelectorAll("#selectedDataSetId, #prevButton, #nextButton")
+            .forEach(element => {
+                element.addEventListener("click", () => {
+                    removeNonValidPeriods();
+                });
+            });
     }
 
     backCampaignConfigurator = () => {

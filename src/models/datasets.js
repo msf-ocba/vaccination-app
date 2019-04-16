@@ -68,10 +68,18 @@ export function getDashboardId(dataSet, config) {
 }
 
 export async function getOrganisationUnitsById(id, d2) {
-    const fields = ["id", "organisationUnits[id,name]"].join(",");
+    const fields = "organisationUnits[id,name]";
     const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
     const organisationUnits = dataSet ? dataSet.organisationUnits.toArray() : null;
+    //TODO: Make it so the user can choose the OU
     return _(organisationUnits).isEmpty() ? undefined : organisationUnits[0].id;
+}
+
+export async function getDataInputPeriodsById(id, d2) {
+    const fields = "dataInputPeriods";
+    const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
+    const dataInputPeriods = dataSet.dataInputPeriods;
+    return _(dataInputPeriods).isEmpty() ? undefined : dataInputPeriods[0];
 }
 
 export async function getDatasetById(id, d2) {
