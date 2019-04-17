@@ -67,6 +67,9 @@ export interface CategoryCombo {
 
 export interface Attribute {
     id: string;
+    code: string;
+    valueType: "TEXT" | "BOOLEAN";
+    displayName: string;
 }
 
 export interface AttributeValue {
@@ -229,6 +232,7 @@ export interface ModelFields {
 }
 
 export type ModelName =
+    | "attributes"
     | "categories"
     | "categoryCombos"
     | "categoryOptions"
