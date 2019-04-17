@@ -11,7 +11,7 @@ import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/aut
 import { list } from "../../models/datasets";
 import { formatDateShort } from "../../utils/date";
 
-class CampaignConfigurator extends React.Component {
+class CampaignConfiguration extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
@@ -186,4 +186,4 @@ const styles = {
     objectsTableContainer: { marginTop: -10 },
 };
 
-export default withSnackbar(CampaignConfigurator);
+export default withSnackbar(CampaignConfiguration);
