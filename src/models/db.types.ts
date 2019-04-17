@@ -97,6 +97,7 @@ export interface Ref {
 
 export interface Metadata {
     dataSets?: Array<DataSet>;
+    dataEntryForms?: Array<DataEntryForm>;
     sections?: Array<Section>;
     charts?: Array<Dictionary<any>>;
     reportTables?: Array<Dictionary<any>>;
@@ -129,6 +130,7 @@ export interface DataSet {
     dataInputPeriods: DataInputPeriod[];
     attributeValues: AttributeValue[];
     formType: "DEFAULT" | "CUSTOM";
+    dataEntryForm?: Ref;
 }
 
 export interface DataEntryForm {

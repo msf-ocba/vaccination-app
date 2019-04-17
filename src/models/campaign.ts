@@ -292,9 +292,10 @@ export default class Campaign {
 
             const customForm = await DataSetCustomForm.build(this);
             const customFormHtml = customForm.generate();
+            const formId = generateUid();
             const dataEntryForm: DataEntryForm = {
-                id: generateUid(),
-                name: this.name,
+                id: formId,
+                name: this.name + " " + formId, // dataEntryForm.name must be unique
                 htmlCode: customFormHtml,
                 style: "NONE",
             };
@@ -319,6 +320,7 @@ export default class Campaign {
                     { value: "true", attribute: { id: attributeForApp.id } },
                     { value: dashboard.id, attribute: { id: dashboardAttribute.id } },
                 ],
+                dataEntryForm: { id: dataEntryForm.id },
             };
 
             const period = moment(this.startDate || new Date()).format("YYYYMMDD");
@@ -336,6 +338,7 @@ export default class Campaign {
                     reportTables,
                     dashboards: [dashboard],
                     dataSets: [dataSet],
+                    dataEntryForms: [dataEntryForm],
                 });
 
                 if (result.status !== "OK") {
