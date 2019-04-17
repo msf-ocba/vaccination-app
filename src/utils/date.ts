@@ -1,5 +1,9 @@
 import moment, { Moment } from "moment";
 
+export function toISOStringNoTZ(date: Moment) {
+    return date.format("YYYY-MM-DDTHH:mm:ss");
+}
+
 export function formatDateLong(inputDate: string | Date | Moment | undefined): string {
     if (!inputDate) {
         return "";
