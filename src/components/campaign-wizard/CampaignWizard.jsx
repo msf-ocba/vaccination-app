@@ -132,8 +132,8 @@ dataset and all the metadata associated with this vaccination campaign.`),
         }
     });
 
-    onStepChangeRequest = currentStep => {
-        return getValidationMessages(this.state.campaign, currentStep.validationKeys);
+    onStepChangeRequest = async currentStep => {
+        return await getValidationMessages(this.state.campaign, currentStep.validationKeys);
     };
 
     render() {

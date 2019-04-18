@@ -22,6 +22,9 @@ import {
     DataValueResponse,
     Response,
     DataValue,
+    CategoryOptionForTeams,
+    DashboardMetadataRequest,
+    OrganisationUnitWithName,
 } from "./db.types";
 import _ from "lodash";
 import {
@@ -189,6 +192,45 @@ export default class DbD2 {
         return { pager: newPager, objects: organisationUnits };
     }
 
+    public async validateTeamsForOrganisationUnits(organisationUnits: OrganisationUnitPathOnly[]) {
+        const allAncestorsIds = _(organisationUnits)
+            .map("path")
+            .flatMap(path => path.split("/").slice(1))
+            .uniq()
+            .value()
+            .join(",");
+        const organisationUnitsIds = _.map(organisationUnits, "id");
+        const { categoryOptions, organisationUnits: orgUnitNamesArray } = await this.api.get(
+            "/metadata",
+            {
+                "categoryOptions:fields": "id,organisationUnits",
+                "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`, //Missing categoryTeamCode
+                "organisationUnits:fields": "id,displayName",
+                "organisationUnits:filter": `id:in:[${organisationUnitsIds}]`,
+            }
+        );
+
+        const hasTeams = (path: string) => {
+            if (!categoryOptions) return false;
+            const has = categoryOptions.some((cat: CategoryOptionForTeams) =>
+                cat.organisationUnits.some(ou => path.includes(ou.id))
+            );
+            return has;
+        };
+        const orgUnitNames = _(orgUnitNamesArray)
+            .map((o: OrganisationUnitWithName) => [o.id, o.displayName])
+            .fromPairs()
+            .value();
+
+        return _(organisationUnits)
+            .map(ou => ({
+                id: ou.id,
+                displayName: orgUnitNames[ou.id],
+                hasTeams: hasTeams(ou.path),
+            }))
+            .value();
+    }
+
     public async getCategoryOptionsByCategoryCode(code: string): Promise<CategoryOption[]> {
         const { categories } = await this.api.get("/categories", {
             filter: [`code:in:[${code}]`],
@@ -299,13 +341,7 @@ export default class DbD2 {
         const allDataElementCodes = elements["DATA_ELEMENT"].join(",");
         const allIndicatorCodes = elements["INDICATOR"].join(",");
         const antigenCodes = antigens.map(an => an.code);
-        const {
-            categories,
-            dataElements,
-            indicators,
-            categoryOptions,
-            organisationUnits: organisationUnitsWithName,
-        } = await this.api.get("/metadata", {
+        const response = await this.api.get("/metadata", {
             "categories:fields": "id,categoryOptions[id,code,name]",
             "categories:filter": `code:in:[${dashboardItemsConfig.antigenCategoryCode}]`,
             "dataElements:fields": "id,code",
@@ -317,6 +353,13 @@ export default class DbD2 {
             "organisationUnits:fields": "id,displayName,path",
             "organisationUnits:filter": `id:in:[${orgUnitsId}]`,
         });
+        const {
+            categories,
+            dataElements,
+            indicators,
+            categoryOptions,
+            organisationUnits: organisationUnitsWithName,
+        } = response as DashboardMetadataRequest;
 
         const { id: antigenCategory } = categories[0];
         const antigensMeta = _.filter(categories[0].categoryOptions, op =>
@@ -329,20 +372,18 @@ export default class DbD2 {
 
         const teamsByOrgUnit = organisationUnitsPathOnly.reduce((acc, ou) => {
             let teams: string[] = [];
-            categoryOptions.forEach(
-                (co: { id: string; organisationUnits: object[]; categories: object[] }) => {
-                    const coIsTeam = _(co.categories)
-                        .map("code")
-                        .includes(categoryCodeForTeams);
-                    const coIncludesOrgUnit = _(co.organisationUnits)
-                        .map("id")
-                        .some((coOu: string) => ou.path.includes(coOu));
+            categoryOptions.forEach(co => {
+                const coIsTeam = _(co.categories)
+                    .map("code")
+                    .includes(categoryCodeForTeams);
+                const coIncludesOrgUnit = _(co.organisationUnits)
+                    .map("id")
+                    .some(coOu => ou.path.includes(coOu));
 
-                    if (coIsTeam && coIncludesOrgUnit) {
-                        teams.push(co.id);
-                    }
+                if (coIsTeam && coIncludesOrgUnit) {
+                    teams.push(co.id);
                 }
-            );
+            });
             return { ...acc, [ou.id]: teams };
         }, {});
 
@@ -419,11 +460,13 @@ export default class DbD2 {
         dashboardItemsMetadata: Dictionary<any>
     ): DashboardData {
         const { organisationUnitsWithName } = dashboardItemsMetadata;
-        const organisationUnitsMetadata = organisationUnitsWithName.map((ou: OrganisationUnit) => ({
-            id: ou.id,
-            parents: { [ou.id]: ou.path },
-            name: ou.displayName,
-        }));
+        const organisationUnitsMetadata = organisationUnitsWithName.map(
+            (ou: OrganisationUnitWithName) => ({
+                id: ou.id,
+                parents: { [ou.id]: ou.path },
+                name: ou.displayName,
+            })
+        );
         const periodRange = getDaysRange(startDate, endDate);
         const period = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");

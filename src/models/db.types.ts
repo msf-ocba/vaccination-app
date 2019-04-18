@@ -256,3 +256,38 @@ export interface DashboardData {
 }
 
 export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams | undefined };
+
+export interface CategoryCustom {
+    id: string;
+    categoryOptions: CategoryOption[];
+}
+
+export interface DataElementItemCustom {
+    id: string;
+    code: string;
+}
+
+export interface CategoryOptionsCustom {
+    id: string;
+    categories: Array<{ id: string; code: string }>;
+    organisationUnits: Ref[];
+}
+
+export interface OrganisationUnitWithName {
+    id: string;
+    displayName: string;
+    path: string;
+}
+
+export interface DashboardMetadataRequest {
+    categories: CategoryCustom[];
+    dataElements: DataElementItemCustom[];
+    indicators: DataElementItemCustom[];
+    categoryOptions: CategoryOptionsCustom[];
+    organisationUnits: OrganisationUnitWithName[];
+}
+
+export interface CategoryOptionForTeams {
+    id: string;
+    organisationUnits: Ref[];
+}
