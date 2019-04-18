@@ -62,7 +62,7 @@ class CampaignWizard extends React.Component {
                     `Name your campaign and choose dates for which data entry will be enabled`
                 ),
                 help: i18n.t(
-                    `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format: REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH_YEAR\n
+                    `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format is REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH_YEAR\n
                     The start and end date should define the period for which you expect to enter data - i.e .the first and last day of your campaign. If you are not certain of the end date, enter a date a few weeks later than the expected date of completion (refer to your microplan). It is possible to edit the dates at any point.`
                 ),
             },

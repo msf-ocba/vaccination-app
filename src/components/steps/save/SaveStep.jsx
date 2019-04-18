@@ -52,9 +52,7 @@ class SaveStep extends React.Component {
         this.setState({ isSaving: false });
 
         if (saveResponse.status) {
-            this.props.snackbar.success(
-                i18n.t("Campaign created: {{name}}", { name: campaign.name })
-            );
+            this.props.snackbar.success(`${i18n.t("Campaign created")} ${campaign.name}`);
             this.props.history.push("/campaign-configuration");
         } else {
             this.setState({ errorMessage: saveResponse.error });
