@@ -10,8 +10,8 @@ const campaign = Campaign.create(metadataConfig, db);
 
 describe("Campaign", () => {
     describe("Validations", () => {
-        it("requires a name", () => {
-            const messages = campaign.validate();
+        it("requires a name", async () => {
+            const messages = await campaign.validate();
             expect(messages).toEqual(
                 expect.objectContaining({
                     name: [
@@ -24,8 +24,8 @@ describe("Campaign", () => {
             );
         });
 
-        it("requires at least one orgunit", () => {
-            const messages = campaign.validate();
+        it("requires at least one orgunit", async () => {
+            const messages = await campaign.validate();
             expect(messages).toEqual(
                 expect.objectContaining({
                     organisationUnits: [{ key: "no_organisation_units_selected" }],
@@ -33,7 +33,7 @@ describe("Campaign", () => {
             );
         });
 
-        it("requires at least one orgunit of level 5", () => {
+        it("requires at least one orgunit of level 5", async () => {
             const ids = [
                 "zOyMxdCLXBM",
                 "G7g4TvbjFlX",
@@ -48,7 +48,7 @@ describe("Campaign", () => {
             ];
             _(1)
                 .range(10)
-                .forEach(level => {
+                .forEach(async level => {
                     const path =
                         "/" +
                         _(ids)
@@ -63,7 +63,7 @@ describe("Campaign", () => {
                             path: path,
                         },
                     ]);
-                    const messages = campaignWithOrgUnit.validate();
+                    const messages = await campaignWithOrgUnit.validate();
 
                     if (level == 5) {
                         expect(messages).toEqual(

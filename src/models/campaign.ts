@@ -109,7 +109,10 @@ export default class Campaign {
         );
         const levels = this.selectableLevels.join("/");
 
-        const haveTeams = await this.db.validateTeamsForOrganisationUnits(organisationUnits);
+        const haveTeams = await this.db.validateTeamsForOrganisationUnits(
+            organisationUnits,
+            this.config.categoryCodeForTeams
+        );
 
         const noTeams = _(haveTeams)
             .filter(o => !o.hasTeams)

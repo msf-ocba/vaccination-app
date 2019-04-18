@@ -22,9 +22,9 @@ import {
     DataValueResponse,
     Response,
     DataValue,
-    CategoryOptionForTeams,
     DashboardMetadataRequest,
     OrganisationUnitWithName,
+    CategoryOptionsCustom,
 } from "./db.types";
 import _ from "lodash";
 import {
@@ -192,7 +192,10 @@ export default class DbD2 {
         return { pager: newPager, objects: organisationUnits };
     }
 
-    public async validateTeamsForOrganisationUnits(organisationUnits: OrganisationUnitPathOnly[]) {
+    public async validateTeamsForOrganisationUnits(
+        organisationUnits: OrganisationUnitPathOnly[],
+        categoryCodeForTeams: string
+    ) {
         const allAncestorsIds = _(organisationUnits)
             .map("path")
             .flatMap(path => path.split("/").slice(1))
@@ -200,23 +203,28 @@ export default class DbD2 {
             .value()
             .join(",");
         const organisationUnitsIds = _.map(organisationUnits, "id");
-        const { categoryOptions, organisationUnits: orgUnitNamesArray } = await this.api.get(
-            "/metadata",
-            {
-                "categoryOptions:fields": "id,organisationUnits",
-                "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`, //Missing categoryTeamCode
-                "organisationUnits:fields": "id,displayName",
-                "organisationUnits:filter": `id:in:[${organisationUnitsIds}]`,
-            }
-        );
+        const response = await this.api.get("/metadata", {
+            "categoryOptions:fields": "id,categories[code],organisationUnits[id]",
+            "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`, //Missing categoryTeamCode
+            "organisationUnits:fields": "id,displayName",
+            "organisationUnits:filter": `id:in:[${organisationUnitsIds}]`,
+        });
+
+        const { categoryOptions, organisationUnits: orgUnitNamesArray } = response as {
+            categoryOptions?: CategoryOptionsCustom[];
+            organisationUnits: OrganisationUnitWithName[];
+        };
 
         const hasTeams = (path: string) => {
-            if (!categoryOptions) return false;
-            const has = categoryOptions.some((cat: CategoryOptionForTeams) =>
-                cat.organisationUnits.some(ou => path.includes(ou.id))
+            return (categoryOptions || []).some(
+                co =>
+                    _(co.categories)
+                        .map("code")
+                        .includes(categoryCodeForTeams) &&
+                    co.organisationUnits.some(ou => path.includes(ou.id))
             );
-            return has;
         };
+
         const orgUnitNames = _(orgUnitNamesArray)
             .map((o: OrganisationUnitWithName) => [o.id, o.displayName])
             .fromPairs()

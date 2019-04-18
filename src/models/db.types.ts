@@ -286,8 +286,3 @@ export interface DashboardMetadataRequest {
     categoryOptions: CategoryOptionsCustom[];
     organisationUnits: OrganisationUnitWithName[];
 }
-
-export interface CategoryOptionForTeams {
-    id: string;
-    organisationUnits: Ref[];
-}
