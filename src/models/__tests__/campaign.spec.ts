@@ -4,10 +4,11 @@ import { getD2Stub } from "../../utils/testing";
 import _ from "lodash";
 import metadataConfig from "./config-mock";
 
-const d2 = getD2Stub();
+const metadataStub = jest.fn(() => Promise.resolve({ categoryOptions: [], organisationUnits: [] }));
+
+const d2 = getD2Stub({ Api: { getApi: () => ({ get: metadataStub }) } });
 const db = new DbD2(d2);
 const campaign = Campaign.create(metadataConfig, db);
-
 describe("Campaign", () => {
     describe("Validations", () => {
         it("requires a name", async () => {
