@@ -69,7 +69,12 @@ describe("Campaign", () => {
                     if (level == 5) {
                         expect(messages).toEqual(
                             expect.objectContaining({
-                                organisationUnits: [],
+                                organisationUnits: [
+                                    {
+                                        key: "no_valid_teams_for_organisation_units",
+                                        namespace: { orgUnits: "" },
+                                    },
+                                ],
                             })
                         );
                     } else {
@@ -79,6 +84,10 @@ describe("Campaign", () => {
                                     {
                                         key: "organisation_units_only_of_levels",
                                         namespace: { levels: "5" },
+                                    },
+                                    {
+                                        key: "no_valid_teams_for_organisation_units",
+                                        namespace: { orgUnits: "" },
                                     },
                                 ],
                             })
