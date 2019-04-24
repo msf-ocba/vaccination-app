@@ -271,7 +271,7 @@ export default class Campaign {
         const ageGroupCategoryId = _(metadataConfig.categories)
             .keyBy("code")
             .getOrFail(metadataConfig.categoryCodeForAgeGroup).id;
-        console.log({ antigensDisaggregation });
+
         const { dashboard, charts, reportTables } = await this.db.createDashboard(
             this.name,
             this.organisationUnits,

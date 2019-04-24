@@ -8,7 +8,7 @@ export const dashboardItemsConfig = {
             elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
             dataType: "DATA_ELEMENT",
             appendCode: "vTable",
-            disaggregatedBy: ["ageGroup"],
+            disaggregatedBy: ["team", "ageGroup"],
         },
         qsIndicators: {
             elements: [
@@ -77,6 +77,16 @@ function getCharts(antigen, elements, organisationUnit, itemsMetadata) {
 }
 
 function getTables(antigen, elements, organisationUnit, itemsMetadata, disaggregationMetadata) {
+    const ageGroups = c =>
+        c.disaggregatedBy && c.disaggregatedBy.includes("ageGroup")
+            ? disaggregationMetadata.ageGroups(antigen)
+            : null;
+
+    const teams = c =>
+        c.disaggregatedBy && c.disaggregatedBy.includes("team")
+            ? disaggregationMetadata.teams(null, organisationUnit)
+            : null;
+
     return _(dashboardItemsConfig.tables)
         .map((c, key) =>
             tableConstructor({
@@ -85,15 +95,8 @@ function getTables(antigen, elements, organisationUnit, itemsMetadata, disaggreg
                 data: elements[key],
                 appendCode: c.appendCode,
                 organisationUnit,
-                teamsMetadata:
-                    c.disaggregatedBy && c.disaggregatedBy.includes("team")
-                        ? disaggregationMetadata.teams(null, organisationUnit)
-                        : null,
-                ageGroupMetadata:
-                    c.disaggregatedBy && c.disaggregatedBy.includes("ageGroup")
-                        ? disaggregationMetadata.teams(antigen)
-                        : null,
                 ...itemsMetadata,
+                disaggregations: _.compact([teams(c), ageGroups(c)]),
             })
         )
         .value();
@@ -293,6 +296,45 @@ const chartConstructor = ({
     rows: [{ id: "pe" }],
 });
 
+const constructDimesions = (antigen, antigenCategory, disaggregations) => {
+    const antigenCategoryDimension = {
+        category: { id: antigenCategory },
+        categoryOptions: [{ id: antigen.id }],
+    };
+
+    const noDisaggregation = {
+        categoryDimensions: [antigenCategoryDimension],
+        columns: [{ id: "dx" }],
+        columnDimensions: ["dx"],
+    };
+
+    if (_.isEmpty(disaggregations)) {
+        return noDisaggregation;
+    } else {
+        const disaggregationDimensions = disaggregations.map(d => ({
+            categoryDimensions: {
+                category: {
+                    id: d.categoryId,
+                },
+                categoryOptions: d.elements.map(e => ({ id: e })),
+            },
+            columns: { id: d.categoryId },
+            columnDimensions: d.categoryId,
+        }));
+
+        return _.reduce(
+            disaggregationDimensions,
+            (acc, val) => {
+                return {
+                    categoryDimensions: [...acc.categoryDimensions, val.categoryDimensions],
+                    columns: [...acc.columns, val.columns],
+                    columnDimensions: [...acc.columnDimensions, val.columnDimensions],
+                };
+            },
+            noDisaggregation
+        );
+    }
+};
 const tableConstructor = ({
     id,
     datasetName,
@@ -302,30 +344,13 @@ const tableConstructor = ({
     data,
     appendCode,
     organisationUnit,
-    teamsMetadata = null,
+    disaggregations,
 }) => {
-    const antigenCategoryElement = {
-        category: { id: antigenCategory },
-        categoryOptions: [{ id: antigen.id }],
-    };
-
-    /// WIP - Better to adjust this one we are taking into consideration all disaggregation types
-    const teamCategoryId = teamsMetadata && teamsMetadata.categoryId;
-    const categoryDimensions = teamsMetadata
-        ? [
-              antigenCategoryElement,
-              {
-                  category: { id: teamCategoryId },
-                  categoryOptions: _(teamsMetadata.teams)
-                      .map(t => ({ id: t }))
-                      .value(),
-              },
-          ]
-        : [antigenCategoryElement];
-
-    const columnDimensions = ["dx", teamCategoryId || null];
-    const columns = [{ id: "dx" }, teamCategoryId ? { id: teamCategoryId } : null];
-    /// WIP
+    const { columns, columnDimensions, categoryDimensions } = constructDimesions(
+        antigen,
+        antigenCategory,
+        disaggregations
+    );
 
     return {
         id,
@@ -339,7 +364,7 @@ const tableConstructor = ({
         hideEmptyRows: true,
         parentGraphMap: {},
         userOrganisationUnit: false,
-        rowSubTotals: !!teamsMetadata,
+        rowSubTotals: !_.isEmpty(disaggregations),
         displayDensity: "NORMAL",
         completedOnly: false,
         colTotals: true,

@@ -324,7 +324,7 @@ export default class DbD2 {
         });
 
         const { id: antigenCategory } = categories[0];
-        const antigensMeta = _.filter(categories[0].teamOptions, op =>
+        const antigensMeta = _.filter(categories[0].categoryOptions, op =>
             _.includes(antigenCodes, op.code)
         );
 
@@ -368,7 +368,7 @@ export default class DbD2 {
             ...teamsByOrgUnit,
             categoryId: teamOptions[0].categories[0].id,
         };
-        console.log({ ageGroupsByAntigen });
+
         const dashboardMetadata = {
             antigenCategory,
             dataElements: {
@@ -386,11 +386,11 @@ export default class DbD2 {
             disaggregationMetadata: {
                 teams: (antigen = null, orgUnit: Ref) => ({
                     categoryId: teamsMetadata.categoryId,
-                    teams: teamsMetadata[orgUnit.id],
+                    elements: teamsMetadata[orgUnit.id],
                 }),
                 ageGroups: (antigen: Ref) => ({
                     categoryId: ageGroupCategoryId,
-                    ageGroups: ageGroupsByAntigen[antigen.id],
+                    elements: ageGroupsByAntigen[antigen.id],
                 }),
             },
         };
