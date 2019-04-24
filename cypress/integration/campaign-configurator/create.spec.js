@@ -29,7 +29,7 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Next").click();
 
         // General Info step
-        cy.wait(1000); // eslint-disable-line cypress/no-unnecessary-waiting
+        waitForStepChange("General info");
         cy.contains("Next").click();
         cy.contains("Field name cannot be blank");
 
@@ -43,7 +43,7 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Next").click();
 
         // Antigens selections
-        cy.wait(1000); // eslint-disable-line cypress/no-unnecessary-waiting
+        waitForStepChange("Antigen selection");
         cy.contains("Next").click();
         cy.contains("Select at least one antigen");
 
@@ -54,13 +54,14 @@ describe("Campaign configuration - Create", () => {
 
         // Disaggregation
 
+        waitForStepChange("Configure Indicators");
         cy.contains("Measles");
         cy.contains("Cholera");
 
-        cy.wait(1000); // eslint-disable-line cypress/no-unnecessary-waiting
         cy.contains("Next").click();
 
         // Target population
+        waitForStepChange("Target Population");
         cy.contains("Cholera Intervention Addis 2016");
 
         cy.get("[test-total-population=0] [aria-label=Edit]").click();
@@ -80,7 +81,7 @@ describe("Campaign configuration - Create", () => {
 
         // Save step
 
-        cy.wait(1000); // eslint-disable-line cypress/no-unnecessary-waiting
+        waitForStepChange("Save");
         cy.get("[data-test-current=true]").contains("Save");
 
         cy.contains("Name");
@@ -145,4 +146,8 @@ function selectAntigen(label) {
     cy.get("[data-multi-selector] > div > div > div:nth-child(2)")
         .contains("→")
         .click();
+}
+
+function waitForStepChange(stepName) {
+    cy.contains(stepName).should("have.class", "current-step");
 }

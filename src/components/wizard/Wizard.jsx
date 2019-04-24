@@ -196,6 +196,7 @@ class Wizard extends React.Component {
                                 data-test-current={currentStep === step}
                                 onClick={this.onStepClicked(step.key)}
                                 classes={{ root: classes.stepButton }}
+                                className={currentStep === step ? "current-step" : ""}
                             >
                                 {step.label}
                             </StepButton>
