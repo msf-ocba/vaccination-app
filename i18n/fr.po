@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-15T12:15:23.972Z\n"
+"POT-Creation-Date: 2019-04-24T08:55:31.849Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -71,7 +71,27 @@ msgstr ""
 msgid "Download data"
 msgstr ""
 
+msgid "Deleting campaign(s). This may take a while, please wait"
+msgstr ""
+
+msgid "Campaign(s) deleted"
+msgstr ""
+
+msgid "Error deleting campaign(s)"
+msgstr ""
+
 msgid "Only my campaigns"
+msgstr ""
+
+msgid ""
+"Are you sure you want to delete those campaign(s) (dataset, dashboards and "
+"favorites)?"
+msgstr ""
+
+msgid "Delete campaign(s)"
+msgstr ""
+
+msgid "Yes"
 msgstr ""
 
 msgid "Campaigns"
@@ -151,21 +171,7 @@ msgid ""
 "this vaccination campaign."
 msgstr ""
 
-msgid "Cancel Campaign Creation?"
-msgstr ""
-
-msgid ""
-"You are about to exit the campaign creation wizard. All your changes will be "
-"lost. Are you sure?"
-msgstr ""
-
 msgid "New vaccination campaign"
-msgstr ""
-
-msgid "Cancel"
-msgstr ""
-
-msgid "Ok"
 msgstr ""
 
 msgid "Cannot find dashboard associated to the campaign"
@@ -202,6 +208,17 @@ msgid "Period dates"
 msgstr ""
 
 msgid "Antigens"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Cancel Campaign Creation?"
+msgstr ""
+
+msgid ""
+"You are about to exit the campaign creation wizard. All your changes will be "
+"lost. Are you sure?"
 msgstr ""
 
 msgid "Help"

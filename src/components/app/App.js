@@ -5,12 +5,12 @@ import { MuiThemeProvider } from "@material-ui/core/styles";
 import JssProvider from "react-jss/lib/JssProvider";
 import { createGenerateClassName } from "@material-ui/core/styles";
 import OldMuiThemeProvider from "material-ui/styles/MuiThemeProvider";
+import { SnackbarProvider, LoadingProvider } from "d2-ui-components";
 import _ from "lodash";
 
 import { muiTheme } from "../../themes/dhis2.theme";
 import muiThemeLegacy from "../../themes/dhis2-legacy.theme";
 import "./App.css";
-import { SnackbarProvider } from "d2-ui-components";
 import Root from "./Root";
 import Share from "../share/Share";
 
@@ -52,9 +52,11 @@ class App extends Component {
                                 {showHeader && <HeaderBar d2={d2} />}
 
                                 <div id="app" className="content">
-                                    <SnackbarProvider>
-                                        <Root d2={d2} />
-                                    </SnackbarProvider>
+                                    <LoadingProvider>
+                                        <SnackbarProvider>
+                                            <Root d2={d2} />
+                                        </SnackbarProvider>
+                                    </LoadingProvider>
                                 </div>
 
                                 <Share visible={showShareButton} />

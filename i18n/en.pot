@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-15T23:07:26.532Z\n"
-"PO-Revision-Date: 2019-04-15T23:07:26.532Z\n"
+"POT-Creation-Date: 2019-04-24T08:55:31.849Z\n"
+"PO-Revision-Date: 2019-04-24T08:55:31.849Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -71,7 +71,27 @@ msgstr ""
 msgid "Download data"
 msgstr ""
 
+msgid "Deleting campaign(s). This may take a while, please wait"
+msgstr ""
+
+msgid "Campaign(s) deleted"
+msgstr ""
+
+msgid "Error deleting campaign(s)"
+msgstr ""
+
 msgid "Only my campaigns"
+msgstr ""
+
+msgid ""
+"Are you sure you want to delete those campaign(s) (dataset, dashboards and "
+"favorites)?"
+msgstr ""
+
+msgid "Delete campaign(s)"
+msgstr ""
+
+msgid "Yes"
 msgstr ""
 
 msgid "Campaigns"
@@ -150,21 +170,7 @@ msgid ""
 "this vaccination campaign."
 msgstr ""
 
-msgid "Cancel Campaign Creation?"
-msgstr ""
-
-msgid ""
-"You are about to exit the campaign creation wizard. All your changes will "
-"be lost. Are you sure?"
-msgstr ""
-
 msgid "New vaccination campaign"
-msgstr ""
-
-msgid "Cancel"
-msgstr ""
-
-msgid "Ok"
 msgstr ""
 
 msgid "Cannot find dashboard associated to the campaign"
@@ -201,6 +207,17 @@ msgid "Period dates"
 msgstr ""
 
 msgid "Antigens"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Cancel Campaign Creation?"
+msgstr ""
+
+msgid ""
+"You are about to exit the campaign creation wizard. All your changes will "
+"be lost. Are you sure?"
 msgstr ""
 
 msgid "Help"
