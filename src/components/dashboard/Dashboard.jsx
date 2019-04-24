@@ -53,7 +53,7 @@ class Dashboard extends React.Component {
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
     }
 
-    backCampaignConfigurator = () => {
+    backCampaignConfiguration = () => {
         this.props.history.push("/campaign-configuration");
     };
 
@@ -78,7 +78,7 @@ class Dashboard extends React.Component {
             <React.Fragment>
                 <PageHeader
                     title={i18n.t("Dashboard")}
-                    onBackClick={this.backCampaignConfigurator}
+                    onBackClick={this.backCampaignConfiguration}
                 />
                 <div>
                     {iFrameSrc && (

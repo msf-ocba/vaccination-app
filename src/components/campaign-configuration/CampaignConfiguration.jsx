@@ -13,7 +13,7 @@ import { formatDateShort } from "../../utils/date";
 import Campaign from "../../models/campaign";
 import DbD2 from "../../models/db-d2";
 
-class CampaignConfigurator extends React.Component {
+class CampaignConfiguration extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
@@ -249,4 +249,4 @@ const styles = {
     objectsTableContainer: { marginTop: -10 },
 };
 
-export default withLoading(withSnackbar(CampaignConfigurator));
+export default withLoading(withSnackbar(CampaignConfiguration));
