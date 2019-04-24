@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-15T23:07:26.532Z\n"
-"PO-Revision-Date: 2019-04-15T23:07:26.532Z\n"
+"POT-Creation-Date: 2019-04-24T10:05:50.426Z\n"
+"PO-Revision-Date: 2019-04-24T10:05:50.426Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -218,6 +218,9 @@ msgstr ""
 msgid "Only organisation units of level {{levels}} can be selected"
 msgstr ""
 
+msgid "Organisation Units {{orgUnits}} -> no associated teams"
+msgstr ""
+
 msgid "Field {{field}} cannot be blank"
 msgstr ""
 
@@ -231,4 +234,14 @@ msgid "You must select at least one option of the category"
 msgstr ""
 
 msgid "No target population defined"
+msgstr ""
+
+msgid ""
+"Org unit {{organisationUnit}} has invalid distribution values for age "
+"ranges -> {{ageGroups}}"
+msgstr ""
+
+msgid ""
+"Org unit {{organisationUnit}} has an invalid total value for antigen "
+"{{antigen}} ({{ageGroups}}) -> {{- value}}"
 msgstr ""
