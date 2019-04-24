@@ -7,7 +7,7 @@ const translations = {
         i18n.t("Only organisation units of level {{levels}} can be selected", namespace),
 
     no_valid_teams_for_organisation_units: namespace =>
-        i18n.t("Organisation Units: {{orgUnits}} have no associated teams", namespace),
+        i18n.t("Organisation Units {{orgUnits}}: no associated teams", namespace),
 
     cannot_be_blank: namespace => i18n.t("Field {{field}} cannot be blank", namespace),
     cannot_be_blank_if_other_set: namespace =>
