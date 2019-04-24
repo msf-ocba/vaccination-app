@@ -71,7 +71,14 @@ export interface Attribute {
 
 export interface AttributeValue {
     value: string;
-    attribute: Ref;
+    attribute: { id: string; code?: string };
+}
+
+export interface Dashboard {
+    id: string;
+    code: string;
+    displayName: string;
+    categoryCombo: Ref;
 }
 
 export interface DataElement {
@@ -94,10 +101,13 @@ export interface Ref {
 
 export interface Metadata {
     dataSets?: Array<DataSet>;
-    sections?: Array<Section>;
     charts?: Array<Dictionary<any>>;
     reportTables?: Array<Dictionary<any>>;
     dashboards?: Array<Dictionary<any>>;
+}
+
+export interface MetadataOptions {
+    importStrategy?: "CREATE_AND_UPDATE" | "CREATE" | "UPDATE" | "DELETE";
 }
 
 export interface Section {
@@ -117,7 +127,7 @@ export interface DataSet {
     categoryCombo: Ref;
     dataElementDecoration: boolean;
     renderAsTabs: boolean;
-    organisationUnits: Array<Ref>;
+    organisationUnits: Ref[];
     dataSetElements: Array<{ dataSet: Ref; dataElement: Ref; categoryCombo: Ref }>;
     openFuturePeriods: number;
     timelyDays: number;
@@ -128,6 +138,12 @@ export interface DataSet {
     formType: "DEFAULT" | "CUSTOM";
 }
 
+export interface DataSetElement {
+    dataSet: Ref;
+    dataElement: Ref;
+    categoryCombo: Ref;
+}
+
 export interface DataEntryForm {
     id: string;
     name: string;
@@ -136,6 +152,8 @@ export interface DataEntryForm {
 }
 
 export interface DataInputPeriod {
+    openingDate: string;
+    closingDate: string;
     period: { id: string };
 }
 
@@ -229,16 +247,22 @@ export interface ModelFields {
 }
 
 export type ModelName =
+    | "attributeValues"
     | "categories"
     | "categoryCombos"
     | "categoryOptions"
     | "categoryOptionGroups"
+    | "dashboards"
     | "dataElements"
     | "dataElementGroups"
+    | "dataSets"
+    | "dataSetElements"
+    | "dataInputPeriods"
     | "organisationUnits"
     | "organisationUnitLevels";
 
 export interface MetadataGetModelParams {
+    fields?: ModelFields;
     filters?: string[];
 }
 
@@ -255,4 +279,4 @@ export interface DashboardData {
     dashboard?: Dictionary<any>;
 }
 
-export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams | undefined };
+export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams };

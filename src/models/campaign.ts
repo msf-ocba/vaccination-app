@@ -1,5 +1,4 @@
-import { OrganisationUnit, Maybe } from "./db.types";
-///<reference path="../types/d2.d.ts" />
+import { OrganisationUnit, Maybe, Ref, Metadata, AttributeValue } from "./db.types";
 import { DataSetCustomForm } from "./DataSetCustomForm";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
@@ -9,7 +8,7 @@ import { MetadataResponse, DataEntryForm } from "./db.types";
 import { generateUid } from "d2/uid";
 import { DataSet, Response } from "./db.types";
 import { PaginatedObjects, OrganisationUnitPathOnly } from "./db.types";
-import DbD2 from "./db-d2";
+import DbD2, { ApiResponse } from "./db-d2";
 import { getDaysRange } from "../utils/date";
 import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled, getDataElements } from "./AntigensDisaggregation";
@@ -37,6 +36,21 @@ function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined)
     return namespace ? [{ key, namespace }] : [{ key }];
 }
 
+interface DataSetWithAttributes {
+    id: string;
+    attributeValues: AttributeValue[];
+}
+
+interface DashboardWithResources {
+    id: string;
+    dashboardItems: {
+        id: string;
+        chart: Ref;
+        map: Ref;
+        reportTable: Ref;
+    };
+}
+
 export default class Campaign {
     public selectableLevels: number[] = [5];
 
@@ -62,6 +76,52 @@ export default class Campaign {
 
     public update(newData: Data) {
         return new Campaign(this.db, this.config, newData);
+    }
+
+    static async delete(
+        config: MetadataConfig,
+        db: DbD2,
+        dataSets: DataSetWithAttributes[]
+    ): Promise<Response<string>> {
+        const dashboardIds = _(dataSets)
+            .flatMap(dataSet => dataSet.attributeValues)
+            .filter(attrVal => attrVal.attribute.code === config.attributeCodeForDashboard)
+            .map(attributeValue => attributeValue.value)
+            .value();
+
+        const { dashboards } = await db.getMetadata<{ dashboards: DashboardWithResources[] }>({
+            dashboards: {
+                fields: {
+                    id: true,
+                    dashboardItems: {
+                        id: true,
+                        chart: { id: true },
+                        map: { id: true },
+                        reportTable: { id: true },
+                    },
+                },
+                filters: [`id:in:[${dashboardIds.join(",")}]`],
+            },
+        });
+
+        const resources: { model: string; id: string }[] = _(dashboards)
+            .flatMap(dashboard => dashboard.dashboardItems)
+            .flatMap(item => [
+                { model: "charts", ref: item.chart },
+                { model: "reportTables", ref: item.reportTable },
+                { model: "maps", ref: item.map },
+            ])
+            .map(({ model, ref }) => (ref ? { model, id: ref.id } : null))
+            .compact()
+            .value();
+
+        const modelReferencesToDelete = _.concat(
+            dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
+            dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id })),
+            resources
+        );
+
+        return db.deleteMany(modelReferencesToDelete);
     }
 
     public validate() {
@@ -339,15 +399,20 @@ export default class Campaign {
                     error: JSON.stringify(populationResult.error, null, 2),
                 };
             } else {
-                const result: MetadataResponse = await this.db.postMetadata({
+                const result: ApiResponse<MetadataResponse> = await this.db.postMetadata<Metadata>({
                     charts,
                     reportTables,
                     dashboards: [dashboard],
                     dataSets: [dataSet],
                 });
 
-                if (result.status !== "OK") {
-                    return { status: false, error: JSON.stringify(result.typeReports, null, 2) };
+                if (!result.status) {
+                    return { status: false, error: result.error };
+                } else if (result.value.status !== "OK") {
+                    return {
+                        status: false,
+                        error: JSON.stringify(result.value.typeReports, null, 2),
+                    };
                 } else {
                     await this.db.postForm(dataSetId, dataEntryForm);
                     return { status: true };
