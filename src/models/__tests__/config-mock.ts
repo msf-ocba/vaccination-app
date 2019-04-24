@@ -15,8 +15,10 @@ const metadataConfig: MetadataConfig = {
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
     organisationUnitLevels: [],
     categoryCombos: [],
+    categoryOptions: [],
     categories: [
         {
+            id: "1",
             name: "Antigens",
             code: "RVC_ANTIGENS",
             dataDimensionType: "DISAGGREGATION",
@@ -24,6 +26,7 @@ const metadataConfig: MetadataConfig = {
             $categoryOptions: { kind: "fromAntigens" },
         },
         {
+            id: "2",
             name: "Age group",
             code: "RVC_AGE_GROUP",
             dataDimensionType: "DISAGGREGATION",
@@ -31,6 +34,7 @@ const metadataConfig: MetadataConfig = {
             $categoryOptions: { kind: "fromAgeGroups" },
         },
         {
+            id: "3",
             name: "Teams",
             code: "RVC_TEAMS",
             dataDimensionType: "ATTRIBUTE",
@@ -41,6 +45,7 @@ const metadataConfig: MetadataConfig = {
             },
         },
         {
+            id: "4",
             name: "Gender",
             code: "RVC_GENDER",
             dataDimensionType: "DISAGGREGATION",
@@ -48,6 +53,7 @@ const metadataConfig: MetadataConfig = {
             $categoryOptions: { kind: "values", values: ["Female", "Male"] },
         },
         {
+            id: "5",
             name: "Severity",
             code: "RVC_SEVERITY",
             dataDimensionType: "DISAGGREGATION",
@@ -55,6 +61,7 @@ const metadataConfig: MetadataConfig = {
             $categoryOptions: { kind: "values", values: ["Minor", "Severe"] },
         },
         {
+            id: "6",
             name: "Displacement Status",
             code: "RVC_DISPLACEMENT_STATUS",
             dataDimensionType: "DISAGGREGATION",
@@ -62,6 +69,7 @@ const metadataConfig: MetadataConfig = {
             $categoryOptions: { kind: "values", values: ["Host", "IDP", "Refugees"] },
         },
         {
+            id: "7",
             name: "Demographic age distribution",
             code: "RVC_DEMOGRAPHIC_AGE",
             dataDimensionType: "DISAGGREGATION",
@@ -153,6 +161,7 @@ const metadataConfig: MetadataConfig = {
     ],
     antigens: [
         {
+            id: "1",
             name: "Measles",
             code: "RVC_MEASLES",
             dataElements: [
@@ -173,6 +182,7 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "2",
             name: "Meningitis Polysaccharide",
             code: "RVC_MENPOLY",
             dataElements: [
@@ -188,6 +198,7 @@ const metadataConfig: MetadataConfig = {
             ageGroups: [[["2 - 4 y"]], [["5 - 14 y"]], [["15 - 29 y"]]],
         },
         {
+            id: "3",
             name: "Meningitis Conjugate",
             code: "RVC_MENCONJ",
             dataElements: [
@@ -203,6 +214,7 @@ const metadataConfig: MetadataConfig = {
             ageGroups: [[["12 - 59 m"]], [["5 - 14 y"]], [["15 - 29 y", "15 - 19 y"]]],
         },
         {
+            id: "4",
             name: "Cholera",
             code: "RVC_CHOLERA",
             dataElements: [
@@ -213,6 +225,7 @@ const metadataConfig: MetadataConfig = {
             ageGroups: [[["12 - 59 m"]], [["5 - 14 y"]], [["15 - 99 y"], ["15 - 29 y", "> 30 y"]]],
         },
         {
+            id: "5",
             name: "PCV",
             code: "RVC_PCV",
             dataElements: [
@@ -231,6 +244,7 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "6",
             name: "Pertussis Penta",
             code: "RVC_PERTPENTA",
             dataElements: [
@@ -249,6 +263,7 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "7",
             name: "Yellow Fever",
             code: "RVC_YELLOW_FEVER",
             dataElements: [
@@ -274,6 +289,7 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "8",
             name: "Japanese Encephalitis",
             code: "RVC_JPENC",
             dataElements: [
@@ -294,6 +310,7 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "9",
             name: "Dengue",
             code: "RVC_DENGUE",
             dataElements: [
@@ -309,6 +326,7 @@ const metadataConfig: MetadataConfig = {
             ageGroups: [[["9 - 14 y"]], [["15 - 29 y"]]],
         },
         {
+            id: "10",
             name: "Typhoid Fever",
             code: "RVC_TYPHOID_FEVER",
             dataElements: [

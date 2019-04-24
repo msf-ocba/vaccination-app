@@ -4,6 +4,7 @@ import { Dictionary } from "lodash";
 import { generateUid } from "d2/uid";
 import { D2, D2Api } from "./d2.types";
 import {
+    Ref,
     OrganisationUnit,
     PaginatedObjects,
     CategoryOption,
@@ -33,6 +34,7 @@ import { getDaysRange } from "../utils/date";
 import { Antigen } from "./campaign";
 import "../utils/lodash-mixins";
 import { promiseMap } from "../utils/promises";
+import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 
 function getDbFields(modelFields: ModelFields): string[] {
     return _(modelFields)
@@ -278,7 +280,10 @@ export default class DbD2 {
     async getMetadataForDashboardItems(
         antigens: Antigen[],
         organisationUnitsPathOnly: OrganisationUnitPathOnly[],
-        categoryCodeForTeams: string
+        categoryCodeForTeams: string,
+        antigensDissagregation: AntigenDisaggregationEnabled,
+        categoryOptions: CategoryOption[],
+        ageGroupCategoryId: string
     ) {
         const allAncestorsIds = _(organisationUnitsPathOnly)
             .map("path")
@@ -303,7 +308,7 @@ export default class DbD2 {
             categories,
             dataElements,
             indicators,
-            categoryOptions,
+            categoryOptions: teamOptions,
             organisationUnits: organisationUnitsWithName,
         } = await this.api.get("/metadata", {
             "categories:fields": "id,categoryOptions[id,code,name]",
@@ -319,17 +324,17 @@ export default class DbD2 {
         });
 
         const { id: antigenCategory } = categories[0];
-        const antigensMeta = _.filter(categories[0].categoryOptions, op =>
+        const antigensMeta = _.filter(categories[0].teamOptions, op =>
             _.includes(antigenCodes, op.code)
         );
 
-        if (!categoryOptions || !categoryOptions[0].categories) {
+        if (!teamOptions || !teamOptions[0].categories) {
             throw new Error("Organization Units chosen have no teams associated"); // TEMP: Check will be made dynamically on orgUnit selection step
         }
 
         const teamsByOrgUnit = organisationUnitsPathOnly.reduce((acc, ou) => {
             let teams: string[] = [];
-            categoryOptions.forEach(
+            teamOptions.forEach(
                 (co: { id: string; organisationUnits: object[]; categories: object[] }) => {
                     const coIsTeam = _(co.categories)
                         .map("code")
@@ -346,11 +351,24 @@ export default class DbD2 {
             return { ...acc, [ou.id]: teams };
         }, {});
 
+        const categoryOptionsByName = _(categoryOptions)
+            .map(co => [co.displayName, co.id])
+            .fromPairs()
+            .value();
+
+        const ageGroupsToId = (ageGroups: string[]) =>
+            _.map(ageGroups, ag => categoryOptionsByName[ag]);
+
+        const ageGroupsByAntigen = _(antigensDissagregation)
+            .map(d => [d.antigen.id, ageGroupsToId(d.ageGroups)])
+            .fromPairs()
+            .value();
+
         const teamsMetadata: Dictionary<any> = {
             ...teamsByOrgUnit,
-            categoryId: categoryOptions[0].categories[0].id,
+            categoryId: teamOptions[0].categories[0].id,
         };
-
+        console.log({ ageGroupsByAntigen });
         const dashboardMetadata = {
             antigenCategory,
             dataElements: {
@@ -366,9 +384,13 @@ export default class DbD2 {
             antigensMeta,
             organisationUnitsWithName,
             disaggregationMetadata: {
-                teams: (antigen = null, orgUnit: { id: string }) => ({
+                teams: (antigen = null, orgUnit: Ref) => ({
                     categoryId: teamsMetadata.categoryId,
                     teams: teamsMetadata[orgUnit.id],
+                }),
+                ageGroups: (antigen: Ref) => ({
+                    categoryId: ageGroupCategoryId,
+                    ageGroups: ageGroupsByAntigen[antigen.id],
                 }),
             },
         };
@@ -382,12 +404,18 @@ export default class DbD2 {
         antigens: Antigen[],
         startDate: Moment,
         endDate: Moment,
-        categoryCodeForTeams: string
+        categoryCodeForTeams: string,
+        antigensDissagregation: AntigenDisaggregationEnabled,
+        categoryOptions: CategoryOption[],
+        ageGroupCategoryId: string
     ): Promise<DashboardData> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
             organisationUnits,
-            categoryCodeForTeams
+            categoryCodeForTeams,
+            antigensDissagregation,
+            categoryOptions,
+            ageGroupCategoryId
         );
 
         const dashboardItems = this.createDashboardItems(

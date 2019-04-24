@@ -9,6 +9,7 @@ import {
     DataElement,
     OrganisationUnitLevel,
     Ref,
+    CategoryOption,
 } from "./db.types";
 
 export interface BaseConfig {
@@ -44,6 +45,7 @@ const baseConfig: BaseConfig = {
 export interface MetadataConfig extends BaseConfig {
     organisationUnitLevels: OrganisationUnitLevel[];
     categories: Array<{
+        id: string;
         name: string;
         code: string;
         dataDimensionType: "DISAGGREGATION" | "ATTRIBUTE";
@@ -53,6 +55,7 @@ export interface MetadataConfig extends BaseConfig {
             | { kind: "fromAgeGroups" }
             | { kind: "values"; values: string[] };
     }>;
+    categoryOptions: CategoryOption[];
     categoryCombos: CategoryCombo[];
     population: {
         totalPopulationDataElement: DataElement;
@@ -67,6 +70,7 @@ export interface MetadataConfig extends BaseConfig {
         categories: { code: string; optional: boolean }[];
     }>;
     antigens: Array<{
+        id: string;
         name: string;
         code: string;
         dataElements: { code: string; optional: boolean }[];
@@ -90,6 +94,7 @@ function getConfigCategories(categories: Category[]): MetadataConfig["categories
         }
 
         return {
+            id: category.id,
             name: category.displayName,
             code: category.code,
             dataDimensionType: category.dataDimensionType,
@@ -214,6 +219,7 @@ function getAntigens(
         });
 
         return {
+            id: categoryOption.id,
             name: categoryOption.displayName,
             code: categoryOption.code,
             dataElements: dataElementSorted,
@@ -277,6 +283,9 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         ...baseConfig,
         organisationUnitLevels: metadata.organisationUnitLevels,
         categories: getConfigCategories(metadata.categories),
+        categoryOptions: _(metadata.categories)
+            .flatMap("categoryOptions")
+            .value(),
         categoryCombos: metadata.categoryCombos,
         dataElements: getConfigDataElements(
             metadata.dataElementGroups,

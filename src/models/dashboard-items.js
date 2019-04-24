@@ -8,6 +8,7 @@ export const dashboardItemsConfig = {
             elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
             dataType: "DATA_ELEMENT",
             appendCode: "vTable",
+            disaggregatedBy: ["ageGroup"],
         },
         qsIndicators: {
             elements: [
@@ -87,6 +88,10 @@ function getTables(antigen, elements, organisationUnit, itemsMetadata, disaggreg
                 teamsMetadata:
                     c.disaggregatedBy && c.disaggregatedBy.includes("team")
                         ? disaggregationMetadata.teams(null, organisationUnit)
+                        : null,
+                ageGroupMetadata:
+                    c.disaggregatedBy && c.disaggregatedBy.includes("ageGroup")
+                        ? disaggregationMetadata.teams(antigen)
                         : null,
                 ...itemsMetadata,
             })

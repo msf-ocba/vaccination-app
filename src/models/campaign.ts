@@ -5,10 +5,15 @@ import _, { Dictionary } from "lodash";
 import moment from "moment";
 
 import { AntigensDisaggregation } from "./AntigensDisaggregation";
-import { MetadataResponse, DataEntryForm } from "./db.types";
 import { generateUid } from "d2/uid";
-import { DataSet, Response } from "./db.types";
-import { PaginatedObjects, OrganisationUnitPathOnly } from "./db.types";
+import {
+    PaginatedObjects,
+    OrganisationUnitPathOnly,
+    DataSet,
+    Response,
+    MetadataResponse,
+    DataEntryForm,
+} from "./db.types";
 import DbD2 from "./db-d2";
 import { getDaysRange } from "../utils/date";
 import { MetadataConfig } from "./config";
@@ -18,6 +23,7 @@ import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 export type TargetPopulationData = TargetPopulationData;
 
 export interface Antigen {
+    id: string;
     name: string;
     code: string;
 }
@@ -260,13 +266,22 @@ export default class Campaign {
         }
         const startDate = moment(this.startDate).startOf("day");
         const endDate = moment(this.endDate).endOf("day");
+
+        const antigensDisaggregation = this.getEnabledAntigensDisaggregation();
+        const ageGroupCategoryId = _(metadataConfig.categories)
+            .keyBy("code")
+            .getOrFail(metadataConfig.categoryCodeForAgeGroup).id;
+        console.log({ antigensDisaggregation });
         const { dashboard, charts, reportTables } = await this.db.createDashboard(
             this.name,
             this.organisationUnits,
             this.antigens,
             startDate,
             endDate,
-            categoryCodeForTeams
+            categoryCodeForTeams,
+            antigensDisaggregation,
+            this.config.categoryOptions,
+            ageGroupCategoryId
         );
 
         const { targetPopulation } = this.data;
