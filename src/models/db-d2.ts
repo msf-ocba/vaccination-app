@@ -329,7 +329,7 @@ export default class DbD2 {
         );
 
         if (!teamOptions || !teamOptions[0].categories) {
-            throw new Error("Organization Units chosen have no teams associated"); // TEMP: Check will be made dynamically on orgUnit selection step
+            throw new Error("Organization Units chosen have no teams associated");
         }
 
         const teamsByOrgUnit = organisationUnitsPathOnly.reduce((acc, ou) => {
