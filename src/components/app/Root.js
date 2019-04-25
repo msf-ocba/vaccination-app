@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Switch, Route } from "react-router-dom";
 
-import CampaignConfigurator from "../campaign-configurator/CampaignConfigurator";
+import CampaignConfiguration from "../campaign-configuration/CampaignConfiguration";
 import DataEntry from "../data-entry/DataEntry";
 import Dashboard from "../dashboard/Dashboard";
 import LandingPage from "./LandingPage";
@@ -43,7 +43,7 @@ class Root extends React.Component {
                 <Route
                     path="/campaign-configuration"
                     render={props => (
-                        <CampaignConfigurator d2={d2} config={this.state.config} {...props} />
+                        <CampaignConfiguration d2={d2} config={this.state.config} {...props} />
                     )}
                 />
 

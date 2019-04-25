@@ -1,9 +1,9 @@
 /* Disable: TODO: setup /more robust
-describe("Campaign configurator - List page", () => {
+describe("Campaign configuration - List page", () => {
     beforeEach(() => {
         cy.login("admin");
         cy.loadPage();
-        cy.contains("Campaign Configurator").click();
+        cy.contains("Campaign Configuration").click();
     });
 
     it("should have the filter only my campaign set by default", () => {
