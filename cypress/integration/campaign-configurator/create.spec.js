@@ -127,6 +127,9 @@ function selectOrgUnit(label) {
     cy.contains(label)
         .prev()
         .click();
+    cy.contains(label)
+        .should("have.css", "color")
+        .and("not.equal", "rgba(0, 0, 0, 0.87)");
 }
 
 function clickDay(dayOfMonth) {
