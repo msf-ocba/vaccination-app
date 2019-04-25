@@ -46,6 +46,7 @@ class CampaignWizard extends React.Component {
                 label: i18n.t("Organisation Units"),
                 component: OrganisationUnitsStep,
                 validationKeys: ["organisationUnits"],
+                validationKeysLive: ["organisationUnits"],
                 description: i18n.t(
                     `Select the health facilities or health area where the campaign will be implemented`
                 ),
@@ -123,11 +124,10 @@ dataset and all the metadata associated with this vaccination campaign.`),
         this.setState({ dialogOpen: false });
     };
 
-    onChange = memoize(step => campaign => {
-        const errors = getValidationMessages(campaign, step.validationKeysLive || []);
-        if (_(errors).isEmpty()) {
-            this.setState({ campaign });
-        } else {
+    onChange = memoize(step => async campaign => {
+        const errors = await getValidationMessages(campaign, step.validationKeysLive || []);
+        this.setState({ campaign });
+        if (!_(errors).isEmpty()) {
             this.props.snackbar.error(errors.join("\n"));
         }
     });
