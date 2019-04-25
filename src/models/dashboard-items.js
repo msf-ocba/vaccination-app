@@ -77,17 +77,17 @@ function getDisaggregations(itemConfigs, disaggregationMetadata, antigen, organi
 
 function getCharts(antigen, elements, organisationUnit, itemsMetadata, disaggregationMetadata) {
     return _(dashboardItemsConfig.charts)
-        .map((c, key) =>
+        .map((chart, key) =>
             chartConstructor({
                 id: generateUid(),
                 antigen,
                 data: elements[key],
-                type: c.type,
-                appendCode: c.appendCode,
+                type: chart.type,
+                appendCode: chart.appendCode,
                 organisationUnit,
                 ...itemsMetadata,
                 disaggregations: getDisaggregations(
-                    c,
+                    chart,
                     disaggregationMetadata,
                     antigen,
                     organisationUnit
@@ -201,13 +201,13 @@ function getDimensions(antigen, antigenCategory, disaggregations) {
         categoryOptions: [{ id: antigen.id }],
     };
 
-    const noDisaggregation = {
+    const noDisaggregationDimension = {
         categoryDimensions: antigenCategoryDimension,
         columns: { id: "dx" },
         columnDimensions: "dx",
     };
 
-    if (_.isEmpty(disaggregations)) return _.mapValues(noDisaggregation, dis => [dis]);
+    if (_.isEmpty(disaggregations)) return _.mapValues(noDisaggregationDimension, dis => [dis]);
 
     const disaggregationDimensions = disaggregations.map(d => ({
         categoryDimensions: {
@@ -222,7 +222,7 @@ function getDimensions(antigen, antigenCategory, disaggregations) {
 
     const keys = ["categoryDimensions", "columns", "columnDimensions"];
 
-    const allDimensions = [noDisaggregation, ...disaggregationDimensions];
+    const allDimensions = [noDisaggregationDimension, ...disaggregationDimensions];
 
     return _(keys)
         .zip(keys.map(key => allDimensions.map(o => o[key])))
