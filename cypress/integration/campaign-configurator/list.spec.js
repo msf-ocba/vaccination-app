@@ -1,8 +1,29 @@
 describe("Campaign configuration - List page", () => {
-    beforeEach(() => {
+    before(() => {
         cy.login("admin");
+        cy.fixture("datasets.json").then(testDataSets => {
+            cy.request("POST", "http://dev2.eyeseetea.com:8082/api/metadata", {
+                dataSets: [testDataSets["0"], testDataSets["1"]],
+            });
+        });
+    });
+
+    beforeEach(() => {
         cy.loadPage();
         cy.contains("Campaign Configuration").click();
+    });
+
+    after(() => {
+        cy.fixture("datasets.json").then(testDataSets => {
+            cy.request(
+                "DELETE",
+                `http://dev2.eyeseetea.com:8082/api/dataSets/${testDataSets["0"].id}`
+            );
+            cy.request(
+                "DELETE",
+                `http://dev2.eyeseetea.com:8082/api/dataSets/${testDataSets["1"].id}`
+            );
+        });
     });
 
     it("should have the filter only my campaign set by default", () => {
@@ -46,44 +67,37 @@ describe("Campaign configuration - List page", () => {
     });
 
     it("shows list of user dataset sorted alphabetically desc", () => {
-        cy.get("[data-test='search']").clear();
         cy.server()
             .route("GET", "/api/dataSets*")
             .as("getDataSets");
-
-        cy.contains("Name").click();
-
         cy.wait("@getDataSets");
-        cy.wait(1000); // eslint-disable-line cypress/no-unnecessary-waiting
+        cy.contains("Name").click();
+        cy.wait("@getDataSets");
+        cy.wait(2000); // eslint-disable-line cypress/no-unnecessary-waiting
         cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").then(text1 => {
             cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").then(text2 => {
-                console.log({ 1: text1.text(), 2: text2.text() });
                 assert.isTrue(text1.text() > text2.text());
             });
         });
     });
-    /*
+
     it("can filter datasets by name (case insensitive)", () => {
         cy.get("[data-test='only-my-campaigns']").uncheck();
 
-        cy.server()
-            .route("GET", "/api/dataSets**")
-            .as("getDataSets");
         cy.get("[data-test='search']")
             .clear()
-            .type("meningitis");
-        cy.wait("@getDataSets");
+            .type("cypressTestDataSet");
+
         cy.get(".data-table__rows__row").should("have.length", 2);
 
         cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
             "have.text",
-            "Meningitis Outbreak - Daily"
+            "AcypressTestDataSet"
         );
 
         cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").should(
             "have.text",
-            "Meningitis Outbreak - Weekly"
+            "BcypressTestDataSet"
         );
     });
-    */
 });
