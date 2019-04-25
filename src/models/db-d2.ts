@@ -212,28 +212,28 @@ export default class DbD2 {
 
         const { categoryOptions, organisationUnits: orgUnitNamesArray } = response as {
             categoryOptions?: CategoryOptionsCustom[];
-            organisationUnits: OrganisationUnitWithName[];
+            organisationUnits?: OrganisationUnitWithName[];
         };
 
         const hasTeams = (path: string) => {
             return (categoryOptions || []).some(
-                co =>
-                    _(co.categories)
+                categoryOption =>
+                    _(categoryOption.categories)
                         .map("code")
                         .includes(categoryCodeForTeams) &&
-                    co.organisationUnits.some(ou => path.includes(ou.id))
+                    categoryOption.organisationUnits.some(ou => path.includes(ou.id))
             );
         };
 
-        const orgUnitNames = _(orgUnitNamesArray)
-            .map((o: OrganisationUnitWithName) => [o.id, o.displayName])
+        const orgUnitNames: _.Dictionary<string> = _(orgUnitNamesArray)
+            .map(o => [o.id, o.displayName])
             .fromPairs()
             .value();
 
-        return _(organisationUnits)
+        return _(organisationUnits || [])
             .map(ou => ({
                 id: ou.id,
-                displayName: orgUnitNames[ou.id],
+                displayName: _(orgUnitNames).getOrFail(ou.id),
                 hasTeams: hasTeams(ou.path),
             }))
             .value();
