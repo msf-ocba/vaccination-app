@@ -107,7 +107,7 @@ class DataEntry extends React.Component {
             });
     }
 
-    backCampaignConfigurator = () => {
+    backCampaignConfiguration = () => {
         this.props.history.push("/campaign-configuration");
     };
 
@@ -117,7 +117,7 @@ class DataEntry extends React.Component {
             <React.Fragment>
                 <PageHeader
                     title={i18n.t("Data Entry")}
-                    onBackClick={this.backCampaignConfigurator}
+                    onBackClick={this.backCampaignConfiguration}
                 />
                 <div>
                     {isDataEntryIdValid && (

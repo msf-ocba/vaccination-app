@@ -15,7 +15,7 @@ import {
     DataEntryForm,
 } from "./db.types";
 import DbD2 from "./db-d2";
-import { getDaysRange } from "../utils/date";
+import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled, getDataElements } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
@@ -308,8 +308,8 @@ export default class Campaign {
             }));
 
             const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
-                openingDate: startDate.toISOString(),
-                closingDate: endDate.toISOString(),
+                openingDate: toISOStringNoTZ(startDate),
+                closingDate: toISOStringNoTZ(endDate),
                 period: { id: date.format("YYYYMMDD") },
             }));
 
