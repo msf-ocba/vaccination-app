@@ -90,6 +90,12 @@ export interface AnalyticsResponse {
 const ref = { id: true };
 
 const metadataFields: MetadataFields = {
+    attributes: {
+        id: true,
+        code: true,
+        valueType: true,
+        displayName: true,
+    },
     categories: {
         id: true,
         displayName: true,

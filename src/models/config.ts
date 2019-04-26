@@ -9,6 +9,7 @@ import {
     DataElement,
     OrganisationUnitLevel,
     Ref,
+    Attribute,
 } from "./db.types";
 
 export interface BaseConfig {
@@ -19,7 +20,7 @@ export interface BaseConfig {
     dataElementGroupCodeForAntigens: string;
     categoryComboCodeForTeams: string;
     categoryCodeForTeams: string;
-    attibuteCodeForApp: string;
+    attributeCodeForApp: string;
     attributeCodeForDashboard: string;
     dataElementCodeForTotalPopulation: string;
     dataElementCodeForAgeDistribution: string;
@@ -34,7 +35,7 @@ const baseConfig: BaseConfig = {
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
-    attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
+    attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     attributeCodeForDashboard: "RVC_DASHBOARD_ID",
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
@@ -42,6 +43,10 @@ const baseConfig: BaseConfig = {
 };
 
 export interface MetadataConfig extends BaseConfig {
+    attributes: {
+        app: Attribute;
+        dashboard: Attribute;
+    };
     organisationUnitLevels: OrganisationUnitLevel[];
     categories: Array<{
         name: string;
@@ -60,7 +65,8 @@ export interface MetadataConfig extends BaseConfig {
         populationByAgeDataElement: DataElement;
         ageGroupCategory: Category;
     };
-    dataElements: Array<{
+    dataElements: DataElement[];
+    dataElementsDisaggregation: Array<{
         name: string;
         code: string;
         id: string;
@@ -108,12 +114,12 @@ function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
     return refs.map(ref => _(objectsById).getOrFail(ref.id));
 }
 
-function getConfigDataElements(
+function getConfigDataElementsDisaggregation(
     dataElementGroups: DataElementGroup[],
     dataElements: DataElement[],
     categoryCombos: CategoryCombo[],
     categories: Category[]
-): MetadataConfig["dataElements"] {
+): MetadataConfig["dataElementsDisaggregation"] {
     const groupsByCode = _.keyBy(dataElementGroups, "code");
     const catCombosByCode = _.keyBy(categoryCombos, "code");
     const dataElementsForAntigens = getFromRefs(
@@ -251,11 +257,20 @@ function getPopulationMetadata(
     };
 }
 
+function getAttributes(attributes: Attribute[]) {
+    const attributesByCode = _(attributes).keyBy("code");
+    return {
+        app: attributesByCode.getOrFail(baseConfig.attributeCodeForApp),
+        dashboard: attributesByCode.getOrFail(baseConfig.attributeCodeForDashboard),
+    };
+}
+
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
     const codeFilter = "code:startsWith:RVC_";
     const modelParams = { filters: [codeFilter] };
 
     const metadataParams = {
+        attributes: modelParams,
         categories: modelParams,
         categoryCombos: modelParams,
         categoryOptionGroups: modelParams,
@@ -265,6 +280,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
     };
 
     const metadata = await db.getMetadata<{
+        attributes: Attribute[];
         categories: Category[];
         categoryCombos: CategoryCombo[];
         categoryOptionGroups: CategoryOptionGroup[];
@@ -275,10 +291,12 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
 
     const metadataConfig = {
         ...baseConfig,
+        attributes: getAttributes(metadata.attributes),
         organisationUnitLevels: metadata.organisationUnitLevels,
         categories: getConfigCategories(metadata.categories),
         categoryCombos: metadata.categoryCombos,
-        dataElements: getConfigDataElements(
+        dataElements: metadata.dataElements,
+        dataElementsDisaggregation: getConfigDataElementsDisaggregation(
             metadata.dataElementGroups,
             metadata.dataElements,
             metadata.categoryCombos,

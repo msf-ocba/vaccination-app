@@ -67,6 +67,9 @@ export interface CategoryCombo {
 
 export interface Attribute {
     id: string;
+    code: string;
+    valueType: "TEXT" | "BOOLEAN";
+    displayName: string;
 }
 
 export interface AttributeValue {
@@ -94,6 +97,7 @@ export interface Ref {
 
 export interface Metadata {
     dataSets?: Array<DataSet>;
+    dataEntryForms?: Array<DataEntryForm>;
     sections?: Array<Section>;
     charts?: Array<Dictionary<any>>;
     reportTables?: Array<Dictionary<any>>;
@@ -126,6 +130,7 @@ export interface DataSet {
     dataInputPeriods: DataInputPeriod[];
     attributeValues: AttributeValue[];
     formType: "DEFAULT" | "CUSTOM";
+    dataEntryForm?: Ref;
 }
 
 export interface DataEntryForm {
@@ -229,6 +234,7 @@ export interface ModelFields {
 }
 
 export type ModelName =
+    | "attributes"
     | "categories"
     | "categoryCombos"
     | "categoryOptions"
