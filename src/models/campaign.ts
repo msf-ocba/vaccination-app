@@ -258,16 +258,8 @@ export default class Campaign {
         const dataSetId = generateUid();
         const metadataConfig = this.config;
         const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
-        const vaccinationAttribute = await this.db.getAttributeIdByCode(
-            metadataConfig.attibuteCodeForApp
-        );
-        const dashboardAttribute = await this.db.getAttributeIdByCode(
-            metadataConfig.attributeCodeForDashboard
-        );
-        const categoryCombos = await this.db.getCategoryCombosByCode([categoryComboCodeForTeams]);
-        const categoryCombosByCode = _(categoryCombos)
-            .keyBy("code")
-            .value();
+        const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
+        const categoryCombosByCode = _.keyBy(metadataConfig.categoryCombos, "code");
         const categoryComboTeams = _(categoryCombosByCode).get(categoryComboCodeForTeams);
 
         if (!this.startDate || !this.endDate) {
@@ -286,7 +278,7 @@ export default class Campaign {
 
         const { targetPopulation } = this.data;
 
-        if (!vaccinationAttribute || !dashboardAttribute) {
+        if (!attributeForApp || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: Attributes" };
         } else if (!categoryComboTeams) {
             return {
@@ -299,7 +291,7 @@ export default class Campaign {
             return { status: false, error: "There is no target population in campaign" };
         } else {
             const disaggregationData = this.getEnabledAntigensDisaggregation();
-            const dataElements = await getDataElements(this.db, disaggregationData);
+            const dataElements = getDataElements(metadataConfig, disaggregationData);
 
             const dataSetElements = dataElements.map(dataElement => ({
                 dataSet: { id: dataSetId },
@@ -315,9 +307,10 @@ export default class Campaign {
 
             const customForm = await DataSetCustomForm.build(this);
             const customFormHtml = customForm.generate();
+            const formId = generateUid();
             const dataEntryForm: DataEntryForm = {
-                id: generateUid(),
-                name: this.name,
+                id: formId,
+                name: this.name + " " + formId, // dataEntryForm.name must be unique
                 htmlCode: customFormHtml,
                 style: "NONE",
             };
@@ -339,9 +332,10 @@ export default class Campaign {
                 formType: "CUSTOM",
                 dataInputPeriods,
                 attributeValues: [
-                    { value: "true", attribute: { id: vaccinationAttribute.id } },
+                    { value: "true", attribute: { id: attributeForApp.id } },
                     { value: dashboard.id, attribute: { id: dashboardAttribute.id } },
                 ],
+                dataEntryForm: { id: dataEntryForm.id },
             };
 
             const period = moment(this.startDate || new Date()).format("YYYYMMDD");
@@ -359,6 +353,7 @@ export default class Campaign {
                     reportTables,
                     dashboards: [dashboard],
                     dataSets: [dataSet],
+                    dataEntryForms: [dataEntryForm],
                 });
 
                 if (result.status !== "OK") {

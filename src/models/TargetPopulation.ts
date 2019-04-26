@@ -10,6 +10,7 @@ import {
     DataValue,
 } from "./db.types";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
+import { sortAgeGroups } from "../utils/age-groups";
 
 const levelsConfig = {
     levelForPopulation: 5,
@@ -153,10 +154,12 @@ export class TargetPopulation {
         period: string
     ): Promise<TargetPopulation> {
         const ouIds = orgUnitsPathOnly.map(ou => ou.id);
-        const ageGroupsForAllAntigens = _(antigensDisaggregation)
-            .flatMap(({ ageGroups }) => ageGroups)
-            .uniq()
-            .value();
+        const ageGroupsForAllAntigens = sortAgeGroups(
+            _(antigensDisaggregation)
+                .flatMap(({ ageGroups }) => ageGroups)
+                .uniq()
+                .value()
+        );
 
         const { organisationUnits } = await this.db.getMetadata<{
             organisationUnits: OrganisationUnit[];

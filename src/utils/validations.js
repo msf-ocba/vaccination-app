@@ -21,7 +21,7 @@ const translations = {
     no_target_population_defined: () => i18n.t("No target population defined"),
     total_population_invalid: namespace =>
         i18n.t(
-            "Org unit {{organisationUnit}} has an invalid total population value: {{value}}",
+            "Org unit {{organisationUnit}} has an invalid total population value -> {{value}}",
             namespace
         ),
 

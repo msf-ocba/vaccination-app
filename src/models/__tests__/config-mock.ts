@@ -8,13 +8,27 @@ const metadataConfig: MetadataConfig = {
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
-    attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
+    attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     attributeCodeForDashboard: "RVC_DASHBOARD_ID",
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
     organisationUnitLevels: [],
     categoryCombos: [],
+    attributes: {
+        app: {
+            code: "RVC_CREATED_BY_VACCINATION_APP",
+            id: "1",
+            displayName: "Created by app",
+            valueType: "BOOLEAN",
+        },
+        dashboard: {
+            code: "RVC_DASHBOARD_ID",
+            id: "2",
+            displayName: "Dashboard ID",
+            valueType: "TEXT",
+        },
+    },
     categories: [
         {
             name: "Antigens",
@@ -98,6 +112,56 @@ const metadataConfig: MetadataConfig = {
         },
     },
     dataElements: [
+        {
+            id: "1",
+            displayName: "Vaccine doses administered",
+            code: "RVC_DOSES_ADMINISTERED",
+            categoryCombo: { id: "1" },
+        },
+        {
+            id: "2",
+            displayName: "Vaccine doses used",
+            code: "RVC_USED",
+            categoryCombo: { id: "1" },
+        },
+        {
+            id: "3",
+            displayName: "ADS used",
+            code: "RVC_ADS_USED",
+            categoryCombo: { id: "1" },
+        },
+        {
+            id: "4",
+            displayName: "Syringes for dilution",
+            code: "RVC_SYRINGES",
+            categoryCombo: { id: "1" },
+        },
+        {
+            id: "5",
+            displayName: "Needles doses used",
+            code: "RVC_NEEDLES",
+            categoryCombo: { id: "1" },
+        },
+        {
+            id: "6",
+            displayName: "Safety boxes",
+            code: "RVC_SAFETY_BOXES",
+            categoryCombo: { id: "1" },
+        },
+        {
+            id: "7",
+            displayName: "Accidental Exposure to Blood (AEB)",
+            code: "RVC_AEB",
+            categoryCombo: { id: "1" },
+        },
+        {
+            id: "8",
+            displayName: "Adverse Event Following Immunization",
+            code: "RVC_AEFI",
+            categoryCombo: { id: "1" },
+        },
+    ],
+    dataElementsDisaggregation: [
         {
             id: "1",
             name: "Vaccine doses administered",
