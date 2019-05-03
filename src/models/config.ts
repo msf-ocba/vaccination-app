@@ -49,7 +49,8 @@ export interface MetadataConfig extends BaseConfig {
         dashboard: Attribute;
     };
     organisationUnitLevels: OrganisationUnitLevel[];
-    categories: Array<{
+    categories: Category[];
+    categoriesDisaggregation: Array<{
         name: string;
         code: string;
         dataDimensionType: "DISAGGREGATION" | "ATTRIBUTE";
@@ -76,14 +77,16 @@ export interface MetadataConfig extends BaseConfig {
     antigens: Array<{
         name: string;
         code: string;
-        dataElements: { code: string; optional: boolean }[];
+        dataElements: { id: string; code: string; optional: boolean }[];
         ageGroups: Array<string[][]>;
     }>;
 }
 
-function getConfigCategories(categories: Category[]): MetadataConfig["categories"] {
+function getCategoriesDisaggregation(
+    categories: Category[]
+): MetadataConfig["categoriesDisaggregation"] {
     return categories.map(category => {
-        let $categoryOptions: MetadataConfig["categories"][0]["$categoryOptions"];
+        let $categoryOptions: MetadataConfig["categoriesDisaggregation"][0]["$categoryOptions"];
 
         if (category.code === baseConfig.categoryCodeForAntigens) {
             $categoryOptions = { kind: "fromAntigens" };
@@ -124,7 +127,7 @@ function getConfigDataElementsDisaggregation(
     const groupsByCode = _.keyBy(dataElementGroups, "code");
     const catCombosByCode = _.keyBy(categoryCombos, "code");
     const dataElementsForAntigens = getFromRefs(
-        _(groupsByCode).getOrFail("RVC_ANTIGEN").dataElements,
+        _(groupsByCode).getOrFail(baseConfig.dataElementGroupCodeForAntigens).dataElements,
         dataElements
     );
 
@@ -156,7 +159,8 @@ function getAntigens(
     categoryOptionGroups: CategoryOptionGroup[]
 ): MetadataConfig["antigens"] {
     const categoriesByCode = _.keyBy(categories, "code");
-    const categoryOptions = _(categoriesByCode).getOrFail("RVC_ANTIGEN").categoryOptions;
+    const categoryOptions = _(categoriesByCode).getOrFail(baseConfig.categoryCodeForAntigens)
+        .categoryOptions;
     const dataElementGroupsByCode = _.keyBy(dataElementGroups, "code");
     const categoryOptionGroupsByCode = _.keyBy(categoryOptionGroups, "code");
 
@@ -170,8 +174,8 @@ function getAntigens(
         };
 
         const dataElementsForAntigens = _.concat(
-            getDataElements("REQUIRED").map(({ code }) => ({ code, optional: false })),
-            getDataElements("OPTIONAL").map(({ code }) => ({ code, optional: true }))
+            getDataElements("REQUIRED").map(({ id, code }) => ({ id, code, optional: false })),
+            getDataElements("OPTIONAL").map(({ id, code }) => ({ id, code, optional: true }))
         );
 
         const dataElementSorted = _(dataElementsForAntigens)
@@ -266,7 +270,8 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         ...baseConfig,
         attributes: getAttributes(metadata.attributes),
         organisationUnitLevels: metadata.organisationUnitLevels,
-        categories: getConfigCategories(metadata.categories),
+        categories: metadata.categories,
+        categoriesDisaggregation: getCategoriesDisaggregation(metadata.categories),
         categoryCombos: metadata.categoryCombos,
         dataElements: metadata.dataElements,
         dataElementsDisaggregation: getConfigDataElementsDisaggregation(

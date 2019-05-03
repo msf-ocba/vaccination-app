@@ -52,10 +52,10 @@ function getDbFields(modelFields: ModelFields): string[] {
 function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
     return _(metadataParams)
         .flatMap((params, modelName) => {
-            const fields = metadataFields[modelName as ModelName];
             if (!params) {
                 return [];
             } else {
+                const fields = params.fields || metadataFields[modelName as ModelName];
                 return [
                     [modelName + ":fields", getDbFields(fields).join(",")],
                     ...(params.filters || []).map(filter => [modelName + ":filter", filter]),
@@ -138,6 +138,7 @@ const metadataFields: MetadataFields = {
         code: true,
         dataElements: ref,
     },
+    dataSets: { id: true },
     organisationUnits: {
         id: true,
         displayName: true,
@@ -155,6 +156,7 @@ const metadataFields: MetadataFields = {
         displayName: true,
         level: true,
     },
+    sections: { id: true },
 };
 
 export default class DbD2 {
