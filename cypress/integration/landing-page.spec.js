@@ -7,6 +7,7 @@ context("Landing page", () => {
     });
 
     beforeEach(() => {
+        cy.login("admin");
         cy.visit("/");
     });
 

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-05-03T09:51:50.559Z\n"
+"POT-Creation-Date: 2019-05-03T11:25:11.865Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -71,8 +71,31 @@ msgstr "Ir a tablero"
 msgid "Download data"
 msgstr "Descargar datos"
 
+msgid "Deleting campaign(s). This may take a while, please wait"
+msgstr ""
+"Eliminando {{count}} campaña(s). Este proceso puede tardar, por favor, espere"
+
+msgid "Campaign(s) deleted"
+msgstr "Campaña(s) eliminadas"
+
+msgid "Error deleting campaign(s)"
+msgstr "Se produjo un error al borrar la(s) campaña(s)"
+
 msgid "Only my campaigns"
 msgstr "Solo mis campañas"
+
+msgid ""
+"Are you sure you want to delete those campaign(s) (dataset, dashboards and "
+"favorites)?"
+msgstr ""
+"¿Estás seguro de que quieres eliminar esta(s) campaña(s) (datasets, tableros "
+"y favoritos)?"
+
+msgid "Delete campaign(s)"
+msgstr "Eliminar campaña(s)"
+
+msgid "Yes"
+msgstr "Sí"
 
 msgid "Campaigns"
 msgstr "Campañas"
@@ -184,22 +207,6 @@ msgstr "Editar campaña"
 msgid "New vaccination campaign"
 msgstr "Nueva campaña"
 
-msgid "Cancel Campaign Creation?"
-msgstr "Cancelar la creaciòn de campaña?"
-
-msgid ""
-"You are about to exit the campaign creation wizard. All your changes will be "
-"lost. Are you sure?"
-msgstr ""
-"Esta seguro que quiere salir del creador de campañas? Todos sus cambios se "
-"perderán"
-
-msgid "Cancel"
-msgstr "Cancelar"
-
-msgid "Ok"
-msgstr "Aceptar"
-
 msgid "Cannot find dashboard associated to the campaign"
 msgstr "No hay ningún tablero asociado a la campaña"
 
@@ -242,6 +249,9 @@ msgstr "Periodo"
 msgid "Antigens"
 msgstr "Antígenos"
 
+msgid "Cancel"
+msgstr "Cancelar"
+
 msgid "Population distribution (%)"
 msgstr "Distribución por edades (%)"
 
@@ -250,6 +260,16 @@ msgstr "Distribución de población en campaña"
 
 msgid "Missing"
 msgstr "Vacío"
+
+msgid "Cancel Campaign Creation?"
+msgstr "Cancelar la creación de campaña?"
+
+msgid ""
+"You are about to exit the campaign creation wizard. All your changes will be "
+"lost. Are you sure?"
+msgstr ""
+"Esta seguro que quiere salir del creador de campañas? Todos sus cambios se "
+"perderán"
 
 msgid "Help"
 msgstr "Ayuda"
