@@ -90,15 +90,15 @@ export interface AnalyticsResponse {
 const ref = { id: true };
 
 export const metadataFields: MetadataFields = {
+    attributeValues: {
+        value: true,
+        attribute: { id: true, code: true },
+    },
     attributes: {
         id: true,
         code: true,
         valueType: true,
         displayName: true,
-    },
-    attributeValues: {
-        value: true,
-        attribute: { id: true, code: true },
     },
     categories: {
         id: true,

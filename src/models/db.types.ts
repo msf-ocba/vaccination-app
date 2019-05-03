@@ -259,8 +259,9 @@ export interface ModelFields {
 }
 
 export type ModelName =
-    | "attributes"
     | "attributeValues"
+    | "attributes"
+    | "attributes"
     | "categories"
     | "categoryCombos"
     | "categoryOptions"
