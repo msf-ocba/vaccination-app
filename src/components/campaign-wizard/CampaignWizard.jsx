@@ -173,6 +173,7 @@ dataset and all the metadata associated with this vaccination campaign.`),
         const stepExists = steps.find(step => step.key === urlHash);
         const firstStepKey = steps.map(step => step.key)[0];
         const initialStepKey = stepExists ? urlHash : firstStepKey;
+        const lastClickableStepIndex = this.isEdit() ? steps.length - 1 : 0;
         const title = this.isEdit()
             ? i18n.t("Edit vaccination campaign")
             : i18n.t("New vaccination campaign");
@@ -191,6 +192,7 @@ dataset and all the metadata associated with this vaccination campaign.`),
                     initialStepKey={initialStepKey}
                     useSnackFeedback={true}
                     onStepChangeRequest={this.onStepChangeRequest}
+                    lastClickableStepIndex={lastClickableStepIndex}
                 />
             </React.Fragment>
         );
