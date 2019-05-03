@@ -94,6 +94,12 @@ export const metadataFields: MetadataFields = {
         value: true,
         attribute: { id: true, code: true },
     },
+    attributes: {
+        id: true,
+        code: true,
+        valueType: true,
+        displayName: true,
+    },
     categories: {
         id: true,
         displayName: true,

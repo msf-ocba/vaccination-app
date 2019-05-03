@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-24T08:55:31.849Z\n"
-"PO-Revision-Date: 2019-04-24T08:55:31.849Z\n"
+"POT-Creation-Date: 2019-05-03T13:20:05.761Z\n"
+"PO-Revision-Date: 2019-05-03T13:20:05.761Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -182,7 +182,13 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
+msgid "Disaggregation"
+msgstr ""
+
 msgid "Field cannot be blank"
+msgstr ""
+
+msgid "Campaign created"
 msgstr ""
 
 msgid "Error saving campaign"
@@ -212,6 +218,15 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
+msgid "Population distribution (%)"
+msgstr ""
+
+msgid "Campaign Population Distribution"
+msgstr ""
+
+msgid "Missing"
+msgstr ""
+
 msgid "Cancel Campaign Creation?"
 msgstr ""
 
@@ -227,6 +242,12 @@ msgid "Previous"
 msgstr ""
 
 msgid "Next"
+msgstr ""
+
+msgid "Doses administered"
+msgstr ""
+
+msgid "Quality and safety indicators"
 msgstr ""
 
 msgid "Select at least one organisation unit"
@@ -248,4 +269,32 @@ msgid "You must select at least one option of the category"
 msgstr ""
 
 msgid "No target population defined"
+msgstr ""
+
+msgid ""
+"Org unit {{organisationUnit}} has an invalid total population value -> "
+"{{value}}"
+msgstr ""
+
+msgid ""
+"Org unit {{organisationUnit}} has invalid distribution values for age "
+"ranges -> {{ageGroups}}"
+msgstr ""
+
+msgid ""
+"Org unit {{organisationUnit}} has an invalid total value for antigen "
+"{{antigen}} ({{ageGroups}}) -> {{- value}}"
+msgstr ""
+
+msgctxt ""
+"YEAR\n"
+"\n"
+"                    The start and end date should define the period for "
+"which you expect to enter data - i.e .the first and last day of your "
+"campaign. If you are not certain of the end date, enter a date a few weeks "
+"later than the expected date of completion (refer to your microplan). It is "
+"possible to edit the dates at any point."
+msgid ""
+"Give your campaign a name that will make it easy to recognize in an HMIS "
+"hierarchy. Suggested format is REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH"
 msgstr ""

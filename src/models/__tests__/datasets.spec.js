@@ -34,7 +34,7 @@ describe("DataSets", () => {
                     fields: ["id", "attributeValues[value, attribute[code]]"],
                     paging: false,
                     filter: `attributeValues.attribute.code:eq:${
-                        metadataConfig.attibuteCodeForApp
+                        metadataConfig.attributeCodeForApp
                     }`,
                 });
 
@@ -79,12 +79,12 @@ describe("DataSets", () => {
         describe("filters datasets by attribute", () => {
             it("returns only datasets with the CREATED_BY_VACCINATION attribute set", async () => {
                 const testIds = ["id1", "id2", "id3", "id4"];
-                const code = metadataConfig.attibuteCodeForApp;
+                const attribute = metadataConfig.attributes.app;
                 const testDataSets = [
-                    { id: testIds[0], attributeValues: [{ value: "true", attribute: { code } }] },
-                    { id: testIds[1], attributeValues: [{ value: "false", attribute: { code } }] },
-                    { id: testIds[2], attributeValues: [{ value: "true", attribute: { code } }] },
-                    { id: testIds[3], attributeValues: [{ value: "false", attribute: { code } }] },
+                    { id: testIds[0], attributeValues: [{ value: "true", attribute }] },
+                    { id: testIds[1], attributeValues: [{ value: "false", attribute }] },
+                    { id: testIds[2], attributeValues: [{ value: "true", attribute }] },
+                    { id: testIds[3], attributeValues: [{ value: "false", attribute }] },
                 ];
                 const listMock = jest.fn(() =>
                     Promise.resolve({ toArray: () => testDataSets, pager: {} })

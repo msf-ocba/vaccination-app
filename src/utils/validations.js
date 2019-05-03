@@ -18,19 +18,19 @@ const translations = {
     no_target_population_defined: () => i18n.t("No target population defined"),
     total_population_invalid: namespace =>
         i18n.t(
-            "Org unit {{organisationUnit}} has an invalid total population value: {{value}}",
+            "Org unit {{organisationUnit}} has an invalid total population value -> {{value}}",
             namespace
         ),
 
     age_groups_population_invalid: namespace =>
         i18n.t(
-            "Org unit {{organisationUnit}} has invalid distribution values for age ranges: {{ageGroups}}",
+            "Org unit {{organisationUnit}} has invalid distribution values for age ranges -> {{ageGroups}}",
             namespace
         ),
 
     age_groups_population_for_antigen_invalid: namespace =>
         i18n.t(
-            "Org unit {{organisationUnit}} has an invalid total value for antigen {{antigen}} ({{ageGroups}}): {{- value}}",
+            "Org unit {{organisationUnit}} has an invalid total value for antigen {{antigen}} ({{ageGroups}}) -> {{- value}}",
             namespace
         ),
 };
