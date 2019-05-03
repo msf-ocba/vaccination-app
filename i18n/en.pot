@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-18T09:58:45.805Z\n"
-"PO-Revision-Date: 2019-04-18T09:58:45.805Z\n"
+"POT-Creation-Date: 2019-05-03T09:51:50.559Z\n"
+"PO-Revision-Date: 2019-05-03T09:51:50.559Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -75,6 +75,9 @@ msgid "Only my campaigns"
 msgstr ""
 
 msgid "Campaigns"
+msgstr ""
+
+msgid "Cannot load campaign"
 msgstr ""
 
 msgid "Organisation Units"
@@ -150,15 +153,18 @@ msgid ""
 "this vaccination campaign."
 msgstr ""
 
+msgid "Edit vaccination campaign"
+msgstr ""
+
+msgid "New vaccination campaign"
+msgstr ""
+
 msgid "Cancel Campaign Creation?"
 msgstr ""
 
 msgid ""
 "You are about to exit the campaign creation wizard. All your changes will "
 "be lost. Are you sure?"
-msgstr ""
-
-msgid "New vaccination campaign"
 msgstr ""
 
 msgid "Cancel"

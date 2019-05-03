@@ -65,7 +65,8 @@ class CampaignConfiguration extends React.Component {
             text: i18n.t("Edit"),
             multiple: false,
             isActive: (d2, dataSet) => canUpdate(d2, d2.models.dataSet, [dataSet]),
-            onClick: dataSet => console.log("TODO:edit", dataSet),
+            onClick: dataSet =>
+                this.props.history.push(`/campaign-configuration/edit/${dataSet.id}`),
         },
         {
             name: "share",

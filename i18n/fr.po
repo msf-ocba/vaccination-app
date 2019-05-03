@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-18T09:54:46.297Z\n"
+"POT-Creation-Date: 2019-05-03T09:51:50.559Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -75,6 +75,9 @@ msgid "Only my campaigns"
 msgstr ""
 
 msgid "Campaigns"
+msgstr ""
+
+msgid "Cannot load campaign"
 msgstr ""
 
 msgid "Organisation Units"
@@ -151,15 +154,18 @@ msgid ""
 "this vaccination campaign."
 msgstr ""
 
+msgid "Edit vaccination campaign"
+msgstr ""
+
+msgid "New vaccination campaign"
+msgstr ""
+
 msgid "Cancel Campaign Creation?"
 msgstr ""
 
 msgid ""
 "You are about to exit the campaign creation wizard. All your changes will be "
 "lost. Are you sure?"
-msgstr ""
-
-msgid "New vaccination campaign"
 msgstr ""
 
 msgid "Cancel"

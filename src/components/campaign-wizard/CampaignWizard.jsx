@@ -31,12 +31,30 @@ class CampaignWizard extends React.Component {
     constructor(props) {
         super(props);
 
-        const campaign = Campaign.create(props.config, new DbD2(props.d2));
-
         this.state = {
-            campaign: campaign,
+            campaign: null,
             dialogOpen: false,
         };
+    }
+
+    async componentDidMount() {
+        const { d2, config, match } = this.props;
+
+        const dbD2 = new DbD2(d2);
+        const campaign = this.isEdit()
+            ? await Campaign.get(config, dbD2, match.params.id)
+            : Campaign.create(config, dbD2);
+
+        if (!campaign) {
+            this.props.snackbar.error(i18n.t("Cannot load campaign"));
+            this.props.history.push("/campaign-configuration");
+        } else {
+            this.setState({ campaign });
+        }
+    }
+
+    isEdit() {
+        return !!this.props.match.params.id;
     }
 
     getStepsBaseInfo() {
@@ -140,6 +158,7 @@ dataset and all the metadata associated with this vaccination campaign.`),
         const { d2, location } = this.props;
         const { campaign, dialogOpen } = this.state;
         window.campaign = campaign;
+        if (!campaign) return null;
 
         const steps = this.getStepsBaseInfo().map(step => ({
             ...step,
@@ -154,6 +173,9 @@ dataset and all the metadata associated with this vaccination campaign.`),
         const stepExists = steps.find(step => step.key === urlHash);
         const firstStepKey = steps.map(step => step.key)[0];
         const initialStepKey = stepExists ? urlHash : firstStepKey;
+        const title = this.isEdit()
+            ? i18n.t("Edit vaccination campaign")
+            : i18n.t("New vaccination campaign");
 
         return (
             <React.Fragment>
@@ -166,10 +188,7 @@ dataset and all the metadata associated with this vaccination campaign.`),
                         "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
                     )}
                 />
-                <PageHeader
-                    title={i18n.t("New vaccination campaign")}
-                    onBackClick={this.cancelSave}
-                />
+                <PageHeader title={`${title}: ${campaign.name}`} onBackClick={this.cancelSave} />
 
                 <Wizard
                     steps={steps}
