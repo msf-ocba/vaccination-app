@@ -104,7 +104,7 @@ describe("Campaign configuration - Create", () => {
             .click();
 
         cy.wait("@metadataRequest");
-        cy.contains("Campaign created: Test vaccination campaign");
+        cy.contains("Campaign created");
     });
 });
 
