@@ -292,7 +292,7 @@ export default class DbD2 {
         return true;
     }
 
-    public async postDataValues(dataValues: DataValue[]): Promise<Response<string[]>> {
+    public async postDataValues(dataValues: DataValue[]): Promise<Response<any>> {
         const dataValueRequests: DataValueRequest[] = _(dataValues)
             .groupBy(dv => {
                 const parts = [
@@ -331,7 +331,7 @@ export default class DbD2 {
         if (_(errorResponses).isEmpty()) {
             return { status: true };
         } else {
-            return { status: false, error: errorResponses.map(response => response.description) };
+            return { status: false, error: errorResponses };
         }
     }
 

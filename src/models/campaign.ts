@@ -1,18 +1,15 @@
-import { OrganisationUnit, Maybe, Ref, Section, AttributeValue, Metadata } from "./db.types";
-import { DataSetCustomForm } from "./DataSetCustomForm";
+import { OrganisationUnit, Maybe, Ref, AttributeValue } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
 
 import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
-import { MetadataResponse, DataEntryForm } from "./db.types";
-import { generateUid } from "d2/uid";
-import { DataSet, Response } from "./db.types";
+import { Response } from "./db.types";
 import { PaginatedObjects, OrganisationUnitPathOnly } from "./db.types";
-import DbD2, { ApiResponse } from "./db-d2";
-import { getDaysRange, toISOStringNoTZ } from "../utils/date";
+import DbD2 from "./db-d2";
 import { MetadataConfig } from "./config";
-import { AntigenDisaggregationEnabled, getDataElements } from "./AntigensDisaggregation";
+import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
+import CampaignDb from "./CampaignDb";
 
 export type TargetPopulationData = TargetPopulationData;
 
@@ -55,7 +52,7 @@ interface DashboardWithResources {
 export default class Campaign {
     public selectableLevels: number[] = [5];
 
-    constructor(private db: DbD2, public config: MetadataConfig, private data: Data) {}
+    constructor(public db: DbD2, public config: MetadataConfig, private data: Data) {}
 
     public static create(config: MetadataConfig, db: DbD2): Campaign {
         const antigens: Antigen[] = [];
@@ -275,6 +272,10 @@ export default class Campaign {
         return this.data.organisationUnits;
     }
 
+    public get id(): Maybe<string> {
+        return this.data.id;
+    }
+
     /* Name */
 
     public setName(name: string): Campaign {
@@ -378,221 +379,12 @@ export default class Campaign {
 
     /* Save */
 
+    isEdit(): boolean {
+        return !!this.id;
+    }
+
     public async save(): Promise<Response<string>> {
-        const dataSetId = this.data.id || generateUid();
-        const metadataConfig = this.config;
-        const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
-        const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
-        const categoryCombosByCode = _.keyBy(metadataConfig.categoryCombos, "code");
-        const categoryComboTeams = _(categoryCombosByCode).get(categoryComboCodeForTeams);
-
-        if (!this.startDate || !this.endDate) {
-            return { status: false, error: "Campaign Dates not set" };
-        }
-        const startDate = moment(this.startDate).startOf("day");
-        const endDate = moment(this.endDate).endOf("day");
-        const { dashboard, charts, reportTables } = await this.db.createDashboard(
-            this.name,
-            this.organisationUnits,
-            this.antigens,
-            startDate,
-            endDate,
-            categoryCodeForTeams
-        );
-
-        const { targetPopulation } = this.data;
-
-        if (!attributeForApp || !dashboardAttribute) {
-            return { status: false, error: "Metadata not found: Attributes" };
-        } else if (!categoryComboTeams) {
-            return {
-                status: false,
-                error: `Metadata not found: categoryCombo.code=${categoryComboCodeForTeams}`,
-            };
-        } else if (!dashboard) {
-            return { status: false, error: "Error creating dashboard" };
-        } else if (!targetPopulation) {
-            return { status: false, error: "There is no target population in campaign" };
-        } else {
-            const isEdit = !!this.data.id;
-            const disaggregationData = this.getEnabledAntigensDisaggregation();
-            const dataElements = getDataElements(metadataConfig, disaggregationData);
-
-            const dataSetElements = dataElements.map(dataElement => ({
-                dataSet: { id: dataSetId },
-                dataElement: { id: dataElement.id },
-                categoryCombo: { id: dataElement.categoryCombo.id },
-            }));
-
-            const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
-                openingDate: toISOStringNoTZ(startDate),
-                closingDate: toISOStringNoTZ(endDate),
-                period: { id: date.format("YYYYMMDD") },
-            }));
-
-            const disMetadata = await this.antigensDisaggregation.getCustomFormMetadata(
-                this.config.categoryCombos
-            );
-
-            const { dataSets: existingDataSets } = this.data.id
-                ? await this.db.getMetadata<{
-                      dataSets: Array<{
-                          sections: Array<{ id: string; name: string; dataSet: { id: string } }>;
-                          dataEntryForm: { id: string };
-                      }>;
-                  }>({
-                      dataSets: {
-                          filters: [`id:eq:${this.data.id}`],
-                          fields: {
-                              dataEntryForm: { id: true },
-                              sections: {
-                                  id: true,
-                                  name: true,
-                                  dataSet: { id: true },
-                              },
-                          },
-                      },
-                  })
-                : { dataSets: [] };
-
-            const existingDataSet = _.first(existingDataSets);
-            const customForm = await DataSetCustomForm.build(this);
-            const customFormHtml = customForm.generate();
-            const formId =
-                (existingDataSet &&
-                    existingDataSet.dataEntryForm &&
-                    existingDataSet.dataEntryForm.id) ||
-                generateUid();
-            const dataEntryForm: DataEntryForm = {
-                id: formId,
-                name: this.name + " " + formId, // dataEntryForm.name must be unique
-                htmlCode: customFormHtml,
-                style: "NONE",
-            };
-
-            const existingSections = existingDataSet ? existingDataSet.sections : [];
-            const existingSectionsByName = _.keyBy(existingSections, "name");
-
-            const sectionsUsed: Section[] = disaggregationData.map((disaggregationData, index) => {
-                const sectionName = disaggregationData.antigen.code;
-                // !NAME -> Old unused section
-                const existingSection =
-                    existingSectionsByName[sectionName] ||
-                    existingSectionsByName["!" + sectionName];
-
-                return {
-                    id: existingSection ? existingSection.id : generateUid(),
-                    dataSet: { id: dataSetId },
-                    sortOrder: index,
-                    name: sectionName,
-                    dataElements: disaggregationData.dataElements.map(de => ({ id: de.id })),
-                    // Use grey fields with an inverted logic: set the selected dataElement.cocId.
-                    greyedFields: _(disaggregationData.dataElements)
-                        .flatMap(dataElementDis => {
-                            const { antigen } = disaggregationData;
-                            const groups: string[][] = _.cartesianProduct(
-                                dataElementDis.categories.map(category => category.categoryOptions)
-                            );
-
-                            return groups.map(group => {
-                                const cocName = [antigen.name, ...group].join(", ");
-                                const disCode = antigen.code + "-" + dataElementDis.code;
-                                const { cocIdByName } = _(disMetadata).getOrFail(disCode);
-                                const cocId = _(cocIdByName).getOrFail(cocName);
-
-                                return {
-                                    dataElement: { id: dataElementDis.id },
-                                    categoryOptionCombo: { id: cocId },
-                                };
-                            });
-                        })
-                        .value(),
-                };
-            });
-
-            const existingSectionsUnused = _(existingSections)
-                .differenceBy(sectionsUsed, "id")
-                .map(section =>
-                    section.name.startsWith("!")
-                        ? section
-                        : { ...section, name: "!" + section.name }
-                )
-                .value();
-
-            const sections = _(sectionsUsed)
-                .concat(existingSectionsUnused)
-                .value();
-
-            const dataSet: DataSet = {
-                id: dataSetId,
-                name: this.name,
-                description: this.description,
-                publicAccess: "r-r-----", // Metadata can view-only, Data can view-only
-                periodType: "Daily",
-                categoryCombo: { id: categoryComboTeams.id },
-                dataElementDecoration: true,
-                renderAsTabs: true,
-                organisationUnits: this.organisationUnits.map(ou => ({ id: ou.id })),
-                dataSetElements,
-                openFuturePeriods: 1,
-                timelyDays: 0,
-                expiryDays: 0,
-                formType: "CUSTOM",
-                dataInputPeriods,
-                attributeValues: [
-                    { value: "true", attribute: { id: attributeForApp.id } },
-                    { value: dashboard.id, attribute: { id: dashboardAttribute.id } },
-                ],
-                dataEntryForm: { id: dataEntryForm.id },
-                sections: sections.map(section => ({ id: section.id })),
-            };
-
-            const period = moment(this.startDate || new Date()).format("YYYYMMDD");
-            const dataValues = targetPopulation.getDataValues(period);
-            const populationResult = await this.db.postDataValues(dataValues);
-
-            if (!populationResult.status) {
-                return {
-                    status: false,
-                    error: JSON.stringify(populationResult.error, null, 2),
-                };
-            } else {
-                // The saving of existing sections on DHIS2 is buggy, the /metadata endpoint
-                // often responds with a 500 Server Error when a data set and their sections are
-                // posted on the same request. Posting sections on a separate requests do work.
-                if (isEdit) {
-                    const resultSections: ApiResponse<
-                        MetadataResponse
-                    > = await this.db.postMetadata({ sections: sections });
-
-                    if (!resultSections.status) {
-                        return {
-                            status: false,
-                            error: "Cannot update sections",
-                        };
-                    }
-                }
-
-                const result: ApiResponse<MetadataResponse> = await this.db.postMetadata<Metadata>({
-                    charts,
-                    reportTables,
-                    dashboards: [dashboard],
-                    dataSets: [dataSet],
-                    dataEntryForms: [dataEntryForm],
-                    sections: isEdit ? [] : sections,
-                });
-
-                if (!result.status) {
-                    return { status: false, error: result.error };
-                } else if (result.value.status !== "OK") {
-                    return {
-                        status: false,
-                        error: JSON.stringify(result.value.typeReports, null, 2),
-                    };
-                } else {
-                    return { status: true };
-                }
-            }
-        }
+        const campaignDb = new CampaignDb(this);
+        return campaignDb.save();
     }
 }
