@@ -28,6 +28,7 @@ export interface Data {
     antigens: Antigen[];
     antigensDisaggregation: AntigensDisaggregation;
     targetPopulation: Maybe<TargetPopulation>;
+    attributeValues: Maybe<AttributeValue[]>;
 }
 
 function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined) {
@@ -68,6 +69,7 @@ export default class Campaign {
             antigens: antigens,
             antigensDisaggregation: AntigensDisaggregation.build(config, antigens, []),
             targetPopulation: undefined,
+            attributeValues: undefined,
         };
 
         return new Campaign(db, config, initialData);
@@ -88,6 +90,7 @@ export default class Campaign {
                 organisationUnits: Array<OrganisationUnitPathOnly>;
                 dataInputPeriods: Array<{ period: { id: string } }>;
                 sections: Array<SectionForDisaggregation>;
+                attributeValues: Array<AttributeValue>;
             }>;
         }>({
             dataSets: {
@@ -115,6 +118,7 @@ export default class Campaign {
                             dataElement: { id: true },
                         },
                     },
+                    attributeValues: { value: true, attribute: { id: true } },
                 },
                 filters: [`id:eq:${dataSetId}`],
             },
@@ -144,6 +148,7 @@ export default class Campaign {
                 antigens,
                 dataSet.sections
             ),
+            attributeValues: dataSet.attributeValues,
             targetPopulation: undefined,
         };
 
