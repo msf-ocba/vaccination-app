@@ -40,8 +40,8 @@ export class Dashboard {
 
     static build(db: DbD2) {
         return new Dashboard(db, {
-            id: "testId",
-            name: "testName",
+            id: "",
+            name: "",
             dashboardItems: [],
         });
     }
@@ -95,7 +95,7 @@ export class Dashboard {
         );
 
         if (!categoryOptions || !categoryOptions[0].categories) {
-            throw new Error("Organization Units chosen have no teams associated"); // TEMP: Check will be made dynamically on orgUnit selection step
+            throw new Error("Organization Units chosen have no teams associated");
         }
 
         const teamsByOrgUnit = organisationUnitsPathOnly.reduce((acc, ou) => {
@@ -147,14 +147,23 @@ export class Dashboard {
         return dashboardMetadata;
     }
 
-    public async createDashboard(
-        datasetName: String,
-        organisationUnits: OrganisationUnitPathOnly[],
-        antigens: Antigen[],
-        startDate: Moment,
-        endDate: Moment,
-        categoryCodeForTeams: string
-    ): Promise<{ dashboard: DashboardData; charts: Array<any>; reportTables: Array<any> }> {
+    public async createDashboard({
+        dashboardId,
+        datasetName,
+        organisationUnits,
+        antigens,
+        startDate,
+        endDate,
+        categoryCodeForTeams,
+    }: {
+        dashboardId?: string;
+        datasetName: string;
+        organisationUnits: OrganisationUnitPathOnly[];
+        antigens: Antigen[];
+        startDate: Moment;
+        endDate: Moment;
+        categoryCodeForTeams: string;
+    }): Promise<{ dashboard: DashboardData; charts: Array<any>; reportTables: Array<any> }> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
             organisationUnits,
@@ -175,7 +184,7 @@ export class Dashboard {
             .value();
 
         const dashboard = {
-            id: generateUid(),
+            id: dashboardId || generateUid(),
             name: `${datasetName}_DASHBOARD`,
             dashboardItems: items,
         };

@@ -28,7 +28,7 @@ export interface Data {
     antigens: Antigen[];
     antigensDisaggregation: AntigensDisaggregation;
     targetPopulation: Maybe<TargetPopulation>;
-    attributeValues: Maybe<AttributeValue[]>;
+    attributeValues: AttributeValue[];
 }
 
 function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined) {
@@ -69,7 +69,7 @@ export default class Campaign {
             antigens: antigens,
             antigensDisaggregation: AntigensDisaggregation.build(config, antigens, []),
             targetPopulation: undefined,
-            attributeValues: undefined,
+            attributeValues: [],
         };
 
         return new Campaign(db, config, initialData);
@@ -380,6 +380,12 @@ export default class Campaign {
             ...this.data,
             targetPopulation: targetPopulationForCampaign,
         });
+    }
+
+    // Attribute Values
+
+    public get attributeValues(): AttributeValue[] {
+        return this.data.attributeValues;
     }
 
     /* Save */

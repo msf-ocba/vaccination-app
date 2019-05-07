@@ -2,10 +2,11 @@ import { ApiResponse } from "./db-d2";
 import { generateUid } from "d2/uid";
 import moment from "moment";
 import _ from "lodash";
+import "../utils/lodash-mixins";
 
 import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
-import { Maybe, MetadataResponse, DataEntryForm, Section } from "./db.types";
+import { Maybe, MetadataResponse, DataEntryForm, Section, AttributeValue } from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
@@ -42,15 +43,22 @@ export default class CampaignDb {
         }
         const startDate = moment(campaign.startDate).startOf("day");
         const endDate = moment(campaign.endDate).endOf("day");
+        const dashboardId: Maybe<string> = campaign.isEdit()
+            ? _(campaign.attributeValues)
+                  .keyBy((o: AttributeValue) => o.attribute.id)
+                  .getOrFail(dashboardAttribute.id).value
+            : undefined;
+
         const blankDashboard = Dashboard.build(db);
-        const { dashboard, charts, reportTables } = await blankDashboard.createDashboard(
-            campaign.name,
-            campaign.organisationUnits,
-            campaign.antigens,
+        const { dashboard, charts, reportTables } = await blankDashboard.createDashboard({
+            dashboardId,
+            datasetName: campaign.name,
+            organisationUnits: campaign.organisationUnits,
+            antigens: campaign.antigens,
             startDate,
             endDate,
-            categoryCodeForTeams
-        );
+            categoryCodeForTeams,
+        });
 
         if (!attributeForApp || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: attributes" };
