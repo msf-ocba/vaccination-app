@@ -30,20 +30,16 @@ type DashboardData = {
 };
 
 type allDashboardElements = {
-    charts: Array<any>;
-    reportTables: Array<any>;
+    charts: Array<object>;
+    reportTables: Array<object>;
     items: Array<ChartItem | ReportTableItem>;
 };
 
 export class Dashboard {
-    constructor(private db: DbD2, public data: DashboardData) {}
+    constructor(private db: DbD2) {}
 
     static build(db: DbD2) {
-        return new Dashboard(db, {
-            id: "",
-            name: "",
-            dashboardItems: [],
-        });
+        return new Dashboard(db);
     }
 
     private async getMetadataForDashboardItems(
@@ -147,7 +143,7 @@ export class Dashboard {
         return dashboardMetadata;
     }
 
-    public async createDashboard({
+    public async create({
         dashboardId,
         datasetName,
         organisationUnits,
@@ -163,7 +159,7 @@ export class Dashboard {
         startDate: Moment;
         endDate: Moment;
         categoryCodeForTeams: string;
-    }): Promise<{ dashboard: DashboardData; charts: Array<any>; reportTables: Array<any> }> {
+    }): Promise<{ dashboard: DashboardData; charts: Array<object>; reportTables: Array<object> }> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
             organisationUnits,

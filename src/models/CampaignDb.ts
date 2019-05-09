@@ -1,4 +1,4 @@
-import { ApiResponse } from "./db-d2";
+import DbD2, { ApiResponse, ModelReference } from "./db-d2";
 import { generateUid } from "d2/uid";
 import moment from "moment";
 import _ from "lodash";
@@ -49,8 +49,8 @@ export default class CampaignDb {
                   .getOrFail(dashboardAttribute.id).value
             : undefined;
 
-        const blankDashboard = Dashboard.build(db);
-        const { dashboard, charts, reportTables } = await blankDashboard.createDashboard({
+        const dashboardGenerator = Dashboard.build(db);
+        const { dashboard, charts, reportTables } = await dashboardGenerator.create({
             dashboardId,
             datasetName: campaign.name,
             organisationUnits: campaign.organisationUnits,
@@ -109,7 +109,10 @@ export default class CampaignDb {
                 dataInputPeriods,
                 attributeValues: [
                     { value: "true", attribute: { id: attributeForApp.id } },
-                    { value: dashboard.id, attribute: { id: dashboardAttribute.id } },
+                    {
+                        value: dashboard.id,
+                        attribute: { id: dashboardAttribute.id, code: dashboardAttribute.code },
+                    },
                 ],
                 dataEntryForm: { id: dataEntryForm.id },
                 sections: sections.map(section => ({ id: section.id })),
@@ -139,9 +142,10 @@ export default class CampaignDb {
 
     private async postSave(allMetadata: PostSaveMetadata): Promise<Response<string>> {
         const { campaign } = this;
-        const { db } = campaign;
+        const { db, config } = campaign;
         const { sections, ...nonSectionsMetadata } = allMetadata;
         let metadata;
+        let modelReferencesToDelete: ModelReference[] = [];
 
         if (campaign.isEdit()) {
             // The saving of existing sections on DHIS2 is buggy: /metadata
@@ -155,13 +159,21 @@ export default class CampaignDb {
             if (!resultSections.status) {
                 return { status: false, error: "Cannot update sections" };
             }
-
             metadata = nonSectionsMetadata;
+            modelReferencesToDelete = await Campaign.getResourcesToDelete(
+                config,
+                db,
+                allMetadata.dataSets
+            );
         } else {
             metadata = allMetadata;
         }
 
         const result: ApiResponse<MetadataResponse> = await db.postMetadata<Metadata>(metadata);
+
+        if (campaign.isEdit()) {
+            await this.cleanUpDashboardItems(db, modelReferencesToDelete);
+        }
 
         if (!result.status) {
             return { status: false, error: result.error };
@@ -173,6 +185,17 @@ export default class CampaignDb {
         } else {
             return { status: true };
         }
+    }
+
+    private async cleanUpDashboardItems(
+        db: DbD2,
+        modelReferencesToDelete: ModelReference[]
+    ): Promise<Response<string>> {
+        const dashboardItems = _(modelReferencesToDelete)
+            .filter(o => _.includes(["charts", "reportTables"], o.model))
+            .value();
+
+        return await db.deleteMany(dashboardItems);
     }
 
     private async getSections(
