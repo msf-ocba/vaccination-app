@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-05-10T08:42:36.107Z\n"
-"PO-Revision-Date: 2019-05-10T08:42:36.107Z\n"
+"POT-Creation-Date: 2019-05-10T12:49:17.437Z\n"
+"PO-Revision-Date: 2019-05-10T12:49:17.437Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -181,6 +181,9 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
+msgid "Disaggregation"
+msgstr ""
+
 msgid "Field cannot be blank"
 msgstr ""
 
@@ -211,6 +214,15 @@ msgstr ""
 msgid "Antigens"
 msgstr ""
 
+msgid "Population distribution (%)"
+msgstr ""
+
+msgid "Campaign Population Distribution"
+msgstr ""
+
+msgid "Missing"
+msgstr ""
+
 msgid "Help"
 msgstr ""
 
@@ -218,6 +230,12 @@ msgid "Previous"
 msgstr ""
 
 msgid "Next"
+msgstr ""
+
+msgid "Doses administered"
+msgstr ""
+
+msgid "Quality and safety indicators"
 msgstr ""
 
 msgid "Select at least one organisation unit"
