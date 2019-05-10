@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-29T11:55:35.065Z\n"
+"POT-Creation-Date: 2019-05-10T10:12:51.726Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -84,8 +84,7 @@ msgid "Only my campaigns"
 msgstr ""
 
 msgid ""
-"Are you sure you want to delete those campaign(s) (dataset, dashboards and "
-"favorites)?"
+"Are you sure you want to delete those campaign(s) (dataset and dashboards)?"
 msgstr ""
 
 msgid "Delete campaign(s)"
