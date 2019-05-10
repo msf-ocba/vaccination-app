@@ -106,8 +106,8 @@ describe("Campaign configuration - Create", () => {
             .click();
 
         cy.wait("@metadataRequest");
+        cy.contains("Campaign created");
         cy.wait(1000); // eslint-disable-line cypress/no-unnecessary-waiting
-        cy.contains("Campaign created: Test vaccination campaign");
     });
 });
 

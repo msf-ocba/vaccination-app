@@ -1,28 +1,38 @@
 import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
-import { ObjectsTable, withSnackbar } from "d2-ui-components";
+import { ConfirmationDialog, ObjectsTable, withSnackbar, withLoading } from "d2-ui-components";
 import _ from "lodash";
 
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import PageHeader from "../shared/PageHeader";
-import { canManage, canDelete, canUpdate, canCreate } from "d2-ui-components/auth";
+import { canManage, canUpdate, canCreate } from "d2-ui-components/auth";
 import { list } from "../../models/datasets";
 import { formatDateShort } from "../../utils/date";
+import Campaign from "../../models/campaign";
+import DbD2 from "../../models/db-d2";
 
 class CampaignConfiguration extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
         snackbar: PropTypes.object.isRequired,
+        loading: PropTypes.object.isRequired,
     };
 
-    state = {
-        filters: {
-            showOnlyUserCampaigns: true,
-        },
-    };
+    constructor(props) {
+        super(props);
+        this.db = new DbD2(props.d2);
+
+        this.state = {
+            dataSetsToDelete: null,
+            objectsTableKey: new Date(),
+            filters: {
+                showOnlyUserCampaigns: true,
+            },
+        };
+    }
 
     canCreateDataSets = canCreate(this.props.d2, this.props.d2.models.dataSet, "public");
 
@@ -77,7 +87,7 @@ class CampaignConfiguration extends React.Component {
             name: "delete",
             text: i18n.t("Delete"),
             multiple: true,
-            isActive: (d2, dataSets) => canDelete(d2, d2.models.dataSet, dataSets),
+            onClick: dataSets => this.openDeleteConfirmation(dataSets),
         },
         {
             name: "dataEntry",
@@ -100,6 +110,33 @@ class CampaignConfiguration extends React.Component {
             multiple: false,
         },
     ];
+
+    openDeleteConfirmation = dataSets => {
+        this.setState({ dataSetsToDelete: dataSets });
+    };
+
+    closeDeleteConfirmation = () => {
+        this.setState({ dataSetsToDelete: null });
+    };
+
+    delete = async () => {
+        const { config, snackbar, loading } = this.props;
+        const { dataSetsToDelete } = this.state;
+
+        loading.show(true, i18n.t("Deleting campaign(s). This may take a while, please wait"), {
+            count: dataSetsToDelete.length,
+        });
+        this.closeDeleteConfirmation();
+        const response = await Campaign.delete(config, this.db, dataSetsToDelete);
+        loading.hide();
+
+        if (response.status) {
+            snackbar.success(i18n.t("Campaign(s) deleted"));
+            this.setState({ objectsTableKey: new Date() });
+        } else {
+            snackbar.error(`${i18n.t("Error deleting campaign(s)")}:\n${response.error}`);
+        }
+    };
 
     getDateValue = (dateType, dataSet) => {
         const dataInputPeriods = dataSet.dataInputPeriods;
@@ -154,14 +191,36 @@ class CampaignConfiguration extends React.Component {
         this.props.history.push("/");
     };
 
+    renderDeleteConfirmationDialog = ({ dataSets }) => {
+        const description =
+            i18n.t("Are you sure you want to delete those campaign(s) (dataset and dashboards)?") +
+            "\n\n" +
+            dataSets.map(ds => ds.displayName).join("\n");
+
+        return (
+            <ConfirmationDialog
+                isOpen={!!dataSets}
+                onSave={this.delete}
+                onCancel={this.closeDeleteConfirmation}
+                title={i18n.t("Delete campaign(s)")}
+                description={description}
+                saveText={i18n.t("Yes")}
+            />
+        );
+    };
+
     render() {
         const { d2 } = this.props;
+        const { dataSetsToDelete, objectsTableKey } = this.state;
+        const DeleteConfirmationDialog = this.renderDeleteConfirmationDialog;
 
         return (
             <React.Fragment>
                 <PageHeader title={i18n.t("Campaigns")} onBackClick={this.backHome} />
+
                 <div style={styles.objectsTableContainer}>
                     <ObjectsTable
+                        key={objectsTableKey}
                         model={d2.models.dataSet}
                         columns={this.columns}
                         d2={d2}
@@ -175,6 +234,8 @@ class CampaignConfiguration extends React.Component {
                         customFilters={this.state.filters}
                     />
                 </div>
+
+                {dataSetsToDelete && <DeleteConfirmationDialog dataSets={dataSetsToDelete} />}
             </React.Fragment>
         );
     }
@@ -186,4 +247,4 @@ const styles = {
     objectsTableContainer: { marginTop: -10 },
 };
 
-export default withSnackbar(CampaignConfiguration);
+export default withLoading(withSnackbar(CampaignConfiguration));

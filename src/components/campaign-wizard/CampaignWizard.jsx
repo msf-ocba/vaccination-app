@@ -3,10 +3,10 @@ import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { withRouter } from "react-router";
 import _ from "lodash";
+import { withSnackbar } from "d2-ui-components";
 
 import Campaign from "models/campaign";
 import DbD2 from "models/db-d2";
-
 import Wizard from "../wizard/Wizard";
 import PageHeader from "../shared/PageHeader";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
@@ -14,11 +14,10 @@ import SaveStep from "../steps/save/SaveStep";
 import { getValidationMessages } from "../../utils/validations";
 import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
-import ConfirmationDialog from "../confirmation-dialog/ConfirmationDialog";
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 import { memoize } from "../../utils/memoize";
-import { withSnackbar } from "d2-ui-components";
 import TargetPopulationStep from "../steps/target-population/TargetPopulationStep";
+import ExitWizardButton from "../wizard/ExitWizardButton";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
@@ -147,6 +146,7 @@ dataset and all the metadata associated with this vaccination campaign.`),
                 d2,
                 campaign,
                 onChange: this.onChange(step),
+                onCancel: this.handleConfirm,
             },
         }));
 
@@ -157,15 +157,12 @@ dataset and all the metadata associated with this vaccination campaign.`),
 
         return (
             <React.Fragment>
-                <ConfirmationDialog
-                    dialogOpen={dialogOpen}
-                    handleConfirm={this.handleConfirm}
-                    handleCancel={this.handleDialogCancel}
-                    title={i18n.t("Cancel Campaign Creation?")}
-                    contents={i18n.t(
-                        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
-                    )}
+                <ExitWizardButton
+                    isOpen={dialogOpen}
+                    onConfirm={this.handleConfirm}
+                    onCancel={this.handleDialogCancel}
                 />
+
                 <PageHeader
                     title={i18n.t("New vaccination campaign")}
                     onBackClick={this.cancelSave}

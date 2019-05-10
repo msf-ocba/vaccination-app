@@ -2,14 +2,13 @@ import { AnalyticsResponse } from "./db-d2";
 import { Moment } from "moment";
 import { Dictionary } from "lodash";
 import { generateUid } from "d2/uid";
-import { D2, D2Api } from "./d2.types";
+import { D2, D2Api, DeleteResponse } from "./d2.types";
 import {
     OrganisationUnit,
     PaginatedObjects,
     CategoryOption,
     CategoryCombo,
     MetadataResponse,
-    Metadata,
     ModelFields,
     MetadataGetParams,
     ModelName,
@@ -22,6 +21,7 @@ import {
     DataValueResponse,
     Response,
     DataValue,
+    MetadataOptions,
     DashboardMetadataRequest,
     OrganisationUnitWithName,
     CategoryOptionsCustom,
@@ -55,10 +55,10 @@ function getDbFields(modelFields: ModelFields): string[] {
 function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
     return _(metadataParams)
         .flatMap((params, modelName) => {
-            const fields = metadataFields[modelName as ModelName];
             if (!params) {
                 return [];
             } else {
+                const fields = params.fields || metadataFields[modelName as ModelName];
                 return [
                     [modelName + ":fields", getDbFields(fields).join(",")],
                     ...(params.filters || []).map(filter => [modelName + ":filter", filter]),
@@ -92,7 +92,11 @@ export interface AnalyticsResponse {
 
 const ref = { id: true };
 
-const metadataFields: MetadataFields = {
+export const metadataFields: MetadataFields = {
+    attributeValues: {
+        value: true,
+        attribute: { id: true, code: true },
+    },
     attributes: {
         id: true,
         code: true,
@@ -129,11 +133,49 @@ const metadataFields: MetadataFields = {
         code: true,
         categoryOptions: metadataFields => metadataFields.categoryOptions,
     },
+    dashboards: {
+        id: true,
+        dashboardItems: {
+            id: true,
+            chart: { id: true },
+            map: { id: true },
+            reportTable: { id: true },
+        },
+    },
     dataElements: {
         id: true,
         code: true,
         displayName: true,
         categoryCombo: metadataFields => metadataFields.categoryCombos,
+    },
+    dataSetElements: {
+        dataSet: ref,
+        dataElement: ref,
+        categoryCombo: ref,
+    },
+    dataInputPeriods: {
+        openingDate: true,
+        closingDate: true,
+        period: { id: true },
+    },
+    dataSets: {
+        id: true,
+        name: true,
+        description: true,
+        publicAccess: true,
+        periodType: true,
+        categoryCombo: ref,
+        dataElementDecoration: true,
+        renderAsTabs: true,
+        organisationUnits: ref,
+        dataSetElements: metadataFields => metadataFields.dataSetElements,
+        openFuturePeriods: true,
+        timelyDays: true,
+        expiryDays: true,
+        sections: ref,
+        dataInputPeriods: metadataFields => metadataFields.dataInputPeriods,
+        attributeValues: metadataFields => metadataFields.attributeValues,
+        formType: true,
     },
     dataElementGroups: {
         id: true,
@@ -159,6 +201,10 @@ const metadataFields: MetadataFields = {
         level: true,
     },
 };
+
+export type ApiResponse<Value> = { status: true; value: Value } | { status: false; error: string };
+
+export type ModelReference = { model: string; id: string };
 
 export default class DbD2 {
     d2: D2;
@@ -269,8 +315,25 @@ export default class DbD2 {
         return categoryCombos;
     }
 
-    public async postMetadata(metadata: Metadata): Promise<MetadataResponse> {
-        return this.api.post("/metadata", metadata) as Promise<MetadataResponse>;
+    public async postMetadata<Metadata>(
+        metadata: Metadata,
+        options: MetadataOptions = {}
+    ): Promise<ApiResponse<MetadataResponse>> {
+        const queryString = _(options).isEmpty()
+            ? ""
+            : "?" +
+              _(options as object[])
+                  .map((value, key) => `${key}=${value}`)
+                  .join("&");
+        try {
+            const response = (await this.api.post(
+                "/metadata" + queryString,
+                metadata
+            )) as MetadataResponse;
+            return { status: true, value: response };
+        } catch (err) {
+            return { status: false, error: err.message || err.toString() };
+        }
     }
 
     public async postForm(dataSetId: string, dataEntryForm: DataEntryForm): Promise<boolean> {
@@ -319,6 +382,37 @@ export default class DbD2 {
         } else {
             return { status: false, error: errorResponses.map(response => response.description) };
         }
+    }
+
+    public async deleteMany(modelReferences: ModelReference[]): Promise<Response<string>> {
+        const errors = _.compact(
+            await promiseMap(modelReferences, async ({ model, id }) => {
+                const { httpStatus, httpStatusCode, status, message } = await this.api
+                    .delete(`/${model}/${id}`)
+                    .catch((err: DeleteResponse) => {
+                        if (err.httpStatusCode) {
+                            return err;
+                        } else {
+                            throw err;
+                        }
+                    });
+
+                if (httpStatusCode === 404) {
+                    return null;
+                } else if (status !== "OK") {
+                    return message || `${httpStatus} (${httpStatusCode})`;
+                } else {
+                    return null;
+                }
+            })
+        );
+
+        return _(errors).isEmpty()
+            ? { status: true }
+            : {
+                  status: false,
+                  error: errors.join("\n"),
+              };
     }
 
     public async getAttributeIdByCode(code: string): Promise<Attribute | undefined> {
@@ -532,5 +626,21 @@ export default class DbD2 {
 
     public getAnalytics(request: AnalyticsRequest): Promise<AnalyticsResponse> {
         return this.api.get("/analytics", request) as Promise<AnalyticsResponse>;
+    }
+}
+
+export function toStatusResponse(response: ApiResponse<MetadataResponse>): Response<string> {
+    if (!response.status) {
+        return { status: false, error: response.error };
+    } else if (response.value.status === "OK") {
+        return { status: true };
+    } else {
+        const errors = _(response.value.typeReports)
+            .flatMap(tr => tr.objectReports)
+            .flatMap(or => or.errorReports)
+            .map("message")
+            .value();
+
+        return { status: false, error: errors.join("\n") };
     }
 }
