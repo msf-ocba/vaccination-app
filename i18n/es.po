@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-04-15T12:15:23.972Z\n"
+"POT-Creation-Date: 2019-05-10T10:12:51.726Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -71,8 +71,28 @@ msgstr "Ir a tablero"
 msgid "Download data"
 msgstr "Descargar datos"
 
+msgid "Deleting campaign(s). This may take a while, please wait"
+msgstr "Eliminando campaña(s). Este proceso puede tardar, por favor, espere"
+
+msgid "Campaign(s) deleted"
+msgstr "Campaña(s) eliminadas"
+
+msgid "Error deleting campaign(s)"
+msgstr "Se produjo un error al borrar la(s) campaña(s)"
+
 msgid "Only my campaigns"
 msgstr "Solo mis campañas"
+
+msgid ""
+"Are you sure you want to delete those campaign(s) (dataset and dashboards)?"
+msgstr ""
+"¿Estás seguro de que quieres eliminar esta(s) campaña(s) (datasets y dashboards)?"
+
+msgid "Delete campaign(s)"
+msgstr "Eliminar campaña(s)"
+
+msgid "Yes"
+msgstr "Sí"
 
 msgid "Campaigns"
 msgstr "Campañas"
@@ -175,24 +195,8 @@ msgstr ""
 "Pulse el botón guardar para crear el dataset y todos los metadatos asociados "
 "con esta campaña de vacunación"
 
-msgid "Cancel Campaign Creation?"
-msgstr "Cancelar la creaciòn de campaña?"
-
-msgid ""
-"You are about to exit the campaign creation wizard. All your changes will be "
-"lost. Are you sure?"
-msgstr ""
-"Esta seguro que quiere salir del creador de campañas? Todos sus cambios se "
-"perderán"
-
 msgid "New vaccination campaign"
 msgstr "Nueva campaña"
-
-msgid "Cancel"
-msgstr "Cancelar"
-
-msgid "Ok"
-msgstr "Aceptar"
 
 msgid "Cannot find dashboard associated to the campaign"
 msgstr "No hay ningún tablero asociado a la campaña"
@@ -203,8 +207,14 @@ msgstr "No hay ningún dataset asociado a la campaña"
 msgid "Back"
 msgstr "Atrás"
 
+msgid "Disaggregation"
+msgstr "Desagregación"
+
 msgid "Field cannot be blank"
 msgstr "El campo no puede estar vacío"
+
+msgid "Campaign created"
+msgstr "Campaña creada"
 
 msgid "Error saving campaign"
 msgstr "Se produjo un error al guardar la campaña"
@@ -230,6 +240,28 @@ msgstr "Periodo"
 msgid "Antigens"
 msgstr "Antígenos"
 
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Population distribution (%)"
+msgstr "Distribución por edades (%)"
+
+msgid "Campaign Population Distribution"
+msgstr "Distribución de población"
+
+msgid "Missing"
+msgstr "Vacío"
+
+msgid "Cancel Campaign Creation?"
+msgstr "Cancelar la creaciòn de campaña?"
+
+msgid ""
+"You are about to exit the campaign creation wizard. All your changes will be "
+"lost. Are you sure?"
+msgstr ""
+"Esta seguro que quiere salir del creador de campañas? Todos sus cambios se "
+"perderán"
+
 msgid "Help"
 msgstr "Ayuda"
 
@@ -239,12 +271,21 @@ msgstr "Anterior"
 msgid "Next"
 msgstr "Siguiente"
 
+msgid "Doses administered"
+msgstr "Dosis administradas"
+
+msgid "Quality and safety indicators"
+msgstr "Indicadores de calidad y seguridad"
+
 msgid "Select at least one organisation unit"
 msgstr "Seleccione al menos una unidad organizativa"
 
 msgid "Only organisation units of level {{levels}} can be selected"
 msgstr ""
 "Puedes seleccionar únicamente unidades organizativas de nivel {{levels}}"
+
+msgid "Organisation Units {{orgUnits}} -> no associated teams"
+msgstr "Unidades organizativas {{orgUnits}} -> sin equipo asociado"
 
 msgid "Field {{field}} cannot be blank"
 msgstr "El campo {{field}} no puede estar vacío"
@@ -260,3 +301,39 @@ msgstr "Debes seleccionar al menos una opción de la categoría"
 
 msgid "No target population defined"
 msgstr "Población objetivo no definida"
+
+msgid ""
+"Org unit {{organisationUnit}} has an invalid total population value -> "
+"{{value}}"
+msgstr ""
+"La unidad organizativa {{organisationUnit}} tiene un valor de población "
+"inválido -> {{value}}"
+
+msgid ""
+"Org unit {{organisationUnit}} has invalid distribution values for age ranges "
+"-> {{ageGroups}}"
+msgstr ""
+"La unidad organizativa {{organisationUnit}} tiene un valor de distribución "
+"de población inválido para los rangos de edad -> {{value}}"
+
+msgid ""
+"Org unit {{organisationUnit}} has an invalid total value for antigen "
+"{{antigen}} ({{ageGroups}}) -> {{- value}}"
+msgstr ""
+"La unidad organizativa {{organisationUnit}} tiene un valor total inválido "
+"para el antigen {{antigen}} ({{ageGroups}}) -> {{- value}}"
+
+msgctxt ""
+"YEAR\n"
+"\n"
+"                    The start and end date should define the period for "
+"which you expect to enter data - i.e .the first and last day of your "
+"campaign. If you are not certain of the end date, enter a date a few weeks "
+"later than the expected date of completion (refer to your microplan). It is "
+"possible to edit the dates at any point."
+msgid ""
+"Give your campaign a name that will make it easy to recognize in an HMIS "
+"hierarchy. Suggested format is REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH"
+msgstr ""
+"Dé a la campaña un nombre que sea fácil de reconocer en la jerarquía HMIS. "
+"El formato sugerido es REACTIVE_VACC_LOCALIZACION_ANTIGENO(S) _MES"

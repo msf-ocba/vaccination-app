@@ -10,7 +10,9 @@ import {
     OrganisationUnitLevel,
     Ref,
     CategoryOption,
+    Attribute,
 } from "./db.types";
+import { sortAgeGroups } from "../utils/age-groups";
 
 export interface BaseConfig {
     categoryCodeForAntigens: string;
@@ -20,7 +22,7 @@ export interface BaseConfig {
     dataElementGroupCodeForAntigens: string;
     categoryComboCodeForTeams: string;
     categoryCodeForTeams: string;
-    attibuteCodeForApp: string;
+    attributeCodeForApp: string;
     attributeCodeForDashboard: string;
     dataElementCodeForTotalPopulation: string;
     dataElementCodeForAgeDistribution: string;
@@ -35,7 +37,7 @@ const baseConfig: BaseConfig = {
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
-    attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
+    attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     attributeCodeForDashboard: "RVC_DASHBOARD_ID",
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
@@ -43,6 +45,10 @@ const baseConfig: BaseConfig = {
 };
 
 export interface MetadataConfig extends BaseConfig {
+    attributes: {
+        app: Attribute;
+        dashboard: Attribute;
+    };
     organisationUnitLevels: OrganisationUnitLevel[];
     categories: Array<{
         id: string;
@@ -63,7 +69,8 @@ export interface MetadataConfig extends BaseConfig {
         populationByAgeDataElement: DataElement;
         ageGroupCategory: Category;
     };
-    dataElements: Array<{
+    dataElements: DataElement[];
+    dataElementsDisaggregation: Array<{
         name: string;
         code: string;
         id: string;
@@ -113,12 +120,12 @@ function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
     return refs.map(ref => _(objectsById).getOrFail(ref.id));
 }
 
-function getConfigDataElements(
+function getConfigDataElementsDisaggregation(
     dataElementGroups: DataElementGroup[],
     dataElements: DataElement[],
     categoryCombos: CategoryCombo[],
     categories: Category[]
-): MetadataConfig["dataElements"] {
+): MetadataConfig["dataElementsDisaggregation"] {
     const groupsByCode = _.keyBy(dataElementGroups, "code");
     const catCombosByCode = _.keyBy(categoryCombos, "code");
     const dataElementsForAntigens = getFromRefs(
@@ -144,34 +151,6 @@ function getConfigDataElements(
             code: dataElement.code,
             categories: categoriesForAntigens,
         };
-    });
-}
-
-function sortAgeGroups(names: string[]) {
-    const timeUnits: _.Dictionary<number> = { d: 1, w: 7, m: 30, y: 365 };
-    const getOrThrow = _.getOrFail;
-
-    return _.sortBy(names, name => {
-        const parts = name.split(" ");
-        let pair;
-        if (parts.length === 4) {
-            // "2 - 5 y"
-            const days = getOrThrow(timeUnits, parts[3]);
-            pair = [parseInt(parts[0]) * days, parseInt(parts[2]) * days];
-        } else if (parts.length === 5) {
-            // "2 w - 3 y" {
-            const days1 = getOrThrow(timeUnits, parts[1]);
-            const days2 = getOrThrow(timeUnits, parts[4]);
-            pair = [parseInt(parts[0]) * days1, parseInt(parts[3]) * days2];
-        } else if (parts.length === 3) {
-            // ""> 30 y"
-            const days = getOrThrow(timeUnits, parts[2]);
-            pair = [parseInt(parts[1]) * days, 0];
-        } else {
-            throw new Error(`Invalid age range format: ${name}`);
-        }
-
-        return 100000 * pair[0] + pair[1];
     });
 }
 
@@ -257,11 +236,20 @@ function getPopulationMetadata(
     };
 }
 
+function getAttributes(attributes: Attribute[]) {
+    const attributesByCode = _(attributes).keyBy("code");
+    return {
+        app: attributesByCode.getOrFail(baseConfig.attributeCodeForApp),
+        dashboard: attributesByCode.getOrFail(baseConfig.attributeCodeForDashboard),
+    };
+}
+
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
     const codeFilter = "code:startsWith:RVC_";
     const modelParams = { filters: [codeFilter] };
 
     const metadataParams = {
+        attributes: modelParams,
         categories: modelParams,
         categoryCombos: modelParams,
         categoryOptionGroups: modelParams,
@@ -271,6 +259,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
     };
 
     const metadata = await db.getMetadata<{
+        attributes: Attribute[];
         categories: Category[];
         categoryCombos: CategoryCombo[];
         categoryOptionGroups: CategoryOptionGroup[];
@@ -281,13 +270,15 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
 
     const metadataConfig = {
         ...baseConfig,
+        attributes: getAttributes(metadata.attributes),
         organisationUnitLevels: metadata.organisationUnitLevels,
         categories: getConfigCategories(metadata.categories),
         categoryOptions: _(metadata.categories)
             .flatMap("categoryOptions")
             .value(),
         categoryCombos: metadata.categoryCombos,
-        dataElements: getConfigDataElements(
+        dataElements: metadata.dataElements,
+        dataElementsDisaggregation: getConfigDataElementsDisaggregation(
             metadata.dataElementGroups,
             metadata.dataElements,
             metadata.categoryCombos,

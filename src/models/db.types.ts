@@ -67,11 +67,21 @@ export interface CategoryCombo {
 
 export interface Attribute {
     id: string;
+    code: string;
+    valueType: "TEXT" | "BOOLEAN";
+    displayName: string;
 }
 
 export interface AttributeValue {
     value: string;
-    attribute: Ref;
+    attribute: { id: string; code?: string };
+}
+
+export interface Dashboard {
+    id: string;
+    code: string;
+    displayName: string;
+    categoryCombo: Ref;
 }
 
 export interface DataElement {
@@ -94,10 +104,15 @@ export interface Ref {
 
 export interface Metadata {
     dataSets?: Array<DataSet>;
+    dataEntryForms?: Array<DataEntryForm>;
     sections?: Array<Section>;
     charts?: Array<Dictionary<any>>;
     reportTables?: Array<Dictionary<any>>;
     dashboards?: Array<Dictionary<any>>;
+}
+
+export interface MetadataOptions {
+    importStrategy?: "CREATE_AND_UPDATE" | "CREATE" | "UPDATE" | "DELETE";
 }
 
 export interface Section {
@@ -117,7 +132,7 @@ export interface DataSet {
     categoryCombo: Ref;
     dataElementDecoration: boolean;
     renderAsTabs: boolean;
-    organisationUnits: Array<Ref>;
+    organisationUnits: Ref[];
     dataSetElements: Array<{ dataSet: Ref; dataElement: Ref; categoryCombo: Ref }>;
     openFuturePeriods: number;
     timelyDays: number;
@@ -126,6 +141,13 @@ export interface DataSet {
     dataInputPeriods: DataInputPeriod[];
     attributeValues: AttributeValue[];
     formType: "DEFAULT" | "CUSTOM";
+    dataEntryForm?: Ref;
+}
+
+export interface DataSetElement {
+    dataSet: Ref;
+    dataElement: Ref;
+    categoryCombo: Ref;
 }
 
 export interface DataEntryForm {
@@ -136,6 +158,8 @@ export interface DataEntryForm {
 }
 
 export interface DataInputPeriod {
+    openingDate: string;
+    closingDate: string;
     period: { id: string };
 }
 
@@ -229,16 +253,23 @@ export interface ModelFields {
 }
 
 export type ModelName =
+    | "attributeValues"
+    | "attributes"
     | "categories"
     | "categoryCombos"
     | "categoryOptions"
     | "categoryOptionGroups"
+    | "dashboards"
     | "dataElements"
     | "dataElementGroups"
+    | "dataSets"
+    | "dataSetElements"
+    | "dataInputPeriods"
     | "organisationUnits"
     | "organisationUnitLevels";
 
 export interface MetadataGetModelParams {
+    fields?: ModelFields;
     filters?: string[];
 }
 
@@ -255,4 +286,34 @@ export interface DashboardData {
     dashboard?: Dictionary<any>;
 }
 
-export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams | undefined };
+export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams };
+
+export interface CategoryCustom {
+    id: string;
+    categoryOptions: CategoryOption[];
+}
+
+export interface DataElementItemCustom {
+    id: string;
+    code: string;
+}
+
+export interface CategoryOptionsCustom {
+    id: string;
+    categories: Array<{ id: string; code: string }>;
+    organisationUnits: Ref[];
+}
+
+export interface OrganisationUnitWithName {
+    id: string;
+    displayName: string;
+    path: string;
+}
+
+export interface DashboardMetadataRequest {
+    categories: CategoryCustom[];
+    dataElements: DataElementItemCustom[];
+    indicators: DataElementItemCustom[];
+    categoryOptions: CategoryOptionsCustom[];
+    organisationUnits: OrganisationUnitWithName[];
+}

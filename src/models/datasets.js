@@ -40,7 +40,7 @@ export async function list(config, d2, filters, pagination) {
 }
 
 async function getByAttribute(config, d2) {
-    const appCode = config.attibuteCodeForApp;
+    const appCode = config.attributeCodeForApp;
     const filter = `attributeValues.attribute.code:eq:${appCode}`;
     const listOptions = {
         filter,
@@ -53,7 +53,8 @@ async function getByAttribute(config, d2) {
         .filter(
             ({ attributeValues }) =>
                 !!attributeValues.some(
-                    ({ attribute, value }) => attribute.code === appCode && value === "true"
+                    ({ attribute, value }) =>
+                        attribute && attribute.code === appCode && value === "true"
                 )
         )
         .map(el => el.id);

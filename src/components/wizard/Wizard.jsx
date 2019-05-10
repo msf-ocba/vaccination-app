@@ -87,14 +87,13 @@ class Wizard extends React.Component {
         return { prevStepKey, nextStepKey };
     };
 
-    nextStep = () => {
+    nextStep = async () => {
         const { currentStepKey } = this.state;
         const stepsByKey = _.keyBy(this.props.steps, "key");
         const currentStep = stepsByKey[currentStepKey];
         const { nextStepKey } = this.getAdjacentSteps();
         const nextStep = stepsByKey[nextStepKey];
-        const errorMessages = this.props.onStepChangeRequest(currentStep, nextStep);
-
+        const errorMessages = await this.props.onStepChangeRequest(currentStep, nextStep);
         if (_(errorMessages).isEmpty()) {
             this.setStep(nextStepKey);
         } else {
@@ -197,6 +196,7 @@ class Wizard extends React.Component {
                                 data-test-current={currentStep === step}
                                 onClick={this.onStepClicked(step.key)}
                                 classes={{ root: classes.stepButton }}
+                                className={currentStep === step ? "current-step" : ""}
                             >
                                 {step.label}
                             </StepButton>

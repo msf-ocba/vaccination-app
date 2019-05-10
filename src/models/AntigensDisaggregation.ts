@@ -4,7 +4,6 @@ const fp = require("lodash/fp");
 import { AntigenDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig } from "./config";
 import { Antigen } from "./campaign";
-import DbD2 from "./db-d2";
 import "../utils/lodash-mixins";
 
 export interface AntigenDisaggregation {
@@ -106,7 +105,7 @@ export class AntigensDisaggregation {
 
     static getCategories(
         config: MetadataConfig,
-        dataElementConfig: MetadataConfig["dataElements"][0],
+        dataElementConfig: MetadataConfig["dataElementsDisaggregation"][0],
         ageGroups: MetadataConfig["antigens"][0]["ageGroups"]
     ): AntigenDisaggregationCategoriesData {
         return dataElementConfig.categories.map(categoryRef => {
@@ -195,7 +194,7 @@ export class AntigensDisaggregation {
         if (!antigenConfig) throw `No configuration for antigen: ${antigenCode}`;
 
         const dataElementsProcessed = antigenConfig.dataElements.map(dataElementRef => {
-            const dataElementConfig = _(config.dataElements)
+            const dataElementConfig = _(config.dataElementsDisaggregation)
                 .keyBy("code")
                 .getOrFail(dataElementRef.code);
 
@@ -257,16 +256,14 @@ export class AntigensDisaggregation {
     }
 }
 
-export async function getDataElements(
-    db: DbD2,
+export function getDataElements(
+    config: MetadataConfig,
     disaggregationData: AntigenDisaggregationEnabled
-): Promise<DataElement[]> {
-    const dataElementCodes = _(disaggregationData)
+): DataElement[] {
+    const dataElementsByCode = _(config.dataElements).keyBy("code");
+    return _(disaggregationData)
         .flatMap(dd => dd.dataElements.map(de => de.code))
         .uniq()
+        .map(deCode => dataElementsByCode.getOrFail(deCode))
         .value();
-    const { dataElements } = await db.getMetadata<{ dataElements: DataElement[] }>({
-        dataElements: { filters: [`code:in:[${dataElementCodes.join(",")}]`] },
-    });
-    return dataElements;
 }
