@@ -193,9 +193,7 @@ class CampaignConfiguration extends React.Component {
 
     renderDeleteConfirmationDialog = ({ dataSets }) => {
         const description =
-            i18n.t(
-                "Are you sure you want to delete those campaign(s) (dataset and dashboards)?"
-            ) +
+            i18n.t("Are you sure you want to delete those campaign(s) (dataset and dashboards)?") +
             "\n\n" +
             dataSets.map(ds => ds.displayName).join("\n");
 
