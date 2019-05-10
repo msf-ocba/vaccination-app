@@ -174,7 +174,7 @@ class SaveStep extends React.Component {
                     handleCancel={this.dialogCancel}
                     title={i18n.t("Cancel Campaign Creation?")}
                     contents={i18n.t(
-                        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
+                        "You are about to exit the Campaign Creation Wizard. All your changes will be lost. Are you sure you want to proceed?"
                     )}
                 />
                 <div className={classes.wrapper}>

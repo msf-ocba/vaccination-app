@@ -50,7 +50,7 @@ class CampaignWizard extends React.Component {
                     `Select the health facilities or health area where the campaign will be implemented`
                 ),
                 help: i18n.t(
-                    `Select the organisation units which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
+                    `Select the health facilities or health areas which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
                 ),
             },
             {
@@ -90,10 +90,10 @@ class CampaignWizard extends React.Component {
                 component: TargetPopulationStep,
                 validationKeys: ["targetPopulation"],
                 description: i18n.t(
-                    `Specify target population, totals and age percentages for the age ranges required by all selected antigens. The source of those values are the DHIS2 analytics endpoint. Like-wise, any change you make in this step will only be applied once you run the analytics.`
+                    `Insert the total population and age distribution (as a percent) for each health site where the campaign will be implemented. This data will be used to calculate coverage rates for the campaign. The source of data may be (whatever that analytic tool was - create a hyperlink if possible) or you may have access to local estimates based on population surveys through the Ministry of Health or other stakeholders that would be more updated or reliable. You may overwrite any existing data in HMIS, but please note that any changes you make in this step will only be applied once you run analytics.`
                 ),
                 help: i18n.t(
-                    `Specify target population, totals and age percentages for the age ranges required by all selected antigens.`
+                    `Specify the target population and population distribution by age group (percent) for each antigen.`
                 ),
             },
             {
@@ -163,7 +163,7 @@ dataset and all the metadata associated with this vaccination campaign.`),
                     handleCancel={this.handleDialogCancel}
                     title={i18n.t("Cancel Campaign Creation?")}
                     contents={i18n.t(
-                        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
+                        "You are about to exit the Campaign Creation Wizard. All your changes will be lost. Are you sure you want to proceed?"
                     )}
                 />
                 <PageHeader

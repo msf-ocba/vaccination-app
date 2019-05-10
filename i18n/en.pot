@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-18T09:58:45.805Z\n"
-"PO-Revision-Date: 2019-04-18T09:58:45.805Z\n"
+"POT-Creation-Date: 2019-05-10T08:42:36.107Z\n"
+"PO-Revision-Date: 2019-05-10T08:42:36.107Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -86,9 +86,9 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Select the organisation units which will implement the campaign. At least "
-"one must be selected. Only organisation units of level 5 (Health site) can "
-"be selected."
+"Select the health facilities or health areas which will implement the "
+"campaign. At least one must be selected. Only organisation units of level 5 "
+"(Health site) can be selected."
 msgstr ""
 
 msgid "General info"
@@ -126,15 +126,20 @@ msgid "Target Population"
 msgstr ""
 
 msgid ""
-"Specify target population, totals and age percentages for the age ranges "
-"required by all selected antigens. The source of those values are the DHIS2 "
-"analytics endpoint. Like-wise, any change you make in this step will only "
-"be applied once you run the analytics."
+"Insert the total population and age distribution (as a percent) for each "
+"health site where the campaign will be implemented. This data will be used "
+"to calculate coverage rates for the campaign. The source of data may be "
+"(whatever that analytic tool was - create a hyperlink if possible) or you "
+"may have access to local estimates based on population surveys through the "
+"Ministry of Health or other stakeholders that would be more updated or "
+"reliable. You may overwrite any existing data in HMIS, but please note that "
+"any changes you make in this step will only be applied once you run "
+"analytics."
 msgstr ""
 
 msgid ""
-"Specify target population, totals and age percentages for the age ranges "
-"required by all selected antigens."
+"Specify the target population and population distribution by age group "
+"(percent) for each antigen."
 msgstr ""
 
 msgid "Save"
@@ -154,8 +159,8 @@ msgid "Cancel Campaign Creation?"
 msgstr ""
 
 msgid ""
-"You are about to exit the campaign creation wizard. All your changes will "
-"be lost. Are you sure?"
+"You are about to exit the Campaign Creation Wizard. All your changes will "
+"be lost. Are you sure you want to proceed?"
 msgstr ""
 
 msgid "New vaccination campaign"
@@ -167,16 +172,13 @@ msgstr ""
 msgid "Ok"
 msgstr ""
 
-msgid "Cannot find dashboard associated to the campaign"
+msgid "Cannot find dashboard associated with the campaign"
 msgstr ""
 
-msgid "Cannot find dataset associated to the campaign"
+msgid "Cannot find dataset associated with the campaign"
 msgstr ""
 
 msgid "Back"
-msgstr ""
-
-msgid "Disaggregation"
 msgstr ""
 
 msgid "Field cannot be blank"
@@ -209,15 +211,6 @@ msgstr ""
 msgid "Antigens"
 msgstr ""
 
-msgid "Population distribution (%)"
-msgstr ""
-
-msgid "Campaign Population Distribution"
-msgstr ""
-
-msgid "Missing"
-msgstr ""
-
 msgid "Help"
 msgstr ""
 
@@ -225,12 +218,6 @@ msgid "Previous"
 msgstr ""
 
 msgid "Next"
-msgstr ""
-
-msgid "Doses administered"
-msgstr ""
-
-msgid "Quality and safety indicators"
 msgstr ""
 
 msgid "Select at least one organisation unit"
@@ -248,7 +235,7 @@ msgstr ""
 msgid "Select at least one antigen"
 msgstr ""
 
-msgid "You must select at least one option of the category"
+msgid "You must select at least one category option"
 msgstr ""
 
 msgid "No target population defined"
