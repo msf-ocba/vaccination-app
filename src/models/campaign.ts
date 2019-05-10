@@ -116,8 +116,8 @@ export default class Campaign {
             .value();
 
         const modelReferencesToDelete = _.concat(
-            resources,
             dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
+            resources,
             dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id }))
         );
 
