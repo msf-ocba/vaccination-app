@@ -77,7 +77,7 @@ export interface MetadataConfig extends BaseConfig {
     antigens: Array<{
         name: string;
         code: string;
-        dataElements: { id: string; code: string; optional: boolean }[];
+        dataElements: { id: string; code: string; optional: boolean; order: number }[];
         ageGroups: Array<string[][]>;
     }>;
 }
@@ -167,20 +167,24 @@ function getAntigens(
     const antigensMetadata = categoryOptions.map(categoryOption => {
         const getDataElements = (typeString: string) => {
             const code = getCode([categoryOption.code, typeString]);
-            return getFromRefs(
+            const dataElementsForType = getFromRefs(
                 _(dataElementGroupsByCode).getOrFail(code).dataElements,
                 dataElements
             );
+            return dataElementsForType.map(de => ({
+                id: de.id,
+                code: de.code,
+                optional: typeString === "OPTIONAL",
+                order: parseInt(de.formName.split(" - ")[1] || "0"), // formName: Name - INDEX
+            }));
         };
 
         const dataElementsForAntigens = _.concat(
-            getDataElements("REQUIRED").map(({ id, code }) => ({ id, code, optional: false })),
-            getDataElements("OPTIONAL").map(({ id, code }) => ({ id, code, optional: true }))
+            getDataElements("REQUIRED"),
+            getDataElements("OPTIONAL")
         );
 
-        const dataElementSorted = _(dataElementsForAntigens)
-            .orderBy([de => de.code.match(/DOSES/), "code"], ["asc", "asc"])
-            .value();
+        const dataElementSorted = _.orderBy(dataElementsForAntigens, "order");
 
         const mainAgeGroups = _(categoryOptionGroupsByCode)
             .getOrFail(getCode([categoryOption.code, "AGE_GROUP"]))

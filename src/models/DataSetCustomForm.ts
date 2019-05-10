@@ -19,12 +19,6 @@ function h(tagName: string, attributes: object, children: string | string[]) {
     return createElement(tagName, attrs, ...args);
 }
 
-function sortDataElements(dataElements: DataElementDis[]): DataElementDis[] {
-    return _(dataElements)
-        .orderBy([de => de.code.match(dataElementCodeDosesRegexp), "code"], ["asc", "asc"])
-        .value();
-}
-
 function repeatArray<T>(xs: T[], count: number): T[] {
     return _.flatten(_.times(count, () => xs));
 }
@@ -111,7 +105,7 @@ export class DataSetCustomForm {
     }
 
     getDataElementByCategoryOptionsLists(dataElements: DataElementDis[]) {
-        return _(sortDataElements(dataElements))
+        return _(dataElements)
             .groupBy(({ categories }) =>
                 categories.map(category => [category.code, ...category.categoryOptions])
             )
