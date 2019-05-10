@@ -97,6 +97,9 @@ msgstr "Sí"
 msgid "Campaigns"
 msgstr "Campañas"
 
+msgid "Cannot load campaign"
+msgstr "No se puede cargar la campaña"
+
 msgid "Organisation Units"
 msgstr "Unidades organizativas"
 
@@ -195,6 +198,9 @@ msgstr ""
 "Pulse el botón guardar para crear el dataset y todos los metadatos asociados "
 "con esta campaña de vacunación"
 
+msgid "Edit vaccination campaign"
+msgstr "Editar campaña"
+
 msgid "New vaccination campaign"
 msgstr "Nueva campaña"
 
@@ -253,7 +259,7 @@ msgid "Missing"
 msgstr "Vacío"
 
 msgid "Cancel Campaign Creation?"
-msgstr "Cancelar la creaciòn de campaña?"
+msgstr "Cancelar la creación de campaña?"
 
 msgid ""
 "You are about to exit the campaign creation wizard. All your changes will be "

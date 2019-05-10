@@ -116,11 +116,17 @@ export interface MetadataOptions {
 }
 
 export interface Section {
+    id: string;
     name: string;
-    showRowTotals: boolean;
-    showColumnTotals: boolean;
-    dataSet: Ref;
-    dataElements: Ref[];
+    code?: string;
+    showRowTotals?: boolean;
+    showColumnTotals?: boolean;
+    dataSet?: Ref;
+    dataElements?: Ref[];
+    greyedFields?: Array<{
+        categoryOptionCombo: Ref;
+        dataElement: Ref;
+    }>;
 }
 
 export interface DataSet {
@@ -137,7 +143,7 @@ export interface DataSet {
     openFuturePeriods: number;
     timelyDays: number;
     expiryDays: number;
-    sections?: Section[];
+    sections: Ref[];
     dataInputPeriods: DataInputPeriod[];
     attributeValues: AttributeValue[];
     formType: "DEFAULT" | "CUSTOM";
@@ -255,6 +261,7 @@ export interface ModelFields {
 export type ModelName =
     | "attributeValues"
     | "attributes"
+    | "attributes"
     | "categories"
     | "categoryCombos"
     | "categoryOptions"
@@ -266,7 +273,8 @@ export type ModelName =
     | "dataSetElements"
     | "dataInputPeriods"
     | "organisationUnits"
-    | "organisationUnitLevels";
+    | "organisationUnitLevels"
+    | "sections";
 
 export interface MetadataGetModelParams {
     fields?: ModelFields;

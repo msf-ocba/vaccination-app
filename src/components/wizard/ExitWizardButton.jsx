@@ -6,7 +6,7 @@ import i18n from "@dhis2/d2-i18n";
 class ExitWizardButton extends React.Component {
     static propTypes = {
         isOpen: PropTypes.bool,
-        onSave: PropTypes.func.isRequired,
+        onConfirm: PropTypes.func.isRequired,
         onCancel: PropTypes.func.isRequired,
     };
     render() {

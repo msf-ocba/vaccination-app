@@ -107,7 +107,6 @@ describe("Campaign configuration - Create", () => {
 
         cy.wait("@metadataRequest");
         cy.contains("Campaign created");
-        cy.wait(1000); // eslint-disable-line cypress/no-unnecessary-waiting
     });
 });
 
