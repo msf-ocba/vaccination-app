@@ -124,7 +124,7 @@ export default class Campaign {
         return db.deleteMany(modelReferencesToDelete);
     }
 
-    public validate() {
+    public async validate() {
         const {
             name,
             startDate,
@@ -141,7 +141,7 @@ export default class Campaign {
 
             endDate: !endDate ? getError("cannot_be_blank", { field: "end date" }) : [],
 
-            organisationUnits: this.validateOrganisationUnits(),
+            organisationUnits: await this.validateOrganisationUnits(),
 
             antigens: _(antigens).isEmpty() ? getError("no_antigens_selected") : [],
 
@@ -157,7 +157,7 @@ export default class Campaign {
 
     /* Organisation units */
 
-    private validateOrganisationUnits() {
+    private async validateOrganisationUnits() {
         const { organisationUnits } = this.data;
 
         const allOrgUnitsInAcceptedLevels = _(organisationUnits).every(ou =>
@@ -169,11 +169,26 @@ export default class Campaign {
         );
         const levels = this.selectableLevels.join("/");
 
+        const orgUnitsWithTeamsInfo = await this.db.validateTeamsForOrganisationUnits(
+            organisationUnits,
+            this.config.categoryCodeForTeams
+        );
+
+        const orgUnitsWithoutTeams = _(orgUnitsWithTeamsInfo)
+            .filter(ou => !ou.hasTeams)
+            .map(ou => ou.displayName)
+            .value();
+
         const errorsList = [
             !allOrgUnitsInAcceptedLevels
                 ? getError("organisation_units_only_of_levels", { levels })
                 : [],
             _(organisationUnits).isEmpty() ? getError("no_organisation_units_selected") : [],
+            !_.isEmpty(orgUnitsWithoutTeams)
+                ? getError("no_valid_teams_for_organisation_units", {
+                      orgUnits: orgUnitsWithoutTeams.join(", "),
+                  })
+                : [],
         ];
 
         return _(errorsList)
