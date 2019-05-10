@@ -86,13 +86,12 @@ msgid ""
 msgstr ""
 "Seleccione los centros o áreas de salud donde la campaña se llevara a cabo"
 
-#, fuzzy
 msgid ""
 "Select the health facilities or health areas which will implement the "
 "campaign. At least one must be selected. Only organisation units of level 5 "
 "(Health site) can be selected."
 msgstr ""
-"Seleccione las unidades organizativas asignadas a esta campaña. Debe "
+"Seleccione los centros o áreas de salud asignadas a esta campaña. Debe "
 "seleccionar al menos una unidad. Únicamente unidades de nivel 5 (Puesto de "
 "salud) pueden seleccionarse"
 
@@ -178,12 +177,11 @@ msgstr ""
 msgid "Cancel Campaign Creation?"
 msgstr "Cancelar la creaciòn de campaña?"
 
-#, fuzzy
 msgid ""
 "You are about to exit the Campaign Creation Wizard. All your changes will be "
 "lost. Are you sure you want to proceed?"
 msgstr ""
-"Esta seguro que quiere salir del creador de campañas? Todos sus cambios se "
+"Esta seguro que quiere salir del Creador de Campañas? Todos sus cambios se "
 "perderán"
 
 msgid "New vaccination campaign"
@@ -195,11 +193,9 @@ msgstr "Cancelar"
 msgid "Ok"
 msgstr "Aceptar"
 
-#, fuzzy
 msgid "Cannot find dashboard associated with the campaign"
 msgstr "No hay ningún tablero asociado a la campaña"
 
-#, fuzzy
 msgid "Cannot find dataset associated with the campaign"
 msgstr "No hay ningún dataset asociado a la campaña"
 
@@ -261,7 +257,6 @@ msgstr "El campo {{field}} no puede estar vacío si {{other}} tiene un valor"
 msgid "Select at least one antigen"
 msgstr "Seleccione al menos un antígeno"
 
-#, fuzzy
 msgid "You must select at least one category option"
 msgstr "Debes seleccionar al menos una opción de la categoría"
 
@@ -303,39 +298,3 @@ msgid ""
 msgstr ""
 "Dé a la campaña un nombre que sea fácil de reconocer en la jerarquía HMIS. "
 "El formato sugerido es REACTIVE_VACC_LOCALIZACION_ANTIGENO(S) _MES"
-
-#~ msgid ""
-#~ "Specify target population, totals and age percentages for the age ranges "
-#~ "required by all selected antigens. The source of those values are the "
-#~ "DHIS2 analytics endpoint. Like-wise, any change you make in this step "
-#~ "will only be applied once you run the analytics."
-#~ msgstr ""
-#~ "Especifique la población objetivo, totales y porcentajes por edad "
-#~ "requeridos por los antígenos seleccionados. La fuente de estos valores "
-#~ "son las análiticas de DHIS2. De igual modo, cualquier cambio que haga en "
-#~ "este paso, se aplicará únicamente cuando ejecute las analíticas."
-
-#~ msgid ""
-#~ "Specify target population, totals and age percentages for the age ranges "
-#~ "required by all selected antigens."
-#~ msgstr ""
-#~ "Especifique la población objetivo, totales y porcentajes por edad "
-#~ "requeridos por los antígenos seleccionados."
-
-#~ msgid "Disaggregation"
-#~ msgstr "Desagregación"
-
-#~ msgid "Population distribution (%)"
-#~ msgstr "Distribución por edades (%)"
-
-#~ msgid "Campaign Population Distribution"
-#~ msgstr "Distribución de población en campaña"
-
-#~ msgid "Missing"
-#~ msgstr "Vacío"
-
-#~ msgid "Doses administered"
-#~ msgstr "Dosis administradas"
-
-#~ msgid "Quality and safety indicators"
-#~ msgstr "Indicadores de calidad y seguridad"
