@@ -96,6 +96,9 @@ msgstr ""
 msgid "Campaigns"
 msgstr ""
 
+msgid "Cannot load campaign"
+msgstr ""
+
 msgid "Organisation Units"
 msgstr ""
 
@@ -168,6 +171,9 @@ msgstr ""
 msgid ""
 "Press the button to create the dataset and all the metadata associated with "
 "this vaccination campaign."
+msgstr ""
+
+msgid "Edit vaccination campaign"
 msgstr ""
 
 msgid "New vaccination campaign"

@@ -47,17 +47,25 @@ class SaveStep extends React.Component {
     }
 
     save = async () => {
-        const { campaign } = this.state;
-        this.setState({ isSaving: true, errorMessage: "" });
-        const saveResponse = await campaign.save();
-        this.setState({ isSaving: false });
+        const { campaign, isSaving } = this.state;
+        if (isSaving) return;
 
-        if (saveResponse.status) {
-            this.props.snackbar.success(`${i18n.t("Campaign created")} ${campaign.name}`);
-            this.props.history.push("/campaign-configuration");
-        } else {
-            this.setState({ errorMessage: saveResponse.error });
-            this.props.snackbar.error(i18n.t("Error saving campaign"));
+        this.setState({ isSaving: true, errorMessage: "" });
+
+        try {
+            const saveResponse = await campaign.save();
+            this.setState({ isSaving: false });
+
+            if (saveResponse.status) {
+                this.props.snackbar.success(`${i18n.t("Campaign created")} ${campaign.name}`);
+                this.props.history.push("/campaign-configuration");
+            } else {
+                this.setState({ errorMessage: saveResponse.error });
+                this.props.snackbar.error(i18n.t("Error saving campaign"));
+            }
+        } catch (err) {
+            this.props.snackbar.error(err.message || err.toString());
+            this.setState({ isSaving: false });
         }
     };
 
