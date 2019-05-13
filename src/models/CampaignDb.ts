@@ -41,13 +41,21 @@ export default class CampaignDb {
         }
         const startDate = moment(campaign.startDate).startOf("day");
         const endDate = moment(campaign.endDate).endOf("day");
+        const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
+        const ageGroupCategoryId = _(metadataConfig.categories)
+            .keyBy("code")
+            .getOrFail(metadataConfig.categoryCodeForAgeGroup).id;
+
         const { dashboard, charts, reportTables } = await db.createDashboard(
             campaign.name,
             campaign.organisationUnits,
             campaign.antigens,
             startDate,
             endDate,
-            categoryCodeForTeams
+            categoryCodeForTeams,
+            antigensDisaggregation,
+            metadataConfig.categoryOptions,
+            ageGroupCategoryId
         );
 
         if (!attributeForApp || !dashboardAttribute) {

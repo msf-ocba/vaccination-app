@@ -89,6 +89,7 @@ export interface DataElement {
     code: string;
     displayName: string;
     categoryCombo: Ref;
+    formName: string;
 }
 
 export interface DataElementGroup {

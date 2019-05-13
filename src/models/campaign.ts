@@ -2,10 +2,9 @@ import { OrganisationUnit, Maybe, Ref, AttributeValue } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
 
-import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
-import { Response } from "./db.types";
-import { PaginatedObjects, OrganisationUnitPathOnly } from "./db.types";
+import { PaginatedObjects, OrganisationUnitPathOnly, Response } from "./db.types";
 import DbD2 from "./db-d2";
+import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
@@ -14,6 +13,7 @@ import CampaignDb from "./CampaignDb";
 export type TargetPopulationData = TargetPopulationData;
 
 export interface Antigen {
+    id: string;
     name: string;
     code: string;
 }
