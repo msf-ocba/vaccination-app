@@ -15,6 +15,7 @@ export type DeleteResponse = {
 
 export interface D2Api {
     get(url: string, data: Dictionary<any>): Promise<Dictionary<any>>;
+    get<T>(url: string, data: Dictionary<any>): Promise<T>;
     post(url: string, data: Dictionary<any>): Promise<Dictionary<any>>;
     delete(url: string): Promise<DeleteResponse>;
 }
