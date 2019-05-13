@@ -147,6 +147,7 @@ export const metadataFields: MetadataFields = {
         id: true,
         code: true,
         displayName: true,
+        formName: true,
         categoryCombo: metadataFields => metadataFields.categoryCombos,
     },
     dataSetElements: {
