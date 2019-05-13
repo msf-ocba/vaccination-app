@@ -122,7 +122,9 @@ class CampaignWizard extends React.Component {
                 description: i18n.t(
                     'Setup of your campaign is complete. Click the "Save" button to save your campaign and access tally sheets, data entry or analysis'
                 ),
-                help: i18n.t(`Click the "Save" button to create the data set and all associated metadata for this campaign`),
+                help: i18n.t(
+                    `Click the "Save" button to create the data set and all associated metadata for this campaign`
+                ),
             },
         ];
     }
