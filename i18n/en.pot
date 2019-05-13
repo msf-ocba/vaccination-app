@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-05-10T12:49:17.437Z\n"
-"PO-Revision-Date: 2019-05-10T12:49:17.437Z\n"
+"POT-Creation-Date: 2019-05-13T12:23:28.999Z\n"
+"PO-Revision-Date: 2019-05-13T12:23:28.999Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -176,25 +176,10 @@ msgid ""
 "this vaccination campaign."
 msgstr ""
 
-msgid "Cancel Campaign Creation?"
-msgstr ""
-
 msgid "Edit vaccination campaign"
 msgstr ""
 
-msgid ""
-"You are about to exit the Campaign Creation Wizard. All your changes will "
-"be lost. Are you sure you want to proceed?"
-msgstr ""
-
 msgid "New vaccination campaign"
-msgstr ""
-
-
-msgid "Cancel"
-msgstr ""
-
-msgid "Ok"
 msgstr ""
 
 msgid "Cannot find dashboard associated with the campaign"
