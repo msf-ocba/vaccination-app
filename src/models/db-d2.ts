@@ -2,14 +2,13 @@ import { AnalyticsResponse } from "./db-d2";
 import { Moment } from "moment";
 import { Dictionary } from "lodash";
 import { generateUid } from "d2/uid";
-import { D2, D2Api } from "./d2.types";
+import { D2, D2Api, DeleteResponse } from "./d2.types";
 import {
     OrganisationUnit,
     PaginatedObjects,
     CategoryOption,
     CategoryCombo,
     MetadataResponse,
-    Metadata,
     ModelFields,
     MetadataGetParams,
     ModelName,
@@ -22,6 +21,10 @@ import {
     DataValueResponse,
     Response,
     DataValue,
+    MetadataOptions,
+    DashboardMetadataRequest,
+    OrganisationUnitWithName,
+    CategoryOptionsCustom,
 } from "./db.types";
 import _ from "lodash";
 import {
@@ -52,10 +55,10 @@ function getDbFields(modelFields: ModelFields): string[] {
 function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
     return _(metadataParams)
         .flatMap((params, modelName) => {
-            const fields = metadataFields[modelName as ModelName];
             if (!params) {
                 return [];
             } else {
+                const fields = params.fields || metadataFields[modelName as ModelName];
                 return [
                     [modelName + ":fields", getDbFields(fields).join(",")],
                     ...(params.filters || []).map(filter => [modelName + ":filter", filter]),
@@ -89,7 +92,11 @@ export interface AnalyticsResponse {
 
 const ref = { id: true };
 
-const metadataFields: MetadataFields = {
+export const metadataFields: MetadataFields = {
+    attributeValues: {
+        value: true,
+        attribute: { id: true, code: true },
+    },
     attributes: {
         id: true,
         code: true,
@@ -126,11 +133,49 @@ const metadataFields: MetadataFields = {
         code: true,
         categoryOptions: metadataFields => metadataFields.categoryOptions,
     },
+    dashboards: {
+        id: true,
+        dashboardItems: {
+            id: true,
+            chart: { id: true },
+            map: { id: true },
+            reportTable: { id: true },
+        },
+    },
     dataElements: {
         id: true,
         code: true,
         displayName: true,
         categoryCombo: metadataFields => metadataFields.categoryCombos,
+    },
+    dataSetElements: {
+        dataSet: ref,
+        dataElement: ref,
+        categoryCombo: ref,
+    },
+    dataInputPeriods: {
+        openingDate: true,
+        closingDate: true,
+        period: { id: true },
+    },
+    dataSets: {
+        id: true,
+        name: true,
+        description: true,
+        publicAccess: true,
+        periodType: true,
+        categoryCombo: ref,
+        dataElementDecoration: true,
+        renderAsTabs: true,
+        organisationUnits: ref,
+        dataSetElements: metadataFields => metadataFields.dataSetElements,
+        openFuturePeriods: true,
+        timelyDays: true,
+        expiryDays: true,
+        sections: ref,
+        dataInputPeriods: metadataFields => metadataFields.dataInputPeriods,
+        attributeValues: metadataFields => metadataFields.attributeValues,
+        formType: true,
     },
     dataElementGroups: {
         id: true,
@@ -155,7 +200,12 @@ const metadataFields: MetadataFields = {
         displayName: true,
         level: true,
     },
+    sections: { id: true },
 };
+
+export type ApiResponse<Value> = { status: true; value: Value } | { status: false; error: string };
+
+export type ModelReference = { model: string; id: string };
 
 export default class DbD2 {
     d2: D2;
@@ -195,6 +245,53 @@ export default class DbD2 {
         return { pager: newPager, objects: organisationUnits };
     }
 
+    public async validateTeamsForOrganisationUnits(
+        organisationUnits: OrganisationUnitPathOnly[],
+        categoryCodeForTeams: string
+    ) {
+        const allAncestorsIds = _(organisationUnits)
+            .map("path")
+            .flatMap(path => path.split("/").slice(1))
+            .uniq()
+            .value()
+            .join(",");
+        const organisationUnitsIds = _.map(organisationUnits, "id");
+        const response = await this.api.get("/metadata", {
+            "categoryOptions:fields": "id,categories[code],organisationUnits[id]",
+            "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`, //Missing categoryTeamCode
+            "organisationUnits:fields": "id,displayName",
+            "organisationUnits:filter": `id:in:[${organisationUnitsIds}]`,
+        });
+
+        const { categoryOptions, organisationUnits: orgUnitNamesArray } = response as {
+            categoryOptions?: CategoryOptionsCustom[];
+            organisationUnits?: OrganisationUnitWithName[];
+        };
+
+        const hasTeams = (path: string) => {
+            return (categoryOptions || []).some(
+                categoryOption =>
+                    _(categoryOption.categories)
+                        .map("code")
+                        .includes(categoryCodeForTeams) &&
+                    categoryOption.organisationUnits.some(ou => path.includes(ou.id))
+            );
+        };
+
+        const orgUnitNames: _.Dictionary<string> = _(orgUnitNamesArray)
+            .map(o => [o.id, o.displayName])
+            .fromPairs()
+            .value();
+
+        return _(organisationUnits || [])
+            .map(ou => ({
+                id: ou.id,
+                displayName: _(orgUnitNames).getOrFail(ou.id),
+                hasTeams: hasTeams(ou.path),
+            }))
+            .value();
+    }
+
     public async getCategoryOptionsByCategoryCode(code: string): Promise<CategoryOption[]> {
         const { categories } = await this.api.get("/categories", {
             filter: [`code:in:[${code}]`],
@@ -219,8 +316,25 @@ export default class DbD2 {
         return categoryCombos;
     }
 
-    public async postMetadata(metadata: Metadata): Promise<MetadataResponse> {
-        return this.api.post("/metadata", metadata) as Promise<MetadataResponse>;
+    public async postMetadata<Metadata>(
+        metadata: Metadata,
+        options: MetadataOptions = {}
+    ): Promise<ApiResponse<MetadataResponse>> {
+        const queryString = _(options).isEmpty()
+            ? ""
+            : "?" +
+              _(options as object[])
+                  .map((value, key) => `${key}=${value}`)
+                  .join("&");
+        try {
+            const response = (await this.api.post(
+                "/metadata" + queryString,
+                metadata
+            )) as MetadataResponse;
+            return { status: true, value: response };
+        } catch (err) {
+            return { status: false, error: err.message || err.toString() };
+        }
     }
 
     public async postForm(dataSetId: string, dataEntryForm: DataEntryForm): Promise<boolean> {
@@ -228,7 +342,7 @@ export default class DbD2 {
         return true;
     }
 
-    public async postDataValues(dataValues: DataValue[]): Promise<Response<string[]>> {
+    public async postDataValues(dataValues: DataValue[]): Promise<Response<any>> {
         const dataValueRequests: DataValueRequest[] = _(dataValues)
             .groupBy(dv => {
                 const parts = [
@@ -267,8 +381,39 @@ export default class DbD2 {
         if (_(errorResponses).isEmpty()) {
             return { status: true };
         } else {
-            return { status: false, error: errorResponses.map(response => response.description) };
+            return { status: false, error: errorResponses };
         }
+    }
+
+    public async deleteMany(modelReferences: ModelReference[]): Promise<Response<string>> {
+        const errors = _.compact(
+            await promiseMap(modelReferences, async ({ model, id }) => {
+                const { httpStatus, httpStatusCode, status, message } = await this.api
+                    .delete(`/${model}/${id}`)
+                    .catch((err: DeleteResponse) => {
+                        if (err.httpStatusCode) {
+                            return err;
+                        } else {
+                            throw err;
+                        }
+                    });
+
+                if (httpStatusCode === 404) {
+                    return null;
+                } else if (status !== "OK") {
+                    return message || `${httpStatus} (${httpStatusCode})`;
+                } else {
+                    return null;
+                }
+            })
+        );
+
+        return _(errors).isEmpty()
+            ? { status: true }
+            : {
+                  status: false,
+                  error: errors.join("\n"),
+              };
     }
 
     public async getAttributeIdByCode(code: string): Promise<Attribute | undefined> {
@@ -305,13 +450,7 @@ export default class DbD2 {
         const allDataElementCodes = elements["DATA_ELEMENT"].join(",");
         const allIndicatorCodes = elements["INDICATOR"].join(",");
         const antigenCodes = antigens.map(an => an.code);
-        const {
-            categories,
-            dataElements,
-            indicators,
-            categoryOptions,
-            organisationUnits: organisationUnitsWithName,
-        } = await this.api.get("/metadata", {
+        const response = await this.api.get("/metadata", {
             "categories:fields": "id,categoryOptions[id,code,name]",
             "categories:filter": `code:in:[${dashboardItemsConfig.antigenCategoryCode}]`,
             "dataElements:fields": "id,code",
@@ -323,6 +462,13 @@ export default class DbD2 {
             "organisationUnits:fields": "id,displayName,path",
             "organisationUnits:filter": `id:in:[${orgUnitsId}]`,
         });
+        const {
+            categories,
+            dataElements,
+            indicators,
+            categoryOptions,
+            organisationUnits: organisationUnitsWithName,
+        } = response as DashboardMetadataRequest;
 
         const { id: antigenCategory } = categories[0];
         const antigensMeta = _.filter(categories[0].categoryOptions, op =>
@@ -335,20 +481,18 @@ export default class DbD2 {
 
         const teamsByOrgUnit = organisationUnitsPathOnly.reduce((acc, ou) => {
             let teams: string[] = [];
-            categoryOptions.forEach(
-                (co: { id: string; organisationUnits: object[]; categories: object[] }) => {
-                    const coIsTeam = _(co.categories)
-                        .map("code")
-                        .includes(categoryCodeForTeams);
-                    const coIncludesOrgUnit = _(co.organisationUnits)
-                        .map("id")
-                        .some((coOu: string) => ou.path.includes(coOu));
+            categoryOptions.forEach(co => {
+                const coIsTeam = _(co.categories)
+                    .map("code")
+                    .includes(categoryCodeForTeams);
+                const coIncludesOrgUnit = _(co.organisationUnits)
+                    .map("id")
+                    .some(coOu => ou.path.includes(coOu));
 
-                    if (coIsTeam && coIncludesOrgUnit) {
-                        teams.push(co.id);
-                    }
+                if (coIsTeam && coIncludesOrgUnit) {
+                    teams.push(co.id);
                 }
-            );
+            });
             return { ...acc, [ou.id]: teams };
         }, {});
 
@@ -425,11 +569,13 @@ export default class DbD2 {
         dashboardItemsMetadata: Dictionary<any>
     ): DashboardData {
         const { organisationUnitsWithName } = dashboardItemsMetadata;
-        const organisationUnitsMetadata = organisationUnitsWithName.map((ou: OrganisationUnit) => ({
-            id: ou.id,
-            parents: { [ou.id]: ou.path },
-            name: ou.displayName,
-        }));
+        const organisationUnitsMetadata = organisationUnitsWithName.map(
+            (ou: OrganisationUnitWithName) => ({
+                id: ou.id,
+                parents: { [ou.id]: ou.path },
+                name: ou.displayName,
+            })
+        );
         const periodRange = getDaysRange(startDate, endDate);
         const period = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
@@ -481,5 +627,21 @@ export default class DbD2 {
 
     public getAnalytics(request: AnalyticsRequest): Promise<AnalyticsResponse> {
         return this.api.get("/analytics", request) as Promise<AnalyticsResponse>;
+    }
+}
+
+export function toStatusResponse(response: ApiResponse<MetadataResponse>): Response<string> {
+    if (!response.status) {
+        return { status: false, error: response.error };
+    } else if (response.value.status === "OK") {
+        return { status: true };
+    } else {
+        const errors = _(response.value.typeReports)
+            .flatMap(tr => tr.objectReports)
+            .flatMap(or => or.errorReports)
+            .map("message")
+            .value();
+
+        return { status: false, error: errors.join("\n") };
     }
 }

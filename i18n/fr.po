@@ -71,10 +71,32 @@ msgstr ""
 msgid "Download data"
 msgstr ""
 
+msgid "Deleting campaign(s). This may take a while, please wait"
+msgstr ""
+
+msgid "Campaign(s) deleted"
+msgstr ""
+
+msgid "Error deleting campaign(s)"
+msgstr ""
+
 msgid "Only my campaigns"
 msgstr ""
 
+msgid ""
+"Are you sure you want to delete those campaign(s) (dataset and dashboards)?"
+msgstr ""
+
+msgid "Delete campaign(s)"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
 msgid "Campaigns"
+msgstr ""
+
+msgid "Cannot load campaign"
 msgstr ""
 
 msgid "Organisation Units"
@@ -156,12 +178,15 @@ msgid ""
 "this vaccination campaign."
 msgstr ""
 
+msgid "Edit vaccination campaign"
+msgstr ""
+
 msgid "Cancel Campaign Creation?"
 msgstr ""
 
 msgid ""
-"You are about to exit the Campaign Creation Wizard. All your changes will be "
-"lost. Are you sure you want to proceed?"
+"You are about to exit the campaign creation wizard. All your changes will be "
+"lost. Are you sure?"
 msgstr ""
 
 msgid "New vaccination campaign"
@@ -215,6 +240,9 @@ msgstr ""
 msgid "Antigens"
 msgstr ""
 
+msgid "Cancel"
+msgstr ""
+
 msgid "Population distribution (%)"
 msgstr ""
 
@@ -222,6 +250,14 @@ msgid "Campaign Population Distribution"
 msgstr ""
 
 msgid "Missing"
+msgstr ""
+
+msgid "Cancel Campaign Creation?"
+msgstr ""
+
+msgid ""
+"You are about to exit the campaign creation wizard. All your changes will be "
+"lost. Are you sure?"
 msgstr ""
 
 msgid "Help"
@@ -243,6 +279,9 @@ msgid "Select at least one organisation unit"
 msgstr ""
 
 msgid "Only organisation units of level {{levels}} can be selected"
+msgstr ""
+
+msgid "Organisation Units {{orgUnits}} -> no associated teams"
 msgstr ""
 
 msgid "Field {{field}} cannot be blank"

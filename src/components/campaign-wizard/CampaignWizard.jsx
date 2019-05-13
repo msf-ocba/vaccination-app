@@ -3,10 +3,10 @@ import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { withRouter } from "react-router";
 import _ from "lodash";
+import { withSnackbar } from "d2-ui-components";
 
 import Campaign from "models/campaign";
 import DbD2 from "models/db-d2";
-
 import Wizard from "../wizard/Wizard";
 import PageHeader from "../shared/PageHeader";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
@@ -14,11 +14,10 @@ import SaveStep from "../steps/save/SaveStep";
 import { getValidationMessages } from "../../utils/validations";
 import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
-import ConfirmationDialog from "../confirmation-dialog/ConfirmationDialog";
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 import { memoize } from "../../utils/memoize";
-import { withSnackbar } from "d2-ui-components";
 import TargetPopulationStep from "../steps/target-population/TargetPopulationStep";
+import ExitWizardButton from "../wizard/ExitWizardButton";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
@@ -34,9 +33,29 @@ class CampaignWizard extends React.Component {
         const campaign = Campaign.create(props.config, new DbD2(props.d2));
 
         this.state = {
-            campaign: campaign,
+            campaign: null,
             dialogOpen: false,
         };
+    }
+
+    async componentDidMount() {
+        const { d2, config, match } = this.props;
+
+        const dbD2 = new DbD2(d2);
+        const campaign = this.isEdit()
+            ? await Campaign.get(config, dbD2, match.params.id)
+            : Campaign.create(config, dbD2);
+
+        if (!campaign) {
+            this.props.snackbar.error(i18n.t("Cannot load campaign"));
+            this.props.history.push("/campaign-configuration");
+        } else {
+            this.setState({ campaign });
+        }
+    }
+
+    isEdit() {
+        return !!this.props.match.params.id;
     }
 
     getStepsBaseInfo() {
@@ -46,6 +65,7 @@ class CampaignWizard extends React.Component {
                 label: i18n.t("Organisation Units"),
                 component: OrganisationUnitsStep,
                 validationKeys: ["organisationUnits"],
+                validationKeysLive: ["organisationUnits"],
                 description: i18n.t(
                     `Select the health facilities or health area where the campaign will be implemented`
                 ),
@@ -123,23 +143,23 @@ dataset and all the metadata associated with this vaccination campaign.`),
         this.setState({ dialogOpen: false });
     };
 
-    onChange = memoize(step => campaign => {
-        const errors = getValidationMessages(campaign, step.validationKeysLive || []);
-        if (_(errors).isEmpty()) {
-            this.setState({ campaign });
-        } else {
+    onChange = memoize(step => async campaign => {
+        const errors = await getValidationMessages(campaign, step.validationKeysLive || []);
+        this.setState({ campaign });
+        if (!_(errors).isEmpty()) {
             this.props.snackbar.error(errors.join("\n"));
         }
     });
 
-    onStepChangeRequest = currentStep => {
-        return getValidationMessages(this.state.campaign, currentStep.validationKeys);
+    onStepChangeRequest = async currentStep => {
+        return await getValidationMessages(this.state.campaign, currentStep.validationKeys);
     };
 
     render() {
         const { d2, location } = this.props;
         const { campaign, dialogOpen } = this.state;
         window.campaign = campaign;
+        if (!campaign) return null;
 
         const steps = this.getStepsBaseInfo().map(step => ({
             ...step,
@@ -147,6 +167,7 @@ dataset and all the metadata associated with this vaccination campaign.`),
                 d2,
                 campaign,
                 onChange: this.onChange(step),
+                onCancel: this.handleConfirm,
             },
         }));
 
@@ -154,28 +175,26 @@ dataset and all the metadata associated with this vaccination campaign.`),
         const stepExists = steps.find(step => step.key === urlHash);
         const firstStepKey = steps.map(step => step.key)[0];
         const initialStepKey = stepExists ? urlHash : firstStepKey;
+        const lastClickableStepIndex = this.isEdit() ? steps.length - 1 : 0;
+        const title = this.isEdit()
+            ? i18n.t("Edit vaccination campaign")
+            : i18n.t("New vaccination campaign");
 
         return (
             <React.Fragment>
-                <ConfirmationDialog
-                    dialogOpen={dialogOpen}
-                    handleConfirm={this.handleConfirm}
-                    handleCancel={this.handleDialogCancel}
-                    title={i18n.t("Cancel Campaign Creation?")}
-                    contents={i18n.t(
-                        "You are about to exit the Campaign Creation Wizard. All your changes will be lost. Are you sure you want to proceed?"
-                    )}
+                <ExitWizardButton
+                    isOpen={dialogOpen}
+                    onConfirm={this.handleConfirm}
+                    onCancel={this.handleDialogCancel}
                 />
-                <PageHeader
-                    title={i18n.t("New vaccination campaign")}
-                    onBackClick={this.cancelSave}
-                />
+                <PageHeader title={`${title}: ${campaign.name}`} onBackClick={this.cancelSave} />
 
                 <Wizard
                     steps={steps}
                     initialStepKey={initialStepKey}
                     useSnackFeedback={true}
                     onStepChangeRequest={this.onStepChangeRequest}
+                    lastClickableStepIndex={lastClickableStepIndex}
                 />
             </React.Fragment>
         );

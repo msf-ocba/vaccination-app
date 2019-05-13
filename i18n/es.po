@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-05-10T12:49:17.437Z\n"
+"POT-Creation-Date: 2019-04-18T09:54:46.297Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -71,11 +71,34 @@ msgstr "Ir a tablero"
 msgid "Download data"
 msgstr "Descargar datos"
 
+msgid "Deleting campaign(s). This may take a while, please wait"
+msgstr "Eliminando campaña(s). Este proceso puede tardar, por favor, espere"
+
+msgid "Campaign(s) deleted"
+msgstr "Campaña(s) eliminadas"
+
+msgid "Error deleting campaign(s)"
+msgstr "Se produjo un error al borrar la(s) campaña(s)"
+
 msgid "Only my campaigns"
 msgstr "Solo mis campañas"
 
+msgid ""
+"Are you sure you want to delete those campaign(s) (dataset and dashboards)?"
+msgstr ""
+"¿Estás seguro de que quieres eliminar esta(s) campaña(s) (datasets y dashboards)?"
+
+msgid "Delete campaign(s)"
+msgstr "Eliminar campaña(s)"
+
+msgid "Yes"
+msgstr "Sí"
+
 msgid "Campaigns"
 msgstr "Campañas"
+
+msgid "Cannot load campaign"
+msgstr "No se puede cargar la campaña"
 
 msgid "Organisation Units"
 msgstr "Unidades organizativas"
@@ -174,6 +197,9 @@ msgstr ""
 "Pulse el botón guardar para crear el dataset y todos los metadatos asociados "
 "con esta campaña de vacunación"
 
+msgid "Edit vaccination campaign"
+msgstr "Editar campaña"
+
 msgid "Cancel Campaign Creation?"
 msgstr "Cancelar la creaciòn de campaña?"
 
@@ -186,12 +212,6 @@ msgstr ""
 
 msgid "New vaccination campaign"
 msgstr "Nueva campaña"
-
-msgid "Cancel"
-msgstr "Cancelar"
-
-msgid "Ok"
-msgstr "Aceptar"
 
 msgid "Cannot find dashboard associated with the campaign"
 msgstr "No hay ningún tablero asociado a la campaña"
@@ -235,14 +255,27 @@ msgstr "Periodo"
 msgid "Antigens"
 msgstr "Antígenos"
 
+msgid "Cancel"
+msgstr "Cancelar"
+
 msgid "Population distribution (%)"
 msgstr "Distribución por edades (%)"
 
 msgid "Campaign Population Distribution"
-msgstr "Distribución de población en campaña"
+msgstr "Distribución de población"
 
 msgid "Missing"
 msgstr "Vacío"
+
+msgid "Cancel Campaign Creation?"
+msgstr "Cancelar la creación de campaña?"
+
+msgid ""
+"You are about to exit the campaign creation wizard. All your changes will be "
+"lost. Are you sure?"
+msgstr ""
+"Esta seguro que quiere salir del creador de campañas? Todos sus cambios se "
+"perderán"
 
 msgid "Help"
 msgstr "Ayuda"
@@ -265,6 +298,9 @@ msgstr "Seleccione al menos una unidad organizativa"
 msgid "Only organisation units of level {{levels}} can be selected"
 msgstr ""
 "Puedes seleccionar únicamente unidades organizativas de nivel {{levels}}"
+
+msgid "Organisation Units {{orgUnits}} -> no associated teams"
+msgstr "Unidades organizativas {{orgUnits}} -> sin equipo asociado"
 
 msgid "Field {{field}} cannot be blank"
 msgstr "El campo {{field}} no puede estar vacío"
