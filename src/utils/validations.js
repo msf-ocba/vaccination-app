@@ -16,7 +16,7 @@ const translations = {
     no_antigens_selected: () => i18n.t("Select at least one antigen"),
 
     select_at_least_one_option_for_category: () =>
-        i18n.t("You must select at least one option of the category"),
+        i18n.t("You must select at least one category option"),
 
     no_target_population_defined: () => i18n.t("No target population defined"),
     total_population_invalid: namespace =>
