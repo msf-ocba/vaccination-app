@@ -7,10 +7,11 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { Button, LinearProgress } from "@material-ui/core";
 import { withSnackbar } from "d2-ui-components";
-import ConfirmationDialog from "../../confirmation-dialog/ConfirmationDialog";
+
 import { getFullOrgUnitName } from "../../../models/organisation-units";
 import { getShowValue } from "../target-population/utils";
 import { getFinalPopulationDistribution } from "../../../models/TargetPopulation";
+import ExitWizardButton from "../../wizard/ExitWizardButton";
 
 const styles = _theme => ({
     wrapper: {
@@ -46,17 +47,25 @@ class SaveStep extends React.Component {
     }
 
     save = async () => {
-        const { campaign } = this.state;
-        this.setState({ isSaving: true, errorMessage: "" });
-        const saveResponse = await campaign.save();
-        this.setState({ isSaving: false });
+        const { campaign, isSaving } = this.state;
+        if (isSaving) return;
 
-        if (saveResponse.status) {
-            this.props.snackbar.success(`${i18n.t("Campaign created")} ${campaign.name}`);
-            this.props.history.push("/campaign-configuration");
-        } else {
-            this.setState({ errorMessage: saveResponse.error });
-            this.props.snackbar.error(i18n.t("Error saving campaign"));
+        this.setState({ isSaving: true, errorMessage: "" });
+
+        try {
+            const saveResponse = await campaign.save();
+            this.setState({ isSaving: false });
+
+            if (saveResponse.status) {
+                this.props.snackbar.success(`${i18n.t("Campaign created")} ${campaign.name}`);
+                this.props.history.push("/campaign-configuration");
+            } else {
+                this.setState({ errorMessage: saveResponse.error });
+                this.props.snackbar.error(i18n.t("Error saving campaign"));
+            }
+        } catch (err) {
+            this.props.snackbar.error(err.message || err.toString());
+            this.setState({ isSaving: false });
         }
     };
 
@@ -168,14 +177,10 @@ class SaveStep extends React.Component {
 
         return (
             <React.Fragment>
-                <ConfirmationDialog
-                    dialogOpen={dialogOpen}
-                    handleConfirm={this.confirmCancel}
-                    handleCancel={this.dialogCancel}
-                    title={i18n.t("Cancel Campaign Creation?")}
-                    contents={i18n.t(
-                        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
-                    )}
+                <ExitWizardButton
+                    isOpen={dialogOpen}
+                    onConfirm={this.props.onCancel}
+                    onCancel={this.dialogCancel}
                 />
                 <div className={classes.wrapper}>
                     <ul>

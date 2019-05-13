@@ -56,8 +56,8 @@ const styles = theme => ({
 class Wizard extends React.Component {
     state = {
         currentStepKey: this.props.initialStepKey,
+        lastClickableStepIndex: this.props.lastClickableStepIndex || 0,
         messages: [],
-        lastClickableStepIndex: 0,
     };
 
     static propTypes = {
@@ -72,10 +72,12 @@ class Wizard extends React.Component {
                 component: PropTypes.func.isRequired,
             })
         ).isRequired,
+        lastClickableStepIndex: PropTypes.number,
     };
 
     static defaultProps = {
         useSnackFeedback: false,
+        lastClickableStepIndex: 0,
     };
 
     getAdjacentSteps = () => {
@@ -88,24 +90,8 @@ class Wizard extends React.Component {
     };
 
     nextStep = () => {
-        const { currentStepKey } = this.state;
-        const stepsByKey = _.keyBy(this.props.steps, "key");
-        const currentStep = stepsByKey[currentStepKey];
         const { nextStepKey } = this.getAdjacentSteps();
-        const nextStep = stepsByKey[nextStepKey];
-        const errorMessages = this.props.onStepChangeRequest(currentStep, nextStep);
-
-        if (_(errorMessages).isEmpty()) {
-            this.setStep(nextStepKey);
-        } else {
-            if (this.props.useSnackFeedback) {
-                this.props.snackbar.error(errorMessages.join("\n"), {
-                    autoHideDuration: null,
-                });
-            } else {
-                this.setState({ messages: errorMessages });
-            }
-        }
+        this.setStep(nextStepKey);
     };
 
     prevStep = () => {
@@ -127,10 +113,33 @@ class Wizard extends React.Component {
         );
     };
 
-    setStep = stepKey => {
-        const index = _(this.props.steps).findIndex(step => step.key === stepKey);
-        const lastClickableStepIndex = Math.max(this.state.lastClickableStepIndex, index);
-        this.setState({ currentStepKey: stepKey, lastClickableStepIndex, messages: [] });
+    setStep = async newStepKey => {
+        const { currentStepKey, lastClickableStepIndex } = this.state;
+        const { onStepChangeRequest, steps } = this.props;
+        const stepsByKey = _.keyBy(steps, "key");
+        const newStep = stepsByKey[newStepKey];
+        const currentStep = stepsByKey[currentStepKey];
+        const currentStepIndex = _(steps).findIndex(step => step.key === currentStepKey);
+        const newStepIndex = _(steps).findIndex(step => step.key === newStepKey);
+        const shouldValidate = newStepIndex > currentStepIndex;
+        const errorMessages = shouldValidate ? await onStepChangeRequest(currentStep, newStep) : [];
+
+        if (_(errorMessages).isEmpty()) {
+            const newLastClickableStepIndex = Math.max(lastClickableStepIndex, newStepIndex);
+            this.setState({
+                currentStepKey: newStepKey,
+                lastClickableStepIndex: newLastClickableStepIndex,
+                messages: [],
+            });
+        } else {
+            if (this.props.useSnackFeedback) {
+                this.props.snackbar.error(errorMessages.join("\n"), {
+                    autoHideDuration: null,
+                });
+            } else {
+                this.setState({ messages: errorMessages });
+            }
+        }
     };
 
     onStepClicked = memoize(stepKey => () => {
@@ -197,6 +206,7 @@ class Wizard extends React.Component {
                                 data-test-current={currentStep === step}
                                 onClick={this.onStepClicked(step.key)}
                                 classes={{ root: classes.stepButton }}
+                                className={currentStep === step ? "current-step" : ""}
                             >
                                 {step.label}
                             </StepButton>

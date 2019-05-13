@@ -6,6 +6,9 @@ const translations = {
     organisation_units_only_of_levels: namespace =>
         i18n.t("Only organisation units of level {{levels}} can be selected", namespace),
 
+    no_valid_teams_for_organisation_units: namespace =>
+        i18n.t("Organisation Units {{orgUnits}} -> no associated teams", namespace),
+
     cannot_be_blank: namespace => i18n.t("Field {{field}} cannot be blank", namespace),
     cannot_be_blank_if_other_set: namespace =>
         i18n.t("Field {{field}} cannot be blank if field {{other}} is set", namespace),
@@ -13,7 +16,7 @@ const translations = {
     no_antigens_selected: () => i18n.t("Select at least one antigen"),
 
     select_at_least_one_option_for_category: () =>
-        i18n.t("You must select at least one option of the category"),
+        i18n.t("You must select at least one category option"),
 
     no_target_population_defined: () => i18n.t("No target population defined"),
     total_population_invalid: namespace =>
@@ -35,10 +38,10 @@ const translations = {
         ),
 };
 
-export function getValidationMessages(campaign, validationKeys) {
+export async function getValidationMessages(campaign, validationKeys) {
     if (_(validationKeys).isEmpty()) return [];
 
-    const validationObj = campaign.validate();
+    const validationObj = await campaign.validate();
 
     return _(validationObj)
         .at(validationKeys)

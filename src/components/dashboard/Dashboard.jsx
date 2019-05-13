@@ -68,7 +68,7 @@ class Dashboard extends React.Component {
             const dashboardId = getDashboardId(dataSet, config);
             return `/dhis-web-dashboard/#/${dashboardId}`;
         } else {
-            this.props.snackbar.error(i18n.t("Cannot find dashboard associated to the campaign"));
+            this.props.snackbar.error(i18n.t("Cannot find dashboard associated with the campaign"));
         }
     }
 
