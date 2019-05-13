@@ -55,12 +55,12 @@ class Root extends React.Component {
                 />
 
                 <Route
-                    path="/data-entry/:id"
+                    path="/data-entry/:id?"
                     render={props => <DataEntry d2={d2} config={this.state.config} {...props} />}
                 />
 
                 <Route
-                    path="/dashboard/:id"
+                    path="/dashboard/:id?"
                     render={props => <Dashboard d2={d2} config={this.state.config} {...props} />}
                 />
 

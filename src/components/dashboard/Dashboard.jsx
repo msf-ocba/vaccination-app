@@ -18,12 +18,22 @@ class Dashboard extends React.Component {
     };
 
     async componentDidMount() {
-        const dashboardURL = await this.getDashboardURL();
+        const {
+            d2,
+            match: { params },
+            config,
+        } = this.props;
+        const dataSetId = params.id;
+        const dashboardURL = await this.getDashboardURL(dataSetId, config, d2);
+
         this.setState({ iFrameSrc: dashboardURL }, () => {
             const { iFrameSrc } = this.state;
             if (iFrameSrc) {
                 const iframe = ReactDOM.findDOMNode(this.refs.iframe);
-                iframe.addEventListener("load", this.setDashboardStyling.bind(this, iframe));
+                iframe.addEventListener(
+                    "load",
+                    this.setDashboardStyling.bind(this, iframe, dataSetId)
+                );
             }
         });
     }
@@ -42,29 +52,39 @@ class Dashboard extends React.Component {
         });
     }
 
-    async setDashboardStyling(iframe) {
+    async setDashboardStyling(iframe, dataSetId) {
         const iframeDocument = iframe.contentWindow.document;
 
         await this.waitforDashboardToLoad(iframeDocument);
         const iFrameRoot = iframeDocument.querySelector("#root");
-        iFrameRoot.style.marginTop = "-110px";
+
         const iFrameWrapper = iframeDocument.querySelector(".app-wrapper");
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
-        iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
+        if (dataSetId) {
+            iFrameRoot.style.marginTop = "-110px";
+            iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
+        } else {
+            iFrameRoot.style.marginTop = "-60px";
+            iframeDocument.querySelector(".d2-ui-control-bar").style.top = 0;
+        }
     }
 
     backCampaignConfiguration = () => {
-        this.props.history.push("/campaign-configuration");
+        const {
+            match: { params },
+        } = this.props;
+        if (params.id) {
+            this.props.history.push("/campaign-configuration");
+        } else {
+            this.props.history.push("/");
+        }
     };
 
-    async getDashboardURL() {
-        const {
-            d2,
-            match: { params },
-            config,
-        } = this.props;
-        const dataSet = await getDatasetById(params.id, d2);
-        if (dataSet) {
+    async getDashboardURL(dataSetId, config, d2) {
+        const dataSet = dataSetId ? await getDatasetById(dataSetId, d2) : null;
+        if (!dataSetId) {
+            return `/dhis-web-dashboard/#/`;
+        } else if (dataSet) {
             const dashboardId = getDashboardId(dataSet, config);
             return `/dhis-web-dashboard/#/${dashboardId}`;
         } else {

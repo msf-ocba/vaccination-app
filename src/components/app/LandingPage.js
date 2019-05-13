@@ -60,10 +60,10 @@ class LandingPage extends React.Component {
                 history.push("/" + key);
                 break;
             case "data-entry":
-                goToDhis2Url("/dhis-web-dataentry/index.action");
+                history.push("/" + key);
                 break;
             case "dashboard":
-                goToDhis2Url("/dhis-web-dashboard/index.html");
+                history.push("/" + key);
                 break;
             case "maintenance":
                 goToDhis2Url("/dhis-web-maintenance/index.html");
