@@ -9,7 +9,7 @@ import "../utils/lodash-mixins";
 export interface AntigenDisaggregation {
     name: string;
     code: string;
-
+    id: string;
     dataElements: Array<{
         name: string;
         code: string;
@@ -255,7 +255,11 @@ export class AntigensDisaggregation {
 
             return {
                 ageGroups: ageGroups,
-                antigen: { code: antigenDisaggregation.code, name: antigenDisaggregation.name },
+                antigen: {
+                    code: antigenDisaggregation.code,
+                    name: antigenDisaggregation.name,
+                    id: antigenDisaggregation.id,
+                },
                 dataElements,
             };
         });
@@ -301,6 +305,7 @@ export class AntigensDisaggregation {
         });
 
         const res = {
+            id: antigenConfig.id,
             name: antigenConfig.name,
             code: antigenConfig.code,
             dataElements: dataElementsProcessed,

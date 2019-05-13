@@ -9,6 +9,7 @@ import {
     DataElement,
     OrganisationUnitLevel,
     Ref,
+    CategoryOption,
     Attribute,
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
@@ -60,6 +61,7 @@ export interface MetadataConfig extends BaseConfig {
             | { kind: "fromAgeGroups" }
             | { kind: "values"; values: string[] };
     }>;
+    categoryOptions: CategoryOption[];
     categoryCombos: CategoryCombo[];
     population: {
         totalPopulationDataElement: DataElement;
@@ -75,6 +77,7 @@ export interface MetadataConfig extends BaseConfig {
         categories: { code: string; optional: boolean }[];
     }>;
     antigens: Array<{
+        id: string;
         name: string;
         code: string;
         dataElements: { id: string; code: string; optional: boolean; order: number }[];
@@ -100,6 +103,7 @@ function getCategoriesDisaggregation(
         }
 
         return {
+            id: category.id,
             name: category.displayName,
             code: category.code,
             dataDimensionType: category.dataDimensionType,
@@ -201,6 +205,7 @@ function getAntigens(
         });
 
         return {
+            id: categoryOption.id,
             name: categoryOption.displayName,
             code: categoryOption.code,
             dataElements: dataElementSorted,
@@ -276,6 +281,9 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         organisationUnitLevels: metadata.organisationUnitLevels,
         categories: metadata.categories,
         categoriesDisaggregation: getCategoriesDisaggregation(metadata.categories),
+        categoryOptions: _(metadata.categories)
+            .flatMap("categoryOptions")
+            .value(),
         categoryCombos: metadata.categoryCombos,
         dataElements: metadata.dataElements,
         dataElementsDisaggregation: getConfigDataElementsDisaggregation(

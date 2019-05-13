@@ -15,6 +15,7 @@ const metadataConfig: MetadataConfig = {
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
     organisationUnitLevels: [],
     categoryCombos: [],
+    categoryOptions: [],
     attributes: {
         app: {
             code: "RVC_CREATED_BY_VACCINATION_APP",
@@ -229,6 +230,7 @@ const metadataConfig: MetadataConfig = {
     ],
     antigens: [
         {
+            id: "1",
             name: "Measles",
             code: "RVC_MEASLES",
             dataElements: [
@@ -249,6 +251,7 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "2",
             name: "Meningitis Polysaccharide",
             code: "RVC_MENPOLY",
             dataElements: [
@@ -264,6 +267,7 @@ const metadataConfig: MetadataConfig = {
             ageGroups: [[["2 - 4 y"]], [["5 - 14 y"]], [["15 - 29 y"]]],
         },
         {
+            id: "3",
             name: "Meningitis Conjugate",
             code: "RVC_MENCONJ",
             dataElements: [
@@ -279,6 +283,7 @@ const metadataConfig: MetadataConfig = {
             ageGroups: [[["12 - 59 m"]], [["5 - 14 y"]], [["15 - 29 y", "15 - 19 y"]]],
         },
         {
+            id: "4",
             name: "Cholera",
             code: "RVC_CHOLERA",
             dataElements: [
@@ -289,6 +294,7 @@ const metadataConfig: MetadataConfig = {
             ageGroups: [[["12 - 59 m"]], [["5 - 14 y"]], [["15 - 99 y"], ["15 - 29 y", "> 30 y"]]],
         },
         {
+            id: "5",
             name: "PCV",
             code: "RVC_PCV",
             dataElements: [
@@ -307,6 +313,7 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "6",
             name: "Pertussis Penta",
             code: "RVC_PERTPENTA",
             dataElements: [
@@ -325,6 +332,7 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "7",
             name: "Yellow Fever",
             code: "RVC_YELLOW_FEVER",
             dataElements: [
@@ -350,6 +358,7 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "8",
             name: "Japanese Encephalitis",
             code: "RVC_JPENC",
             dataElements: [
@@ -370,6 +379,7 @@ const metadataConfig: MetadataConfig = {
             ],
         },
         {
+            id: "9",
             name: "Dengue",
             code: "RVC_DENGUE",
             dataElements: [
@@ -385,6 +395,7 @@ const metadataConfig: MetadataConfig = {
             ageGroups: [[["9 - 14 y"]], [["15 - 29 y"]]],
         },
         {
+            id: "10",
             name: "Typhoid Fever",
             code: "RVC_TYPHOID_FEVER",
             dataElements: [

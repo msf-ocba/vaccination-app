@@ -63,11 +63,12 @@ class CampaignWizard extends React.Component {
                 label: i18n.t("Organisation Units"),
                 component: OrganisationUnitsStep,
                 validationKeys: ["organisationUnits"],
+                validationKeysLive: ["organisationUnits"],
                 description: i18n.t(
                     `Select the health facilities or health area where the campaign will be implemented`
                 ),
                 help: i18n.t(
-                    `Select the organisation units which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
+                    `Select the health facilities or health areas which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
                 ),
             },
             {
@@ -76,7 +77,7 @@ class CampaignWizard extends React.Component {
                 component: GeneralInfoStep,
                 validationKeys: ["name", "startDate", "endDate"],
                 description: i18n.t(
-                    `Name your campaign and choose dates for which data entry will be enabled`
+                    `Choose a name for the campaign and define the period for which data entry will be enabled`
                 ),
                 help: i18n.t(
                     `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format is REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH_YEAR\n
@@ -107,10 +108,10 @@ class CampaignWizard extends React.Component {
                 component: TargetPopulationStep,
                 validationKeys: ["targetPopulation"],
                 description: i18n.t(
-                    `Specify target population, totals and age percentages for the age ranges required by all selected antigens. The source of those values are the DHIS2 analytics endpoint. Like-wise, any change you make in this step will only be applied once you run the analytics.`
+                    `Insert the total population and age distribution (as a percent) for each health site where the campaign will be implemented. This data will be used to calculate coverage rates for the campaign. The source of data may be (whatever that analytic tool was - create a hyperlink if possible) or you may have access to local estimates based on population surveys through the Ministry of Health or other stakeholders that would be more updated or reliable. You may overwrite any existing data in HMIS, but please note that any changes you make in this step will only be applied once you run analytics.`
                 ),
                 help: i18n.t(
-                    `Specify target population, totals and age percentages for the age ranges required by all selected antigens.`
+                    `Specify the target population and population distribution by age group (percent) for each antigen.`
                 ),
             },
             {
@@ -121,8 +122,9 @@ class CampaignWizard extends React.Component {
                 description: i18n.t(
                     'Setup of your campaign is complete. Click the "Save" button to save your campaign and access tally sheets, data entry or analysis'
                 ),
-                help: i18n.t(`Press the button to create the \
-dataset and all the metadata associated with this vaccination campaign.`),
+                help: i18n.t(
+                    `Click the "Save" button to create the data set and all associated metadata for this campaign`
+                ),
             },
         ];
     }
@@ -140,17 +142,16 @@ dataset and all the metadata associated with this vaccination campaign.`),
         this.setState({ dialogOpen: false });
     };
 
-    onChange = memoize(step => campaign => {
-        const errors = getValidationMessages(campaign, step.validationKeysLive || []);
-        if (_(errors).isEmpty()) {
-            this.setState({ campaign });
-        } else {
+    onChange = memoize(step => async campaign => {
+        const errors = await getValidationMessages(campaign, step.validationKeysLive || []);
+        this.setState({ campaign });
+        if (!_(errors).isEmpty()) {
             this.props.snackbar.error(errors.join("\n"));
         }
     });
 
-    onStepChangeRequest = currentStep => {
-        return getValidationMessages(this.state.campaign, currentStep.validationKeys);
+    onStepChangeRequest = async currentStep => {
+        return await getValidationMessages(this.state.campaign, currentStep.validationKeys);
     };
 
     render() {

@@ -113,7 +113,7 @@ class Wizard extends React.Component {
         );
     };
 
-    setStep = newStepKey => {
+    setStep = async newStepKey => {
         const { currentStepKey, lastClickableStepIndex } = this.state;
         const { onStepChangeRequest, steps } = this.props;
         const stepsByKey = _.keyBy(steps, "key");
@@ -122,7 +122,7 @@ class Wizard extends React.Component {
         const currentStepIndex = _(steps).findIndex(step => step.key === currentStepKey);
         const newStepIndex = _(steps).findIndex(step => step.key === newStepKey);
         const shouldValidate = newStepIndex > currentStepIndex;
-        const errorMessages = shouldValidate ? onStepChangeRequest(currentStep, newStep) : [];
+        const errorMessages = shouldValidate ? await onStepChangeRequest(currentStep, newStep) : [];
 
         if (_(errorMessages).isEmpty()) {
             const newLastClickableStepIndex = Math.max(lastClickableStepIndex, newStepIndex);
@@ -206,6 +206,7 @@ class Wizard extends React.Component {
                                 data-test-current={currentStep === step}
                                 onClick={this.onStepClicked(step.key)}
                                 classes={{ root: classes.stepButton }}
+                                className={currentStep === step ? "current-step" : ""}
                             >
                                 {step.label}
                             </StepButton>

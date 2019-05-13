@@ -4,6 +4,7 @@ import { Dictionary } from "lodash";
 import { generateUid } from "d2/uid";
 import { D2, D2Api, DeleteResponse } from "./d2.types";
 import {
+    Ref,
     OrganisationUnit,
     PaginatedObjects,
     CategoryOption,
@@ -22,6 +23,8 @@ import {
     Response,
     DataValue,
     MetadataOptions,
+    OrganisationUnitWithName,
+    CategoryOptionsCustom,
 } from "./db.types";
 import _ from "lodash";
 import {
@@ -33,6 +36,7 @@ import { getDaysRange } from "../utils/date";
 import { Antigen } from "./campaign";
 import "../utils/lodash-mixins";
 import { promiseMap } from "../utils/promises";
+import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 
 function getDbFields(modelFields: ModelFields): string[] {
     return _(modelFields)
@@ -243,6 +247,53 @@ export default class DbD2 {
         return { pager: newPager, objects: organisationUnits };
     }
 
+    public async validateTeamsForOrganisationUnits(
+        organisationUnits: OrganisationUnitPathOnly[],
+        categoryCodeForTeams: string
+    ) {
+        const allAncestorsIds = _(organisationUnits)
+            .map("path")
+            .flatMap(path => path.split("/").slice(1))
+            .uniq()
+            .value()
+            .join(",");
+        const organisationUnitsIds = _.map(organisationUnits, "id");
+        const response = await this.api.get("/metadata", {
+            "categoryOptions:fields": "id,categories[code],organisationUnits[id]",
+            "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`, //Missing categoryTeamCode
+            "organisationUnits:fields": "id,displayName",
+            "organisationUnits:filter": `id:in:[${organisationUnitsIds}]`,
+        });
+
+        const { categoryOptions, organisationUnits: orgUnitNamesArray } = response as {
+            categoryOptions?: CategoryOptionsCustom[];
+            organisationUnits?: OrganisationUnitWithName[];
+        };
+
+        const hasTeams = (path: string) => {
+            return (categoryOptions || []).some(
+                categoryOption =>
+                    _(categoryOption.categories)
+                        .map("code")
+                        .includes(categoryCodeForTeams) &&
+                    categoryOption.organisationUnits.some(ou => path.includes(ou.id))
+            );
+        };
+
+        const orgUnitNames: _.Dictionary<string> = _(orgUnitNamesArray)
+            .map(o => [o.id, o.displayName])
+            .fromPairs()
+            .value();
+
+        return _(organisationUnits || [])
+            .map(ou => ({
+                id: ou.id,
+                displayName: _(orgUnitNames).getOrFail(ou.id),
+                hasTeams: hasTeams(ou.path),
+            }))
+            .value();
+    }
+
     public async getCategoryOptionsByCategoryCode(code: string): Promise<CategoryOption[]> {
         const { categories } = await this.api.get("/categories", {
             filter: [`code:in:[${code}]`],
@@ -380,7 +431,10 @@ export default class DbD2 {
     async getMetadataForDashboardItems(
         antigens: Antigen[],
         organisationUnitsPathOnly: OrganisationUnitPathOnly[],
-        categoryCodeForTeams: string
+        categoryCodeForTeams: string,
+        antigensDissagregation: AntigenDisaggregationEnabled,
+        categoryOptions: CategoryOption[],
+        ageGroupCategoryId: string
     ) {
         const allAncestorsIds = _(organisationUnitsPathOnly)
             .map("path")
@@ -401,15 +455,31 @@ export default class DbD2 {
         const allDataElementCodes = elements["DATA_ELEMENT"].join(",");
         const allIndicatorCodes = elements["INDICATOR"].join(",");
         const antigenCodes = antigens.map(an => an.code);
+        const { antigenCategoryCode } = dashboardItemsConfig;
+
         const {
             categories,
             dataElements,
             indicators,
-            categoryOptions,
+            categoryOptions: teamOptions,
             organisationUnits: organisationUnitsWithName,
-        } = await this.api.get("/metadata", {
-            "categories:fields": "id,categoryOptions[id,code,name]",
-            "categories:filter": `code:in:[${dashboardItemsConfig.antigenCategoryCode}]`,
+        } = await this.api.get<{
+            categories?: {
+                id: string;
+                code: string;
+                categoryOptions: { id: string; code: string; name: string }[];
+            }[];
+            dataElements?: { id: string; code: string }[];
+            indicators?: { id: string; code: string }[];
+            categoryOptions?: {
+                id: string;
+                categories: { id: string; code: string }[];
+                organisationUnits: { id: string };
+            }[];
+            organisationUnits?: { id: string; displayName: string; path: string }[];
+        }>("/metadata", {
+            "categories:fields": "id,code,categoryOptions[id,code,name]",
+            "categories:filter": `code:in:[${antigenCategoryCode},${categoryCodeForTeams}]`,
             "dataElements:fields": "id,code",
             "dataElements:filter": `code:in:[${allDataElementCodes}]`,
             "indicators:fields": "id,code",
@@ -420,41 +490,58 @@ export default class DbD2 {
             "organisationUnits:filter": `id:in:[${orgUnitsId}]`,
         });
 
-        const { id: antigenCategory } = categories[0];
-        const antigensMeta = _.filter(categories[0].categoryOptions, op =>
+        const categoriesByCode = _(categories).keyBy(category => category.code);
+        const antigenCategory = categoriesByCode.getOrFail(antigenCategoryCode);
+        const teamsCategory = categoriesByCode.getOrFail(categoryCodeForTeams);
+
+        const antigensMeta = _.filter(antigenCategory.categoryOptions, op =>
             _.includes(antigenCodes, op.code)
         );
 
-        if (!categoryOptions || !categoryOptions[0].categories) {
-            throw new Error("Organization Units chosen have no teams associated"); // TEMP: Check will be made dynamically on orgUnit selection step
+        if (!teamOptions) {
+            throw new Error("Organization Units chosen have no teams associated");
         }
 
-        const teamsByOrgUnit = organisationUnitsPathOnly.reduce((acc, ou) => {
-            let teams: string[] = [];
-            categoryOptions.forEach(
-                (co: { id: string; organisationUnits: object[]; categories: object[] }) => {
-                    const coIsTeam = _(co.categories)
+        const teamsByOrgUnit: { [orgUnitId: string]: string[] } = organisationUnitsPathOnly.reduce(
+            (acc, ou) => {
+                let teams: string[] = [];
+                teamOptions.forEach(categoryOption => {
+                    const coIsTeam = _(categoryOption.categories)
                         .map("code")
                         .includes(categoryCodeForTeams);
-                    const coIncludesOrgUnit = _(co.organisationUnits)
+                    const coIncludesOrgUnit = _(categoryOption.organisationUnits)
                         .map("id")
                         .some((coOu: string) => ou.path.includes(coOu));
 
                     if (coIsTeam && coIncludesOrgUnit) {
-                        teams.push(co.id);
+                        teams.push(categoryOption.id);
                     }
-                }
-            );
-            return { ...acc, [ou.id]: teams };
-        }, {});
+                });
+                return { ...acc, [ou.id]: teams };
+            },
+            {}
+        );
 
-        const teamsMetadata: Dictionary<any> = {
-            ...teamsByOrgUnit,
-            categoryId: categoryOptions[0].categories[0].id,
+        const categoryOptionsByName: _.Dictionary<string> = _(categoryOptions)
+            .map(co => [co.displayName, co.id])
+            .fromPairs()
+            .value();
+
+        const ageGroupsToId = (ageGroups: string[]): string[] =>
+            _.map(ageGroups, ag => categoryOptionsByName[ag]);
+
+        const ageGroupsByAntigen: _.Dictionary<string[]> = _(antigensDissagregation)
+            .map(d => [d.antigen.id, ageGroupsToId(d.ageGroups)])
+            .fromPairs()
+            .value();
+
+        const teamsMetadata = {
+            teamsByOrgUnit,
+            categoryId: teamsCategory.id,
         };
 
         const dashboardMetadata = {
-            antigenCategory,
+            antigenCategory: antigenCategory.id,
             dataElements: {
                 type: "DATA_ELEMENT",
                 data: dataElements,
@@ -468,9 +555,13 @@ export default class DbD2 {
             antigensMeta,
             organisationUnitsWithName,
             disaggregationMetadata: {
-                teams: (antigen = null, orgUnit: { id: string }) => ({
+                teams: (_antigen = null, orgUnit: Ref) => ({
                     categoryId: teamsMetadata.categoryId,
-                    teams: teamsMetadata[orgUnit.id],
+                    elements: teamsMetadata.teamsByOrgUnit[orgUnit.id],
+                }),
+                ageGroups: (antigen: Ref) => ({
+                    categoryId: ageGroupCategoryId,
+                    elements: ageGroupsByAntigen[antigen.id],
                 }),
             },
         };
@@ -484,12 +575,18 @@ export default class DbD2 {
         antigens: Antigen[],
         startDate: Moment,
         endDate: Moment,
-        categoryCodeForTeams: string
+        categoryCodeForTeams: string,
+        antigensDissagregation: AntigenDisaggregationEnabled,
+        categoryOptions: CategoryOption[],
+        ageGroupCategoryId: string
     ): Promise<DashboardData> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
             organisationUnits,
-            categoryCodeForTeams
+            categoryCodeForTeams,
+            antigensDissagregation,
+            categoryOptions,
+            ageGroupCategoryId
         );
 
         const dashboardItems = this.createDashboardItems(
@@ -521,11 +618,13 @@ export default class DbD2 {
         dashboardItemsMetadata: Dictionary<any>
     ): DashboardData {
         const { organisationUnitsWithName } = dashboardItemsMetadata;
-        const organisationUnitsMetadata = organisationUnitsWithName.map((ou: OrganisationUnit) => ({
-            id: ou.id,
-            parents: { [ou.id]: ou.path },
-            name: ou.displayName,
-        }));
+        const organisationUnitsMetadata = organisationUnitsWithName.map(
+            (ou: OrganisationUnitWithName) => ({
+                id: ou.id,
+                parents: { [ou.id]: ou.path },
+                name: ou.displayName,
+            })
+        );
         const periodRange = getDaysRange(startDate, endDate);
         const period = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
