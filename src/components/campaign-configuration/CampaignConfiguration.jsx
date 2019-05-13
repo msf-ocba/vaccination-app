@@ -230,6 +230,7 @@ class CampaignConfiguration extends React.Component {
                         actions={this.actions}
                         onCreate={this.canCreateDataSets ? this.onCreate : null}
                         list={this.list}
+                        createButtonLabel={i18n.t("Create Campaign")}
                         customFiltersComponent={this.renderCustomFilters}
                         customFilters={this.state.filters}
                     />
