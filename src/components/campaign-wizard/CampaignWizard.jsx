@@ -30,8 +30,6 @@ class CampaignWizard extends React.Component {
     constructor(props) {
         super(props);
 
-        const campaign = Campaign.create(props.config, new DbD2(props.d2));
-
         this.state = {
             campaign: null,
             dialogOpen: false,
@@ -79,7 +77,7 @@ class CampaignWizard extends React.Component {
                 component: GeneralInfoStep,
                 validationKeys: ["name", "startDate", "endDate"],
                 description: i18n.t(
-                    `Name your campaign and choose dates for which data entry will be enabled`
+                    `Choose a name for the campaign and define the period for which data entry will be enabled`
                 ),
                 help: i18n.t(
                     `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format is REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH_YEAR\n
@@ -124,8 +122,7 @@ class CampaignWizard extends React.Component {
                 description: i18n.t(
                     'Setup of your campaign is complete. Click the "Save" button to save your campaign and access tally sheets, data entry or analysis'
                 ),
-                help: i18n.t(`Press the button to create the \
-dataset and all the metadata associated with this vaccination campaign.`),
+                help: i18n.t(`Click the "Save" button to create the data set and all associated metadata for this campaign`),
             },
         ];
     }
