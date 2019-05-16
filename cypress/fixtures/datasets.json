@@ -1,7 +1,7 @@
 {
     "0": {
         "id": "kT5ewdJqZDT",
-        "name": "AcypressTestDataSet",
+        "name": "cypressA",
         "description": "",
         "publicAccess": "r-r-----",
         "periodType": "Daily",
@@ -130,7 +130,136 @@
     },
     "1": {
         "id": "kT5ewdJqPLT",
-        "name": "BcypressTestDataSet",
+        "name": "cypressB",
+        "description": "",
+        "publicAccess": "r-r-----",
+        "periodType": "Daily",
+        "categoryCombo": { "id": "SS8lww0UED6" },
+        "dataElementDecoration": true,
+        "renderAsTabs": true,
+        "dataSetElements": [
+            {
+                "categoryCombo": {
+                    "id": "m6IIKizUedi"
+                },
+                "dataElement": {
+                    "id": "ywKG3QmCbDi"
+                },
+                "dataSet": {
+                    "id": "a2345678911"
+                }
+            },
+            {
+                "categoryCombo": {
+                    "id": "m6IIKizUedi"
+                },
+                "dataElement": {
+                    "id": "ycy4WvaTCtm"
+                },
+                "dataSet": {
+                    "id": "a2345678911"
+                }
+            },
+            {
+                "categoryCombo": {
+                    "id": "m6IIKizUedi"
+                },
+                "dataElement": {
+                    "id": "q0MMyiUi0Pl"
+                },
+                "dataSet": {
+                    "id": "a2345678911"
+                }
+            },
+            {
+                "categoryCombo": {
+                    "id": "O0UJyI8lwvU"
+                },
+                "dataElement": {
+                    "id": "mkgnDxyksQS"
+                },
+                "dataSet": {
+                    "id": "a2345678911"
+                }
+            },
+            {
+                "categoryCombo": {
+                    "id": "m6IIKizUedi"
+                },
+                "dataElement": {
+                    "id": "CCqBBZmfsTs"
+                },
+                "dataSet": {
+                    "id": "a2345678911"
+                }
+            },
+            {
+                "categoryCombo": {
+                    "id": "Sm65ETbrxKc"
+                },
+                "dataElement": {
+                    "id": "OY40ChLj0YE"
+                },
+                "dataSet": {
+                    "id": "a2345678911"
+                }
+            },
+            {
+                "categoryCombo": {
+                    "id": "m6IIKizUedi"
+                },
+                "dataElement": {
+                    "id": "WCQHqR2RBIX"
+                },
+                "dataSet": {
+                    "id": "a2345678911"
+                }
+            },
+            {
+                "categoryCombo": {
+                    "id": "m6IIKizUedi"
+                },
+                "dataElement": {
+                    "id": "OQOgTET6NwY"
+                },
+                "dataSet": {
+                    "id": "a2345678911"
+                }
+            }
+        ],
+        "openFuturePeriods": 1,
+        "timelyDays": 0,
+        "expiryDays": 0,
+        "formType": "CUSTOM",
+        "dataInputPeriods": [
+            {
+                "closingDate": "2019-04-01T21:59:59.999",
+                "openingDate": "2019-03-14T23:00:00.000",
+                "period": {
+                    "id": "20190326"
+                }
+            },
+            {
+                "closingDate": "2019-04-01T21:59:59.999",
+                "openingDate": "2019-03-14T23:00:00.000",
+                "period": {
+                    "id": "20190329"
+                }
+            }
+        ],
+        "attributeValues": [
+            {
+                "value": "true",
+                "attribute": {
+                    "id": "Wk6tLwX96Md"
+                }
+            }
+        ],
+        "organisationUnits": [{ "id": "qpJEeiIfW42" }]
+    },
+    "2": {
+        "id": "kT5ewdJqRTY",
+        "name": "cypressC",
         "description": "",
         "publicAccess": "r-r-----",
         "periodType": "Daily",

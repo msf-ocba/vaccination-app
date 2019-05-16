@@ -3,7 +3,7 @@ describe("Campaign configuration - List page", () => {
         cy.login("admin");
         cy.fixture("datasets.json").then(testDataSets => {
             cy.request("POST", "http://dev2.eyeseetea.com:8082/api/metadata", {
-                dataSets: [testDataSets["0"], testDataSets["1"]],
+                dataSets: [testDataSets["0"], testDataSets["1"], testDataSets["2"]],
             });
         });
     });
@@ -67,13 +67,8 @@ describe("Campaign configuration - List page", () => {
     });
 
     it("shows list of user dataset sorted alphabetically desc", () => {
-        cy.server()
-            .route("GET", "/api/dataSets*")
-            .as("getDataSets");
-        cy.wait("@getDataSets");
         cy.contains("Name").click();
-        cy.wait("@getDataSets");
-        cy.wait(2000); // eslint-disable-line cypress/no-unnecessary-waiting
+        cy.wait(3000); // eslint-disable-line cypress/no-unnecessary-waiting
         cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").then(text1 => {
             cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").then(text2 => {
                 assert.isTrue(text1.text() > text2.text());
@@ -86,18 +81,34 @@ describe("Campaign configuration - List page", () => {
 
         cy.get("[data-test='search']")
             .clear()
-            .type("cypressTestDataSet");
+            .type("cypress");
 
-        cy.get(".data-table__rows__row").should("have.length", 2);
+        cy.get(".data-table__rows__row").should("have.length", 3);
 
         cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").should(
             "have.text",
-            "AcypressTestDataSet"
+            "cypressA"
         );
 
         cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").should(
             "have.text",
-            "BcypressTestDataSet"
+            "cypressB"
         );
+    });
+
+    it("deletes a dataset when clicked on the Delete context action", () => {
+        cy.get("[data-test='search']")
+            .clear()
+            .type("cypressC");
+        cy.wait(3000); // eslint-disable-line cypress/no-unnecessary-waiting
+
+        cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span")
+            .first()
+            .trigger("contextmenu");
+
+        cy.contains("Delete").click();
+        cy.contains("Yes").click();
+
+        cy.contains("Campaign(s) deleted");
     });
 });
