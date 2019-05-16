@@ -82,6 +82,7 @@ export interface DataElement {
     code: string;
     displayName: string;
     categoryCombo: Ref;
+    formName: string;
 }
 
 export interface DataElementGroup {
@@ -275,3 +276,33 @@ export interface MetadataGetModelParams {
 }
 
 export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams };
+
+export interface CategoryCustom {
+    id: string;
+    categoryOptions: CategoryOption[];
+}
+
+export interface DataElementItemCustom {
+    id: string;
+    code: string;
+}
+
+export interface CategoryOptionsCustom {
+    id: string;
+    categories: Array<{ id: string; code: string }>;
+    organisationUnits: Ref[];
+}
+
+export interface OrganisationUnitWithName {
+    id: string;
+    displayName: string;
+    path: string;
+}
+
+export interface DashboardMetadataRequest {
+    categories: CategoryCustom[];
+    dataElements: DataElementItemCustom[];
+    indicators: DataElementItemCustom[];
+    categoryOptions: CategoryOptionsCustom[];
+    organisationUnits: OrganisationUnitWithName[];
+}

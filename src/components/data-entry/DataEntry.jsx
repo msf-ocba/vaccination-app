@@ -35,7 +35,7 @@ class DataEntry extends React.Component {
                 );
             });
         } else {
-            this.props.snackbar.error(i18n.t("Cannot find dataset associated to the campaign"));
+            this.props.snackbar.error(i18n.t("Cannot find dataset associated with the campaign"));
         }
     }
 

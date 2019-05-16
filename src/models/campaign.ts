@@ -2,10 +2,9 @@ import { OrganisationUnit, Maybe, Ref, AttributeValue } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
 
-import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
-import { Response } from "./db.types";
-import { PaginatedObjects, OrganisationUnitPathOnly } from "./db.types";
+import { PaginatedObjects, OrganisationUnitPathOnly, Response } from "./db.types";
 import DbD2 from "./db-d2";
+import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
@@ -14,6 +13,7 @@ import CampaignDb from "./CampaignDb";
 export type TargetPopulationData = TargetPopulationData;
 
 export interface Antigen {
+    id: string;
     name: string;
     code: string;
 }
@@ -169,7 +169,7 @@ export default class Campaign {
         return db.deleteMany(modelReferencesToDelete);
     }
 
-    public validate() {
+    public async validate() {
         const {
             name,
             startDate,
@@ -186,7 +186,7 @@ export default class Campaign {
 
             endDate: !endDate ? getError("cannot_be_blank", { field: "end date" }) : [],
 
-            organisationUnits: this.validateOrganisationUnits(),
+            organisationUnits: await this.validateOrganisationUnits(),
 
             antigens: _(antigens).isEmpty() ? getError("no_antigens_selected") : [],
 
@@ -202,7 +202,7 @@ export default class Campaign {
 
     /* Organisation units */
 
-    private validateOrganisationUnits() {
+    private async validateOrganisationUnits() {
         const { organisationUnits } = this.data;
 
         const allOrgUnitsInAcceptedLevels = _(organisationUnits).every(ou =>
@@ -214,11 +214,26 @@ export default class Campaign {
         );
         const levels = this.selectableLevels.join("/");
 
+        const orgUnitsWithTeamsInfo = await this.db.validateTeamsForOrganisationUnits(
+            organisationUnits,
+            this.config.categoryCodeForTeams
+        );
+
+        const orgUnitsWithoutTeams = _(orgUnitsWithTeamsInfo)
+            .filter(ou => !ou.hasTeams)
+            .map(ou => ou.displayName)
+            .value();
+
         const errorsList = [
             !allOrgUnitsInAcceptedLevels
                 ? getError("organisation_units_only_of_levels", { levels })
                 : [],
             _(organisationUnits).isEmpty() ? getError("no_organisation_units_selected") : [],
+            !_.isEmpty(orgUnitsWithoutTeams)
+                ? getError("no_valid_teams_for_organisation_units", {
+                      orgUnits: orgUnitsWithoutTeams.join(", "),
+                  })
+                : [],
         ];
 
         return _(errorsList)

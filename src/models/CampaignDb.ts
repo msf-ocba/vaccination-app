@@ -49,6 +49,11 @@ export default class CampaignDb {
                   .getOrFail(dashboardAttribute.id).value
             : undefined;
 
+        const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
+        const ageGroupCategoryId = _(metadataConfig.categories)
+            .keyBy("code")
+            .getOrFail(metadataConfig.categoryCodeForAgeGroup).id;
+
         const dashboardGenerator = Dashboard.build(db);
         const { dashboard, charts, reportTables } = await dashboardGenerator.create({
             dashboardId,
@@ -58,6 +63,9 @@ export default class CampaignDb {
             startDate,
             endDate,
             categoryCodeForTeams,
+            antigensDisaggregation,
+            categoryOptions: metadataConfig.categoryOptions,
+            ageGroupCategoryId,
         });
 
         if (!attributeForApp || !dashboardAttribute) {
