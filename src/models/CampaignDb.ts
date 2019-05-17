@@ -6,7 +6,14 @@ import "../utils/lodash-mixins";
 
 import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
-import { Maybe, MetadataResponse, DataEntryForm, Section, AttributeValue } from "./db.types";
+import {
+    Maybe,
+    MetadataResponse,
+    DataEntryForm,
+    Section,
+    AttributeValue,
+    OrganisationUnitPathOnly,
+} from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
@@ -35,9 +42,23 @@ export default class CampaignDb {
         const dataSetId = campaign.id || generateUid();
         const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
         const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
-        const categoryCombosByCode = _.keyBy(metadataConfig.categoryCombos, "code");
-        const categoryComboTeams = _(categoryCombosByCode).get(categoryComboCodeForTeams);
-
+        const categoryComboIdForTeams = _(metadataConfig.categoryCombos)
+            .keyBy("code")
+            .getOrFail(categoryComboCodeForTeams).id;
+        const categoryIdForTeams = _(metadataConfig.categories)
+            .keyBy("code")
+            .getOrFail(categoryComboCodeForTeams).id;
+        let teamsData = {};
+        if (campaign.teams) {
+            teamsData = this.generateTeams(
+                campaign.teams,
+                campaign.name,
+                campaign.organisationUnits,
+                categoryIdForTeams,
+                categoryComboIdForTeams
+            );
+        }
+        console.log({ teamsData: teamsData });
         if (!campaign.startDate || !campaign.endDate) {
             return { status: false, error: "Campaign Dates not set" };
         }
@@ -70,7 +91,7 @@ export default class CampaignDb {
 
         if (!attributeForApp || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: attributes" };
-        } else if (!categoryComboTeams) {
+        } else if (!categoryComboIdForTeams) {
             return {
                 status: false,
                 error: `Metadata not found: categoryCombo.code=${categoryComboCodeForTeams}`,
@@ -105,7 +126,7 @@ export default class CampaignDb {
                 description: campaign.description,
                 publicAccess: "r-r-----", // Metadata can view-only, Data can view-only
                 periodType: "Daily",
-                categoryCombo: { id: categoryComboTeams.id },
+                categoryCombo: { id: categoryComboIdForTeams },
                 dataElementDecoration: true,
                 renderAsTabs: true,
                 organisationUnits: campaign.organisationUnits.map(ou => ({ id: ou.id })),
@@ -308,5 +329,60 @@ export default class CampaignDb {
             htmlCode: customFormHtml,
             style: "NONE",
         };
+    }
+
+    private generateTeams(
+        teams: number,
+        campaignName: string,
+        organisationUnits: OrganisationUnitPathOnly[],
+        categoryIdForTeams: string,
+        categoryComboIdForTeams: string
+    ) {
+        const teamsData = _.range(1, teams).map(i => {
+            const categoryOptionId = generateUid();
+            const categoryOptionComboId = generateUid();
+            const name = `${campaignName} ${i}`;
+            const categoryOption = {
+                id: categoryOptionId,
+                name,
+                shortName: name,
+                displayName: name,
+                publicAccess: "rw------",
+                displayShortName: name,
+                dimensionItemType: "CATEGORY_OPTION",
+                categories: [
+                    {
+                        id: categoryIdForTeams,
+                    },
+                ],
+                organisationUnits: organisationUnits.map(ou => ({
+                    id: ou.id,
+                })),
+                categoryOptionCombos: [
+                    {
+                        id: categoryOptionComboId,
+                    },
+                ],
+            };
+
+            const categoryOptionCombo = {
+                id: categoryOptionComboId,
+                name: name,
+                shortName: name,
+                displayName: name,
+                displayShortName: name,
+                categoryCombo: {
+                    id: categoryComboIdForTeams,
+                },
+                categoryOptions: [
+                    {
+                        id: categoryOptionId,
+                    },
+                ],
+            };
+            return { categoryOption, categoryOptionCombo };
+        });
+
+        return teamsData;
     }
 }

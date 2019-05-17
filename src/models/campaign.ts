@@ -29,7 +29,7 @@ export interface Data {
     antigensDisaggregation: AntigensDisaggregation;
     targetPopulation: Maybe<TargetPopulation>;
     attributeValues: AttributeValue[];
-    teams: Maybe<Number>;
+    teams: Maybe<number>;
 }
 
 function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined) {
@@ -375,11 +375,11 @@ export default class Campaign {
 
     /* Teams */
 
-    public get teams(): Maybe<Number> {
+    public get teams(): Maybe<number> {
         return this.data.teams;
     }
 
-    public setTeams(teams: Number): Campaign {
+    public setTeams(teams: number): Campaign {
         return this.update({ ...this.data, teams });
     }
 
