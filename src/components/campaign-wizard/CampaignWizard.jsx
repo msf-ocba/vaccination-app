@@ -75,7 +75,7 @@ class CampaignWizard extends React.Component {
                 key: "general-info",
                 label: i18n.t("General info"),
                 component: GeneralInfoStep,
-                validationKeys: ["name", "startDate", "endDate"],
+                validationKeys: ["name", "startDate", "endDate", "teams"],
                 description: i18n.t(
                     `Choose a name for the campaign and define the period for which data entry will be enabled`
                 ),

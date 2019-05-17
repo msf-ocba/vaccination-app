@@ -29,6 +29,7 @@ export interface Data {
     antigensDisaggregation: AntigensDisaggregation;
     targetPopulation: Maybe<TargetPopulation>;
     attributeValues: AttributeValue[];
+    teams: Maybe<Number>;
 }
 
 function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined) {
@@ -70,6 +71,7 @@ export default class Campaign {
             antigensDisaggregation: AntigensDisaggregation.build(config, antigens, []),
             targetPopulation: undefined,
             attributeValues: [],
+            teams: undefined,
         };
 
         return new Campaign(db, config, initialData);
@@ -150,6 +152,7 @@ export default class Campaign {
             ),
             attributeValues: dataSet.attributeValues,
             targetPopulation: undefined,
+            teams: undefined,
         };
 
         return new Campaign(db, config, initialData);
@@ -177,6 +180,7 @@ export default class Campaign {
             antigens,
             targetPopulation,
             antigensDisaggregation,
+            teams,
         } = this.data;
 
         const validation = {
@@ -185,6 +189,8 @@ export default class Campaign {
             startDate: !startDate ? getError("cannot_be_blank", { field: "start date" }) : [],
 
             endDate: !endDate ? getError("cannot_be_blank", { field: "end date" }) : [],
+
+            teams: !teams ? getError("cannot_be_blank", { field: "teams" }) : [],
 
             organisationUnits: await this.validateOrganisationUnits(),
 
@@ -365,6 +371,16 @@ export default class Campaign {
 
     public get attributeValues(): AttributeValue[] {
         return this.data.attributeValues;
+    }
+
+    /* Teams */
+
+    public get teams(): Maybe<Number> {
+        return this.data.teams;
+    }
+
+    public setTeams(teams: Number): Campaign {
+        return this.update({ ...this.data, teams });
     }
 
     /* Save */
