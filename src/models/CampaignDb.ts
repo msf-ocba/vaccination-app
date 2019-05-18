@@ -31,6 +31,8 @@ interface PostSaveMetadata {
     dataSets: DataSet[];
     dataEntryForms: DataEntryForm[];
     sections: Section[];
+    categoryOptions: object[];
+    categoryOptionCombos: object[];
 }
 
 export default class CampaignDb {
@@ -48,17 +50,15 @@ export default class CampaignDb {
         const categoryIdForTeams = _(metadataConfig.categories)
             .keyBy("code")
             .getOrFail(categoryComboCodeForTeams).id;
-        let teamsData = {};
-        if (campaign.teams) {
-            teamsData = this.generateTeams(
-                campaign.teams,
-                campaign.name,
-                campaign.organisationUnits,
-                categoryIdForTeams,
-                categoryComboIdForTeams
-            );
-        }
-        console.log({ teamsData: teamsData });
+
+        const teamsData = this.generateTeams(
+            campaign.teams || 0, // WIP
+            campaign.name,
+            campaign.organisationUnits,
+            categoryIdForTeams,
+            categoryComboIdForTeams
+        );
+
         if (!campaign.startDate || !campaign.endDate) {
             return { status: false, error: "Campaign Dates not set" };
         }
@@ -164,12 +164,14 @@ export default class CampaignDb {
                     dataSets: [dataSet],
                     dataEntryForms: [dataEntryForm],
                     sections,
+                    categoryOptions: teamsData.categoryOption,
+                    categoryOptionCombos: teamsData.categoryOptionCombo,
                 });
             }
         }
     }
 
-    private async postSave(allMetadata: PostSaveMetadata): Promise<Response<string>> {
+    public async postSave(allMetadata: PostSaveMetadata): Promise<Response<string>> {
         const { campaign } = this;
         const { db, config } = campaign;
         const { sections, ...nonSectionsMetadata } = allMetadata;
@@ -338,7 +340,7 @@ export default class CampaignDb {
         categoryIdForTeams: string,
         categoryComboIdForTeams: string
     ) {
-        const teamsData = _.range(1, teams).map(i => {
+        const teamsData: Array<{ [index: string]: object }> = _.range(1, teams + 1).map(i => {
             const categoryOptionId = generateUid();
             const categoryOptionComboId = generateUid();
             const name = `${campaignName} ${i}`;
@@ -382,7 +384,13 @@ export default class CampaignDb {
             };
             return { categoryOption, categoryOptionCombo };
         });
+        const keys: any[] = ["categoryOption", "categoryOptionCombo"];
 
-        return teamsData;
+        const sortedTeamData = _(keys)
+            .zip(keys.map(key => teamsData.map(o => o[key])))
+            .fromPairs()
+            .value();
+
+        return sortedTeamData;
     }
 }

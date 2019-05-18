@@ -379,8 +379,8 @@ export default class Campaign {
         return this.data.teams;
     }
 
-    public setTeams(teams: number): Campaign {
-        return this.update({ ...this.data, teams });
+    public setTeams(teams: string): Campaign {
+        return this.update({ ...this.data, teams: parseInt(teams) });
     }
 
     /* Save */
