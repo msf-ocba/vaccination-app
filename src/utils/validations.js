@@ -36,6 +36,7 @@ const translations = {
             "Org unit {{organisationUnit}} has an invalid total value for antigen {{antigen}} ({{ageGroups}}) -> {{- value}}",
             namespace
         ),
+    must_be_bigger_than_zero: () => i18n.t("Number of Teams must be bigger than 0"),
 };
 
 export async function getValidationMessages(campaign, validationKeys) {

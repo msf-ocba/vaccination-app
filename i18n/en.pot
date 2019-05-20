@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-05-16T11:00:26.829Z\n"
-"PO-Revision-Date: 2019-05-16T11:00:26.829Z\n"
+"POT-Creation-Date: 2019-05-20T10:44:00.881Z\n"
+"PO-Revision-Date: 2019-05-20T10:44:00.881Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -199,6 +199,9 @@ msgstr ""
 msgid "Field cannot be blank"
 msgstr ""
 
+msgid "Number of Teams"
+msgstr ""
+
 msgid "Campaign created"
 msgstr ""
 
@@ -298,6 +301,9 @@ msgstr ""
 msgid ""
 "Org unit {{organisationUnit}} has an invalid total value for antigen "
 "{{antigen}} ({{ageGroups}}) -> {{- value}}"
+msgstr ""
+
+msgid "Number of Teams must be bigger than 0"
 msgstr ""
 
 msgctxt ""
