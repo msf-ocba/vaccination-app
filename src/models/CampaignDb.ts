@@ -198,8 +198,12 @@ export default class CampaignDb {
             metadata = allMetadata;
         }
 
+        // Clean Organisation Unit of past teams beforehand to avoid having them appear on DataEntry app.
+        await this.cleanOrganisationUnitTeams();
+
         const result: ApiResponse<MetadataResponse> = await db.postMetadata<Metadata>(metadata);
 
+        // Update Team Category with new categoryOptions (teams)
         await this.updateTeamCategory(allMetadata.categoryOptions);
 
         if (campaign.isEdit()) {
@@ -364,11 +368,30 @@ export default class CampaignDb {
         }
 
         // Trigger categoryOptionCombos update
-
         await db.api.post(
             "http://dev2.eyeseetea.com:8082/api/maintenance/categoryOptionComboUpdate",
             {}
         );
+    }
+
+    private async cleanOrganisationUnitTeams() {
+        const { organisationUnits, db } = this.campaign;
+        const organisationUnitIds = _.map(organisationUnits, "id");
+        const { categoryOptions } = await db.api.get("/metadata", {
+            "categoryOptions:fields": ":owner",
+            "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
+        });
+
+        // Dangerous, if in the future more categoryOptions are registered to an OU they will be deleted here
+        // TODO: Check category options are really teams.
+
+        const updatedTeams = _.map(categoryOptions, co => ({ ...co, organisationUnits: [] }));
+
+        const updateResponse = await db.postMetadata({ categoryOptions: updatedTeams });
+
+        if (!updateResponse.status) {
+            return { status: false, error: "Cannot clean old teams from Organisation Units" };
+        }
     }
 
     private generateTeams(
