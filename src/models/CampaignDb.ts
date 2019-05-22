@@ -41,12 +41,12 @@ export default class CampaignDb {
         const { campaign } = this;
         const { db, targetPopulation, config: metadataConfig } = campaign;
         const dataSetId = campaign.id || generateUid();
-        const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
+        const { categoryComboCodeForTeams } = metadataConfig;
         const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
         const categoryComboIdForTeams = _(metadataConfig.categoryCombos)
             .keyBy("code")
             .getOrFail(categoryComboCodeForTeams).id;
-        const categoryIdForTeams = _(metadataConfig.categories)
+        const teamsCategoyId = _(metadataConfig.categories)
             .keyBy("code")
             .getOrFail(categoryComboCodeForTeams).id;
 
@@ -54,7 +54,7 @@ export default class CampaignDb {
             campaign.teams || 0, // WIP
             campaign.name,
             campaign.organisationUnits,
-            categoryIdForTeams
+            teamsCategoyId
         );
 
         if (!campaign.startDate || !campaign.endDate) {
@@ -72,7 +72,7 @@ export default class CampaignDb {
         const ageGroupCategoryId = _(metadataConfig.categories)
             .keyBy("code")
             .getOrFail(metadataConfig.categoryCodeForAgeGroup).id;
-
+        const teamIds: string[] = _.map(teamsData, "id");
         const dashboardGenerator = Dashboard.build(db);
         const { dashboard, charts, reportTables } = await dashboardGenerator.create({
             dashboardId,
@@ -81,10 +81,11 @@ export default class CampaignDb {
             antigens: campaign.antigens,
             startDate,
             endDate,
-            categoryCodeForTeams,
             antigensDisaggregation,
             categoryOptions: metadataConfig.categoryOptions,
             ageGroupCategoryId,
+            teamsCategoyId,
+            teamIds,
         });
 
         if (!attributeForApp || !dashboardAttribute) {
@@ -368,8 +369,6 @@ export default class CampaignDb {
             "http://dev2.eyeseetea.com:8082/api/maintenance/categoryOptionComboUpdate",
             {}
         );
-
-        console.log("all success??");
     }
 
     private generateTeams(

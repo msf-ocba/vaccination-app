@@ -61,16 +61,13 @@ export function buildDashboardItemsCode(datasetName, orgUnitName, antigenName, a
     return [datasetName, orgUnitName, antigenName, appendCode].join("_");
 }
 
-function getDisaggregations(itemConfigs, disaggregationMetadata, antigen, organisationUnit) {
+function getDisaggregations(itemConfigs, disaggregationMetadata, antigen) {
     if (!itemConfigs.disaggregatedBy) return [];
 
     const ageGroups = c =>
         c.disaggregatedBy.includes("ageGroup") ? disaggregationMetadata.ageGroups(antigen) : null;
 
-    const teams = c =>
-        c.disaggregatedBy.includes("team")
-            ? disaggregationMetadata.teams(null, organisationUnit)
-            : null;
+    const teams = c => (c.disaggregatedBy.includes("team") ? disaggregationMetadata.teams() : null);
 
     return _.compact([teams(itemConfigs), ageGroups(itemConfigs)]);
 }
@@ -86,12 +83,7 @@ function getCharts(antigen, elements, organisationUnit, itemsMetadata, disaggreg
                 appendCode: chart.appendCode,
                 organisationUnit,
                 ...itemsMetadata,
-                disaggregations: getDisaggregations(
-                    chart,
-                    disaggregationMetadata,
-                    antigen,
-                    organisationUnit
-                ),
+                disaggregations: getDisaggregations(chart, disaggregationMetadata, antigen),
             })
         )
         .value();
@@ -107,12 +99,7 @@ function getTables(antigen, elements, organisationUnit, itemsMetadata, disaggreg
                 appendCode: c.appendCode,
                 organisationUnit,
                 ...itemsMetadata,
-                disaggregations: getDisaggregations(
-                    c,
-                    disaggregationMetadata,
-                    antigen,
-                    organisationUnit
-                ),
+                disaggregations: getDisaggregations(c, disaggregationMetadata, antigen),
             })
         )
         .value();
