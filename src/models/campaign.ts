@@ -223,6 +223,8 @@ export default class Campaign {
         );
         const levels = this.selectableLevels.join("/");
 
+        /*
+
         const orgUnitsWithTeamsInfo = await this.db.validateTeamsForOrganisationUnits(
             organisationUnits,
             this.config.categoryCodeForTeams
@@ -232,17 +234,12 @@ export default class Campaign {
             .filter(ou => !ou.hasTeams)
             .map(ou => ou.displayName)
             .value();
-
+        */
         const errorsList = [
             !allOrgUnitsInAcceptedLevels
                 ? getError("organisation_units_only_of_levels", { levels })
                 : [],
             _(organisationUnits).isEmpty() ? getError("no_organisation_units_selected") : [],
-            !_.isEmpty(orgUnitsWithoutTeams)
-                ? getError("no_valid_teams_for_organisation_units", {
-                      orgUnits: orgUnitsWithoutTeams.join(", "),
-                  })
-                : [],
         ];
 
         return _(errorsList)

@@ -105,7 +105,7 @@ class GeneralInfoStep extends React.Component {
             },
             {
                 name: "teams",
-                value: campaign.teams,
+                value: campaign.teams ? campaign.teams.toString() : "",
                 component: TextField,
                 props: {
                     floatingLabelText: i18n.t("Number of Teams"),

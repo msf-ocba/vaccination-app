@@ -32,7 +32,6 @@ interface PostSaveMetadata {
     dataEntryForms: DataEntryForm[];
     sections: Section[];
     categoryOptions: object[];
-    categoryOptionCombos: object[];
 }
 
 export default class CampaignDb {
@@ -55,8 +54,7 @@ export default class CampaignDb {
             campaign.teams || 0, // WIP
             campaign.name,
             campaign.organisationUnits,
-            categoryIdForTeams,
-            categoryComboIdForTeams
+            categoryIdForTeams
         );
 
         if (!campaign.startDate || !campaign.endDate) {
@@ -164,8 +162,7 @@ export default class CampaignDb {
                     dataSets: [dataSet],
                     dataEntryForms: [dataEntryForm],
                     sections,
-                    categoryOptions: teamsData.categoryOption,
-                    categoryOptionCombos: teamsData.categoryOptionCombo,
+                    categoryOptions: teamsData,
                 });
             }
         }
@@ -201,6 +198,8 @@ export default class CampaignDb {
         }
 
         const result: ApiResponse<MetadataResponse> = await db.postMetadata<Metadata>(metadata);
+
+        await this.updateTeamCategory(allMetadata.categoryOptions);
 
         if (campaign.isEdit()) {
             await this.cleanUpDashboardItems(db, modelReferencesToDelete);
@@ -333,19 +332,56 @@ export default class CampaignDb {
         };
     }
 
+    // WIP until edit logic is added //
+    private async updateTeamCategory(teamsData: Array<object>) {
+        const { config, db } = this.campaign;
+        const categoryIdForTeams = _(config.categories)
+            .keyBy("code")
+            .getOrFail(config.categoryComboCodeForTeams).id;
+
+        const { categories } = await db.api.get("/metadata", {
+            "categories:fields": ":owner",
+            "categories:filter": `id:eq:${categoryIdForTeams}`,
+        });
+
+        const previousTeams = categories[0].categoryOptions;
+        const previousTeamsIds = _.map(previousTeams, "id");
+        const filteredNewTeams = _.map(teamsData, (t: { id: string }) => {
+            return _.includes(previousTeamsIds, t.id) ? null : { id: t.id };
+        });
+
+        const allTeams = [...previousTeams, ..._.compact(filteredNewTeams)];
+
+        const teamsCategoryUpdated = { ...categories[0], categoryOptions: allTeams };
+
+        const teamsResponse: ApiResponse<MetadataResponse> = await db.postMetadata({
+            categories: [teamsCategoryUpdated],
+        });
+
+        if (!teamsResponse.status) {
+            return { status: false, error: "Cannot update teams category" };
+        }
+
+        // Trigger categoryOptionCombos update
+
+        await db.api.post(
+            "http://dev2.eyeseetea.com:8082/api/maintenance/categoryOptionComboUpdate",
+            {}
+        );
+
+        console.log("all success??");
+    }
+
     private generateTeams(
         teams: number,
         campaignName: string,
         organisationUnits: OrganisationUnitPathOnly[],
-        categoryIdForTeams: string,
-        categoryComboIdForTeams: string
+        categoryIdForTeams: string
     ) {
-        const teamsData: Array<{ [index: string]: object }> = _.range(1, teams + 1).map(i => {
-            const categoryOptionId = generateUid();
-            const categoryOptionComboId = generateUid();
+        const teamsData: Array<object> = _.range(1, teams + 1).map(i => {
             const name = `${campaignName} ${i}`;
             const categoryOption = {
-                id: categoryOptionId,
+                id: generateUid(),
                 name,
                 shortName: name,
                 displayName: name,
@@ -360,37 +396,10 @@ export default class CampaignDb {
                 organisationUnits: organisationUnits.map(ou => ({
                     id: ou.id,
                 })),
-                categoryOptionCombos: [
-                    {
-                        id: categoryOptionComboId,
-                    },
-                ],
             };
-
-            const categoryOptionCombo = {
-                id: categoryOptionComboId,
-                name: name,
-                shortName: name,
-                displayName: name,
-                displayShortName: name,
-                categoryCombo: {
-                    id: categoryComboIdForTeams,
-                },
-                categoryOptions: [
-                    {
-                        id: categoryOptionId,
-                    },
-                ],
-            };
-            return { categoryOption, categoryOptionCombo };
+            return categoryOption;
         });
-        const keys: any[] = ["categoryOption", "categoryOptionCombo"];
 
-        const sortedTeamData = _(keys)
-            .zip(keys.map(key => teamsData.map(o => o[key])))
-            .fromPairs()
-            .value();
-
-        return sortedTeamData;
+        return teamsData;
     }
 }
