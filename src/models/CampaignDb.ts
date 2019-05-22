@@ -6,7 +6,7 @@ import "../utils/lodash-mixins";
 
 import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
-import { Maybe, MetadataResponse, DataEntryForm, Section, AttributeValue } from "./db.types";
+import { Maybe, MetadataResponse, DataEntryForm, Section } from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
@@ -45,8 +45,8 @@ export default class CampaignDb {
         const endDate = moment(campaign.endDate).endOf("day");
         const dashboardId: Maybe<string> = campaign.isEdit()
             ? _(campaign.attributeValues)
-                  .keyBy((o: AttributeValue) => o.attribute.id)
-                  .getOrFail(dashboardAttribute.id).value
+                  .keyBy(attributeValue => attributeValue.attribute.id)
+                  .get([dashboardAttribute.id, "value"])
             : undefined;
 
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
