@@ -169,7 +169,7 @@ export default class CampaignDb {
         }
     }
 
-    public async postSave(allMetadata: PostSaveMetadata): Promise<Response<string>> {
+    private async postSave(allMetadata: PostSaveMetadata): Promise<Response<string>> {
         const { campaign } = this;
         const { db, config } = campaign;
         const { sections, ...nonSectionsMetadata } = allMetadata;
