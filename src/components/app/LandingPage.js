@@ -54,7 +54,7 @@ class LandingPage extends React.Component {
     };
 
     onClick = key => {
-        const { history } = this.props;
+        const { history, d2 } = this.props;
         switch (key) {
             case "campaign-configuration":
                 history.push("/" + key);
@@ -66,7 +66,7 @@ class LandingPage extends React.Component {
                 history.push("/" + key);
                 break;
             case "maintenance":
-                goToDhis2Url("/dhis-web-maintenance/index.html");
+                goToDhis2Url(d2, "/dhis-web-maintenance/index.html");
                 break;
             default:
                 throw new Error(`Unsupported page key: ${key}`);

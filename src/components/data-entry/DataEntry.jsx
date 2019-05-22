@@ -7,6 +7,7 @@ import moment from "moment";
 
 import PageHeader from "../shared/PageHeader";
 import { getOrganisationUnitsById, getDataInputPeriodsById } from "../../models/datasets";
+import { getDhis2Url } from "../../utils/routes";
 
 class DataEntry extends React.Component {
     static propTypes = {
@@ -124,6 +125,8 @@ class DataEntry extends React.Component {
 
     render() {
         const { isDataEntryIdValid } = this.state;
+        const dataEntryUrl = getDhis2Url(this.props.d2, "/dhis-web-dataentry/index.action");
+
         return (
             <React.Fragment>
                 <PageHeader
@@ -135,7 +138,7 @@ class DataEntry extends React.Component {
                         <iframe
                             ref="iframe"
                             title={i18n.t("Data Entry")}
-                            src={"/dhis-web-dataentry/index.action"}
+                            src={dataEntryUrl}
                             style={styles.iframe}
                         />
                     )}

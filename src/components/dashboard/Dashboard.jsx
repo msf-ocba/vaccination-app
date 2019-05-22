@@ -6,6 +6,7 @@ import ReactDOM from "react-dom";
 
 import PageHeader from "../shared/PageHeader";
 import { getDatasetById, getDashboardId } from "../../models/datasets";
+import { getDhis2Url } from "../../utils/routes";
 
 class Dashboard extends React.Component {
     static propTypes = {
@@ -83,10 +84,10 @@ class Dashboard extends React.Component {
     async getDashboardURL(dataSetId, config, d2) {
         const dataSet = dataSetId ? await getDatasetById(dataSetId, d2) : null;
         if (!dataSetId) {
-            return `/dhis-web-dashboard/#/`;
+            return getDhis2Url(d2, `/dhis-web-dashboard/#/`);
         } else if (dataSet) {
             const dashboardId = getDashboardId(dataSet, config);
-            return `/dhis-web-dashboard/#/${dashboardId}`;
+            return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboardId}`);
         } else {
             this.props.snackbar.error(i18n.t("Cannot find dashboard associated with the campaign"));
         }
