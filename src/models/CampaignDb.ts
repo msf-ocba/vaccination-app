@@ -375,17 +375,21 @@ export default class CampaignDb {
     }
 
     private async cleanOrganisationUnitTeams() {
-        const { organisationUnits, db } = this.campaign;
+        const { organisationUnits, db, config } = this.campaign;
         const organisationUnitIds = _.map(organisationUnits, "id");
         const { categoryOptions } = await db.api.get("/metadata", {
-            "categoryOptions:fields": ":owner",
+            "categoryOptions:fields": ":owner,categories[id,code]",
             "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
         });
 
-        // Dangerous, if in the future more categoryOptions are registered to an OU they will be deleted here
-        // TODO: Check category options are really teams.
+        const teams = categoryOptions.filter(
+            (co: { categories: Array<{ id: string; code: string }> }) => {
+                const categoryCodes = co.categories.map(c => c.code);
+                return _.includes(categoryCodes, config.categoryCodeForTeams);
+            }
+        );
 
-        const updatedTeams = _.map(categoryOptions, co => ({ ...co, organisationUnits: [] }));
+        const updatedTeams = _.map(teams, co => ({ ...co, organisationUnits: [] }));
 
         const updateResponse = await db.postMetadata({ categoryOptions: updatedTeams });
 
