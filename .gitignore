@@ -32,4 +32,3 @@ src/locales/
 # cypress
 cypress/screenshots/
 cypress/videos/
-cypress/fixtures
