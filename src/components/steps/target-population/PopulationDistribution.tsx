@@ -18,6 +18,7 @@ import {
 } from "../../../models/TargetPopulation";
 import { OrganisationUnit, OrganisationUnitLevel, Maybe } from "../../../models/db.types";
 import OrgUnitName from "./OrgUnitName";
+import "./PopulationDistribution.css";
 
 export interface PopulationDistributionProps extends WithStyles<typeof styles> {
     organisationUnitLevels: OrganisationUnitLevel[];
@@ -47,7 +48,7 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
             ev: React.ChangeEvent<HTMLInputElement>
         ) => {
             const value = ev.currentTarget.value;
-            this.props.onChange(distributionIdx, ageGroup, parseInt(value));
+            this.props.onChange(distributionIdx, ageGroup, parseFloat(value));
         }
     );
 
@@ -80,6 +81,7 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
                                 value={getShowValue(distribution.ageDistribution[ageGroup])}
                                 onChange={this.onChange(distributionIdx, ageGroup)}
                                 inputRef={index === 0 ? this.setFirstTextField : undefined}
+                                type="number"
                             />
                         ) : (
                             <span>
