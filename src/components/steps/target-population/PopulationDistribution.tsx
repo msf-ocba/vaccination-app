@@ -2,6 +2,8 @@ import React from "react";
 import classNames from "classnames";
 import _ from "lodash";
 
+import { createStyles, WithStyles, Theme, TextField } from "@material-ui/core";
+import { Table, TableRow, TableHead, TableCell, TableBody } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 
 import { memoize } from "../../../utils/memoize";
@@ -14,18 +16,6 @@ import {
     getFinalPopulationDistribution,
     PopulationDistribution,
 } from "../../../models/TargetPopulation";
-
-import {
-    createStyles,
-    WithStyles,
-    Theme,
-    TextField,
-    Table,
-    TableRow,
-    TableHead,
-    TableCell,
-    TableBody,
-} from "@material-ui/core";
 import { OrganisationUnit, OrganisationUnitLevel, Maybe } from "../../../models/db.types";
 import OrgUnitName from "./OrgUnitName";
 
