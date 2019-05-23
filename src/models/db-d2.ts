@@ -74,6 +74,7 @@ export interface AnalyticsRequest {
     dimension: string[];
     filter?: string[];
     skipMeta?: boolean;
+    skipRounding?: boolean;
 }
 
 export interface AnalyticsResponse {

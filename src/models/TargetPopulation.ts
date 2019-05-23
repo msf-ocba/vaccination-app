@@ -430,6 +430,7 @@ export class TargetPopulation {
                         .map("id")
                         .join(";"),
             ],
+            skipRounding: true,
         });
 
         const rowsByOrgUnit = _(rows)
