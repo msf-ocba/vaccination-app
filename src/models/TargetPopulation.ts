@@ -278,7 +278,7 @@ export class TargetPopulation {
                             if (!_(ageGroupsForAntigen).includes(ageGroup)) {
                                 return null;
                             } else {
-                                const populationForAgeRange = Math.round(
+                                const populationForAgeRange = Math.ceil(
                                     (totalPopulation * ageGroupPercent) / 100
                                 );
 
