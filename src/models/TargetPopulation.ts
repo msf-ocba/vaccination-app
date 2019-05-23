@@ -246,7 +246,7 @@ export class TargetPopulation {
                 getValue(targetPopulationItem.populationTotal.pairValue),
                 "No value for total population"
             );
-            const newValue = getNewValue(targetPopulationItem.populationTotal.pairValue);
+            const newValue = getValue(targetPopulationItem.populationTotal.pairValue);
             const totalPopulationDataValues = _.isUndefined(newValue)
                 ? []
                 : [
@@ -307,7 +307,7 @@ export class TargetPopulation {
                             const pairValue = _(populationDistribution.ageDistribution).getOrFail(
                                 ageGroup
                             );
-                            const newValue = getNewValue(pairValue);
+                            const newValue = getValue(pairValue);
                             return newValue
                                 ? {
                                       period,
@@ -458,7 +458,7 @@ export class TargetPopulation {
                             const categoryOption = _(ageGroupCategoryOptionById).getOrFail(
                                 ageGroupCategoryOptionId
                             );
-                            return [categoryOption.displayName, parseInt(row.value)];
+                            return [categoryOption.displayName, parseFloat(row.value)];
                         })
                         .fromPairs()
                         .value();
@@ -532,15 +532,5 @@ function getValue(pairValue: PairValue): Maybe<number> {
         return pairValue.value;
     } else {
         return pairValue.newValue;
-    }
-}
-
-function getNewValue(pairValue: PairValue): Maybe<number> {
-    const { value, newValue } = pairValue;
-
-    if (!_.isUndefined(pairValue.newValue) && value !== newValue) {
-        return newValue;
-    } else {
-        return undefined;
     }
 }
