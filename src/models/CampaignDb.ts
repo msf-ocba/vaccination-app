@@ -43,11 +43,6 @@ export default class CampaignDb {
         }
         const startDate = moment(campaign.startDate).startOf("day");
         const endDate = moment(campaign.endDate).endOf("day");
-        const dashboardId: Maybe<string> = campaign.isEdit()
-            ? _(campaign.attributeValues)
-                  .keyBy(attributeValue => attributeValue.attribute.id)
-                  .get([dashboardAttribute.id, "value"])
-            : undefined;
 
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
         const ageGroupCategoryId = _(metadataConfig.categories)
@@ -56,7 +51,7 @@ export default class CampaignDb {
 
         const dashboardGenerator = Dashboard.build(db);
         const { dashboard, charts, reportTables } = await dashboardGenerator.create({
-            dashboardId,
+            dashboardId: campaign.dashboardId,
             datasetName: campaign.name,
             organisationUnits: campaign.organisationUnits,
             antigens: campaign.antigens,
@@ -168,11 +163,7 @@ export default class CampaignDb {
                 return { status: false, error: "Cannot update sections" };
             }
             metadata = nonSectionsMetadata;
-            modelReferencesToDelete = await Campaign.getResourcesToDelete(
-                config,
-                db,
-                allMetadata.dataSets
-            );
+            modelReferencesToDelete = await Campaign.getResources(config, db, allMetadata.dataSets);
         } else {
             metadata = allMetadata;
             modelReferencesToDelete = [];
