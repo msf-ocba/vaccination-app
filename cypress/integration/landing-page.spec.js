@@ -35,13 +35,13 @@ context("Landing page", () => {
         });
     });
 
+    /*
     describe("when clicked on Data Entry", () => {
         it("redirects to Data Entry", () => {
             cy.contains("Data Entry").click({ force: true });
             cy.url().should("include", "/dhis-web-dataentry");
         });
     });
-    /*
     describe("when clicked on Dashboard", () => {
         it("redirects to Dashboard", () => {
             cy.contains("Dashboard").click();
