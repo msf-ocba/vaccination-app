@@ -168,7 +168,7 @@ export default class Campaign {
         db: DbD2,
         dataSets: DataSetWithAttributes[]
     ): Promise<Response<string>> {
-        const modelReferencesToDelete = await this.getResourcesToDelete(config, db, dataSets);
+        const modelReferencesToDelete = await this.getResources(config, db, dataSets);
 
         return db.deleteMany(modelReferencesToDelete);
     }
@@ -382,7 +382,7 @@ export default class Campaign {
         return campaignDb.save();
     }
 
-    public static async getResourcesToDelete(
+    public static async getResources(
         config: MetadataConfig,
         db: DbD2,
         dataSets: DataSetWithAttributes[]
@@ -419,11 +419,10 @@ export default class Campaign {
             .compact()
             .value();
 
-        const modelReferencesToDelete = _.concat(
+        return _.concat(
             dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
             dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id })),
             resources
         );
-        return modelReferencesToDelete;
     }
 }
