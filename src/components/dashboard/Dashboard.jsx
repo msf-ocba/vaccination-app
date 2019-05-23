@@ -58,15 +58,19 @@ class Dashboard extends React.Component {
 
         await this.waitforDashboardToLoad(iframeDocument);
         const iFrameRoot = iframeDocument.querySelector("#root");
-
         const iFrameWrapper = iframeDocument.querySelector(".app-wrapper");
+        const pageContainer = iframeDocument.querySelector(".page-container-top-margin");
+        const editButton = iframeDocument.querySelector(".titlebar-wrapper a[href*='edit']");
+        const controlBar = iframeDocument.querySelector(".d2-ui-control-bar");
+
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
+        pageContainer.style.marginTop = "0px";
+        iFrameRoot.style.marginTop = "0px";
+        controlBar.style.top = 0;
+        if (editButton) editButton.remove();
+
         if (dataSetId) {
-            iFrameRoot.style.marginTop = "-110px";
             iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
-        } else {
-            iFrameRoot.style.marginTop = "-60px";
-            iframeDocument.querySelector(".d2-ui-control-bar").style.top = 0;
         }
     }
 
