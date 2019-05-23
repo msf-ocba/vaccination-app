@@ -171,7 +171,7 @@ const styles = (_theme: Theme) =>
             backgroundColor: "#EEE",
         },
         percentageField: {
-            width: "2em",
+            width: "3em",
         },
         separatorRow: {
             height: 24,
