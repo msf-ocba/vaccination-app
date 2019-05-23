@@ -153,7 +153,7 @@ export default class CampaignDb {
         const { db, config } = campaign;
         const { sections, ...nonSectionsMetadata } = allMetadata;
         let metadata;
-        let modelReferencesToDelete: ModelReference[] = [];
+        let modelReferencesToDelete: ModelReference[];
 
         if (campaign.isEdit()) {
             // The saving of existing sections on DHIS2 is buggy: /metadata
@@ -175,6 +175,7 @@ export default class CampaignDb {
             );
         } else {
             metadata = allMetadata;
+            modelReferencesToDelete = [];
         }
 
         const result: ApiResponse<MetadataResponse> = await db.postMetadata<Metadata>(metadata);
