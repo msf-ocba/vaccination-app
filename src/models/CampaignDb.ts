@@ -382,6 +382,8 @@ export default class CampaignDb {
             "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
         });
 
+        if (_.isEmpty(categoryOptions)) return;
+
         const teams = categoryOptions.filter(
             (co: { categories: Array<{ id: string; code: string }> }) => {
                 const categoryCodes = co.categories.map(c => c.code);
