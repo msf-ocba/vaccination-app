@@ -376,19 +376,10 @@ export default class CampaignDb {
 
     private async cleanOrganisationUnitTeams() {
         const { organisationUnits, db, config } = this.campaign;
-        const organisationUnitIds = _.map(organisationUnits, "id");
-        const { categoryOptions } = await db.api.get("/metadata", {
-            "categoryOptions:fields": ":owner,categories[id,code]",
-            "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
-        });
 
-        if (_.isEmpty(categoryOptions)) return;
-
-        const teams = categoryOptions.filter(
-            (co: { categories: Array<{ id: string; code: string }> }) => {
-                const categoryCodes = co.categories.map(c => c.code);
-                return _.includes(categoryCodes, config.categoryCodeForTeams);
-            }
+        const teams = await db.getTeamsForOrganisationUnits(
+            organisationUnits,
+            config.categoryCodeForTeams
         );
 
         const updatedTeams = _.map(teams, co => ({ ...co, organisationUnits: [] }));

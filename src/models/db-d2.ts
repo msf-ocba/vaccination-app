@@ -18,8 +18,6 @@ import {
     Response,
     DataValue,
     MetadataOptions,
-    OrganisationUnitWithName,
-    CategoryOptionsCustom,
     OrganisationUnitPathOnly,
 } from "./db.types";
 import _ from "lodash";
@@ -235,51 +233,26 @@ export default class DbD2 {
         return { pager: newPager, objects: organisationUnits };
     }
 
-    public async validateTeamsForOrganisationUnits(
+    public async getTeamsForOrganisationUnits(
         organisationUnits: OrganisationUnitPathOnly[],
         categoryCodeForTeams: string
     ) {
-        const allAncestorsIds = _(organisationUnits)
-            .map("path")
-            .flatMap(path => path.split("/").slice(1))
-            .uniq()
-            .value()
-            .join(",");
-        const organisationUnitsIds = _.map(organisationUnits, "id");
-        const response = await this.api.get("/metadata", {
-            "categoryOptions:fields": "id,categories[code],organisationUnits[id]",
-            "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`, //Missing categoryTeamCode
-            "organisationUnits:fields": "id,displayName",
-            "organisationUnits:filter": `id:in:[${organisationUnitsIds}]`,
+        const organisationUnitIds = _.map(organisationUnits, "id");
+        const { categoryOptions } = await this.api.get("/metadata", {
+            "categoryOptions:fields": ":owner,categories[id,code]",
+            "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
         });
 
-        const { categoryOptions, organisationUnits: orgUnitNamesArray } = response as {
-            categoryOptions?: CategoryOptionsCustom[];
-            organisationUnits?: OrganisationUnitWithName[];
-        };
+        if (_.isEmpty(categoryOptions)) return;
 
-        const hasTeams = (path: string) => {
-            return (categoryOptions || []).some(
-                categoryOption =>
-                    _(categoryOption.categories)
-                        .map("code")
-                        .includes(categoryCodeForTeams) &&
-                    categoryOption.organisationUnits.some(ou => path.includes(ou.id))
-            );
-        };
-
-        const orgUnitNames: _.Dictionary<string> = _(orgUnitNamesArray)
-            .map(o => [o.id, o.displayName])
-            .fromPairs()
-            .value();
-
-        return _(organisationUnits || [])
-            .map(ou => ({
-                id: ou.id,
-                displayName: _(orgUnitNames).getOrFail(ou.id),
-                hasTeams: hasTeams(ou.path),
-            }))
-            .value();
+        const teams = categoryOptions.filter(
+            (co: { categories: Array<{ id: string; code: string }> }) => {
+                const categoryCodes = co.categories.map(c => c.code);
+                return _.includes(categoryCodes, categoryCodeForTeams);
+            }
+        );
+        console.log({ success: teams });
+        return teams;
     }
 
     public async getCategoryOptionsByCategoryCode(code: string): Promise<CategoryOption[]> {

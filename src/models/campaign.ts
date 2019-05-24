@@ -72,6 +72,7 @@ export default class Campaign {
             targetPopulation: undefined,
             attributeValues: [],
             teams: undefined,
+            teamsMetadata: undefined,
         };
 
         return new Campaign(db, config, initialData);
@@ -137,6 +138,11 @@ export default class Campaign {
             period ? moment(period).toDate() : null
         );
 
+        const teamsMetadata = await db.getTeamsForOrganisationUnits(
+            dataSet.organisationUnits,
+            config.categoryCodeForTeams
+        );
+
         const initialData = {
             id: dataSet.id,
             name: dataSet.name,
@@ -152,7 +158,8 @@ export default class Campaign {
             ),
             attributeValues: dataSet.attributeValues,
             targetPopulation: undefined,
-            teams: undefined,
+            teams: _.size(teamsMetadata),
+            teamsMetadata,
         };
 
         return new Campaign(db, config, initialData);
