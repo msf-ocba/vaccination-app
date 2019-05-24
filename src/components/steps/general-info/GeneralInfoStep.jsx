@@ -39,9 +39,6 @@ class GeneralInfoStep extends React.Component {
             case "endDate":
                 newCampaign = campaign.setEndDate(newValue);
                 break;
-            case "teams":
-                newCampaign = campaign.setTeams(newValue);
-                break;
             default:
                 console.error(`Field not implemented: ${fieldName}`);
                 newCampaign = null;
@@ -102,26 +99,6 @@ class GeneralInfoStep extends React.Component {
                     value: campaign.endDate,
                     onChange: value => this.onUpdateField("endDate", value),
                 },
-            },
-            {
-                name: "teams",
-                value: campaign.teams ? campaign.teams.toString() : "",
-                component: TextField,
-                props: {
-                    floatingLabelText: i18n.t("Number of Teams"),
-                    style: { width: "33%" },
-                    changeEvent: "onBlur",
-                    "data-field": "teams",
-                    type: "number",
-                },
-                validators: [
-                    {
-                        message: i18n.t("Field cannot be blank"),
-                        validator(value) {
-                            return Validators.isRequired(value);
-                        },
-                    },
-                ],
             },
         ];
 

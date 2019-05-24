@@ -62,7 +62,7 @@ class CampaignWizard extends React.Component {
                 key: "organisation-units",
                 label: i18n.t("Organisation Units"),
                 component: OrganisationUnitsStep,
-                validationKeys: ["organisationUnits"],
+                validationKeys: ["organisationUnits", "teams"],
                 validationKeysLive: ["organisationUnits"],
                 description: i18n.t(
                     `Select the health facilities or health area where the campaign will be implemented`
@@ -75,7 +75,7 @@ class CampaignWizard extends React.Component {
                 key: "general-info",
                 label: i18n.t("General info"),
                 component: GeneralInfoStep,
-                validationKeys: ["name", "startDate", "endDate", "teams"],
+                validationKeys: ["name", "startDate", "endDate"],
                 description: i18n.t(
                     `Choose a name for the campaign and define the period for which data entry will be enabled`
                 ),
