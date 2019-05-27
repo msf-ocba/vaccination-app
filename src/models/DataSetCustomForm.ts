@@ -13,7 +13,7 @@ type DataElementDis = Disaggregations[0]["dataElements"][0];
 
 const dataElementCodeDosesRegexp = /DOSES/;
 
-function h(tagName: string, attributes: object, children: string | string[]) {
+function h(tagName: string, attributes: object = {}, children: string | string[] = []) {
     const attrs = Object.keys(attributes).length === 0 ? undefined : attributes;
     const args = typeof children === "string" ? [children] : children;
     return createElement(tagName, attrs, ...args);
@@ -21,6 +21,38 @@ function h(tagName: string, attributes: object, children: string | string[]) {
 
 function repeatArray<T>(xs: T[], count: number): T[] {
     return _.flatten(_.times(count, () => xs));
+}
+
+function td(children: string, attributes: object = {}): string {
+    return h("td", attributes, children);
+}
+
+function inputTd(dataElementId: string, cocId: string): string {
+    return td(
+        h("input", {
+            name: "entryfield",
+            class: "entryfield",
+            id: `${dataElementId}-${cocId}-val`,
+        })
+    );
+}
+
+function totalTh(categoryOptionGroups: string[][], isSplit: boolean): string {
+    return h(
+        "th",
+        { rowspan: categoryOptionGroups.length, class: "data-header" },
+        h("span", { align: "center" }, isSplit ? i18n.t("Subtotal") : i18n.t("Total"))
+    );
+}
+
+function totalTd(dataElementId: string, cocIds: string[]): string {
+    return td(
+        h("input", {
+            class: "total-cell",
+            id: `row-${dataElementId}-${cocIds.join("-")}`,
+            disabled: "",
+        })
+    );
 }
 
 export class DataSetCustomForm {
@@ -33,7 +65,7 @@ export class DataSetCustomForm {
         return new DataSetCustomForm(campaign, metadata);
     }
 
-    renderHeaderForGroup(categoryOptionGroups: string[][]): Children {
+    renderHeaderForGroup(categoryOptionGroups: string[][], isSubTotal: boolean): Children {
         const total =
             _(categoryOptionGroups)
                 .map(cos => cos.length)
@@ -52,10 +84,11 @@ export class DataSetCustomForm {
             repeat: 1,
         };
 
-        return _(categoryOptionGroups).reduce(({ trs, count, repeat }, categoryOptions) => {
+        return _(categoryOptionGroups).reduce(({ trs, count, repeat }, categoryOptions, idx) => {
             const newCount = count / categoryOptions.length;
+            const showTotalField = idx === 0;
             const tr = h("tr", {}, [
-                h("td", { class: "header-first-column" }, ""),
+                h("td", { class: "header-first-column" }),
                 ...repeatArray(
                     categoryOptions.map(categoryOptionName =>
                         h(
@@ -66,6 +99,7 @@ export class DataSetCustomForm {
                     ),
                     repeat
                 ),
+                showTotalField ? totalTh(categoryOptionGroups, isSubTotal) : null,
             ]);
             return {
                 trs: trs.concat([tr]),
@@ -79,12 +113,12 @@ export class DataSetCustomForm {
         const metadataCode = antigen.code + "-" + deDis.code;
         const cocName = [antigen.name, ...categoryOptionNames].join(", ");
         const { cocIdByName } = _(this.metadata).getOrFail(metadataCode);
-        const cocId = _(cocIdByName).getOrFail(cocName);
-        const deId = deDis.id;
-        return h(
-            "input",
-            { name: "entryfield", class: "entryfield", id: `${deId}-${cocId}-val` },
-            ""
+        return _(cocIdByName).getOrFail(cocName);
+    }
+
+    getCocIds(antigen: Antigen, deDis: DataElementDis, categoryOptionGroups: string[][]): string[] {
+        return _.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
+            this.getCocId(antigen, deDis, categoryOptionNames)
         );
     }
 
@@ -95,12 +129,16 @@ export class DataSetCustomForm {
         idx: number
     ): string {
         const trClass = ["derow", `de-${deDis.id}`, idx === 0 ? "primary" : "secondary"].join(" ");
+        const cocIds = _.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
+            this.getCocId(antigen, deDis, categoryOptionNames)
+        );
+        const dataElementId = deDis.id;
+        const renderTotalCell = cocIds.length > 1;
 
         return h("tr", { class: trClass }, [
             h("td", { class: "data-element" }, deDis.name),
-            ..._.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
-                h("td", {}, this.getCocId(antigen, deDis, categoryOptionNames))
-            ),
+            ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
+            renderTotalCell ? totalTd(dataElementId, cocIds) : null,
         ]);
     }
 
@@ -152,25 +190,70 @@ export class DataSetCustomForm {
                 h(
                     "div",
                     { class: "tableGroup" },
-                    categoryOptionGroupsArray.map((categoryOptionGroups, idx) =>
-                        h("table", { class: "dataValuesTable" }, [
-                            h("thead", {}, this.renderHeaderForGroup(categoryOptionGroups)),
-                            h(
-                                "tbody",
-                                {},
-                                dataElements.map(dataElement =>
-                                    this.renderDataElement(
-                                        antigen,
-                                        dataElement,
+                    categoryOptionGroupsArray
+                        .map((categoryOptionGroups, idx) =>
+                            h("table", { class: "dataValuesTable" }, [
+                                h(
+                                    "thead",
+                                    {},
+                                    this.renderHeaderForGroup(
                                         categoryOptionGroups,
-                                        idx
+                                        categoryOptionGroupsArray.length > 1
                                     )
-                                )
-                            ),
-                        ])
-                    )
+                                ),
+                                h(
+                                    "tbody",
+                                    {},
+                                    dataElements.map(dataElement =>
+                                        this.renderDataElement(
+                                            antigen,
+                                            dataElement,
+                                            categoryOptionGroups,
+                                            idx
+                                        )
+                                    )
+                                ),
+                            ])
+                        )
+                        .concat(
+                            this.renderTotalTables(antigen, dataElements, categoryOptionGroupsArray)
+                        )
                 )
             )
+        );
+    }
+
+    private renderTotalTables(
+        antigen: Antigen,
+        dataElements: DataElementDis[],
+        categoryOptionGroupsArray: string[][][]
+    ): string[] {
+        const dataElementsToShow = categoryOptionGroupsArray.length > 1 ? dataElements : [];
+
+        return dataElementsToShow.map(dataElement =>
+            h("table", { class: "dataValuesTable" }, [
+                h("thead", {}, [
+                    h("td", { class: "header-first-column" }),
+                    h(
+                        "th",
+                        { class: "data-header" },
+                        h("span", { align: "center" }, i18n.t("Total"))
+                    ),
+                ]),
+                h(
+                    "tbody",
+                    {},
+                    h("tr", { class: `derow de-${dataElement.id} secondary` }, [
+                        h("td", { class: "data-element" }, dataElement.name),
+                        totalTd(
+                            dataElement.id,
+                            _.flatMap(categoryOptionGroupsArray, categoryOptionGroupsGroups =>
+                                this.getCocIds(antigen, dataElement, categoryOptionGroupsGroups)
+                            )
+                        ),
+                    ])
+                ),
+            ])
         );
     }
 
@@ -393,7 +476,7 @@ const css = `
         max-width: 200px;
     }
 
-    .entryfield, .indicator {
+    .entryfield, .total-cell, .indicator {
         max-width: 75px;
     }
 
