@@ -9,6 +9,7 @@ describe("Campaign configuration - List page", () => {
     });
 
     beforeEach(() => {
+        cy.login("admin");
         cy.loadPage();
         cy.contains("Campaign Configuration").click();
     });
