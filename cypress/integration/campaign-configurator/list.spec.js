@@ -1,9 +1,12 @@
+import { getApiUrl } from "../../support/utils";
+import _ from "lodash";
+
 describe("Campaign configuration - List page", () => {
     before(() => {
         cy.login("admin");
         cy.fixture("datasets.json").then(testDataSets => {
-            cy.request("POST", "http://dev2.eyeseetea.com:8082/api/metadata", {
-                dataSets: [testDataSets["0"], testDataSets["1"], testDataSets["2"]],
+            cy.request("POST", getApiUrl("/metadata"), {
+                dataSets: _.values(testDataSets),
             });
         });
     });
@@ -16,14 +19,13 @@ describe("Campaign configuration - List page", () => {
 
     after(() => {
         cy.fixture("datasets.json").then(testDataSets => {
-            cy.request(
-                "DELETE",
-                `http://dev2.eyeseetea.com:8082/api/dataSets/${testDataSets["0"].id}`
-            );
-            cy.request(
-                "DELETE",
-                `http://dev2.eyeseetea.com:8082/api/dataSets/${testDataSets["1"].id}`
-            );
+            _(testDataSets).each(dataSet => {
+                cy.request({
+                    method: "DELETE",
+                    url: getApiUrl(`/dataSets/${dataSet.id}`),
+                    failOnStatusCode: false,
+                });
+            });
         });
     });
 
