@@ -72,10 +72,14 @@ describe("Campaign configuration - List page", () => {
     it("shows list of user dataset sorted alphabetically desc", () => {
         cy.contains("Name").click();
         cy.wait(3000); // eslint-disable-line cypress/no-unnecessary-waiting
-        cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").then(text1 => {
-            cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").then(text2 => {
-                assert.isTrue(text1.text() > text2.text());
-            });
+
+        cy.get(".data-table__rows > * > :nth-child(2) span").then(spans$ => {
+            const names = spans$.get().map(x => x.innerText);
+            const sortedNames = _(names)
+                .orderBy(name => name.toLowerCase())
+                .reverse()
+                .value();
+            assert.isTrue(_.isEqual(names, sortedNames));
         });
     });
 
