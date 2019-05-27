@@ -30,6 +30,7 @@ export interface Data {
     targetPopulation: Maybe<TargetPopulation>;
     attributeValues: AttributeValue[];
     teams: Maybe<number>;
+    teamsMetadata: TeamsMetadata;
 }
 
 function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined) {
@@ -49,6 +50,11 @@ interface DashboardWithResources {
         map: Ref;
         reportTable: Ref;
     };
+}
+
+interface TeamsMetadata {
+    elements: Array<object>;
+    organisationUnitIds: Array<string>;
 }
 
 export default class Campaign {
@@ -72,7 +78,10 @@ export default class Campaign {
             targetPopulation: undefined,
             attributeValues: [],
             teams: undefined,
-            teamsMetadata: undefined,
+            teamsMetadata: {
+                elements: [],
+                organisationUnitIds: [],
+            },
         };
 
         return new Campaign(db, config, initialData);
@@ -138,8 +147,10 @@ export default class Campaign {
             period ? moment(period).toDate() : null
         );
 
+        const organisationUnitIds = dataSet.organisationUnits.map(ou => ou.id);
+
         const teamsMetadata = await db.getTeamsForOrganisationUnits(
-            dataSet.organisationUnits,
+            organisationUnitIds,
             config.categoryCodeForTeams
         );
 
@@ -159,7 +170,10 @@ export default class Campaign {
             attributeValues: dataSet.attributeValues,
             targetPopulation: undefined,
             teams: _.size(teamsMetadata),
-            teamsMetadata,
+            teamsMetadata: {
+                elements: teamsMetadata,
+                organisationUnitIds,
+            },
         };
 
         return new Campaign(db, config, initialData);
@@ -376,6 +390,14 @@ export default class Campaign {
 
     public setTeams(teams: string): Campaign {
         return this.update({ ...this.data, teams: parseInt(teams) });
+    }
+
+    public get teamsMetadata(): TeamsMetadata {
+        return this.data.teamsMetadata;
+    }
+
+    public setteamsMetadata(teamsMetadata: TeamsMetadata): Campaign {
+        return this.update({ ...this.data, teamsMetadata });
     }
 
     /* Save */

@@ -18,7 +18,6 @@ import {
     Response,
     DataValue,
     MetadataOptions,
-    OrganisationUnitPathOnly,
 } from "./db.types";
 import _ from "lodash";
 import "../utils/lodash-mixins";
@@ -234,10 +233,9 @@ export default class DbD2 {
     }
 
     public async getTeamsForOrganisationUnits(
-        organisationUnits: OrganisationUnitPathOnly[],
+        organisationUnitIds: string[],
         categoryCodeForTeams: string
     ) {
-        const organisationUnitIds = _.map(organisationUnits, "id");
         const { categoryOptions } = await this.api.get("/metadata", {
             "categoryOptions:fields": ":owner,categories[id,code]",
             "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
@@ -251,7 +249,7 @@ export default class DbD2 {
                 return _.includes(categoryCodes, categoryCodeForTeams);
             }
         );
-        console.log({ success: teams });
+
         return teams;
     }
 
