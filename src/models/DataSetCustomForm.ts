@@ -3,13 +3,12 @@ const { createElement } = require("typed-html");
 
 import Campaign, { Antigen } from "./campaign";
 import { AntigenDisaggregationEnabled, CustomFormMetadata } from "./AntigensDisaggregation";
-import "../utils/lodash-mixins";
 import i18n from "../locales";
+import "../utils/lodash-mixins";
 
 type Children = string[];
-
 type Disaggregations = AntigenDisaggregationEnabled;
-type DataElementDis = Disaggregations[0]["dataElements"][0];
+type DataElement = Disaggregations[0]["dataElements"][0];
 
 const dataElementCodeDosesRegexp = /DOSES/;
 
@@ -109,40 +108,45 @@ export class DataSetCustomForm {
         }, initial).trs;
     }
 
-    getCocId(antigen: Antigen, deDis: DataElementDis, categoryOptionNames: string[]): string {
-        const metadataCode = antigen.code + "-" + deDis.code;
+    getCocId(antigen: Antigen, dataElement: DataElement, categoryOptionNames: string[]): string {
+        const metadataCode = antigen.code + "-" + dataElement.code;
         const cocName = [antigen.name, ...categoryOptionNames].join(", ");
         const { cocIdByName } = _(this.metadata).getOrFail(metadataCode);
         return _(cocIdByName).getOrFail(cocName);
     }
 
-    getCocIds(antigen: Antigen, deDis: DataElementDis, categoryOptionGroups: string[][]): string[] {
+    getCocIds(
+        antigen: Antigen,
+        dataElement: DataElement,
+        categoryOptionGroups: string[][]
+    ): string[] {
         return _.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
-            this.getCocId(antigen, deDis, categoryOptionNames)
+            this.getCocId(antigen, dataElement, categoryOptionNames)
         );
     }
 
     renderDataElement(
         antigen: Antigen,
-        deDis: DataElementDis,
+        dataElement: DataElement,
         categoryOptionGroups: string[][],
         idx: number
     ): string {
-        const trClass = ["derow", `de-${deDis.id}`, idx === 0 ? "primary" : "secondary"].join(" ");
+        const trType = idx === 0 ? "primary" : "secondary";
+        const trClass = ["derow", `de-${dataElement.id}`, trType].join(" ");
         const cocIds = _.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
-            this.getCocId(antigen, deDis, categoryOptionNames)
+            this.getCocId(antigen, dataElement, categoryOptionNames)
         );
-        const dataElementId = deDis.id;
+        const dataElementId = dataElement.id;
         const renderTotalCell = cocIds.length > 1;
 
         return h("tr", { class: trClass }, [
-            h("td", { class: "data-element" }, deDis.name),
+            h("td", { class: "data-element" }, dataElement.name),
             ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
             renderTotalCell ? totalTd(dataElementId, cocIds) : null,
         ]);
     }
 
-    getDataElementByCategoryOptionsLists(dataElements: DataElementDis[]) {
+    getDataElementByCategoryOptionsLists(dataElements: DataElement[]) {
         return _(dataElements)
             .groupBy(({ categories }) =>
                 categories.map(category => [category.code, ...category.categoryOptions])
@@ -177,7 +181,7 @@ export class DataSetCustomForm {
     renderGroupWrapper(
         antigen: Antigen,
         data: {
-            dataElements: DataElementDis[];
+            dataElements: DataElement[];
             categoryOptionGroupsList: string[][][][];
         }
     ) {
@@ -225,9 +229,9 @@ export class DataSetCustomForm {
 
     private renderTotalTables(
         antigen: Antigen,
-        dataElements: DataElementDis[],
+        dataElements: DataElement[],
         categoryOptionGroupsArray: string[][][]
-    ): string[] {
+    ): Children {
         const dataElementsToShow = categoryOptionGroupsArray.length > 1 ? dataElements : [];
 
         return dataElementsToShow.map(dataElement =>
