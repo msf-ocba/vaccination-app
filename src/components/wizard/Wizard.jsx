@@ -12,6 +12,7 @@ import Button from "@material-ui/core/Button";
 import { IconButton } from "@material-ui/core";
 import Icon from "@material-ui/core/Icon";
 import { DialogButton, withSnackbar } from "d2-ui-components";
+import Linkify from "react-linkify";
 
 const styles = theme => ({
     root: {
@@ -220,7 +221,9 @@ class Wizard extends React.Component {
 
                 <Paper className={classes.contents} data-wizard-contents={true}>
                     {currentStep.description && (
-                        <div className={classes.description}>{currentStep.description}.</div>
+                        <div className={classes.description}>
+                            <Linkify>{currentStep.description}</Linkify>
+                        </div>
                     )}
                     {<currentStep.component {...currentStep.props} />}
                     <div className={classes.buttonContainer}>
