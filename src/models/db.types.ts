@@ -77,13 +77,6 @@ export interface AttributeValue {
     attribute: { id: string; code?: string };
 }
 
-export interface Dashboard {
-    id: string;
-    code: string;
-    displayName: string;
-    categoryCombo: Ref;
-}
-
 export interface DataElement {
     id: string;
     code: string;
@@ -280,19 +273,6 @@ export type ModelName =
 export interface MetadataGetModelParams {
     fields?: ModelFields;
     filters?: string[];
-}
-
-interface DashboardItemElement {
-    type: string;
-    reportTable?: Ref;
-    chart?: Ref;
-}
-
-export interface DashboardData {
-    items?: DashboardItemElement[];
-    charts: Dictionary<any>[];
-    reportTables: Dictionary<any>[];
-    dashboard?: Dictionary<any>;
 }
 
 export type MetadataGetParams = { [key in ModelName]?: MetadataGetModelParams };

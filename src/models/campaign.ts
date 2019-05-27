@@ -28,6 +28,7 @@ export interface Data {
     antigens: Antigen[];
     antigensDisaggregation: AntigensDisaggregation;
     targetPopulation: Maybe<TargetPopulation>;
+    dashboardId: Maybe<string>;
 }
 
 function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined) {
@@ -68,6 +69,7 @@ export default class Campaign {
             antigens: antigens,
             antigensDisaggregation: AntigensDisaggregation.build(config, antigens, []),
             targetPopulation: undefined,
+            dashboardId: undefined,
         };
 
         return new Campaign(db, config, initialData);
@@ -88,6 +90,7 @@ export default class Campaign {
                 organisationUnits: Array<OrganisationUnitPathOnly>;
                 dataInputPeriods: Array<{ period: { id: string } }>;
                 sections: Array<SectionForDisaggregation>;
+                attributeValues: Array<AttributeValue>;
             }>;
         }>({
             dataSets: {
@@ -115,6 +118,7 @@ export default class Campaign {
                             dataElement: { id: true },
                         },
                     },
+                    attributeValues: { value: true, attribute: { id: true, code: true } },
                 },
                 filters: [`id:eq:${dataSetId}`],
             },
@@ -131,6 +135,10 @@ export default class Campaign {
             period ? moment(period).toDate() : null
         );
 
+        const dashboardId: Maybe<string> = _(dataSet.attributeValues)
+            .keyBy(attributeValue => attributeValue.attribute.id)
+            .get([config.attributes.dashboard.id, "value"]);
+
         const initialData = {
             id: dataSet.id,
             name: dataSet.name,
@@ -145,6 +153,7 @@ export default class Campaign {
                 dataSet.sections
             ),
             targetPopulation: undefined,
+            dashboardId,
         };
 
         return new Campaign(db, config, initialData);
@@ -159,43 +168,7 @@ export default class Campaign {
         db: DbD2,
         dataSets: DataSetWithAttributes[]
     ): Promise<Response<string>> {
-        const dashboardIds = _(dataSets)
-            .flatMap(dataSet => dataSet.attributeValues)
-            .filter(attrVal => attrVal.attribute.code === config.attributeCodeForDashboard)
-            .map(attributeValue => attributeValue.value)
-            .value();
-
-        const { dashboards } = await db.getMetadata<{ dashboards: DashboardWithResources[] }>({
-            dashboards: {
-                fields: {
-                    id: true,
-                    dashboardItems: {
-                        id: true,
-                        chart: { id: true },
-                        map: { id: true },
-                        reportTable: { id: true },
-                    },
-                },
-                filters: [`id:in:[${dashboardIds.join(",")}]`],
-            },
-        });
-
-        const resources: { model: string; id: string }[] = _(dashboards)
-            .flatMap(dashboard => dashboard.dashboardItems)
-            .flatMap(item => [
-                { model: "charts", ref: item.chart },
-                { model: "reportTables", ref: item.reportTable },
-                { model: "maps", ref: item.map },
-            ])
-            .map(({ model, ref }) => (ref ? { model, id: ref.id } : null))
-            .compact()
-            .value();
-
-        const modelReferencesToDelete = _.concat(
-            dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
-            resources,
-            dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id }))
-        );
+        const modelReferencesToDelete = await this.getResources(config, db, dataSets);
 
         return db.deleteMany(modelReferencesToDelete);
     }
@@ -392,6 +365,12 @@ export default class Campaign {
         });
     }
 
+    // Attribute Values
+
+    public get dashboardId(): Maybe<string> {
+        return this.data.dashboardId;
+    }
+
     /* Save */
 
     isEdit(): boolean {
@@ -401,5 +380,49 @@ export default class Campaign {
     public async save(): Promise<Response<string>> {
         const campaignDb = new CampaignDb(this);
         return campaignDb.save();
+    }
+
+    public static async getResources(
+        config: MetadataConfig,
+        db: DbD2,
+        dataSets: DataSetWithAttributes[]
+    ) {
+        const dashboardIds = _(dataSets)
+            .flatMap(dataSet => dataSet.attributeValues)
+            .filter(attrVal => attrVal.attribute.code === config.attributeCodeForDashboard)
+            .map(attributeValue => attributeValue.value)
+            .value();
+
+        const { dashboards } = await db.getMetadata<{ dashboards: DashboardWithResources[] }>({
+            dashboards: {
+                fields: {
+                    id: true,
+                    dashboardItems: {
+                        id: true,
+                        chart: { id: true },
+                        map: { id: true },
+                        reportTable: { id: true },
+                    },
+                },
+                filters: [`id:in:[${dashboardIds.join(",")}]`],
+            },
+        });
+
+        const resources: { model: string; id: string }[] = _(dashboards)
+            .flatMap(dashboard => dashboard.dashboardItems)
+            .flatMap(item => [
+                { model: "charts", ref: item.chart },
+                { model: "reportTables", ref: item.reportTable },
+                { model: "maps", ref: item.map },
+            ])
+            .map(({ model, ref }) => (ref ? { model, id: ref.id } : null))
+            .compact()
+            .value();
+
+        return _.concat(
+            dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
+            dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id })),
+            resources
+        );
     }
 }
