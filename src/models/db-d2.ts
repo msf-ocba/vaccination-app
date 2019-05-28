@@ -234,11 +234,11 @@ export default class DbD2 {
 
     public async getTeamsForCampaign(
         organisationUnitIds: string[],
-        categoryCodeForTeams: string,
+        teamCategoryId: string,
         campaignName: string
     ) {
         const { categoryOptions } = await this.api.get("/metadata", {
-            "categoryOptions:fields": ":owner,categories[id,code],name",
+            "categoryOptions:fields": ":owner,categories[id],name",
             "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
         });
 
@@ -247,11 +247,13 @@ export default class DbD2 {
         const matcher = new RegExp(expression);
 
         const teams = categoryOptions.filter(
-            (co: { categories: Array<{ id: string; code: string }>; name: string }) => {
-                const categoryCodes = co.categories.map(c => c.code);
-                return _.includes(categoryCodes, categoryCodeForTeams) && matcher.test(co.name);
+            (co: { categories: Array<{ id: string }>; name: string }) => {
+                const categoryIds = co.categories.map(c => c.id);
+                return _.includes(categoryIds, teamCategoryId) && matcher.test(co.name);
             }
         );
+
+        console.log({ getTeams: teams });
 
         return teams;
     }

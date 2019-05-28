@@ -149,9 +149,13 @@ export default class Campaign {
 
         const organisationUnitIds = dataSet.organisationUnits.map(ou => ou.id);
 
+        const teamsCategoyId = _(config.categories)
+            .keyBy("code")
+            .getOrFail(config.categoryComboCodeForTeams).id;
+
         const teamsMetadata = await db.getTeamsForCampaign(
             organisationUnitIds,
-            config.categoryCodeForTeams,
+            teamsCategoyId,
             dataSet.name
         );
 

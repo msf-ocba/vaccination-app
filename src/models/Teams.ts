@@ -2,7 +2,7 @@ import _ from "lodash";
 import DbD2, { ApiResponse } from "./db-d2";
 import { generateUid } from "d2/uid";
 import { Moment } from "moment";
-import { Ref, OrganisationUnitPathOnly, MetadataResponse } from "./db.types";
+import { OrganisationUnitPathOnly, MetadataResponse } from "./db.types";
 import { MetadataConfig } from "./config";
 
 interface TeamsMetadata {
@@ -37,7 +37,7 @@ export class Teams {
         const {
             metadata: { organisationUnitIds: oldOrganisationUnitIds, elements: oldTeams },
         } = this;
-        if (!teams) return;
+        if (!teams) return [];
 
         if (!isEdit) {
             return this.generateTeams(
@@ -54,20 +54,18 @@ export class Teams {
 
         const teamDifference = teams - _.size(oldTeams);
 
-        const organisationUnitsDifferenceIds = _.difference(
-            newOrganisationUnitIds,
-            oldOrganisationUnitIds
-        );
+        const organisationUnitsDifference =
+            !(_.size(newOrganisationUnitIds) === _.size(oldOrganisationUnitIds)) ||
+            _.differenceWith(newOrganisationUnitIds, oldOrganisationUnitIds, _.isEqual);
 
         // happy case
-        if (!teamDifference && _.isEmpty(organisationUnitsDifferenceIds)) return [];
+        if (!teamDifference && !organisationUnitsDifference) return [];
 
-        let newTeams = [...oldTeams];
+        let allTeams = [...oldTeams];
 
-        // New teams
         if (teamDifference > 0) {
-            newTeams = [
-                ...newTeams,
+            allTeams = [
+                ...allTeams,
                 ...this.generateTeams(
                     teamDifference,
                     name,
@@ -79,7 +77,7 @@ export class Teams {
                 ),
             ];
         } else if (teamDifference < 0) {
-            newTeams = _(oldTeams)
+            allTeams = _(oldTeams)
                 .sortBy("name")
                 .slice(0, _.size(oldTeams) + 1 + teamDifference)
                 .value();
@@ -87,37 +85,30 @@ export class Teams {
             // TODO: Delete removed teams, must be done on postSave.
         }
 
-        // TODO: Clean teams of unselected OUs or add to all teams new OUs
+        if (organisationUnitsDifference) {
+            this.updateTeamsOUs(organisationUnits);
+        }
 
-        console.log({ newTeams, teamDifference, organisationUnitsDifferenceIds, oldTeams, teams });
+        console.log({ allTeams, teamDifference, newOrganisationUnitIds, oldTeams, teams });
 
-        return newTeams;
+        return allTeams;
     }
 
-    public async updateTeamsByOrganisationUnitIds(
-        organisationUnitIds: string[],
-        categoryCodeForTeams: string,
-        cleanAll = false
-    ) {
-        const { db } = this;
+    private async updateTeamsOUs(organisationUnits: OrganisationUnitPathOnly[]) {
+        const {
+            db,
+            metadata: { elements: oldTeams },
+        } = this;
 
-        const teams: Array<{
-            organisationUnits: Array<Ref>;
-        }> = await db.getTeamsForCampaign(organisationUnitIds, categoryCodeForTeams, "removeThis");
-
-        const filteredOrganisationUnits = (team: { organisationUnits: Array<Ref> }) => {
-            return _.filter(team.organisationUnits, ou => !_.includes(organisationUnitIds, ou.id));
-        };
-
-        const updatedTeams = _.map(teams, co => ({
+        const updatedTeams = _.map(oldTeams, co => ({
             ...co,
-            organisationUnits: cleanAll ? [] : filteredOrganisationUnits(co),
+            organisationUnits,
         }));
 
         const updateResponse = await db.postMetadata({ categoryOptions: updatedTeams });
 
         if (!updateResponse.status) {
-            return { status: false, error: "Cannot clean old teams from Organisation Units" };
+            return { status: false, error: "Cannot clean old Organisation Units from teams" };
         }
     }
 
