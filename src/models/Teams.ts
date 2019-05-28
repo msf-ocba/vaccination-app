@@ -1,4 +1,4 @@
-import _, { Dictionary } from "lodash";
+import _ from "lodash";
 import DbD2, { ApiResponse } from "./db-d2";
 import { generateUid } from "d2/uid";
 import { Moment } from "moment";
@@ -17,8 +17,8 @@ export class Teams {
         return new Teams(db, metadata);
     }
 
-    public async create({
-        teams, // WIP
+    public async getTeams({
+        teams,
         name,
         organisationUnits,
         teamsCategoyId,
@@ -60,7 +60,7 @@ export class Teams {
         );
 
         // happy case
-        if (!teamDifference && _.isEmpty(organisationUnitsDifferenceIds)) return;
+        if (!teamDifference && _.isEmpty(organisationUnitsDifferenceIds)) return [];
 
         let newTeams = [...oldTeams];
 
@@ -84,32 +84,14 @@ export class Teams {
                 .slice(0, _.size(oldTeams) + 1 + teamDifference)
                 .value();
 
-            // Remove OU references for deleted teams
-            const removedTeams: Array<object> = _.differenceBy(oldTeams, newTeams, "id");
-            if (!_.isEmpty(removedTeams)) await this.cleanRemovedTeams(removedTeams);
+            // TODO: Delete removed teams, must be done on postSave.
         }
 
-        // Clean teams for unselected OUs
-        //const removeOf = _.intersection(oldOrganisationUnitIds, organisationUnitsDifferenceIds);
-        //if (!_.isEmpty(removeOf)) await this.updateTeamsByOrganisationUnitIds(removeOf);
+        // TODO: Clean teams of unselected OUs or add to all teams new OUs
+
         console.log({ newTeams, teamDifference, organisationUnitsDifferenceIds, oldTeams, teams });
 
-        // TODO:
-        // - Return extra teams for creation - DONE
-        // - Update Team Category with new teams (only? or is it the same if we post the whole lot again?) - DONE
-        // - Include extra (minus) teams on dashboard regeneration - DONE
-
         return newTeams;
-        //const addTo = _.intersection(newOrganisationUnitIds, organisationUnitsDifference);
-    }
-
-    private async cleanRemovedTeams(toRemove: Array<object>) {
-        const { db } = this;
-        const updatedTeams = _.map(toRemove, co => ({ ...co, organisationUnits: [] }));
-        const updateResponse = await db.postMetadata({ categoryOptions: updatedTeams });
-        if (!updateResponse.status) {
-            return { status: false, error: "Cannot remove old teams from Organisation Units" };
-        }
     }
 
     public async updateTeamsByOrganisationUnitIds(
@@ -121,7 +103,7 @@ export class Teams {
 
         const teams: Array<{
             organisationUnits: Array<Ref>;
-        }> = await db.getTeamsForOrganisationUnits(organisationUnitIds, categoryCodeForTeams);
+        }> = await db.getTeamsForCampaign(organisationUnitIds, categoryCodeForTeams, "removeThis");
 
         const filteredOrganisationUnits = (team: { organisationUnits: Array<Ref> }) => {
             return _.filter(team.organisationUnits, ou => !_.includes(organisationUnitIds, ou.id));
@@ -149,7 +131,7 @@ export class Teams {
         nameOffset: number = 0
     ) {
         const teamsData: Array<object> = _.range(1, teams + 1).map(i => {
-            const name = `${campaignName} ${nameOffset + i}`;
+            const name = `Team ${nameOffset + i} ${campaignName}`;
             const categoryOption = {
                 id: generateUid(),
                 name,

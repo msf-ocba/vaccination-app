@@ -1,20 +1,12 @@
 import DbD2, { ApiResponse, ModelReference } from "./db-d2";
 import { generateUid } from "d2/uid";
-import moment, { Moment } from "moment";
+import moment from "moment";
 import _ from "lodash";
 import "../utils/lodash-mixins";
 
 import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
-import {
-    Maybe,
-    MetadataResponse,
-    DataEntryForm,
-    Section,
-    AttributeValue,
-    OrganisationUnitPathOnly,
-    Ref,
-} from "./db.types";
+import { Maybe, MetadataResponse, DataEntryForm, Section, AttributeValue } from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
@@ -61,7 +53,7 @@ export default class CampaignDb {
         //// TEAMS SECTION
 
         const teamGenerator = Teams.build(db, teamsMetadata);
-        const newTeams = await teamGenerator.create({
+        const newTeams = await teamGenerator.getTeams({
             teams: campaign.teams || 0, // WIP
             name: campaign.name,
             organisationUnits: campaign.organisationUnits,
@@ -72,19 +64,6 @@ export default class CampaignDb {
         });
 
         const teamsToCreate = _.differenceBy(newTeams, teamsMetadata.elements, "id");
-
-        /*
-        if (campaign.isEdit()) {
-            teamsData = this.editedTeams();
-        } else {
-            teamsData = this.generateTeams(
-                campaign.teams || 0, // WIP
-                campaign.name,
-                campaign.organisationUnits,
-                teamsCategoyId
-            );
-        }
-        */
 
         const dashboardId: Maybe<string> = campaign.isEdit()
             ? _(campaign.attributeValues)
@@ -223,14 +202,6 @@ export default class CampaignDb {
         } else {
             metadata = allMetadata;
         }
-
-        // Clean Organisation Unit of past teams beforehand to avoid having them appear on DataEntry app.
-        //const organisationUnitIds = this.campaign.organisationUnits.map(ou => ou.id);
-
-        /*
-        if (!campaign.isEdit()) {
-            await this.updateTeamsByOrganisationUnitIds(organisationUnitIds, true);
-        } */
 
         const result: ApiResponse<MetadataResponse> = await db.postMetadata<Metadata>(metadata);
 
