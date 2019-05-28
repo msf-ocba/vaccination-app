@@ -7,6 +7,7 @@ import moment from "moment";
 
 import PageHeader from "../shared/PageHeader";
 import { getOrganisationUnitsById, getDataInputPeriodsById } from "../../models/datasets";
+import { getDhis2Url } from "../../utils/routes";
 
 class DataEntry extends React.Component {
     static propTypes = {
@@ -24,9 +25,9 @@ class DataEntry extends React.Component {
             match: { params },
         } = this.props;
         const dataSetId = params.id;
-        const organisationUnits = await getOrganisationUnitsById(dataSetId, d2);
+        const organisationUnits = dataSetId ? await getOrganisationUnitsById(dataSetId, d2) : null;
 
-        if (organisationUnits) {
+        if (!dataSetId || (dataSetId && organisationUnits)) {
             this.setState({ isDataEntryIdValid: true }, () => {
                 const iframe = ReactDOM.findDOMNode(this.refs.iframe);
                 iframe.addEventListener(
@@ -64,55 +65,68 @@ class DataEntry extends React.Component {
         const iframeDocument = iframe.contentWindow.document;
         this.styleFrame(iframeDocument);
 
-        // Select OU in the tree
-        const iframeSelection = iframe.contentWindow.selection;
-        iframeSelection.select(organisationUnits);
+        if (organisationUnits) {
+            // Select OU in the tree
+            const iframeSelection = iframe.contentWindow.selection;
+            iframeSelection.select(organisationUnits);
 
-        // Wait for OU to be selected and select the dataset
-        await this.waitforOUSelection(iframeDocument.querySelector("#selectedDataSetId"));
-        iframeDocument.querySelector(`#selectedDataSetId [value="${dataSetId}"]`).selected = true;
-        iframe.contentWindow.dataSetSelected();
+            // Wait for OU to be selected and select the dataset
+            await this.waitforOUSelection(iframeDocument.querySelector("#selectedDataSetId"));
+            iframeDocument.querySelector(
+                `#selectedDataSetId [value="${dataSetId}"]`
+            ).selected = true;
+            iframe.contentWindow.dataSetSelected();
 
-        // Remove non-valid periods
-        const dataInputPeriods = await getDataInputPeriodsById(dataSetId, d2);
-        const removeNonValidPeriods = () => {
-            const selectedDataSetId = iframeDocument.querySelector("#selectedDataSetId")
-                .selectedOptions[0].value;
-            if (selectedDataSetId === dataSetId) {
-                const selectPeriod = iframeDocument.querySelector("#selectedPeriodId");
-                const optionPeriods = Array.from(selectPeriod.childNodes);
-                optionPeriods.forEach(option => {
-                    const optionFormat = moment(option.value);
-                    if (
-                        optionFormat.isValid() &&
-                        !optionFormat.isBetween(
-                            dataInputPeriods.openingDate,
-                            dataInputPeriods.closingDate,
-                            null,
-                            "[]"
-                        )
-                    ) {
-                        selectPeriod.removeChild(option);
-                    }
+            // Remove non-valid periods
+            const dataInputPeriods = await getDataInputPeriodsById(dataSetId, d2);
+            const removeNonValidPeriods = () => {
+                const selectedDataSetId = iframeDocument.querySelector("#selectedDataSetId")
+                    .selectedOptions[0].value;
+                if (selectedDataSetId === dataSetId) {
+                    const selectPeriod = iframeDocument.querySelector("#selectedPeriodId");
+                    const optionPeriods = Array.from(selectPeriod.childNodes);
+                    optionPeriods.forEach(option => {
+                        const optionFormat = moment(option.value);
+                        if (
+                            optionFormat.isValid() &&
+                            !optionFormat.isBetween(
+                                dataInputPeriods.openingDate,
+                                dataInputPeriods.closingDate,
+                                null,
+                                "[]"
+                            )
+                        ) {
+                            selectPeriod.removeChild(option);
+                        }
+                    });
+                }
+            };
+            removeNonValidPeriods();
+            iframeDocument
+                .querySelectorAll("#selectedDataSetId, #prevButton, #nextButton")
+                .forEach(element => {
+                    element.addEventListener("click", () => {
+                        removeNonValidPeriods();
+                    });
                 });
-            }
-        };
-        removeNonValidPeriods();
-        iframeDocument
-            .querySelectorAll("#selectedDataSetId, #prevButton, #nextButton")
-            .forEach(element => {
-                element.addEventListener("click", () => {
-                    removeNonValidPeriods();
-                });
-            });
+        }
     }
 
     backCampaignConfiguration = () => {
-        this.props.history.push("/campaign-configuration");
+        const {
+            match: { params },
+        } = this.props;
+        if (params.id) {
+            this.props.history.push("/campaign-configuration");
+        } else {
+            this.props.history.push("/");
+        }
     };
 
     render() {
         const { isDataEntryIdValid } = this.state;
+        const dataEntryUrl = getDhis2Url(this.props.d2, "/dhis-web-dataentry/index.action");
+
         return (
             <React.Fragment>
                 <PageHeader
@@ -124,7 +138,7 @@ class DataEntry extends React.Component {
                         <iframe
                             ref="iframe"
                             title={i18n.t("Data Entry")}
-                            src={"/dhis-web-dataentry/index.action"}
+                            src={dataEntryUrl}
                             style={styles.iframe}
                         />
                     )}

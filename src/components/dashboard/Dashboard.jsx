@@ -6,6 +6,7 @@ import ReactDOM from "react-dom";
 
 import PageHeader from "../shared/PageHeader";
 import { getDatasetById, getDashboardId } from "../../models/datasets";
+import { getDhis2Url } from "../../utils/routes";
 
 class Dashboard extends React.Component {
     static propTypes = {
@@ -18,20 +19,30 @@ class Dashboard extends React.Component {
     };
 
     async componentDidMount() {
-        const dashboardURL = await this.getDashboardURL();
+        const {
+            d2,
+            match: { params },
+            config,
+        } = this.props;
+        const dataSetId = params.id;
+        const dashboardURL = await this.getDashboardURL(dataSetId, config, d2);
+
         this.setState({ iFrameSrc: dashboardURL }, () => {
             const { iFrameSrc } = this.state;
             if (iFrameSrc) {
                 const iframe = ReactDOM.findDOMNode(this.refs.iframe);
-                iframe.addEventListener("load", this.setDashboardStyling.bind(this, iframe));
+                iframe.addEventListener(
+                    "load",
+                    this.setDashboardStyling.bind(this, iframe, dataSetId)
+                );
             }
         });
     }
 
-    waitforDashboardToLoad(iframeDocument) {
+    waitforElementToLoad(iframeDocument, selector) {
         return new Promise(resolve => {
             const check = () => {
-                if (iframeDocument.querySelector(".app-wrapper")) {
+                if (iframeDocument.querySelector(selector)) {
                     resolve();
                 } else {
                     setTimeout(check, 1000);
@@ -42,31 +53,47 @@ class Dashboard extends React.Component {
         });
     }
 
-    async setDashboardStyling(iframe) {
+    async setDashboardStyling(iframe, dataSetId) {
         const iframeDocument = iframe.contentWindow.document;
 
-        await this.waitforDashboardToLoad(iframeDocument);
+        await this.waitforElementToLoad(iframeDocument, ".app-wrapper");
         const iFrameRoot = iframeDocument.querySelector("#root");
-        iFrameRoot.style.marginTop = "-110px";
         const iFrameWrapper = iframeDocument.querySelector(".app-wrapper");
+        const pageContainer = iframeDocument.querySelector(".page-container-top-margin");
+        const controlBar = iframeDocument.querySelector(".d2-ui-control-bar");
+
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
-        iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
+        pageContainer.style.marginTop = "0px";
+        iFrameRoot.style.marginTop = "0px";
+        controlBar.style.top = 0;
+        
+        if (dataSetId) {
+            iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
+            
+            await this.waitforElementToLoad(iframeDocument, ".titlebar-wrapper");
+            const editButton = iframeDocument.querySelector(".titlebar-wrapper a[href*='edit']");
+            if (editButton) editButton.remove();
+        }
     }
 
     backCampaignConfiguration = () => {
-        this.props.history.push("/campaign-configuration");
+        const {
+            match: { params },
+        } = this.props;
+        if (params.id) {
+            this.props.history.push("/campaign-configuration");
+        } else {
+            this.props.history.push("/");
+        }
     };
 
-    async getDashboardURL() {
-        const {
-            d2,
-            match: { params },
-            config,
-        } = this.props;
-        const dataSet = await getDatasetById(params.id, d2);
-        if (dataSet) {
+    async getDashboardURL(dataSetId, config, d2) {
+        const dataSet = dataSetId ? await getDatasetById(dataSetId, d2) : null;
+        if (!dataSetId) {
+            return getDhis2Url(d2, `/dhis-web-dashboard/#/`);
+        } else if (dataSet) {
             const dashboardId = getDashboardId(dataSet, config);
-            return `/dhis-web-dashboard/#/${dashboardId}`;
+            return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboardId}`);
         } else {
             this.props.snackbar.error(i18n.t("Cannot find dashboard associated with the campaign"));
         }
