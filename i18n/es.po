@@ -98,6 +98,9 @@ msgstr "Sí"
 msgid "Campaigns"
 msgstr "Campañas"
 
+msgid "Create Campaign"
+msgstr "Crear Campaña"
+
 msgid "Cannot load campaign"
 msgstr "No se puede cargar la campaña"
 

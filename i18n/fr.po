@@ -96,6 +96,9 @@ msgstr ""
 msgid "Campaigns"
 msgstr ""
 
+msgid "Create Campaign"
+msgstr ""
+
 msgid "Cannot load campaign"
 msgstr ""
 
