@@ -2,7 +2,7 @@ import _ from "lodash";
 import DbD2, { ApiResponse } from "./db-d2";
 import { generateUid } from "d2/uid";
 import { Moment } from "moment";
-import { OrganisationUnitPathOnly, MetadataResponse } from "./db.types";
+import { OrganisationUnitPathOnly, MetadataResponse, Ref } from "./db.types";
 import { MetadataConfig } from "./config";
 
 interface TeamsMetadata {
@@ -79,18 +79,13 @@ export class Teams {
         } else if (teamDifference < 0) {
             allTeams = _(oldTeams)
                 .sortBy("name")
-                .slice(0, _.size(oldTeams) + 1 + teamDifference)
+                .slice(0, _.size(oldTeams) + teamDifference)
                 .value();
-
-            // TODO: Delete removed teams, must be done on postSave.
         }
 
         if (organisationUnitsDifference) {
             this.updateTeamsOUs(organisationUnits);
         }
-
-        console.log({ allTeams, teamDifference, newOrganisationUnitIds, oldTeams, teams });
-
         return allTeams;
     }
 
@@ -148,7 +143,12 @@ export class Teams {
         return teamsData;
     }
 
-    static async updateTeamCategory(db: DbD2, teamsData: Array<object>, config: MetadataConfig) {
+    static async updateTeamCategory(
+        db: DbD2,
+        newTeams: Array<object>,
+        teamsToDelete: Ref[],
+        config: MetadataConfig
+    ) {
         const categoryIdForTeams = _(config.categories)
             .keyBy("code")
             .getOrFail(config.categoryComboCodeForTeams).id;
@@ -159,12 +159,17 @@ export class Teams {
         });
 
         const previousTeams = categories[0].categoryOptions;
+        const teamsToDeleteIds = _.map(teamsToDelete, "id");
+        const filteredPreviousTeams = previousTeams.filter(
+            (pt: { id: string }) => !_.includes(teamsToDeleteIds, pt.id)
+        );
+
         const previousTeamsIds = _.map(previousTeams, "id");
-        const filteredNewTeams = _.map(teamsData, (t: { id: string }) => {
+        const filteredNewTeams = _.map(newTeams, (t: { id: string }) => {
             return _.includes(previousTeamsIds, t.id) ? null : { id: t.id };
         });
 
-        const allTeams = [...previousTeams, ..._.compact(filteredNewTeams)];
+        const allTeams = [...filteredPreviousTeams, ..._.compact(filteredNewTeams)];
 
         const teamsCategoryUpdated = { ...categories[0], categoryOptions: allTeams };
 
@@ -181,5 +186,11 @@ export class Teams {
             "http://dev2.eyeseetea.com:8082/api/maintenance/categoryOptionComboUpdate",
             {}
         );
+    }
+
+    // Teams must be deleted after all asociated dashboard and dashboard items (favorites) are deleted
+    static async deleteTeams(db: DbD2, teams: Ref[]) {
+        const toDelete = teams.map(t => ({ model: "categoryOptions", id: t.id }));
+        return await db.deleteMany(toDelete);
     }
 }

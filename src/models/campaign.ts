@@ -53,7 +53,7 @@ interface DashboardWithResources {
 }
 
 interface TeamsMetadata {
-    elements: Array<object>;
+    elements: Array<Ref>;
     organisationUnitIds: Array<string>;
 }
 

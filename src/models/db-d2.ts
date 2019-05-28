@@ -18,6 +18,7 @@ import {
     Response,
     DataValue,
     MetadataOptions,
+    Ref,
 } from "./db.types";
 import _ from "lodash";
 import "../utils/lodash-mixins";
@@ -236,13 +237,13 @@ export default class DbD2 {
         organisationUnitIds: string[],
         teamCategoryId: string,
         campaignName: string
-    ) {
+    ): Promise<Array<Ref>> {
         const { categoryOptions } = await this.api.get("/metadata", {
             "categoryOptions:fields": ":owner,categories[id],name",
             "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
         });
 
-        if (_.isEmpty(categoryOptions)) return;
+        if (_.isEmpty(categoryOptions)) return [];
         const expression = `^Team \\d ${campaignName}$`;
         const matcher = new RegExp(expression);
 
@@ -252,8 +253,6 @@ export default class DbD2 {
                 return _.includes(categoryIds, teamCategoryId) && matcher.test(co.name);
             }
         );
-
-        console.log({ getTeams: teams });
 
         return teams;
     }

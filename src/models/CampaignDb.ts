@@ -7,7 +7,7 @@ import "../utils/lodash-mixins";
 import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
 import { Maybe, MetadataResponse, DataEntryForm, Section, AttributeValue } from "./db.types";
-import { Metadata, DataSet, Response } from "./db.types";
+import { Metadata, DataSet, Response, Ref } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
 import { Dashboard } from "./Dashboard";
@@ -50,11 +50,9 @@ export default class CampaignDb {
         const startDate = moment(campaign.startDate).startOf("day");
         const endDate = moment(campaign.endDate).endOf("day");
 
-        //// TEAMS SECTION
-
         const teamGenerator = Teams.build(db, teamsMetadata);
         const newTeams = await teamGenerator.getTeams({
-            teams: campaign.teams || 0, // WIP
+            teams: campaign.teams || 0,
             name: campaign.name,
             organisationUnits: campaign.organisationUnits,
             teamsCategoyId,
@@ -64,6 +62,7 @@ export default class CampaignDb {
         });
 
         const teamsToCreate = _.differenceBy(newTeams, teamsMetadata.elements, "id");
+        const teamsToDelete = _.differenceBy(teamsMetadata.elements, newTeams, "id");
 
         const dashboardId: Maybe<string> = campaign.isEdit()
             ? _(campaign.attributeValues)
@@ -153,28 +152,32 @@ export default class CampaignDb {
             const dataValues = targetPopulation.getDataValues(period);
             const populationResult = await db.postDataValues(dataValues);
 
-            console.log({ teamsToCreate: teamsToCreate });
-
             if (!populationResult.status) {
                 return {
                     status: false,
                     error: JSON.stringify(populationResult.error, null, 2),
                 };
             } else {
-                return this.postSave({
-                    charts,
-                    reportTables,
-                    dashboards: [dashboard],
-                    dataSets: [dataSet],
-                    dataEntryForms: [dataEntryForm],
-                    sections,
-                    categoryOptions: teamsToCreate,
-                });
+                return this.postSave(
+                    {
+                        charts,
+                        reportTables,
+                        dashboards: [dashboard],
+                        dataSets: [dataSet],
+                        dataEntryForms: [dataEntryForm],
+                        sections,
+                        categoryOptions: teamsToCreate,
+                    },
+                    teamsToDelete
+                );
             }
         }
     }
 
-    private async postSave(allMetadata: PostSaveMetadata): Promise<Response<string>> {
+    private async postSave(
+        allMetadata: PostSaveMetadata,
+        teamsToDelete: Array<Ref>
+    ): Promise<Response<string>> {
         const { campaign } = this;
         const { db, config } = campaign;
         const { sections, ...nonSectionsMetadata } = allMetadata;
@@ -205,12 +208,16 @@ export default class CampaignDb {
 
         const result: ApiResponse<MetadataResponse> = await db.postMetadata<Metadata>(metadata);
 
-        // Update Team Category with new categoryOptions (teams)
-        await Teams.updateTeamCategory(db, allMetadata.categoryOptions, config);
-
         if (campaign.isEdit()) {
             await this.cleanUpDashboardItems(db, modelReferencesToDelete);
+
+            // Teams must be deleted after all asociated dashboard and dashboard items (favorites) are deleted
+            if (!_.isEmpty(teamsToDelete)) {
+                await Teams.deleteTeams(db, teamsToDelete);
+            }
         }
+        // Update Team Category with new categoryOptions (teams)
+        Teams.updateTeamCategory(db, allMetadata.categoryOptions, teamsToDelete, config);
 
         if (!result.status) {
             return { status: false, error: result.error };
