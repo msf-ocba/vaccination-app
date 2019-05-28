@@ -7,11 +7,11 @@ import "../utils/lodash-mixins";
 import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
 import { Maybe, MetadataResponse, DataEntryForm, Section, AttributeValue } from "./db.types";
-import { Metadata, DataSet, Response, Ref } from "./db.types";
+import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
 import { Dashboard } from "./Dashboard";
-import { Teams } from "./Teams";
+import { Teams, TeamsData } from "./Teams";
 
 interface DataSetWithSections {
     sections: Array<{ id: string; name: string; dataSet: { id: string } }>;
@@ -51,7 +51,7 @@ export default class CampaignDb {
         const endDate = moment(campaign.endDate).endOf("day");
 
         const teamGenerator = Teams.build(db, teamsMetadata);
-        const newTeams = await teamGenerator.getTeams({
+        const newTeams = teamGenerator.getTeams({
             teams: campaign.teams || 0,
             name: campaign.name,
             organisationUnits: campaign.organisationUnits,
@@ -176,7 +176,7 @@ export default class CampaignDb {
 
     private async postSave(
         allMetadata: PostSaveMetadata,
-        teamsToDelete: Array<Ref>
+        teamsToDelete: TeamsData[]
     ): Promise<Response<string>> {
         const { campaign } = this;
         const { db, config } = campaign;

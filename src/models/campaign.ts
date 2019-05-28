@@ -9,6 +9,7 @@ import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
+import { TeamsMetadata } from "./Teams";
 
 export type TargetPopulationData = TargetPopulationData;
 
@@ -50,11 +51,6 @@ interface DashboardWithResources {
         map: Ref;
         reportTable: Ref;
     };
-}
-
-interface TeamsMetadata {
-    elements: Array<Ref>;
-    organisationUnitIds: Array<string>;
 }
 
 export default class Campaign {

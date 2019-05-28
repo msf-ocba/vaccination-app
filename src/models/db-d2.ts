@@ -18,11 +18,11 @@ import {
     Response,
     DataValue,
     MetadataOptions,
-    Ref,
 } from "./db.types";
 import _ from "lodash";
 import "../utils/lodash-mixins";
 import { promiseMap } from "../utils/promises";
+import { TeamsData } from "./Teams";
 
 function getDbFields(modelFields: ModelFields): string[] {
     return _(modelFields)
@@ -237,7 +237,7 @@ export default class DbD2 {
         organisationUnitIds: string[],
         teamCategoryId: string,
         campaignName: string
-    ): Promise<Array<Ref>> {
+    ): Promise<TeamsData[]> {
         const { categoryOptions } = await this.api.get("/metadata", {
             "categoryOptions:fields": ":owner,categories[id],name",
             "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,

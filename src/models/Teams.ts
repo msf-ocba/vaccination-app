@@ -5,8 +5,13 @@ import { Moment } from "moment";
 import { OrganisationUnitPathOnly, MetadataResponse, Ref } from "./db.types";
 import { MetadataConfig } from "./config";
 
-interface TeamsMetadata {
-    elements: Array<object>;
+export interface TeamsData {
+    id: string;
+    [key: string]: string | Array<object> | Moment;
+}
+
+export interface TeamsMetadata {
+    elements: TeamsData[];
     organisationUnitIds: Array<string>;
 }
 
@@ -17,7 +22,7 @@ export class Teams {
         return new Teams(db, metadata);
     }
 
-    public async getTeams({
+    public getTeams({
         teams,
         name,
         organisationUnits,
@@ -58,7 +63,6 @@ export class Teams {
             !(_.size(newOrganisationUnitIds) === _.size(oldOrganisationUnitIds)) ||
             _.differenceWith(newOrganisationUnitIds, oldOrganisationUnitIds, _.isEqual);
 
-        // happy case
         if (!teamDifference && !organisationUnitsDifference) return [];
 
         let allTeams = [...oldTeams];
@@ -115,8 +119,8 @@ export class Teams {
         startDate: Moment,
         endDate: Moment,
         nameOffset: number = 0
-    ) {
-        const teamsData: Array<object> = _.range(1, teams + 1).map(i => {
+    ): TeamsData[] {
+        const teamsData: TeamsData[] = _.range(1, teams + 1).map(i => {
             const name = `Team ${nameOffset + i} ${campaignName}`;
             const categoryOption = {
                 id: generateUid(),
@@ -189,7 +193,7 @@ export class Teams {
     }
 
     // Teams must be deleted after all asociated dashboard and dashboard items (favorites) are deleted
-    static async deleteTeams(db: DbD2, teams: Ref[]) {
+    static async deleteTeams(db: DbD2, teams: TeamsData[]) {
         const toDelete = teams.map(t => ({ model: "categoryOptions", id: t.id }));
         return await db.deleteMany(toDelete);
     }
