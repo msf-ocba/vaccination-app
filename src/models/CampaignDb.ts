@@ -50,7 +50,7 @@ export default class CampaignDb {
         const startDate = moment(campaign.startDate).startOf("day");
         const endDate = moment(campaign.endDate).endOf("day");
 
-        const teamGenerator = Teams.build(db, teamsMetadata);
+        const teamGenerator = Teams.build(teamsMetadata);
         const newTeams = teamGenerator.getTeams({
             teams: campaign.teams || 0,
             name: campaign.name,
@@ -61,7 +61,6 @@ export default class CampaignDb {
             isEdit: campaign.isEdit(),
         });
 
-        const teamsToCreate = _.differenceBy(newTeams, teamsMetadata.elements, "id");
         const teamsToDelete = _.differenceBy(teamsMetadata.elements, newTeams, "id");
 
         const dashboardId: Maybe<string> = campaign.isEdit()
@@ -166,7 +165,7 @@ export default class CampaignDb {
                         dataSets: [dataSet],
                         dataEntryForms: [dataEntryForm],
                         sections,
-                        categoryOptions: teamsToCreate,
+                        categoryOptions: newTeams,
                     },
                     teamsToDelete
                 );

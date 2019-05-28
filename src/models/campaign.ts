@@ -76,7 +76,6 @@ export default class Campaign {
             teams: undefined,
             teamsMetadata: {
                 elements: [],
-                organisationUnitIds: [],
             },
         };
 
@@ -173,7 +172,6 @@ export default class Campaign {
             teams: _.size(teamsMetadata),
             teamsMetadata: {
                 elements: teamsMetadata,
-                organisationUnitIds,
             },
         };
 

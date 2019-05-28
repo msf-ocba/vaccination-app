@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-05-20T10:44:00.881Z\n"
+"POT-Creation-Date: 2019-05-28T13:20:18.081Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -234,6 +234,9 @@ msgstr "El campo no puede estar vacío"
 msgid "Number of Teams"
 msgstr "Numero de equipos"
 
+msgid "Number of teams must be positive"
+msgstr "La cantidad de equipos debe ser mayor a 0"
+
 msgid "Campaign created"
 msgstr "Campaña creada"
 
@@ -343,9 +346,6 @@ msgid ""
 msgstr ""
 "La unidad organizativa {{organisationUnit}} tiene un valor total inválido "
 "para el antigen {{antigen}} ({{ageGroups}}) -> {{- value}}"
-
-msgid "Number of Teams must be bigger than 0"
-msgstr "La cantidad de equipos debe ser mayor a 0"
 
 msgctxt ""
 "YEAR\n"

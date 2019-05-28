@@ -12,14 +12,13 @@ export interface TeamsData {
 
 export interface TeamsMetadata {
     elements: TeamsData[];
-    organisationUnitIds: Array<string>;
 }
 
 export class Teams {
-    constructor(private db: DbD2, private metadata: TeamsMetadata) {}
+    constructor(private metadata: TeamsMetadata) {}
 
-    static build(db: DbD2, metadata: TeamsMetadata) {
-        return new Teams(db, metadata);
+    static build(metadata: TeamsMetadata) {
+        return new Teams(metadata);
     }
 
     public getTeams({
@@ -40,7 +39,7 @@ export class Teams {
         isEdit: boolean;
     }) {
         const {
-            metadata: { organisationUnitIds: oldOrganisationUnitIds, elements: oldTeams },
+            metadata: { elements: oldTeams },
         } = this;
         if (!teams) return [];
 
@@ -55,17 +54,15 @@ export class Teams {
             );
         }
 
-        const newOrganisationUnitIds = organisationUnits.map(ou => ou.id);
-
         const teamDifference = teams - _.size(oldTeams);
 
-        const organisationUnitsDifference =
-            !(_.size(newOrganisationUnitIds) === _.size(oldOrganisationUnitIds)) ||
-            _.differenceWith(newOrganisationUnitIds, oldOrganisationUnitIds, _.isEqual);
-
-        if (!teamDifference && !organisationUnitsDifference) return [];
-
-        let allTeams = [...oldTeams];
+        //Update periodDates and OU references for previous teams
+        let allTeams: TeamsData[] = oldTeams.map(ot => ({
+            ...ot,
+            startDate,
+            endDate,
+            organisationUnits,
+        }));
 
         if (teamDifference > 0) {
             allTeams = [
@@ -81,34 +78,13 @@ export class Teams {
                 ),
             ];
         } else if (teamDifference < 0) {
-            allTeams = _(oldTeams)
+            allTeams = _(allTeams)
                 .sortBy("name")
                 .slice(0, _.size(oldTeams) + teamDifference)
                 .value();
         }
 
-        if (organisationUnitsDifference) {
-            this.updateTeamsOUs(organisationUnits);
-        }
         return allTeams;
-    }
-
-    private async updateTeamsOUs(organisationUnits: OrganisationUnitPathOnly[]) {
-        const {
-            db,
-            metadata: { elements: oldTeams },
-        } = this;
-
-        const updatedTeams = _.map(oldTeams, co => ({
-            ...co,
-            organisationUnits,
-        }));
-
-        const updateResponse = await db.postMetadata({ categoryOptions: updatedTeams });
-
-        if (!updateResponse.status) {
-            return { status: false, error: "Cannot clean old Organisation Units from teams" };
-        }
     }
 
     private generateTeams(
