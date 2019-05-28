@@ -39,10 +39,10 @@ class Dashboard extends React.Component {
         });
     }
 
-    waitforDashboardToLoad(iframeDocument) {
+    waitforElementToLoad(iframeDocument, selector) {
         return new Promise(resolve => {
             const check = () => {
-                if (iframeDocument.querySelector(".app-wrapper")) {
+                if (iframeDocument.querySelector(selector)) {
                     resolve();
                 } else {
                     setTimeout(check, 1000);
@@ -56,21 +56,23 @@ class Dashboard extends React.Component {
     async setDashboardStyling(iframe, dataSetId) {
         const iframeDocument = iframe.contentWindow.document;
 
-        await this.waitforDashboardToLoad(iframeDocument);
+        await this.waitforElementToLoad(iframeDocument, ".app-wrapper");
         const iFrameRoot = iframeDocument.querySelector("#root");
         const iFrameWrapper = iframeDocument.querySelector(".app-wrapper");
         const pageContainer = iframeDocument.querySelector(".page-container-top-margin");
-        const editButton = iframeDocument.querySelector(".titlebar-wrapper a[href*='edit']");
         const controlBar = iframeDocument.querySelector(".d2-ui-control-bar");
 
         iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
         pageContainer.style.marginTop = "0px";
         iFrameRoot.style.marginTop = "0px";
         controlBar.style.top = 0;
-        if (editButton) editButton.remove();
-
+        
         if (dataSetId) {
             iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
+            
+            await this.waitforElementToLoad(iframeDocument, ".titlebar-wrapper");
+            const editButton = iframeDocument.querySelector(".titlebar-wrapper a[href*='edit']");
+            if (editButton) editButton.remove();
         }
     }
 
