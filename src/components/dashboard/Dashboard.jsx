@@ -66,10 +66,10 @@ class Dashboard extends React.Component {
         pageContainer.style.marginTop = "0px";
         iFrameRoot.style.marginTop = "0px";
         controlBar.style.top = 0;
-        
+
         if (dataSetId) {
             iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
-            
+
             await this.waitforElementToLoad(iframeDocument, ".titlebar-wrapper");
             const editButton = iframeDocument.querySelector(".titlebar-wrapper a[href*='edit']");
             if (editButton) editButton.remove();
