@@ -1,6 +1,6 @@
 import DbD2, { ApiResponse, ModelReference } from "./db-d2";
 import { generateUid } from "d2/uid";
-import moment from "moment";
+import moment, { Moment } from "moment";
 import _ from "lodash";
 import "../utils/lodash-mixins";
 
@@ -19,6 +19,7 @@ import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
 import { Dashboard } from "./Dashboard";
+import { Teams } from "./Teams";
 
 interface DataSetWithSections {
     sections: Array<{ id: string; name: string; dataSet: { id: string } }>;
@@ -38,79 +39,6 @@ interface PostSaveMetadata {
 export default class CampaignDb {
     constructor(public campaign: Campaign) {}
 
-    public async editedTeams() {
-        const { campaign } = this;
-        const {
-            teams,
-            teamsMetadata: { organisationUnitIds: oldOrganisationUnitIds, elements: oldTeams },
-            organisationUnits,
-            config,
-        } = campaign;
-        if (!teams) return;
-
-        const newOrganisationUnitIds = organisationUnits.map(ou => ou.id);
-        const teamsCategoyId = _(config.categories)
-            .keyBy("code")
-            .getOrFail(config.categoryComboCodeForTeams).id;
-
-        const teamDifference = teams - _.size(oldTeams);
-
-        const organisationUnitsDifferenceIds = _.difference(
-            newOrganisationUnitIds,
-            oldOrganisationUnitIds
-        );
-
-        // happy case
-        if (!teamDifference && _.isEmpty(organisationUnitsDifferenceIds)) return;
-
-        let newTeams = [...oldTeams];
-
-        // New teams
-        if (teamDifference > 0) {
-            newTeams = [
-                ...newTeams,
-                ...this.generateTeams(
-                    teamDifference,
-                    campaign.name,
-                    campaign.organisationUnits,
-                    teamsCategoyId,
-                    _.size(oldTeams)
-                ),
-            ];
-        } else if (teamDifference < 0) {
-            newTeams = _(oldTeams)
-                .sortBy("name")
-                .slice(0, _.size(oldTeams) + 1 + teamDifference)
-                .value();
-
-            // Remove OU references for deleted teams
-            const removedTeams: Array<object> = _.differenceBy(oldTeams, newTeams, "id");
-            if (!_.isEmpty(removedTeams)) await this.cleanRemovedTeams(removedTeams);
-        }
-
-        // Clean teams for unselected OUs
-        const removeOf = _.intersection(oldOrganisationUnitIds, organisationUnitsDifferenceIds);
-        if (!_.isEmpty(removeOf)) await this.updateTeamsByOrganisationUnitIds(removeOf);
-        console.log({ newTeams, teamDifference, organisationUnitsDifferenceIds, oldTeams, teams });
-        // TODO:
-        // - Return extra teams for creation - DONE
-        // - Update Team Category with new teams (only? or is it the same if we post the whole lot again?)
-        // - Include extra (minus) teams on dashboard regeneration
-
-        return newTeams;
-        //const addTo = _.intersection(newOrganisationUnitIds, organisationUnitsDifference);
-    }
-
-    // Removes ou references for deleted teams
-    private async cleanRemovedTeams(toRemove: Array<object>) {
-        const { db } = this.campaign;
-        const updatedTeams = _.map(toRemove, co => ({ ...co, organisationUnits: [] }));
-        const updateResponse = await db.postMetadata({ categoryOptions: updatedTeams });
-        if (!updateResponse.status) {
-            return { status: false, error: "Cannot remove old teams from Organisation Units" };
-        }
-    }
-
     public async save(): Promise<Response<string>> {
         const { campaign } = this;
         const { db, targetPopulation, config: metadataConfig, teamsMetadata } = campaign;
@@ -124,16 +52,24 @@ export default class CampaignDb {
             .keyBy("code")
             .getOrFail(categoryComboCodeForTeams).id;
 
+        if (!campaign.startDate || !campaign.endDate) {
+            return { status: false, error: "Campaign Dates not set" };
+        }
+        const startDate = moment(campaign.startDate).startOf("day");
+        const endDate = moment(campaign.endDate).endOf("day");
+
         //// TEAMS SECTION
 
-        const newTeams = campaign.isEdit()
-            ? await this.editedTeams()
-            : this.generateTeams(
-                  campaign.teams || 0, // WIP
-                  campaign.name,
-                  campaign.organisationUnits,
-                  teamsCategoyId
-              );
+        const teamGenerator = Teams.build(db, teamsMetadata);
+        const newTeams = await teamGenerator.create({
+            teams: campaign.teams || 0, // WIP
+            name: campaign.name,
+            organisationUnits: campaign.organisationUnits,
+            teamsCategoyId,
+            startDate,
+            endDate,
+            isEdit: campaign.isEdit(),
+        });
 
         const teamsToCreate = _.differenceBy(newTeams, teamsMetadata.elements, "id");
 
@@ -149,11 +85,7 @@ export default class CampaignDb {
             );
         }
         */
-        if (!campaign.startDate || !campaign.endDate) {
-            return { status: false, error: "Campaign Dates not set" };
-        }
-        const startDate = moment(campaign.startDate).startOf("day");
-        const endDate = moment(campaign.endDate).endOf("day");
+
         const dashboardId: Maybe<string> = campaign.isEdit()
             ? _(campaign.attributeValues)
                   .keyBy((o: AttributeValue) => o.attribute.id)
@@ -293,16 +225,17 @@ export default class CampaignDb {
         }
 
         // Clean Organisation Unit of past teams beforehand to avoid having them appear on DataEntry app.
-        const organisationUnitIds = this.campaign.organisationUnits.map(ou => ou.id);
+        //const organisationUnitIds = this.campaign.organisationUnits.map(ou => ou.id);
 
+        /*
         if (!campaign.isEdit()) {
             await this.updateTeamsByOrganisationUnitIds(organisationUnitIds, true);
-        }
+        } */
 
         const result: ApiResponse<MetadataResponse> = await db.postMetadata<Metadata>(metadata);
 
         // Update Team Category with new categoryOptions (teams)
-        await this.updateTeamCategory(allMetadata.categoryOptions);
+        await Teams.updateTeamCategory(db, allMetadata.categoryOptions, config);
 
         if (campaign.isEdit()) {
             await this.cleanUpDashboardItems(db, modelReferencesToDelete);
@@ -433,104 +366,5 @@ export default class CampaignDb {
             htmlCode: customFormHtml,
             style: "NONE",
         };
-    }
-
-    // WIP until edit logic is added //
-    private async updateTeamCategory(teamsData: Array<object>) {
-        const { config, db } = this.campaign;
-        const categoryIdForTeams = _(config.categories)
-            .keyBy("code")
-            .getOrFail(config.categoryComboCodeForTeams).id;
-
-        const { categories } = await db.api.get("/metadata", {
-            "categories:fields": ":owner",
-            "categories:filter": `id:eq:${categoryIdForTeams}`,
-        });
-
-        const previousTeams = categories[0].categoryOptions;
-        const previousTeamsIds = _.map(previousTeams, "id");
-        const filteredNewTeams = _.map(teamsData, (t: { id: string }) => {
-            return _.includes(previousTeamsIds, t.id) ? null : { id: t.id };
-        });
-
-        const allTeams = [...previousTeams, ..._.compact(filteredNewTeams)];
-
-        const teamsCategoryUpdated = { ...categories[0], categoryOptions: allTeams };
-
-        const teamsResponse: ApiResponse<MetadataResponse> = await db.postMetadata({
-            categories: [teamsCategoryUpdated],
-        });
-
-        if (!teamsResponse.status) {
-            return { status: false, error: "Cannot update teams category" };
-        }
-
-        // Trigger categoryOptionCombos update
-        await db.api.post(
-            "http://dev2.eyeseetea.com:8082/api/maintenance/categoryOptionComboUpdate",
-            {}
-        );
-    }
-
-    // Clean OU references for specific OUs
-    private async updateTeamsByOrganisationUnitIds(
-        organisationUnitIds: string[],
-        cleanAll = false
-    ) {
-        const { db, config } = this.campaign;
-
-        const teams: Array<{
-            organisationUnits: Array<Ref>;
-        }> = await db.getTeamsForOrganisationUnits(
-            organisationUnitIds,
-            config.categoryCodeForTeams
-        );
-
-        const filteredOrganisationUnits = (team: { organisationUnits: Array<Ref> }) => {
-            return _.filter(team.organisationUnits, ou => !_.includes(organisationUnitIds, ou.id));
-        };
-
-        const updatedTeams = _.map(teams, co => ({
-            ...co,
-            organisationUnits: cleanAll ? [] : filteredOrganisationUnits(co),
-        }));
-
-        const updateResponse = await db.postMetadata({ categoryOptions: updatedTeams });
-
-        if (!updateResponse.status) {
-            return { status: false, error: "Cannot clean old teams from Organisation Units" };
-        }
-    }
-
-    private generateTeams(
-        teams: number,
-        campaignName: string,
-        organisationUnits: OrganisationUnitPathOnly[],
-        categoryIdForTeams: string,
-        nameOffset: number = 0
-    ) {
-        const teamsData: Array<object> = _.range(1, teams + 1).map(i => {
-            const name = `${campaignName} ${nameOffset + i}`;
-            const categoryOption = {
-                id: generateUid(),
-                name,
-                shortName: name,
-                displayName: name,
-                publicAccess: "rw------",
-                displayShortName: name,
-                dimensionItemType: "CATEGORY_OPTION",
-                categories: [
-                    {
-                        id: categoryIdForTeams,
-                    },
-                ],
-                organisationUnits: organisationUnits.map(ou => ({
-                    id: ou.id,
-                })),
-            };
-            return categoryOption;
-        });
-
-        return teamsData;
     }
 }

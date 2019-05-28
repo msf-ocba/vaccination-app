@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-05-20T10:44:00.881Z\n"
-"PO-Revision-Date: 2019-05-20T10:44:00.881Z\n"
+"POT-Creation-Date: 2019-05-27T11:10:23.565Z\n"
+"PO-Revision-Date: 2019-05-27T11:10:23.565Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -200,6 +200,9 @@ msgid "Field cannot be blank"
 msgstr ""
 
 msgid "Number of Teams"
+msgstr ""
+
+msgid "Number of teams must be positive"
 msgstr ""
 
 msgid "Campaign created"
