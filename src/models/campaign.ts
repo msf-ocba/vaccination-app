@@ -29,9 +29,9 @@ export interface Data {
     antigens: Antigen[];
     antigensDisaggregation: AntigensDisaggregation;
     targetPopulation: Maybe<TargetPopulation>;
-    attributeValues: AttributeValue[];
     teams: Maybe<number>;
     teamsMetadata: TeamsMetadata;
+    dashboardId: Maybe<string>;
 }
 
 function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined) {
@@ -72,11 +72,11 @@ export default class Campaign {
             antigens: antigens,
             antigensDisaggregation: AntigensDisaggregation.build(config, antigens, []),
             targetPopulation: undefined,
-            attributeValues: [],
             teams: undefined,
             teamsMetadata: {
                 elements: [],
             },
+            dashboardId: undefined,
         };
 
         return new Campaign(db, config, initialData);
@@ -153,6 +153,9 @@ export default class Campaign {
             teamsCategoyId,
             dataSet.name
         );
+        const dashboardId: Maybe<string> = _(dataSet.attributeValues)
+            .keyBy(attributeValue => attributeValue.attribute.id)
+            .get([config.attributes.dashboard.id, "value"]);
 
         const initialData = {
             id: dataSet.id,
@@ -167,12 +170,12 @@ export default class Campaign {
                 antigens,
                 dataSet.sections
             ),
-            attributeValues: dataSet.attributeValues,
             targetPopulation: undefined,
             teams: _.size(teamsMetadata),
             teamsMetadata: {
                 elements: teamsMetadata,
             },
+            dashboardId,
         };
 
         return new Campaign(db, config, initialData);
@@ -187,7 +190,7 @@ export default class Campaign {
         db: DbD2,
         dataSets: DataSetWithAttributes[]
     ): Promise<Response<string>> {
-        const modelReferencesToDelete = await this.getResourcesToDelete(config, db, dataSets);
+        const modelReferencesToDelete = await this.getResources(config, db, dataSets);
 
         return db.deleteMany(modelReferencesToDelete);
     }
@@ -377,8 +380,8 @@ export default class Campaign {
 
     // Attribute Values
 
-    public get attributeValues(): AttributeValue[] {
-        return this.data.attributeValues;
+    public get dashboardId(): Maybe<string> {
+        return this.data.dashboardId;
     }
 
     /* Teams */
@@ -410,7 +413,7 @@ export default class Campaign {
         return campaignDb.save();
     }
 
-    public static async getResourcesToDelete(
+    public static async getResources(
         config: MetadataConfig,
         db: DbD2,
         dataSets: DataSetWithAttributes[]
@@ -447,11 +450,10 @@ export default class Campaign {
             .compact()
             .value();
 
-        const modelReferencesToDelete = _.concat(
+        return _.concat(
             dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
             dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id })),
             resources
         );
-        return modelReferencesToDelete;
     }
 }

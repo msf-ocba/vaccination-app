@@ -6,7 +6,7 @@ import "../utils/lodash-mixins";
 
 import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
-import { Maybe, MetadataResponse, DataEntryForm, Section, AttributeValue } from "./db.types";
+import { Maybe, MetadataResponse, DataEntryForm, Section } from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
@@ -63,12 +63,6 @@ export default class CampaignDb {
 
         const teamsToDelete = _.differenceBy(teamsMetadata.elements, newTeams, "id");
 
-        const dashboardId: Maybe<string> = campaign.isEdit()
-            ? _(campaign.attributeValues)
-                  .keyBy((o: AttributeValue) => o.attribute.id)
-                  .getOrFail(dashboardAttribute.id).value
-            : undefined;
-
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
         const ageGroupCategoryId = _(metadataConfig.categories)
             .keyBy("code")
@@ -76,7 +70,7 @@ export default class CampaignDb {
         const teamIds: string[] = _.map(newTeams, "id");
         const dashboardGenerator = Dashboard.build(db);
         const { dashboard, charts, reportTables } = await dashboardGenerator.create({
-            dashboardId,
+            dashboardId: campaign.dashboardId,
             datasetName: campaign.name,
             organisationUnits: campaign.organisationUnits,
             antigens: campaign.antigens,
@@ -181,7 +175,7 @@ export default class CampaignDb {
         const { db, config } = campaign;
         const { sections, ...nonSectionsMetadata } = allMetadata;
         let metadata;
-        let modelReferencesToDelete: ModelReference[] = [];
+        let modelReferencesToDelete: ModelReference[];
 
         if (campaign.isEdit()) {
             // The saving of existing sections on DHIS2 is buggy: /metadata
@@ -196,13 +190,10 @@ export default class CampaignDb {
                 return { status: false, error: "Cannot update sections" };
             }
             metadata = nonSectionsMetadata;
-            modelReferencesToDelete = await Campaign.getResourcesToDelete(
-                config,
-                db,
-                allMetadata.dataSets
-            );
+            modelReferencesToDelete = await Campaign.getResources(config, db, allMetadata.dataSets);
         } else {
             metadata = allMetadata;
+            modelReferencesToDelete = [];
         }
 
         const result: ApiResponse<MetadataResponse> = await db.postMetadata<Metadata>(metadata);

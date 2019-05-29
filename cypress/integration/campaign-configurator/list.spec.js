@@ -1,28 +1,31 @@
+import { getApiUrl } from "../../support/utils";
+import _ from "lodash";
+
 describe("Campaign configuration - List page", () => {
     before(() => {
         cy.login("admin");
         cy.fixture("datasets.json").then(testDataSets => {
-            cy.request("POST", "http://dev2.eyeseetea.com:8082/api/metadata", {
-                dataSets: [testDataSets["0"], testDataSets["1"], testDataSets["2"]],
+            cy.request("POST", getApiUrl("/metadata"), {
+                dataSets: _.values(testDataSets),
             });
         });
     });
 
     beforeEach(() => {
+        cy.login("admin");
         cy.loadPage();
         cy.contains("Campaign Configuration").click();
     });
 
     after(() => {
         cy.fixture("datasets.json").then(testDataSets => {
-            cy.request(
-                "DELETE",
-                `http://dev2.eyeseetea.com:8082/api/dataSets/${testDataSets["0"].id}`
-            );
-            cy.request(
-                "DELETE",
-                `http://dev2.eyeseetea.com:8082/api/dataSets/${testDataSets["1"].id}`
-            );
+            _(testDataSets).each(dataSet => {
+                cy.request({
+                    method: "DELETE",
+                    url: getApiUrl(`/dataSets/${dataSet.id}`),
+                    failOnStatusCode: false,
+                });
+            });
         });
     });
 
@@ -69,10 +72,14 @@ describe("Campaign configuration - List page", () => {
     it("shows list of user dataset sorted alphabetically desc", () => {
         cy.contains("Name").click();
         cy.wait(3000); // eslint-disable-line cypress/no-unnecessary-waiting
-        cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").then(text1 => {
-            cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").then(text2 => {
-                assert.isTrue(text1.text() > text2.text());
-            });
+
+        cy.get(".data-table__rows > * > :nth-child(2) span").then(spans$ => {
+            const names = spans$.get().map(x => x.innerText);
+            const sortedNames = _(names)
+                .orderBy(name => name.toLowerCase())
+                .reverse()
+                .value();
+            assert.isTrue(_.isEqual(names, sortedNames));
         });
     });
 
