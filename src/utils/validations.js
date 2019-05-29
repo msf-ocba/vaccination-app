@@ -6,9 +6,6 @@ const translations = {
     organisation_units_only_of_levels: namespace =>
         i18n.t("Only organisation units of level {{levels}} can be selected", namespace),
 
-    no_valid_teams_for_organisation_units: namespace =>
-        i18n.t("Organisation Units {{orgUnits}} -> no associated teams", namespace),
-
     cannot_be_blank: namespace => i18n.t("Field {{field}} cannot be blank", namespace),
     cannot_be_blank_if_other_set: namespace =>
         i18n.t("Field {{field}} cannot be blank if field {{other}} is set", namespace),
@@ -36,7 +33,7 @@ const translations = {
             "Org unit {{organisationUnit}} has an invalid total value for antigen {{antigen}} ({{ageGroups}}) -> {{- value}}",
             namespace
         ),
-    must_be_bigger_than_zero: () => i18n.t("Number of Teams must be bigger than 0"),
+    must_be_bigger_than_zero: () => i18n.t("Number of teams must be positive"),
 };
 
 export async function getValidationMessages(campaign, validationKeys) {
