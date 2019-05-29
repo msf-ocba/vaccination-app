@@ -73,7 +73,7 @@ export class DataSetCustomForm {
         if (total === 0) {
             return [
                 h("td", { class: "header-first-column" }, "&nbsp;"),
-                h("th", { colspan: "1", scope: "col", class: "data-header" }, "Value"),
+                h("th", { colspan: "1", scope: "col", class: "data-header" }, i18n.t("Value")),
             ];
         }
 
