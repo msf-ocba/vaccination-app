@@ -398,10 +398,6 @@ export default class Campaign {
         return this.data.teamsMetadata;
     }
 
-    public setteamsMetadata(teamsMetadata: TeamsMetadata): Campaign {
-        return this.update({ ...this.data, teamsMetadata });
-    }
-
     /* Save */
 
     isEdit(): boolean {
