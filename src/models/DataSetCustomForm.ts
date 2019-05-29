@@ -77,6 +77,7 @@ export class DataSetCustomForm {
             ];
         }
 
+        const headers = _.flatten(categoryOptionGroups);
         const initial: { trs: string[]; count: number; repeat: number } = {
             trs: [],
             count: total,
@@ -85,7 +86,7 @@ export class DataSetCustomForm {
 
         return _(categoryOptionGroups).reduce(({ trs, count, repeat }, categoryOptions, idx) => {
             const newCount = count / categoryOptions.length;
-            const showTotalField = idx === 0;
+            const showTotalField = headers.length > 1 && idx === 0;
             const tr = h("tr", {}, [
                 h("td", { class: "header-first-column" }),
                 ...repeatArray(
