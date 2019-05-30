@@ -2,7 +2,7 @@ import _ from "lodash";
 import DbD2, { ApiResponse } from "./db-d2";
 import { generateUid } from "d2/uid";
 import { Moment } from "moment";
-import { OrganisationUnitPathOnly, MetadataResponse, Ref } from "./db.types";
+import { OrganisationUnitPathOnly, Response, MetadataResponse, Ref } from "./db.types";
 import { MetadataConfig } from "./config";
 
 export interface TeamsData {
@@ -128,7 +128,7 @@ export class Teams {
         newTeams: Array<object>,
         teamsToDelete: Ref[],
         config: MetadataConfig
-    ) {
+    ): Promise<Response<string>> {
         const categoryIdForTeams = _(config.categories)
             .keyBy("code")
             .getOrFail(config.categoryComboCodeForTeams).id;
@@ -159,13 +159,10 @@ export class Teams {
 
         if (!teamsResponse.status) {
             return { status: false, error: "Cannot update teams category" };
+        } else {
+            db.api.post("/maintenance/categoryOptionComboUpdate", {});
+            return { status: true };
         }
-
-        // Trigger categoryOptionCombos update
-        await db.api.post(
-            "http://dev2.eyeseetea.com:8082/api/maintenance/categoryOptionComboUpdate",
-            {}
-        );
     }
 
     // Teams must be deleted after all asociated dashboard and dashboard items (favorites) are deleted
