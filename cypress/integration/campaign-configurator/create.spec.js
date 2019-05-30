@@ -14,6 +14,20 @@ describe("Campaign configuration - Create", () => {
     it("gets data from the user", () => {
         cy.contains("New vaccination campaign");
 
+        // General Info step
+        waitForStepChange("General info");
+        cy.contains("Next").click();
+        cy.contains("Field name cannot be blank");
+
+        cy.get("[data-field='name']").type("Test vaccination campaign");
+        cy.contains("Start Date").click({ force: true });
+        clickDay(11);
+
+        cy.contains("End Date").click({ force: true });
+        clickDay(13);
+
+        cy.contains("Next").click();
+
         // Organisation Units Step
         cy.contains(
             "Select the health facilities or health area where the campaign will be implemented"
@@ -26,20 +40,6 @@ describe("Campaign configuration - Create", () => {
         expandOrgUnit("ETHIOPIA");
         expandOrgUnit("ETHIOPIA, MERT");
         selectOrgUnit("Cholera Intervention Addis 2016");
-
-        cy.contains("Next").click();
-
-        // General Info step
-        waitForStepChange("General info");
-        cy.contains("Next").click();
-        cy.contains("Field name cannot be blank");
-
-        cy.get("[data-field='name']").type("Test vaccination campaign");
-        cy.contains("Start Date").click({ force: true });
-        clickDay(11);
-
-        cy.contains("End Date").click({ force: true });
-        clickDay(13);
 
         cy.contains("Next").click();
 

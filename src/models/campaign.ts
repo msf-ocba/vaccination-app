@@ -215,8 +215,8 @@ export default class Campaign {
             endDate: !endDate ? getError("cannot_be_blank", { field: "end date" }) : [],
 
             teams: _.compact([
-                !teams ? { key: "cannot_be_blank" } : null,
-                teams && teams <= 0 ? { key: "must_be_bigger_than_zero" } : null,
+                !teams ? getError("cannot_be_blank", { field: "teams" })[0] : null,
+                teams && teams <= 0 ? getError("must_be_bigger_than_zero")[0] : null,
             ]),
 
             organisationUnits: await this.validateOrganisationUnits(),

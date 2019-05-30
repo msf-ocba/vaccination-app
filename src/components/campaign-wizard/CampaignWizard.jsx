@@ -59,19 +59,6 @@ class CampaignWizard extends React.Component {
     getStepsBaseInfo() {
         return [
             {
-                key: "organisation-units",
-                label: i18n.t("Organisation Units"),
-                component: OrganisationUnitsStep,
-                validationKeys: ["organisationUnits", "teams"],
-                validationKeysLive: ["organisationUnits"],
-                description: i18n.t(
-                    `Select the health facilities or health area where the campaign will be implemented`
-                ),
-                help: i18n.t(
-                    `Select the health facilities or health areas which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
-                ),
-            },
-            {
                 key: "general-info",
                 label: i18n.t("General info"),
                 component: GeneralInfoStep,
@@ -82,6 +69,19 @@ class CampaignWizard extends React.Component {
                 help: i18n.t(
                     `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format is REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH_YEAR\n
                     The start and end date should define the period for which you expect to enter data - i.e .the first and last day of your campaign. If you are not certain of the end date, enter a date a few weeks later than the expected date of completion (refer to your microplan). It is possible to edit the dates at any point.`
+                ),
+            },
+            {
+                key: "organisation-units",
+                label: i18n.t("Organisation Units"),
+                component: OrganisationUnitsStep,
+                validationKeys: ["organisationUnits", "teams"],
+                validationKeysLive: ["organisationUnits"],
+                description: i18n.t(
+                    `Select the health facilities or health area where the campaign will be implemented`
+                ),
+                help: i18n.t(
+                    `Select the health facilities or health areas which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
                 ),
             },
             {

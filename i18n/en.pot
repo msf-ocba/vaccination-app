@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-05-30T10:44:33.466Z\n"
-"PO-Revision-Date: 2019-05-30T10:44:33.466Z\n"
+"POT-Creation-Date: 2019-05-30T23:14:21.480Z\n"
+"PO-Revision-Date: 2019-05-30T23:14:21.480Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -101,6 +101,14 @@ msgstr ""
 msgid "Cannot load campaign"
 msgstr ""
 
+msgid "General info"
+msgstr ""
+
+msgid ""
+"Choose a name for the campaign and define the period for which data entry "
+"will be enabled"
+msgstr ""
+
 msgid "Organisation Units"
 msgstr ""
 
@@ -113,14 +121,6 @@ msgid ""
 "Select the health facilities or health areas which will implement the "
 "campaign. At least one must be selected. Only organisation units of level 5 "
 "(Health site) can be selected."
-msgstr ""
-
-msgid "General info"
-msgstr ""
-
-msgid ""
-"Choose a name for the campaign and define the period for which data entry "
-"will be enabled"
 msgstr ""
 
 msgid "Antigen selection"
