@@ -234,10 +234,10 @@ msgid "Field cannot be blank"
 msgstr "El campo no puede estar vacío"
 
 msgid "Number of Teams"
-msgstr "Numero de equipos"
+msgstr "Número de equipos"
 
 msgid "Number of teams must be positive"
-msgstr "La cantidad de equipos debe ser mayor a 0"
+msgstr "El número de equipos debe ser mayor que 0"
 
 msgid "Campaign created"
 msgstr "Campaña creada"
