@@ -1,7 +1,8 @@
-import { ApiResponse } from "./db-d2";
+import DbD2, { ApiResponse, ModelReference } from "./db-d2";
 import { generateUid } from "d2/uid";
 import moment from "moment";
 import _ from "lodash";
+import "../utils/lodash-mixins";
 
 import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
@@ -9,6 +10,7 @@ import { Maybe, MetadataResponse, DataEntryForm, Section } from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
+import { Dashboard } from "./Dashboard";
 
 interface DataSetWithSections {
     sections: Array<{ id: string; name: string; dataSet: { id: string } }>;
@@ -41,22 +43,25 @@ export default class CampaignDb {
         }
         const startDate = moment(campaign.startDate).startOf("day");
         const endDate = moment(campaign.endDate).endOf("day");
+
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
         const ageGroupCategoryId = _(metadataConfig.categories)
             .keyBy("code")
             .getOrFail(metadataConfig.categoryCodeForAgeGroup).id;
 
-        const { dashboard, charts, reportTables } = await db.createDashboard(
-            campaign.name,
-            campaign.organisationUnits,
-            campaign.antigens,
+        const dashboardGenerator = Dashboard.build(db);
+        const { dashboard, charts, reportTables } = await dashboardGenerator.create({
+            dashboardId: campaign.dashboardId,
+            datasetName: campaign.name,
+            organisationUnits: campaign.organisationUnits,
+            antigens: campaign.antigens,
             startDate,
             endDate,
             categoryCodeForTeams,
             antigensDisaggregation,
-            metadataConfig.categoryOptions,
-            ageGroupCategoryId
-        );
+            categoryOptions: metadataConfig.categoryOptions,
+            ageGroupCategoryId,
+        });
 
         if (!attributeForApp || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: attributes" };
@@ -107,7 +112,10 @@ export default class CampaignDb {
                 dataInputPeriods,
                 attributeValues: [
                     { value: "true", attribute: { id: attributeForApp.id } },
-                    { value: dashboard.id, attribute: { id: dashboardAttribute.id } },
+                    {
+                        value: dashboard.id,
+                        attribute: { id: dashboardAttribute.id, code: dashboardAttribute.code },
+                    },
                 ],
                 dataEntryForm: { id: dataEntryForm.id },
                 sections: sections.map(section => ({ id: section.id })),
@@ -137,9 +145,10 @@ export default class CampaignDb {
 
     private async postSave(allMetadata: PostSaveMetadata): Promise<Response<string>> {
         const { campaign } = this;
-        const { db } = campaign;
+        const { db, config } = campaign;
         const { sections, ...nonSectionsMetadata } = allMetadata;
         let metadata;
+        let modelReferencesToDelete: ModelReference[];
 
         if (campaign.isEdit()) {
             // The saving of existing sections on DHIS2 is buggy: /metadata
@@ -153,13 +162,18 @@ export default class CampaignDb {
             if (!resultSections.status) {
                 return { status: false, error: "Cannot update sections" };
             }
-
             metadata = nonSectionsMetadata;
+            modelReferencesToDelete = await Campaign.getResources(config, db, allMetadata.dataSets);
         } else {
             metadata = allMetadata;
+            modelReferencesToDelete = [];
         }
 
         const result: ApiResponse<MetadataResponse> = await db.postMetadata<Metadata>(metadata);
+
+        if (campaign.isEdit()) {
+            await this.cleanUpDashboardItems(db, modelReferencesToDelete);
+        }
 
         if (!result.status) {
             return { status: false, error: result.error };
@@ -171,6 +185,17 @@ export default class CampaignDb {
         } else {
             return { status: true };
         }
+    }
+
+    private async cleanUpDashboardItems(
+        db: DbD2,
+        modelReferencesToDelete: ModelReference[]
+    ): Promise<Response<string>> {
+        const dashboardItems = _(modelReferencesToDelete)
+            .filter(o => _.includes(["charts", "reportTables"], o.model))
+            .value();
+
+        return await db.deleteMany(dashboardItems);
     }
 
     private async getSections(

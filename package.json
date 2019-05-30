@@ -26,7 +26,7 @@
         "classnames": "^2.2.6",
         "d2": "^31",
         "d2-manifest": "^1.0.0",
-        "d2-ui-components": "0.0.16",
+        "d2-ui-components": "0.0.18",
         "enzyme": "^3.7.0",
         "enzyme-adapter-react-16": "^1.6.0",
         "enzyme-to-json": "^3.3.4",
@@ -43,6 +43,7 @@
         "react": "^16.6.0",
         "react-dom": "^16.6.0",
         "react-jss": "^8.6.1",
+        "react-linkify": "^0.2.2",
         "react-router-dom": "^4.3.1",
         "react-scripts": "2.0.6-next.c662dfb0",
         "typed-html": "^1.0.0"
