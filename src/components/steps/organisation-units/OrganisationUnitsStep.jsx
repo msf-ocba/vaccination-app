@@ -83,6 +83,7 @@ class OrganisationUnitsStep extends React.Component {
 
         return (
             <React.Fragment>
+                <FormBuilder style={styles.formBuilder} fields={fields} onUpdateField={this.onUpdateField} />
                 <OrgUnitsSelector
                     d2={d2}
                     onChange={this.setOrgUnits}
@@ -90,10 +91,13 @@ class OrganisationUnitsStep extends React.Component {
                     levels={campaign.selectableLevels}
                     controls={this.controls}
                 />
-                <FormBuilder fields={fields} onUpdateField={this.onUpdateField} />
             </React.Fragment>
         );
     }
 }
+
+const styles = {
+    formBuilder: { marginBottom: 20 }
+};
 
 export default OrganisationUnitsStep;
