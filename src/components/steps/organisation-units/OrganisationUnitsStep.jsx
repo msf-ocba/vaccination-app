@@ -62,6 +62,7 @@ class OrganisationUnitsStep extends React.Component {
                     changeEvent: "onBlur",
                     "data-field": "teams",
                     type: "number",
+                    min: 1,
                 },
                 validators: [
                     {
