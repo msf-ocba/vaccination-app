@@ -9,7 +9,7 @@ import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
-import { TeamsMetadata } from "./Teams";
+import { TeamsMetadata, getTeamsForCampaign } from "./Teams";
 
 export type TargetPopulationData = TargetPopulationData;
 
@@ -148,7 +148,8 @@ export default class Campaign {
             .keyBy("code")
             .getOrFail(config.categoryComboCodeForTeams).id;
 
-        const teamsMetadata = await db.getTeamsForCampaign(
+        const teamsMetadata = await getTeamsForCampaign(
+            db,
             organisationUnitIds,
             teamsCategoyId,
             dataSet.name
@@ -390,8 +391,8 @@ export default class Campaign {
         return this.data.teams;
     }
 
-    public setTeams(teams: string): Campaign {
-        return this.update({ ...this.data, teams: parseInt(teams) });
+    public setTeams(teams: number): Campaign {
+        return this.update({ ...this.data, teams });
     }
 
     public get teamsMetadata(): TeamsMetadata {

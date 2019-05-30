@@ -21,15 +21,7 @@ export class Teams {
         return new Teams(metadata);
     }
 
-    public getTeams({
-        teams,
-        name,
-        organisationUnits,
-        teamsCategoyId,
-        startDate,
-        endDate,
-        isEdit,
-    }: {
+    public getTeams(args: {
         teams: number;
         name: string;
         organisationUnits: OrganisationUnitPathOnly[];
@@ -37,7 +29,8 @@ export class Teams {
         startDate: Moment;
         endDate: Moment;
         isEdit: boolean;
-    }) {
+    }): TeamsData[] {
+        const { teams, name, organisationUnits, teamsCategoyId, startDate, endDate, isEdit } = args;
         const {
             metadata: { elements: oldTeams },
         } = this;
@@ -57,7 +50,7 @@ export class Teams {
         const teamDifference = teams - _.size(oldTeams);
 
         //Update periodDates and OU references for previous teams
-        let allTeams: TeamsData[] = oldTeams.map(ot => ({
+        const allTeams = oldTeams.map(ot => ({
             ...ot,
             startDate,
             endDate,
@@ -65,7 +58,7 @@ export class Teams {
         }));
 
         if (teamDifference > 0) {
-            allTeams = [
+            return [
                 ...allTeams,
                 ...this.generateTeams(
                     teamDifference,
@@ -78,13 +71,13 @@ export class Teams {
                 ),
             ];
         } else if (teamDifference < 0) {
-            allTeams = _(allTeams)
+            return _(allTeams)
                 .sortBy("name")
-                .slice(0, _.size(oldTeams) + teamDifference)
+                .take(teams)
                 .value();
+        } else {
+            return allTeams;
         }
-
-        return allTeams;
     }
 
     private generateTeams(
@@ -170,4 +163,29 @@ export class Teams {
         const toDelete = teams.map(t => ({ model: "categoryOptions", id: t.id }));
         return await db.deleteMany(toDelete);
     }
+}
+
+export async function getTeamsForCampaign(
+    db: DbD2,
+    organisationUnitIds: string[],
+    teamCategoryId: string,
+    campaignName: string
+): Promise<TeamsData[]> {
+    const { categoryOptions } = await db.api.get("/metadata", {
+        "categoryOptions:fields": ":owner,categories[id],name",
+        "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
+    });
+
+    if (_.isEmpty(categoryOptions)) return [];
+    const expression = `^Team \\d ${campaignName}$`;
+    const matcher = new RegExp(expression);
+
+    const teams = categoryOptions.filter(
+        (co: { categories: Array<{ id: string }>; name: string }) => {
+            const categoryIds = co.categories.map(c => c.id);
+            return _.includes(categoryIds, teamCategoryId) && matcher.test(co.name);
+        }
+    );
+
+    return teams;
 }

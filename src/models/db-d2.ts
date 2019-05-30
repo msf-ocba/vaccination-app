@@ -22,7 +22,6 @@ import {
 import _ from "lodash";
 import "../utils/lodash-mixins";
 import { promiseMap } from "../utils/promises";
-import { TeamsData } from "./Teams";
 
 function getDbFields(modelFields: ModelFields): string[] {
     return _(modelFields)
@@ -231,30 +230,6 @@ export default class DbD2 {
         });
         const newPager = { ...pager, total: ids.length };
         return { pager: newPager, objects: organisationUnits };
-    }
-
-    public async getTeamsForCampaign(
-        organisationUnitIds: string[],
-        teamCategoryId: string,
-        campaignName: string
-    ): Promise<TeamsData[]> {
-        const { categoryOptions } = await this.api.get("/metadata", {
-            "categoryOptions:fields": ":owner,categories[id],name",
-            "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
-        });
-
-        if (_.isEmpty(categoryOptions)) return [];
-        const expression = `^Team \\d ${campaignName}$`;
-        const matcher = new RegExp(expression);
-
-        const teams = categoryOptions.filter(
-            (co: { categories: Array<{ id: string }>; name: string }) => {
-                const categoryIds = co.categories.map(c => c.id);
-                return _.includes(categoryIds, teamCategoryId) && matcher.test(co.name);
-            }
-        );
-
-        return teams;
     }
 
     public async getCategoryOptionsByCategoryCode(code: string): Promise<CategoryOption[]> {
