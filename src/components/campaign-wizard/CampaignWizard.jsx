@@ -62,7 +62,7 @@ class CampaignWizard extends React.Component {
                 key: "organisation-units",
                 label: i18n.t("Organisation Units"),
                 component: OrganisationUnitsStep,
-                validationKeys: ["organisationUnits"],
+                validationKeys: ["organisationUnits", "teams"],
                 validationKeysLive: ["organisationUnits"],
                 description: i18n.t(
                     `Select the health facilities or health area where the campaign will be implemented`

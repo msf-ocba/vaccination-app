@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-05-29T10:30:31.169Z\n"
+"POT-Creation-Date: 2019-05-29T10:04:37.693Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -233,6 +233,12 @@ msgstr "Desagregación"
 msgid "Field cannot be blank"
 msgstr "El campo no puede estar vacío"
 
+msgid "Number of Teams"
+msgstr "Número de equipos"
+
+msgid "Number of teams must be positive"
+msgstr "El número de equipos debe ser mayor que 0"
+
 msgid "Campaign created"
 msgstr "Campaña creada"
 
@@ -312,9 +318,6 @@ msgstr "Seleccione al menos una unidad organizativa"
 msgid "Only organisation units of level {{levels}} can be selected"
 msgstr ""
 "Puedes seleccionar únicamente unidades organizativas de nivel {{levels}}"
-
-msgid "Organisation Units {{orgUnits}} -> no associated teams"
-msgstr "Unidades organizativas {{orgUnits}} -> sin equipo asociado"
 
 msgid "Field {{field}} cannot be blank"
 msgstr "El campo {{field}} no puede estar vacío"

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-05-29T10:30:31.169Z\n"
-"PO-Revision-Date: 2019-05-29T10:30:31.169Z\n"
+"POT-Creation-Date: 2019-05-30T10:44:33.466Z\n"
+"PO-Revision-Date: 2019-05-30T10:44:33.466Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -201,6 +201,12 @@ msgstr ""
 msgid "Field cannot be blank"
 msgstr ""
 
+msgid "Number of Teams"
+msgstr ""
+
+msgid "Number of teams must be positive"
+msgstr ""
+
 msgid "Campaign created"
 msgstr ""
 
@@ -276,9 +282,6 @@ msgid "Select at least one organisation unit"
 msgstr ""
 
 msgid "Only organisation units of level {{levels}} can be selected"
-msgstr ""
-
-msgid "Organisation Units {{orgUnits}} -> no associated teams"
 msgstr ""
 
 msgid "Field {{field}} cannot be blank"

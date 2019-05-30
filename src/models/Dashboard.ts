@@ -51,18 +51,12 @@ export class Dashboard {
     private async getMetadataForDashboardItems(
         antigens: Antigen[],
         organisationUnitsPathOnly: OrganisationUnitPathOnly[],
-        categoryCodeForTeams: string,
         antigensDisaggregation: AntigenDisaggregationEnabled,
         categoryOptions: CategoryOption[],
-        ageGroupCategoryId: string
+        ageGroupCategoryId: string,
+        teamsCategoryId: string,
+        teamIds: string[]
     ) {
-        const allAncestorsIds = _(organisationUnitsPathOnly)
-            .map("path")
-            .flatMap(path => path.split("/").slice(1))
-            .uniq()
-            .value()
-            .join(",");
-
         const orgUnitsId = _(organisationUnitsPathOnly).map("id");
         const dashboardItems = [dashboardItemsConfig.charts, dashboardItemsConfig.tables];
         const elements = _(dashboardItems)
@@ -81,7 +75,6 @@ export class Dashboard {
             categories,
             dataElements,
             indicators,
-            categoryOptions: teamOptions,
             organisationUnits: organisationUnitsWithName,
         } = await this.db.api.get<{
             categories?: {
@@ -99,47 +92,20 @@ export class Dashboard {
             organisationUnits?: { id: string; displayName: string; path: string }[];
         }>("/metadata", {
             "categories:fields": "id,code,categoryOptions[id,code,name]",
-            "categories:filter": `code:in:[${antigenCategoryCode},${categoryCodeForTeams}]`,
+            "categories:filter": `code:in:[${antigenCategoryCode}]`,
             "dataElements:fields": "id,code",
             "dataElements:filter": `code:in:[${allDataElementCodes}]`,
             "indicators:fields": "id,code",
             "indicators:filter": `code:in:[${allIndicatorCodes}]`,
-            "categoryOptions:fields": "id,categories[id,code],organisationUnits[id]",
-            "categoryOptions:filter": `organisationUnits.id:in:[${allAncestorsIds}]`,
             "organisationUnits:fields": "id,displayName,path",
             "organisationUnits:filter": `id:in:[${orgUnitsId}]`,
         });
 
         const categoriesByCode = _(categories).keyBy(category => category.code);
         const antigenCategory = categoriesByCode.getOrFail(antigenCategoryCode);
-        const teamsCategory = categoriesByCode.getOrFail(categoryCodeForTeams);
 
         const antigensMeta = _.filter(antigenCategory.categoryOptions, op =>
             _.includes(antigenCodes, op.code)
-        );
-
-        if (!teamOptions) {
-            throw new Error("Organization Units chosen have no teams associated");
-        }
-
-        const teamsByOrgUnit: { [orgUnitId: string]: string[] } = organisationUnitsPathOnly.reduce(
-            (acc, ou) => {
-                let teams: string[] = [];
-                teamOptions.forEach(categoryOption => {
-                    const coIsTeam = _(categoryOption.categories)
-                        .map("code")
-                        .includes(categoryCodeForTeams);
-                    const coIncludesOrgUnit = _(categoryOption.organisationUnits)
-                        .map("id")
-                        .some((coOu: string) => ou.path.includes(coOu));
-
-                    if (coIsTeam && coIncludesOrgUnit) {
-                        teams.push(categoryOption.id);
-                    }
-                });
-                return { ...acc, [ou.id]: teams };
-            },
-            {}
         );
 
         const categoryOptionsByName: _.Dictionary<string> = _(categoryOptions)
@@ -154,11 +120,6 @@ export class Dashboard {
             .map(d => [d.antigen.id, ageGroupsToId(d.ageGroups)])
             .fromPairs()
             .value();
-
-        const teamsMetadata = {
-            teamsByOrgUnit,
-            categoryId: teamsCategory.id,
-        };
 
         const dashboardMetadata = {
             antigenCategory: antigenCategory.id,
@@ -175,9 +136,9 @@ export class Dashboard {
             antigensMeta,
             organisationUnitsWithName,
             disaggregationMetadata: {
-                teams: (_antigen = null, orgUnit: Ref) => ({
-                    categoryId: teamsMetadata.categoryId,
-                    elements: teamsMetadata.teamsByOrgUnit[orgUnit.id],
+                teams: () => ({
+                    categoryId: teamsCategoryId,
+                    elements: teamIds,
                 }),
                 ageGroups: (antigen: Ref) => ({
                     categoryId: ageGroupCategoryId,
@@ -196,10 +157,11 @@ export class Dashboard {
         antigens,
         startDate,
         endDate,
-        categoryCodeForTeams,
         antigensDisaggregation,
         categoryOptions,
         ageGroupCategoryId,
+        teamsCategoyId,
+        teamIds,
     }: {
         dashboardId?: string;
         datasetName: string;
@@ -207,20 +169,21 @@ export class Dashboard {
         antigens: Antigen[];
         startDate: Moment;
         endDate: Moment;
-        categoryCodeForTeams: string;
         antigensDisaggregation: AntigenDisaggregationEnabled;
         categoryOptions: CategoryOption[];
         ageGroupCategoryId: string;
+        teamsCategoyId: string;
+        teamIds: string[];
     }): Promise<{ dashboard: DashboardData; charts: Array<object>; reportTables: Array<object> }> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
             organisationUnits,
-            categoryCodeForTeams,
             antigensDisaggregation,
             categoryOptions,
-            ageGroupCategoryId
+            ageGroupCategoryId,
+            teamsCategoyId,
+            teamIds
         );
-
         const dashboardItems = this.createDashboardItems(
             datasetName,
             startDate,
