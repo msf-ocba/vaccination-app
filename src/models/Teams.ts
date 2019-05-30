@@ -5,13 +5,22 @@ import { Moment } from "moment";
 import { OrganisationUnitPathOnly, Response, MetadataResponse, Ref } from "./db.types";
 import { MetadataConfig } from "./config";
 
-export interface TeamsData {
+export interface CategoryOptionTeam {
     id: string;
-    [key: string]: string | Array<object> | Moment;
+    name: string;
+    shortName: string;
+    displayName: string;
+    publicAccess: string;
+    displayShortName: string;
+    startDate: Moment;
+    endDate: Moment;
+    dimensionItemType: "CATEGORY_OPTION";
+    categories: Ref[];
+    organisationUnits: Ref[];
 }
 
 export interface TeamsMetadata {
-    elements: TeamsData[];
+    elements: CategoryOptionTeam[];
 }
 
 export class Teams {
@@ -29,7 +38,7 @@ export class Teams {
         startDate: Moment;
         endDate: Moment;
         isEdit: boolean;
-    }): TeamsData[] {
+    }): CategoryOptionTeam[] {
         const { teams, name, organisationUnits, teamsCategoyId, startDate, endDate, isEdit } = args;
         const {
             metadata: { elements: oldTeams },
@@ -88,8 +97,8 @@ export class Teams {
         startDate: Moment,
         endDate: Moment,
         nameOffset: number = 0
-    ): TeamsData[] {
-        const teamsData: TeamsData[] = _.range(1, teams + 1).map(i => {
+    ): CategoryOptionTeam[] {
+        const teamsData: CategoryOptionTeam[] = _.range(1, teams + 1).map(i => {
             const name = `Team ${nameOffset + i} ${campaignName}`;
             const categoryOption = {
                 id: generateUid(),
@@ -100,7 +109,7 @@ export class Teams {
                 displayShortName: name,
                 startDate,
                 endDate,
-                dimensionItemType: "CATEGORY_OPTION",
+                dimensionItemType: "CATEGORY_OPTION" as "CATEGORY_OPTION",
                 categories: [
                     {
                         id: categoryIdForTeams,
@@ -159,7 +168,7 @@ export class Teams {
     }
 
     // Teams must be deleted after all asociated dashboard and dashboard items (favorites) are deleted
-    static async deleteTeams(db: DbD2, teams: TeamsData[]) {
+    static async deleteTeams(db: DbD2, teams: CategoryOptionTeam[]) {
         const toDelete = teams.map(t => ({ model: "categoryOptions", id: t.id }));
         return await db.deleteMany(toDelete);
     }
@@ -170,7 +179,7 @@ export async function getTeamsForCampaign(
     organisationUnitIds: string[],
     teamCategoryId: string,
     campaignName: string
-): Promise<TeamsData[]> {
+): Promise<CategoryOptionTeam[]> {
     const { categoryOptions } = await db.api.get("/metadata", {
         "categoryOptions:fields": ":owner,categories[id],name",
         "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,

@@ -11,7 +11,7 @@ import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
 import { Dashboard } from "./Dashboard";
-import { Teams, TeamsData } from "./Teams";
+import { Teams, CategoryOptionTeam } from "./Teams";
 
 interface DataSetWithSections {
     sections: Array<{ id: string; name: string; dataSet: { id: string } }>;
@@ -169,7 +169,7 @@ export default class CampaignDb {
 
     private async postSave(
         allMetadata: PostSaveMetadata,
-        teamsToDelete: TeamsData[]
+        teamsToDelete: CategoryOptionTeam[]
     ): Promise<Response<string>> {
         const { campaign } = this;
         const { db, config } = campaign;
