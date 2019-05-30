@@ -35,14 +35,14 @@ export default class CampaignDb {
         const { campaign } = this;
         const { db, targetPopulation, config: metadataConfig, teamsMetadata } = campaign;
         const dataSetId = campaign.id || generateUid();
-        const { categoryComboCodeForTeams } = metadataConfig;
+        const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
         const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
         const categoryComboIdForTeams = _(metadataConfig.categoryCombos)
             .keyBy("code")
             .getOrFail(categoryComboCodeForTeams).id;
-        const teamsCategoyId = _(metadataConfig.categories)
+        const teamsCategoryId = _(metadataConfig.categories)
             .keyBy("code")
-            .getOrFail(categoryComboCodeForTeams).id;
+            .getOrFail(categoryCodeForTeams).id;
 
         if (!campaign.startDate || !campaign.endDate) {
             return { status: false, error: "Campaign Dates not set" };
@@ -55,7 +55,7 @@ export default class CampaignDb {
             teams: campaign.teams || 0,
             name: campaign.name,
             organisationUnits: campaign.organisationUnits,
-            teamsCategoyId,
+            teamsCategoyId: teamsCategoryId,
             startDate,
             endDate,
             isEdit: campaign.isEdit(),
@@ -79,7 +79,7 @@ export default class CampaignDb {
             antigensDisaggregation,
             categoryOptions: metadataConfig.categoryOptions,
             ageGroupCategoryId,
-            teamsCategoyId,
+            teamsCategoyId: teamsCategoryId,
             teamIds,
         });
 
