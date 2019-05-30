@@ -43,8 +43,10 @@ class OrganisationUnitsStep extends React.Component {
 
     onUpdateField = (fieldName, newValue) => {
         const { campaign, onChange } = this.props;
-        const newCampaign = campaign.setTeams(newValue);
-        if (newCampaign) onChange(newCampaign);
+        if (fieldName === "teams") {
+            const newCampaign = campaign.setTeams(parseInt(newValue));
+            if (newCampaign) onChange(newCampaign);
+        }
     };
 
     render() {
