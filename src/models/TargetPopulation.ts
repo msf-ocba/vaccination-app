@@ -14,7 +14,7 @@ import { sortAgeGroups } from "../utils/age-groups";
 
 const levelsConfig = {
     levelForPopulation: 5,
-    levelsForAgeDistribution: [{ level: 4, isEditable: false }, { level: 5, isEditable: true }],
+    levelsForAgeDistribution: [{ level: 4, isEditable: true }, { level: 5, isEditable: true }],
 };
 
 export type TargetPopulationList = Array<TargetPopulationItem>;

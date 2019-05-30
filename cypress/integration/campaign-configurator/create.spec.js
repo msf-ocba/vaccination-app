@@ -69,7 +69,7 @@ describe("Campaign configuration - Create", () => {
             .clear()
             .type(1000);
 
-        cy.get("[test-population-distribution=0] [aria-label=Edit]").click();
+        cy.get("[test-population-distribution=0] [aria-label=Edit] :first").click();
         cy.get("[test-population-distribution=0] input").each(($el, idx) => {
             cy.wrap($el)
                 .clear()
