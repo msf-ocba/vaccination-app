@@ -264,6 +264,15 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
+msgid "Subtotal"
+msgstr ""
+
+msgid "Total"
+msgstr ""
+
+msgid "Value"
+msgstr ""
+
 msgid "Doses administered"
 msgstr ""
 
