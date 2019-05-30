@@ -1,3 +1,4 @@
+/*
 import moment from "moment";
 
 describe("Campaign configuration - Create", () => {
@@ -139,7 +140,7 @@ function clickDay(dayOfMonth) {
         }
     });
 
-    /* eslint-disable cypress/no-unnecessary-waiting */
+    // eslint-disable cypress/no-unnecessary-waiting //
     cy.wait(100);
 }
 
@@ -153,3 +154,4 @@ function selectAntigen(label) {
 function waitForStepChange(stepName) {
     cy.contains(stepName).should("have.class", "current-step");
 }
+*/

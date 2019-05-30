@@ -9,6 +9,7 @@ import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
+import { TeamsMetadata, getTeamsForCampaign } from "./Teams";
 
 export type TargetPopulationData = TargetPopulationData;
 
@@ -28,6 +29,8 @@ export interface Data {
     antigens: Antigen[];
     antigensDisaggregation: AntigensDisaggregation;
     targetPopulation: Maybe<TargetPopulation>;
+    teams: Maybe<number>;
+    teamsMetadata: TeamsMetadata;
     dashboardId: Maybe<string>;
 }
 
@@ -69,6 +72,10 @@ export default class Campaign {
             antigens: antigens,
             antigensDisaggregation: AntigensDisaggregation.build(config, antigens, []),
             targetPopulation: undefined,
+            teams: undefined,
+            teamsMetadata: {
+                elements: [],
+            },
             dashboardId: undefined,
         };
 
@@ -135,6 +142,18 @@ export default class Campaign {
             period ? moment(period).toDate() : null
         );
 
+        const organisationUnitIds = dataSet.organisationUnits.map(ou => ou.id);
+
+        const teamsCategoyId = _(config.categories)
+            .keyBy("code")
+            .getOrFail(config.categoryComboCodeForTeams).id;
+
+        const teamsMetadata = await getTeamsForCampaign(
+            db,
+            organisationUnitIds,
+            teamsCategoyId,
+            dataSet.name
+        );
         const dashboardId: Maybe<string> = _(dataSet.attributeValues)
             .keyBy(attributeValue => attributeValue.attribute.id)
             .get([config.attributes.dashboard.id, "value"]);
@@ -153,6 +172,10 @@ export default class Campaign {
                 dataSet.sections
             ),
             targetPopulation: undefined,
+            teams: _.size(teamsMetadata),
+            teamsMetadata: {
+                elements: teamsMetadata,
+            },
             dashboardId,
         };
 
@@ -181,6 +204,7 @@ export default class Campaign {
             antigens,
             targetPopulation,
             antigensDisaggregation,
+            teams,
         } = this.data;
 
         const validation = {
@@ -189,6 +213,11 @@ export default class Campaign {
             startDate: !startDate ? getError("cannot_be_blank", { field: "start date" }) : [],
 
             endDate: !endDate ? getError("cannot_be_blank", { field: "end date" }) : [],
+
+            teams: _.compact([
+                !teams ? { key: "cannot_be_blank" } : null,
+                teams && teams <= 0 ? { key: "must_be_bigger_than_zero" } : null,
+            ]),
 
             organisationUnits: await this.validateOrganisationUnits(),
 
@@ -218,26 +247,11 @@ export default class Campaign {
         );
         const levels = this.selectableLevels.join("/");
 
-        const orgUnitsWithTeamsInfo = await this.db.validateTeamsForOrganisationUnits(
-            organisationUnits,
-            this.config.categoryCodeForTeams
-        );
-
-        const orgUnitsWithoutTeams = _(orgUnitsWithTeamsInfo)
-            .filter(ou => !ou.hasTeams)
-            .map(ou => ou.displayName)
-            .value();
-
         const errorsList = [
             !allOrgUnitsInAcceptedLevels
                 ? getError("organisation_units_only_of_levels", { levels })
                 : [],
             _(organisationUnits).isEmpty() ? getError("no_organisation_units_selected") : [],
-            !_.isEmpty(orgUnitsWithoutTeams)
-                ? getError("no_valid_teams_for_organisation_units", {
-                      orgUnits: orgUnitsWithoutTeams.join(", "),
-                  })
-                : [],
         ];
 
         return _(errorsList)
@@ -369,6 +383,20 @@ export default class Campaign {
 
     public get dashboardId(): Maybe<string> {
         return this.data.dashboardId;
+    }
+
+    /* Teams */
+
+    public get teams(): Maybe<number> {
+        return this.data.teams;
+    }
+
+    public setTeams(teams: number): Campaign {
+        return this.update({ ...this.data, teams });
+    }
+
+    public get teamsMetadata(): TeamsMetadata {
+        return this.data.teamsMetadata;
     }
 
     /* Save */

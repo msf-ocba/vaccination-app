@@ -11,6 +11,7 @@ import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements } from "./AntigensDisaggregation";
 import { Dashboard } from "./Dashboard";
+import { Teams, CategoryOptionTeam } from "./Teams";
 
 interface DataSetWithSections {
     sections: Array<{ id: string; name: string; dataSet: { id: string } }>;
@@ -24,6 +25,7 @@ interface PostSaveMetadata {
     dataSets: DataSet[];
     dataEntryForms: DataEntryForm[];
     sections: Section[];
+    categoryOptions: object[];
 }
 
 export default class CampaignDb {
@@ -31,12 +33,16 @@ export default class CampaignDb {
 
     public async save(): Promise<Response<string>> {
         const { campaign } = this;
-        const { db, targetPopulation, config: metadataConfig } = campaign;
+        const { db, targetPopulation, config: metadataConfig, teamsMetadata } = campaign;
         const dataSetId = campaign.id || generateUid();
         const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
         const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
-        const categoryCombosByCode = _.keyBy(metadataConfig.categoryCombos, "code");
-        const categoryComboTeams = _(categoryCombosByCode).get(categoryComboCodeForTeams);
+        const categoryComboIdForTeams = _(metadataConfig.categoryCombos)
+            .keyBy("code")
+            .getOrFail(categoryComboCodeForTeams).id;
+        const teamsCategoryId = _(metadataConfig.categories)
+            .keyBy("code")
+            .getOrFail(categoryCodeForTeams).id;
 
         if (!campaign.startDate || !campaign.endDate) {
             return { status: false, error: "Campaign Dates not set" };
@@ -44,11 +50,24 @@ export default class CampaignDb {
         const startDate = moment(campaign.startDate).startOf("day");
         const endDate = moment(campaign.endDate).endOf("day");
 
+        const teamGenerator = Teams.build(teamsMetadata);
+        const newTeams = teamGenerator.getTeams({
+            teams: campaign.teams || 0,
+            name: campaign.name,
+            organisationUnits: campaign.organisationUnits,
+            teamsCategoyId: teamsCategoryId,
+            startDate,
+            endDate,
+            isEdit: campaign.isEdit(),
+        });
+
+        const teamsToDelete = _.differenceBy(teamsMetadata.elements, newTeams, "id");
+
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
         const ageGroupCategoryId = _(metadataConfig.categories)
             .keyBy("code")
             .getOrFail(metadataConfig.categoryCodeForAgeGroup).id;
-
+        const teamIds: string[] = _.map(newTeams, "id");
         const dashboardGenerator = Dashboard.build(db);
         const { dashboard, charts, reportTables } = await dashboardGenerator.create({
             dashboardId: campaign.dashboardId,
@@ -57,15 +76,16 @@ export default class CampaignDb {
             antigens: campaign.antigens,
             startDate,
             endDate,
-            categoryCodeForTeams,
             antigensDisaggregation,
             categoryOptions: metadataConfig.categoryOptions,
             ageGroupCategoryId,
+            teamsCategoyId: teamsCategoryId,
+            teamIds,
         });
 
         if (!attributeForApp || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: attributes" };
-        } else if (!categoryComboTeams) {
+        } else if (!categoryComboIdForTeams) {
             return {
                 status: false,
                 error: `Metadata not found: categoryCombo.code=${categoryComboCodeForTeams}`,
@@ -100,7 +120,7 @@ export default class CampaignDb {
                 description: campaign.description,
                 publicAccess: "r-r-----", // Metadata can view-only, Data can view-only
                 periodType: "Daily",
-                categoryCombo: { id: categoryComboTeams.id },
+                categoryCombo: { id: categoryComboIdForTeams },
                 dataElementDecoration: true,
                 renderAsTabs: true,
                 organisationUnits: campaign.organisationUnits.map(ou => ({ id: ou.id })),
@@ -131,19 +151,26 @@ export default class CampaignDb {
                     error: JSON.stringify(populationResult.error, null, 2),
                 };
             } else {
-                return this.postSave({
-                    charts,
-                    reportTables,
-                    dashboards: [dashboard],
-                    dataSets: [dataSet],
-                    dataEntryForms: [dataEntryForm],
-                    sections,
-                });
+                return this.postSave(
+                    {
+                        charts,
+                        reportTables,
+                        dashboards: [dashboard],
+                        dataSets: [dataSet],
+                        dataEntryForms: [dataEntryForm],
+                        sections,
+                        categoryOptions: newTeams,
+                    },
+                    teamsToDelete
+                );
             }
         }
     }
 
-    private async postSave(allMetadata: PostSaveMetadata): Promise<Response<string>> {
+    private async postSave(
+        allMetadata: PostSaveMetadata,
+        teamsToDelete: CategoryOptionTeam[]
+    ): Promise<Response<string>> {
         const { campaign } = this;
         const { db, config } = campaign;
         const { sections, ...nonSectionsMetadata } = allMetadata;
@@ -173,7 +200,14 @@ export default class CampaignDb {
 
         if (campaign.isEdit()) {
             await this.cleanUpDashboardItems(db, modelReferencesToDelete);
+
+            // Teams must be deleted after all asociated dashboard and dashboard items (favorites) are deleted
+            if (!_.isEmpty(teamsToDelete)) {
+                await Teams.deleteTeams(db, teamsToDelete);
+            }
         }
+        // Update Team Category with new categoryOptions (teams)
+        Teams.updateTeamCategory(db, allMetadata.categoryOptions, teamsToDelete, config);
 
         if (!result.status) {
             return { status: false, error: result.error };
