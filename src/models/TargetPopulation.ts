@@ -239,7 +239,7 @@ export class TargetPopulation {
                 getValue(targetPopulationItem.populationTotal.pairValue),
                 "No value for total population"
             );
-            const newValue = getNewValue(targetPopulationItem.populationTotal.pairValue);
+            const newValue = getValue(targetPopulationItem.populationTotal.pairValue);
             const totalPopulationDataValues = _.isUndefined(newValue)
                 ? []
                 : [
@@ -268,7 +268,7 @@ export class TargetPopulation {
                             if (!_(ageGroupsForAntigen).includes(ageGroup)) {
                                 return null;
                             } else {
-                                const populationForAgeRange = Math.round(
+                                const populationForAgeRange = Math.ceil(
                                     (totalPopulation * ageGroupPercent) / 100
                                 );
 
@@ -299,7 +299,7 @@ export class TargetPopulation {
                                 _.getOrFail(this.data.ageDistributionByOrgUnit, orgUnitId),
                                 ageGroup
                             );
-                            const newValue = getNewValue(pairValue);
+                            const newValue = getValue(pairValue);
                             return newValue
                                 ? {
                                       period,
@@ -425,6 +425,7 @@ export class TargetPopulation {
                         .map("id")
                         .join(";"),
             ],
+            skipRounding: true,
         });
 
         const rowsByOrgUnit = _(rows)
@@ -467,7 +468,7 @@ export class TargetPopulation {
                         const categoryOption = _(ageGroupCategoryOptionById).getOrFail(
                             ageGroupCategoryOptionId
                         );
-                        return [categoryOption.displayName, parseInt(row.value)];
+                        return [categoryOption.displayName, parseFloat(row.value)];
                     })
                     .fromPairs()
                     .value();
@@ -536,15 +537,5 @@ function getValue(pairValue: Maybe<PairValue>): Maybe<number> {
         return pairValue.value;
     } else {
         return pairValue.newValue;
-    }
-}
-
-function getNewValue(pairValue: PairValue): Maybe<number> {
-    const { value, newValue } = pairValue;
-
-    if (!_.isUndefined(pairValue.newValue) && value !== newValue) {
-        return newValue;
-    } else {
-        return undefined;
     }
 }

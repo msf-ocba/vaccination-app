@@ -2,32 +2,24 @@ import React from "react";
 import classNames from "classnames";
 import _ from "lodash";
 
+import { createStyles, WithStyles, Theme } from "@material-ui/core";
+import { Table, TableRow, TableHead, TableCell, TableBody } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 
 import { memoize } from "../../../utils/memoize";
 import i18n from "../../../locales";
 import EditButton from "./EditButton";
-import { getShowValue } from "./utils";
+import { getValue, getShowValue } from "./utils";
 import Value from "./Value";
 import {
     TargetPopulationItem,
     PopulationDistribution,
     TargetPopulation,
 } from "../../../models/TargetPopulation";
-
-import {
-    createStyles,
-    WithStyles,
-    Theme,
-    TextField,
-    Table,
-    TableRow,
-    TableHead,
-    TableCell,
-    TableBody,
-} from "@material-ui/core";
 import { OrganisationUnit, OrganisationUnitLevel, Maybe } from "../../../models/db.types";
 import OrgUnitName from "./OrgUnitName";
+import "./PopulationDistribution.css";
+import { NumericField } from "../../shared/NumericField";
 
 export interface PopulationDistributionProps extends WithStyles<typeof styles> {
     organisationUnitLevels: OrganisationUnitLevel[];
@@ -52,12 +44,9 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
         );
     }
 
-    onChange = memoize(
-        (orgUnitId: string, ageGroup: string) => (ev: React.ChangeEvent<HTMLInputElement>) => {
-            const value = ev.currentTarget.value;
-            this.props.onChange(orgUnitId, ageGroup, parseInt(value));
-        }
-    );
+    onChange = memoize((orgUnitId: string, ageGroup: string) => (value: number) => {
+        this.props.onChange(orgUnitId, ageGroup, value);
+    });
 
     onToggle = memoize((distributionIdx: number) => () => {
         this.props.onToggle(distributionIdx);
@@ -84,19 +73,20 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
                 {this.renderOrgUnit(orgUnit)}
 
                 {ageGroups.map((ageGroup, index) => {
-                    const value = ageDistribution ? getShowValue(ageDistribution[ageGroup]) : "";
+                    const value = ageDistribution ? getValue(ageDistribution[ageGroup]) : undefined;
 
                     return (
                         <TableCell key={ageGroup}>
                             {isEditing ? (
-                                <TextField
+                                <NumericField
                                     className={classes.percentageField}
                                     value={value}
                                     onChange={this.onChange(orgUnit.id, ageGroup)}
                                     inputRef={index === 0 ? this.setFirstTextField : undefined}
+                                    maxDecimals={2}
                                 />
                             ) : (
-                                <span>{value || "-"}</span>
+                                <span>{getShowValue(ageDistribution[ageGroup]) || "-"}</span>
                             )}
                         </TableCell>
                     );
@@ -182,7 +172,7 @@ const styles = (_theme: Theme) =>
             backgroundColor: "#EEE",
         },
         percentageField: {
-            width: "2em",
+            width: "3em",
         },
         separatorRow: {
             height: 24,

@@ -67,16 +67,7 @@ describe("Campaign", () => {
                     const messages = await campaignWithOrgUnit.validate();
 
                     if (level == 5) {
-                        expect(messages).toEqual(
-                            expect.objectContaining({
-                                organisationUnits: [
-                                    {
-                                        key: "no_valid_teams_for_organisation_units",
-                                        namespace: { orgUnits: "" },
-                                    },
-                                ],
-                            })
-                        );
+                        expect(messages).toEqual(expect.objectContaining({}));
                     } else {
                         expect(messages).toEqual(
                             expect.objectContaining({
@@ -84,10 +75,6 @@ describe("Campaign", () => {
                                     {
                                         key: "organisation_units_only_of_levels",
                                         namespace: { levels: "5" },
-                                    },
-                                    {
-                                        key: "no_valid_teams_for_organisation_units",
-                                        namespace: { orgUnits: "" },
                                     },
                                 ],
                             })

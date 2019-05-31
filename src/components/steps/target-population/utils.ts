@@ -7,6 +7,10 @@ type PairValue = {
     newValue: Maybe<number>;
 };
 
+export function getValue(pairValue: PairValue): Maybe<number> {
+    return _.isUndefined(pairValue.newValue) ? pairValue.value : pairValue.newValue;
+}
+
 export function getShowValue(pairValue: Maybe<PairValue>): string {
     const toStr = (v: Maybe<number>) => (_.isUndefined(v) ? "" : v.toString());
 

@@ -184,7 +184,7 @@ class SaveStep extends React.Component {
                             label={i18n.t("Period dates")}
                             value={this.getCampaignPeriodDateString()}
                         />
-
+                        <LiEntry label={"Number of Teams"} value={campaign.teams} />
                         <LiEntry label={i18n.t("Organisation Units")}>
                             {orgUnits && (
                                 <React.Fragment>
