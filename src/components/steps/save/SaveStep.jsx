@@ -10,7 +10,6 @@ import { withSnackbar } from "d2-ui-components";
 
 import { getFullOrgUnitName } from "../../../models/organisation-units";
 import { getShowValue } from "../target-population/utils";
-import { getFinalPopulationDistribution } from "../../../models/TargetPopulation";
 import ExitWizardButton from "../../wizard/ExitWizardButton";
 
 const styles = _theme => ({
@@ -147,14 +146,9 @@ class SaveStep extends React.Component {
         );
         const targetPopOu = _(byOrgUnit).getOrFail(orgUnit.id);
         const totalPopulation = getShowValue(targetPopOu.populationTotal.pairValue);
-        const populationDistribution = getFinalPopulationDistribution(
-            targetPopulation.ageGroups,
-            targetPopOu
-        );
+        const populationDistribution = targetPopulation.getFinalDistribution(targetPopOu);
         const ageDistribution = targetPopulation.ageGroups
-            .map(ageGroup => {
-                return [ageGroup, " = ", populationDistribution[ageGroup], "%"].join("");
-            })
+            .map(ageGroup => [ageGroup, " = ", populationDistribution[ageGroup], "%"].join(""))
             .join(", ");
 
         return (

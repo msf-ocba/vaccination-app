@@ -74,10 +74,10 @@ class TargetPopulationComponent extends React.Component<
     });
 
     onAgeGroupPopulationChange = memoize(
-        (ouIndex: number) => (distributionIdx: number, ageGroup: string, value: number) => {
+        (ouIndex: number) => (orgUnitId: string, ageGroup: string, value: number) => {
             const { campaign, onChange } = this.props;
             if (!campaign.targetPopulation) return;
-            const ageGroupSelector = { ouIndex, distributionIdx, ageGroup };
+            const ageGroupSelector = { orgUnitId, ageGroup };
 
             const campaignUpdated = campaign.setTargetPopulation(
                 campaign.targetPopulation.setAgeGroupPopulation(ageGroupSelector, value)
@@ -135,7 +135,7 @@ class TargetPopulationComponent extends React.Component<
                                                 ? editAgeGroupRow.distributionIdx
                                                 : undefined
                                         }
-                                        ageGroups={targetPopulation.ageGroups}
+                                        targetPopulation={targetPopulation}
                                         targetPopOu={targetPopOu}
                                         onChange={this.onAgeGroupPopulationChange(ouIndex)}
                                         onToggle={this.onAgeGroupPopulationToggle(ouIndex)}
