@@ -2,17 +2,21 @@ import _ from "lodash";
 
 type Maybe<T> = T | undefined;
 
-export function getValue(pairValue: {
+type PairValue = {
     value: Maybe<number>;
     newValue: Maybe<number>;
-}): Maybe<number> {
+};
+
+export function getValue(pairValue: PairValue): Maybe<number> {
     return _.isUndefined(pairValue.newValue) ? pairValue.value : pairValue.newValue;
 }
 
-export function getShowValue(pairValue: { value: Maybe<number>; newValue: Maybe<number> }): string {
+export function getShowValue(pairValue: Maybe<PairValue>): string {
     const toStr = (v: Maybe<number>) => (_.isUndefined(v) ? "" : v.toString());
 
-    if (_.isUndefined(pairValue.newValue)) {
+    if (!pairValue) {
+        return "";
+    } else if (_.isUndefined(pairValue.newValue)) {
         return toStr(pairValue.value);
     } else if (_.isNaN(pairValue.newValue)) {
         return "";
