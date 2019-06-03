@@ -16,7 +16,7 @@ context("Landing page", () => {
             cy.title().should("equal", "Vaccination App");
         });
 
-        it("shows 4 pages of the application", () => {
+        it("shows 3 pages of the application", () => {
             cy.get('[data-test="pages"]')
                 .should("have.length", 1)
                 .should("be.visible");
@@ -24,7 +24,6 @@ context("Landing page", () => {
             cy.contains("Campaign Configuration");
             cy.contains("Data Entry");
             cy.contains("Dashboard");
-            cy.contains("Maintenance");
         });
     });
 
