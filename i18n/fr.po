@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-05-31T12:50:02.725Z\n"
+"POT-Creation-Date: 2019-06-03T09:18:06.517Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -15,9 +15,6 @@ msgid "Data Entry"
 msgstr ""
 
 msgid "Dashboard"
-msgstr ""
-
-msgid "Maintenance"
 msgstr ""
 
 msgid "Name"
@@ -199,9 +196,6 @@ msgstr ""
 msgid "Disaggregation"
 msgstr ""
 
-msgid "Campaign name requires a unique value"
-msgstr ""
-
 msgid "Field cannot be blank"
 msgstr ""
 
@@ -316,6 +310,9 @@ msgstr ""
 msgid ""
 "Org unit {{organisationUnit}} has an invalid total value for antigen "
 "{{antigen}} ({{ageGroups}}) -> {{- value}}"
+msgstr ""
+
+msgid "There already exists a campaign with the same name"
 msgstr ""
 
 msgctxt ""
