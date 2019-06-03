@@ -37,6 +37,16 @@ const translations = {
     name_must_be_unique: () => i18n.t("Campaign name requires a unique value"),
 };
 
+export function translateError(error) {
+    const translation = translations[error.key];
+
+    if (translation) {
+        return i18n.t(translation(error.namespace));
+    } else {
+        return `Missing translation: ${error.key}`;
+    }
+}
+
 export async function getValidationMessages(campaign, validationKeys) {
     if (_(validationKeys).isEmpty()) return [];
 
@@ -46,13 +56,6 @@ export async function getValidationMessages(campaign, validationKeys) {
         .at(validationKeys)
         .flatten()
         .compact()
-        .map(error => {
-            const translation = translations[error.key];
-            if (translation) {
-                return i18n.t(translation(error.namespace));
-            } else {
-                return `Missing translation: ${error.key}`;
-            }
-        })
+        .map(translateError)
         .value();
 }

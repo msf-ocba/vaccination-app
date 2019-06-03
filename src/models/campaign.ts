@@ -287,30 +287,32 @@ export default class Campaign {
         return this.data.name;
     }
 
-    public async invalidCampaignName(name: string): Promise<boolean> {
+    public async existsCampaignWithSameName(name: string): Promise<boolean> {
         const { id } = this.data;
+        const nameLowerCase = name.trim().toLowerCase();
+
         const { dataSets } = await this.db.getMetadata<{
             dataSets: Array<{ id: string; name: string }>;
         }>({
-            dataSets: { fields: { id: true, name: true }, filters: [`name:$ilike:${name}`] },
+            dataSets: {
+                fields: { id: true, name: true },
+                filters: [`name:$ilike:${nameLowerCase}`],
+            },
         });
 
-        const existsDataSetWithName = dataSets.some(
-            (ds: { id: string; name: string }) =>
-                ds.id !== id && ds.name.toLowerCase() === name.toLowerCase()
-        );
-
-        return existsDataSetWithName;
+        return dataSets.some(ds => ds.id !== id && ds.name.toLowerCase() === nameLowerCase);
     }
 
     private async validateName() {
         const { name } = this.data;
         const trimmedName = name.trim();
+
         if (!trimmedName) {
             return getError("cannot_be_blank", { field: "name" });
+        } else if (await this.existsCampaignWithSameName(trimmedName)) {
+            return getError("name_must_be_unique");
         } else {
-            const invalidName = await this.invalidCampaignName(trimmedName);
-            return invalidName ? getError("name_must_be_unique") : null;
+            return [];
         }
     }
 

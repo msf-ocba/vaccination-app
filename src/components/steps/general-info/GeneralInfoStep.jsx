@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
+import _ from "lodash";
 
 import { withStyles } from "@material-ui/core/styles";
 import { Card, CardContent } from "@material-ui/core";
@@ -10,6 +11,7 @@ import { FormBuilder } from "@dhis2/d2-ui-forms";
 import { Validators } from "@dhis2/d2-ui-forms";
 
 import { DatePicker } from "d2-ui-components";
+import { translateError } from "../../../utils/validations";
 
 class GeneralInfoStep extends React.Component {
     state = {
@@ -22,13 +24,14 @@ class GeneralInfoStep extends React.Component {
         onChange: PropTypes.func.isRequired,
     };
 
-    async validateCampaignName(name) {
+    validateCampaignName = async name => {
         const { campaign } = this.props;
-        const invalidName = await campaign.invalidCampaignName(name.trim());
-        if (invalidName) {
-            throw i18n.t("Campaign name requires a unique value");
+        const errors = await campaign.validateName(name);
+
+        if (!_.isEmpty(errors)) {
+            throw errors.map(translateError).join(", ");
         }
-    }
+    };
 
     onUpdateField = (fieldName, newValue) => {
         const { campaign, onChange } = this.props;
@@ -70,12 +73,10 @@ class GeneralInfoStep extends React.Component {
                 validators: [
                     {
                         message: i18n.t("Field cannot be blank"),
-                        validator(value) {
-                            return Validators.isRequired(value);
-                        },
+                        validator: Validators.isRequired,
                     },
                 ],
-                asyncValidators: [name => this.validateCampaignName(name)],
+                asyncValidators: [this.validateCampaignName],
             },
             {
                 name: "description",
