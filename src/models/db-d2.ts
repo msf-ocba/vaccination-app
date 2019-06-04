@@ -47,7 +47,12 @@ function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
                 const fields = params.fields || metadataFields[modelName as ModelName];
                 return [
                     [modelName + ":fields", getDbFields(fields).join(",")],
-                    ...(params.filters || []).map(filter => [modelName + ":filter", filter]),
+                    // NOTE: Only the first filter is actually passed. d2.Api does support arrays for
+                    // the generic param 'filter=', but not for metadata-specific 'MODEL:filter='.
+                    ..._(params.filters || [])
+                        .take(1)
+                        .map(filter => [modelName + ":filter", filter])
+                        .value(),
                 ];
             }
         })
