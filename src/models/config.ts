@@ -17,6 +17,7 @@ import { sortAgeGroups } from "../utils/age-groups";
 export interface BaseConfig {
     categoryCodeForAntigens: string;
     categoryCodeForAgeGroup: string;
+    categoryCodeForDoses: string;
     categoryComboCodeForAgeGroup: string;
     categoryComboCodeForAntigenAgeGroup: string;
     dataElementGroupCodeForAntigens: string;
@@ -32,8 +33,9 @@ export interface BaseConfig {
 const baseConfig: BaseConfig = {
     categoryCodeForAntigens: "RVC_ANTIGEN",
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
+    categoryCodeForDoses: "RVC_DOSE",
     categoryComboCodeForAgeGroup: "RVC_AGE_GROUP",
-    categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_RVC_AGE_GROUP",
+    categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_AGE_GROUP",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
@@ -59,6 +61,7 @@ export interface MetadataConfig extends BaseConfig {
         $categoryOptions:
             | { kind: "fromAntigens" }
             | { kind: "fromAgeGroups" }
+            | { kind: "fromDoses" }
             | { kind: "values"; values: string[] };
     }>;
     categoryOptions: CategoryOption[];
@@ -82,6 +85,7 @@ export interface MetadataConfig extends BaseConfig {
         code: string;
         dataElements: { id: string; code: string; optional: boolean; order: number }[];
         ageGroups: Array<string[][]>;
+        doses: Array<{ id: string; name: string }>;
     }>;
 }
 
@@ -95,6 +99,8 @@ function getCategoriesDisaggregation(
             $categoryOptions = { kind: "fromAntigens" };
         } else if (category.code === baseConfig.categoryCodeForAgeGroup) {
             $categoryOptions = { kind: "fromAgeGroups" };
+        } else if (category.code === baseConfig.categoryCodeForDoses) {
+            $categoryOptions = { kind: "fromDoses" };
         } else {
             $categoryOptions = {
                 kind: "values",
@@ -113,8 +119,16 @@ function getCategoriesDisaggregation(
     });
 }
 
-function getCode(parts: string[]): string {
-    return parts.map(part => part.replace(/\s*/g, "").toUpperCase()).join("_");
+export function getCode(parts: string[]): string {
+    const code = parts
+        .map(part =>
+            part
+                .replace(/\s*/g, "")
+                .replace(/^RVC_/, "")
+                .toUpperCase()
+        )
+        .join("_");
+    return "RVC_" + code;
 }
 
 function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
@@ -137,7 +151,7 @@ function getConfigDataElementsDisaggregation(
 
     return dataElementsForAntigens.map(dataElement => {
         const getCategories = (typeString: string): Category[] => {
-            const code = "RVC_DE_" + dataElement.code + "_" + typeString;
+            const code = getCode(["RVC_DE", dataElement.code]) + "_" + typeString;
             const categoryRefs = (catCombosByCode[code] || { categories: [] }).categories;
             return getFromRefs(categoryRefs, categories);
         };
@@ -204,12 +218,23 @@ function getAntigens(
             return [[mainAgeGroup], ...disaggregatedAgeGroups];
         });
 
+        const dosesIds = _(categoryOptionGroupsByCode)
+            .getOrFail(getCode([categoryOption.code, "DOSES"]))
+            .categoryOptions.map(co => co.id);
+        const allDoses = _(categoriesByCode).getOrFail(baseConfig.categoryCodeForDoses)
+            .categoryOptions;
+        const doses = _(allDoses)
+            .map(co => (_(dosesIds).includes(co.id) ? { id: co.id, name: co.displayName } : null))
+            .compact()
+            .value();
+
         return {
             id: categoryOption.id,
             name: categoryOption.displayName,
             code: categoryOption.code,
             dataElements: dataElementSorted,
-            ageGroups: ageGroups,
+            ageGroups,
+            doses,
         };
     });
 

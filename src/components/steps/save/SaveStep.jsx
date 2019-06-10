@@ -63,6 +63,7 @@ class SaveStep extends React.Component {
                 this.props.snackbar.error(i18n.t("Error saving campaign"));
             }
         } catch (err) {
+            console.error(err);
             this.props.snackbar.error(err.message || err.toString());
             this.setState({ isSaving: false });
         }
@@ -197,7 +198,12 @@ class SaveStep extends React.Component {
                             [{disaggregation.length}]
                             <ul>
                                 {disaggregation.map(({ antigen, dataElements }) => (
-                                    <LiEntry key={antigen.code} label={antigen.name}>
+                                    <LiEntry
+                                        key={antigen.code}
+                                        label={`${antigen.name} (${i18n.t("doses")}: ${
+                                            antigen.doses.length
+                                        })`}
+                                    >
                                         <ul>{this.renderDataElements(dataElements)}</ul>
                                     </LiEntry>
                                 ))}

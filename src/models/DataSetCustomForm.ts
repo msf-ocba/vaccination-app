@@ -55,7 +55,11 @@ function totalTd(dataElementId: string, cocIds: string[]): string {
 }
 
 export class DataSetCustomForm {
-    constructor(public campaign: Campaign, private metadata: CustomFormMetadata) {}
+    dosesCode: string;
+
+    constructor(public campaign: Campaign, private metadata: CustomFormMetadata) {
+        this.dosesCode = campaign.config.categoryCodeForDoses;
+    }
 
     static async build(campaign: Campaign): Promise<DataSetCustomForm> {
         const metadata = await campaign.antigensDisaggregation.getCustomFormMetadata(
@@ -119,11 +123,22 @@ export class DataSetCustomForm {
     getCocIds(
         antigen: Antigen,
         dataElement: DataElement,
-        categoryOptionGroups: string[][]
+        categoryOptionGroups: string[][],
+        options: { doseName?: string }
     ): string[] {
-        return _.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
-            this.getCocId(antigen, dataElement, categoryOptionNames)
-        );
+        const { doseName } = options;
+        const categoryDoses = dataElement.categories.find(cat => cat.code === this.dosesCode);
+        const dosesNames =
+            categoryDoses && doseName === undefined
+                ? [categoryDoses.categoryOptions]
+                : doseName
+                ? [[doseName]]
+                : [];
+        const categoryOptionGroupsAll = [...dosesNames, ...categoryOptionGroups];
+
+        return _.cartesianProduct(categoryOptionGroupsAll).map(categoryOptionNames => {
+            return this.getCocId(antigen, dataElement, categoryOptionNames);
+        });
     }
 
     renderDataElement(
@@ -131,20 +146,31 @@ export class DataSetCustomForm {
         dataElement: DataElement,
         categoryOptionGroups: string[][],
         idx: number
-    ): string {
+    ): string[] {
         const trType = idx === 0 ? "primary" : "secondary";
         const trClass = ["derow", `de-${dataElement.id}`, trType].join(" ");
-        const cocIds = _.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
-            this.getCocId(antigen, dataElement, categoryOptionNames)
-        );
-        const dataElementId = dataElement.id;
-        const renderTotalCell = cocIds.length > 1;
 
-        return h("tr", { class: trClass }, [
-            h("td", { class: "data-element" }, dataElement.name),
-            ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
-            renderTotalCell ? totalTd(dataElementId, cocIds) : null,
-        ]);
+        // Doses are rendered as a separate data element rows
+        const categoryDoses = dataElement.categories.find(cat => cat.code === this.dosesCode);
+        const dosesNames: Array<string | undefined> = categoryDoses
+            ? categoryDoses.categoryOptions
+            : [undefined];
+
+        return dosesNames.map(doseName => {
+            const cocIds = this.getCocIds(antigen, dataElement, categoryOptionGroups, { doseName });
+            const dataElementId = dataElement.id;
+            const renderTotalCell = cocIds.length > 1;
+
+            return h("tr", { class: trClass }, [
+                h(
+                    "td",
+                    { class: "data-element" },
+                    _.compact([dataElement.name, doseName]).join(" - ")
+                ),
+                ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
+                renderTotalCell ? totalTd(dataElementId, cocIds) : null,
+            ]);
+        });
     }
 
     getDataElementByCategoryOptionsLists(dataElements: DataElement[]) {
@@ -155,6 +181,7 @@ export class DataSetCustomForm {
             .values()
             .map(dataElementsGroup => {
                 const categoryOptionGroups = _(dataElementsGroup[0].categories)
+                    .reject(category => category.code === this.dosesCode)
                     .map(cat => cat.categoryOptions)
                     .value();
 
@@ -209,7 +236,7 @@ export class DataSetCustomForm {
                                 h(
                                     "tbody",
                                     {},
-                                    dataElements.map(dataElement =>
+                                    _.flatMap(dataElements, dataElement =>
                                         this.renderDataElement(
                                             antigen,
                                             dataElement,
@@ -253,7 +280,7 @@ export class DataSetCustomForm {
                         totalTd(
                             dataElement.id,
                             _.flatMap(categoryOptionGroupsArray, categoryOptionGroupsGroups =>
-                                this.getCocIds(antigen, dataElement, categoryOptionGroupsGroups)
+                                this.getCocIds(antigen, dataElement, categoryOptionGroupsGroups, {})
                             )
                         ),
                     ])
