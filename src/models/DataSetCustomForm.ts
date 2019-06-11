@@ -155,6 +155,7 @@ export class DataSetCustomForm {
         const dosesNames: Array<string | undefined> = categoryDoses
             ? categoryDoses.categoryOptions
             : [undefined];
+        const showDoseName = dosesNames.length > 1;
 
         return dosesNames.map(doseName => {
             const cocIds = this.getCocIds(antigen, dataElement, categoryOptionGroups, { doseName });
@@ -165,7 +166,7 @@ export class DataSetCustomForm {
                 h(
                     "td",
                     { class: "data-element" },
-                    _.compact([dataElement.name, doseName]).join(" - ")
+                    _.compact([dataElement.name, showDoseName ? doseName : null]).join(" - ")
                 ),
                 ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
                 renderTotalCell ? totalTd(dataElementId, cocIds) : null,
