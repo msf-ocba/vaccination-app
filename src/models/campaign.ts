@@ -196,7 +196,7 @@ export default class Campaign {
         return db.deleteMany(modelReferencesToDelete);
     }
 
-    public async validate() {
+    public async validate(keys: Maybe<string[]> = undefined) {
         const {
             startDate,
             endDate,
@@ -206,30 +206,41 @@ export default class Campaign {
             teams,
         } = this.data;
 
-        const validation = {
-            name: await this.validateName(),
+        const validations = {
+            name: () => this.validateName(),
 
-            startDate: !startDate ? getError("cannot_be_blank", { field: "start date" }) : [],
+            startDate: () =>
+                !startDate ? getError("cannot_be_blank", { field: "start date" }) : [],
 
-            endDate: !endDate ? getError("cannot_be_blank", { field: "end date" }) : [],
+            endDate: () => (!endDate ? getError("cannot_be_blank", { field: "end date" }) : []),
 
-            teams: _.compact([
-                !teams ? getError("cannot_be_blank", { field: "teams" })[0] : null,
-                teams && teams <= 0 ? getError("must_be_bigger_than_zero")[0] : null,
-            ]),
+            teams: () =>
+                _.compact([
+                    !teams ? getError("cannot_be_blank", { field: "teams" })[0] : null,
+                    teams && teams <= 0 ? getError("must_be_bigger_than_zero")[0] : null,
+                ]),
 
-            organisationUnits: await this.validateOrganisationUnits(),
+            organisationUnits: () => this.validateOrganisationUnits(),
 
-            antigens: _(antigens).isEmpty() ? getError("no_antigens_selected") : [],
+            antigens: () => (_(antigens).isEmpty() ? getError("no_antigens_selected") : []),
 
-            targetPopulation: !targetPopulation
-                ? getError("no_target_population_defined")
-                : targetPopulation.validate(),
+            targetPopulation: () =>
+                !targetPopulation
+                    ? getError("no_target_population_defined")
+                    : targetPopulation.validate(),
 
-            antigensDisaggregation: antigensDisaggregation.validate(),
+            antigensDisaggregation: () => antigensDisaggregation.validate(),
         };
 
-        return validation;
+        return _(validations)
+            .pickBy((_value, key) => !keys || _(keys).includes(key))
+            .mapValues(fn => (fn ? fn() : []))
+            .thru(async obj => {
+                const [keys_, promises] = _.unzip(_.toPairs(obj));
+                const values = await Promise.all(promises as Promise<any>[]);
+                return _.fromPairs(_.zip(keys_, values));
+            })
+            .value();
     }
 
     /* Organisation units */
