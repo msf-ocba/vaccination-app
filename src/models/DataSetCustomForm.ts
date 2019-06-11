@@ -9,6 +9,7 @@ import "../utils/lodash-mixins";
 type Children = string[];
 type Disaggregations = AntigenDisaggregationEnabled;
 type DataElement = Disaggregations[0]["dataElements"][0];
+type Category = DataElement["categories"][0];
 
 const dataElementCodeDosesRegexp = /DOSES/;
 
@@ -127,7 +128,7 @@ export class DataSetCustomForm {
         options: { doseName?: string }
     ): string[] {
         const { doseName } = options;
-        const categoryDoses = dataElement.categories.find(cat => cat.code === this.dosesCode);
+        const categoryDoses = this.getDosesCategory(dataElement);
         const dosesNames =
             categoryDoses && doseName === undefined
                 ? [categoryDoses.categoryOptions]
@@ -151,7 +152,7 @@ export class DataSetCustomForm {
         const trClass = ["derow", `de-${dataElement.id}`, trType].join(" ");
 
         // Doses are rendered as a separate data element rows
-        const categoryDoses = dataElement.categories.find(cat => cat.code === this.dosesCode);
+        const categoryDoses = this.getDosesCategory(dataElement);
         const dosesNames: Array<string | undefined> = categoryDoses
             ? categoryDoses.categoryOptions
             : [undefined];
@@ -256,12 +257,21 @@ export class DataSetCustomForm {
         );
     }
 
+    private getDosesCategory(dataElement: DataElement): Category | undefined {
+        return dataElement.categories.find(category => category.code === this.dosesCode);
+    }
+
     private renderTotalTables(
         antigen: Antigen,
         dataElements: DataElement[],
         categoryOptionGroupsArray: string[][][]
     ): Children {
-        const dataElementsToShow = categoryOptionGroupsArray.length > 1 ? dataElements : [];
+        const areTablesSplit = categoryOptionGroupsArray.length > 1;
+        const dataElementDoses = dataElements.find(de => !!this.getDosesCategory(de));
+        const categoryDoses = dataElementDoses ? this.getDosesCategory(dataElementDoses) : null;
+        const hasDosesSplit = categoryDoses && categoryDoses.categoryOptions.length > 1;
+        const dataElementsToShow =
+            dataElementDoses && (areTablesSplit || hasDosesSplit) ? [dataElementDoses] : [];
 
         return dataElementsToShow.map(dataElement =>
             h("table", { class: "dataValuesTable" }, [
