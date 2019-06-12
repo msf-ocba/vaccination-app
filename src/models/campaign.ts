@@ -34,7 +34,12 @@ export interface Data {
     dashboardId: Maybe<string>;
 }
 
-function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined) {
+type ValidationErrors = Array<{
+    key: string;
+    namespace?: _.Dictionary<string>;
+}>;
+
+function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined): ValidationErrors {
     return namespace ? [{ key, namespace }] : [{ key }];
 }
 
@@ -55,6 +60,17 @@ interface DashboardWithResources {
 
 export default class Campaign {
     public selectableLevels: number[] = [5];
+
+    validations: _.Dictionary<() => ValidationErrors | Promise<ValidationErrors>> = {
+        name: this.validateName,
+        startDate: this.validateStartDate,
+        endDate: this.validateEndDate,
+        teams: this.validateTeams,
+        organisationUnits: this.validateOrganisationUnits,
+        antigens: this.validateAntigens,
+        targetPopulation: this.validateTargetPopulation,
+        antigensDisaggregation: this.validateAntigensDisaggregation,
+    };
 
     constructor(public db: DbD2, public config: MetadataConfig, private data: Data) {}
 
@@ -196,51 +212,32 @@ export default class Campaign {
         return db.deleteMany(modelReferencesToDelete);
     }
 
-    public async validate(keys: Maybe<string[]> = undefined) {
-        const {
-            startDate,
-            endDate,
-            antigens,
-            targetPopulation,
-            antigensDisaggregation,
-            teams,
-        } = this.data;
-
-        const validations = {
-            name: () => this.validateName(),
-
-            startDate: () =>
-                !startDate ? getError("cannot_be_blank", { field: "start date" }) : [],
-
-            endDate: () => (!endDate ? getError("cannot_be_blank", { field: "end date" }) : []),
-
-            teams: () =>
-                _.compact([
-                    !teams ? getError("cannot_be_blank", { field: "teams" })[0] : null,
-                    teams && teams <= 0 ? getError("must_be_bigger_than_zero")[0] : null,
-                ]),
-
-            organisationUnits: () => this.validateOrganisationUnits(),
-
-            antigens: () => (_(antigens).isEmpty() ? getError("no_antigens_selected") : []),
-
-            targetPopulation: () =>
-                !targetPopulation
-                    ? getError("no_target_population_defined")
-                    : targetPopulation.validate(),
-
-            antigensDisaggregation: () => antigensDisaggregation.validate(),
-        };
-
-        return _(validations)
-            .pickBy((_value, key) => !keys || _(keys).includes(key))
-            .mapValues(fn => (fn ? fn() : []))
-            .thru(async obj => {
-                const [keys_, promises] = _.unzip(_.toPairs(obj));
-                const values = await Promise.all(promises as Promise<any>[]);
-                return _.fromPairs(_.zip(keys_, values));
-            })
+    public async validate(
+        validationKeys: Maybe<string[]> = undefined
+    ): Promise<Dictionary<ValidationErrors>> {
+        const obj = _(this.validations)
+            .pickBy((_value, key) => !validationKeys || _(validationKeys).includes(key))
+            .mapValues(fn => (fn ? fn.call(this) : []))
             .value();
+        const [keys, promises] = _.unzip(_.toPairs(obj));
+        const values = await Promise.all(promises as Promise<ValidationErrors>[]);
+        return _.fromPairs(_.zip(keys, values));
+    }
+
+    validateStartDate(): ValidationErrors {
+        return !this.data.startDate ? getError("cannot_be_blank", { field: "start date" }) : [];
+    }
+
+    validateEndDate(): ValidationErrors {
+        return !this.data.endDate ? getError("cannot_be_blank", { field: "end date" }) : [];
+    }
+
+    validateTeams(): ValidationErrors {
+        const { teams } = this.data;
+        return _.compact([
+            !teams ? getError("cannot_be_blank", { field: "teams" })[0] : null,
+            teams && teams <= 0 ? getError("must_be_bigger_than_zero")[0] : null,
+        ]);
     }
 
     /* Organisation units */
@@ -314,7 +311,7 @@ export default class Campaign {
         return dataSets.some(ds => ds.id !== id && ds.name.toLowerCase() === nameLowerCase);
     }
 
-    private async validateName() {
+    private async validateName(): Promise<ValidationErrors> {
         const { name } = this.data;
         const trimmedName = name.trim();
 
@@ -378,6 +375,10 @@ export default class Campaign {
         return this.config.antigens;
     }
 
+    validateAntigens(): ValidationErrors {
+        return _(this.data.antigens).isEmpty() ? getError("no_antigens_selected") : [];
+    }
+
     /* Antigens disaggregation */
 
     public get antigensDisaggregation(): AntigensDisaggregation {
@@ -390,6 +391,10 @@ export default class Campaign {
 
     public getEnabledAntigensDisaggregation(): AntigenDisaggregationEnabled {
         return this.antigensDisaggregation.getEnabled();
+    }
+
+    validateAntigensDisaggregation(): ValidationErrors {
+        return this.data.antigensDisaggregation.validate();
     }
 
     /* Target population */
@@ -416,6 +421,13 @@ export default class Campaign {
             ...this.data,
             targetPopulation: targetPopulationForCampaign,
         });
+    }
+
+    validateTargetPopulation(): ValidationErrors {
+        const { targetPopulation } = this.data;
+        return !targetPopulation
+            ? getError("no_target_population_defined")
+            : targetPopulation.validate();
     }
 
     // Attribute Values

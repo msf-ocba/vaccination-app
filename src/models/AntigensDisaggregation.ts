@@ -132,7 +132,7 @@ export class AntigensDisaggregation {
         return new AntigensDisaggregation(this.config, dataUpdated);
     }
 
-    public validate(): Array<{ key: string; namespace: object }> {
+    public validate(): Array<{ key: string; namespace: _.Dictionary<string> }> {
         const errors = _(this.getEnabled())
             .flatMap(antigen => antigen.dataElements)
             .flatMap(dataElement => dataElement.categories)
