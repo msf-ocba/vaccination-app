@@ -1,18 +1,8 @@
-import { MetadataConfig } from "../config";
+import { MetadataConfig, baseConfig } from "../config";
 
 const metadataConfig: MetadataConfig = {
-    categoryCodeForAntigens: "RVC_ANTIGEN",
-    categoryCodeForAgeGroup: "RVC_AGE_GROUP",
-    categoryComboCodeForAgeGroup: "RVC_AGE_GROUP",
-    categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_RVC_AGE_GROUP",
-    dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
-    categoryComboCodeForTeams: "RVC_TEAM",
-    categoryCodeForTeams: "RVC_TEAM",
-    attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
-    attributeCodeForDashboard: "RVC_DASHBOARD_ID",
-    dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
-    dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
-    dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
+    ...baseConfig,
+    userRoles: [],
     organisationUnitLevels: [],
     categoryCombos: [],
     categoryOptions: [],
