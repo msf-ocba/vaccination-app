@@ -99,7 +99,7 @@ export class Teams {
         nameOffset: number = 0
     ): CategoryOptionTeam[] {
         const teamsData: CategoryOptionTeam[] = _.range(1, teams + 1).map(i => {
-            const name = `Team ${nameOffset + i} ${campaignName}`;
+            const name = `Team ${nameOffset + i} - ${campaignName}`;
             const categoryOption = {
                 id: generateUid(),
                 name,
