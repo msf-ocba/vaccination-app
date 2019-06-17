@@ -65,6 +65,13 @@ export interface CategoryCombo {
     categoryOptionCombos: { id: string; name: string }[];
 }
 
+export interface CategoryOptionCombo {
+    id: string;
+    displayName: string;
+    categoryCombo: Ref;
+    categoryOptions: Ref[];
+}
+
 export interface Attribute {
     id: string;
     code: string;
@@ -258,6 +265,7 @@ export type ModelName =
     | "attributes"
     | "categories"
     | "categoryCombos"
+    | "categoryOptionCombos"
     | "categoryOptions"
     | "categoryOptionGroups"
     | "dashboards"

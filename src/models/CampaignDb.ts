@@ -253,16 +253,13 @@ export default class CampaignDb {
 
             const greyedFields = _(disaggregationData.dataElements)
                 .flatMap(dataElementDis => {
-                    const { antigen } = disaggregationData;
                     const groups: string[][] = _.cartesianProduct(
                         dataElementDis.categories.map(category => category.categoryOptions)
                     );
 
                     return groups.map(group => {
-                        const cocName = [antigen.name, ...group].join(", ");
-                        const disCode = antigen.code + "-" + dataElementDis.code;
-                        const { cocIdByName } = _(disMetadata).getOrFail(disCode);
-                        const cocId = _(cocIdByName).getOrFail(cocName);
+                        const cocName = group.join(", ");
+                        const cocId = _(disMetadata.categoryOptionCombos).getOrFail(cocName);
 
                         return {
                             dataElement: { id: dataElementDis.id },

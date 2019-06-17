@@ -11,6 +11,7 @@ import {
     Ref,
     CategoryOption,
     Attribute,
+    CategoryOptionCombo,
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
 
@@ -64,6 +65,9 @@ export interface MetadataConfig extends BaseConfig {
             | { kind: "fromDoses" }
             | { kind: "values"; values: string[] };
     }>;
+    defaults: {
+        categoryOptionCombo: CategoryOptionCombo;
+    };
     categoryOptions: CategoryOption[];
     categoryCombos: CategoryCombo[];
     population: {
@@ -276,6 +280,25 @@ function getAttributes(attributes: Attribute[]) {
     };
 }
 
+function getDefaults(metadata: RawMetadataConfig): MetadataConfig["defaults"] {
+    return {
+        categoryOptionCombo: _(metadata.categoryOptionCombos)
+            .keyBy("displayName")
+            .getOrFail("default"),
+    };
+}
+
+interface RawMetadataConfig {
+    attributes: Attribute[];
+    categories: Category[];
+    categoryCombos: CategoryCombo[];
+    categoryOptionCombos: CategoryOptionCombo[];
+    categoryOptionGroups: CategoryOptionGroup[];
+    dataElementGroups: DataElementGroup[];
+    dataElements: DataElement[];
+    organisationUnitLevels: OrganisationUnitLevel[];
+}
+
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
     const codeFilter = "code:startsWith:RVC_";
     const modelParams = { filters: [codeFilter] };
@@ -285,20 +308,13 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         categories: modelParams,
         categoryCombos: modelParams,
         categoryOptionGroups: modelParams,
+        categoryOptionCombos: { filters: ["name:eq:default"] },
         dataElementGroups: modelParams,
         dataElements: modelParams,
         organisationUnitLevels: {},
     };
 
-    const metadata = await db.getMetadata<{
-        attributes: Attribute[];
-        categories: Category[];
-        categoryCombos: CategoryCombo[];
-        categoryOptionGroups: CategoryOptionGroup[];
-        dataElementGroups: DataElementGroup[];
-        dataElements: DataElement[];
-        organisationUnitLevels: OrganisationUnitLevel[];
-    }>(metadataParams);
+    const metadata = await db.getMetadata<RawMetadataConfig>(metadataParams);
 
     const metadataConfig = {
         ...baseConfig,
@@ -317,6 +333,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
             metadata.categoryCombos,
             metadata.categories
         ),
+        defaults: getDefaults(metadata),
         antigens: getAntigens(
             metadata.dataElementGroups,
             metadata.dataElements,

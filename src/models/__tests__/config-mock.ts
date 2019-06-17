@@ -17,6 +17,14 @@ const metadataConfig: MetadataConfig = {
     organisationUnitLevels: [],
     categoryCombos: [],
     categoryOptions: [],
+    defaults: {
+        categoryOptionCombo: {
+            displayName: "default",
+            id: "12345",
+            categoryOptions: [],
+            categoryCombo: { id: "default" },
+        },
+    },
     attributes: {
         app: {
             code: "RVC_CREATED_BY_VACCINATION_APP",

@@ -114,6 +114,12 @@ export const metadataFields: MetadataFields = {
         categories: ref,
         categoryOptionCombos: { id: true, name: true },
     },
+    categoryOptionCombos: {
+        id: true,
+        displayName: true,
+        categoryCombo: ref,
+        categoryOptions: ref,
+    },
     categoryOptions: {
         id: true,
         displayName: true,
