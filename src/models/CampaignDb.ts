@@ -9,7 +9,7 @@ import { DataSetCustomForm } from "./DataSetCustomForm";
 import { Maybe, MetadataResponse, DataEntryForm, Section } from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
-import { getDataElements } from "./AntigensDisaggregation";
+import { getDataElements, CocMetadata } from "./AntigensDisaggregation";
 import { Dashboard } from "./Dashboard";
 import { Teams, CategoryOptionTeam } from "./Teams";
 
@@ -111,8 +111,9 @@ export default class CampaignDb {
             }));
 
             const existingDataSet = await this.getExistingDataSet();
-            const dataEntryForm = await this.getDataEntryForm(existingDataSet);
-            const sections = await this.getSections(dataSetId, existingDataSet);
+            const metadataCoc = await campaign.antigensDisaggregation.getCocMetadata(db);
+            const dataEntryForm = await this.getDataEntryForm(existingDataSet, metadataCoc);
+            const sections = await this.getSections(db, dataSetId, existingDataSet, metadataCoc);
 
             const dataSet: DataSet = {
                 id: dataSetId,
@@ -142,7 +143,7 @@ export default class CampaignDb {
             };
 
             const period = moment(campaign.startDate || new Date()).format("YYYYMMDD");
-            const dataValues = targetPopulation.getDataValues(period);
+            const dataValues = await targetPopulation.getDataValues(period);
             const populationResult = await db.postDataValues(dataValues);
 
             if (!populationResult.status) {
@@ -233,17 +234,15 @@ export default class CampaignDb {
     }
 
     private async getSections(
+        db: DbD2,
         dataSetId: string,
-        existingDataSet: Maybe<DataSetWithSections>
+        existingDataSet: Maybe<DataSetWithSections>,
+        cocMetadata: CocMetadata
     ): Promise<Section[]> {
         const { campaign } = this;
         const existingSections = existingDataSet ? existingDataSet.sections : [];
         const existingSectionsByName = _.keyBy(existingSections, "name");
         const disaggregationData = campaign.getEnabledAntigensDisaggregation();
-
-        const disMetadata = await campaign.antigensDisaggregation.getCustomFormMetadata(
-            campaign.config.categoryCombos
-        );
 
         const sectionsUsed: Section[] = disaggregationData.map((disaggregationData, index) => {
             const sectionName = disaggregationData.antigen.code;
@@ -259,7 +258,7 @@ export default class CampaignDb {
 
                     return groups.map(group => {
                         const cocName = group.join(", ");
-                        const cocId = _(disMetadata.categoryOptionCombos).getOrFail(cocName);
+                        const cocId = _(cocMetadata.cocIdByName).getOrFail(cocName);
 
                         return {
                             dataElement: { id: dataElementDis.id },
@@ -314,10 +313,11 @@ export default class CampaignDb {
     }
 
     private async getDataEntryForm(
-        existingDataSet: Maybe<DataSetWithSections>
+        existingDataSet: Maybe<DataSetWithSections>,
+        cocMetadata: CocMetadata
     ): Promise<DataEntryForm> {
         const { campaign } = this;
-        const customForm = await DataSetCustomForm.build(campaign);
+        const customForm = new DataSetCustomForm(campaign, cocMetadata);
         const customFormHtml = customForm.generate();
         const formId =
             (existingDataSet &&

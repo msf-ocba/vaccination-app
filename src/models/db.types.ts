@@ -16,6 +16,11 @@ export interface PaginatedObjects<T> {
     objects: T[];
 }
 
+export interface NamedObject {
+    id: string;
+    name: string;
+}
+
 export interface OrganisationUnitPathOnly {
     id: string;
     path: string;
@@ -62,7 +67,6 @@ export interface CategoryCombo {
     code: string;
     displayName: string;
     categories: Ref[];
-    categoryOptionCombos: { id: string; name: string }[];
 }
 
 export interface CategoryOptionCombo {

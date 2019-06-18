@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-06-12T09:04:13.769Z\n"
-"PO-Revision-Date: 2019-06-12T09:04:13.769Z\n"
+"POT-Creation-Date: 2019-06-17T13:11:34.322Z\n"
+"PO-Revision-Date: 2019-06-17T13:11:34.322Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -276,6 +276,9 @@ msgid "Doses administered"
 msgstr ""
 
 msgid "Quality and safety indicators"
+msgstr ""
+
+msgid "General Q&S"
 msgstr ""
 
 msgid "Select at least one organisation unit"

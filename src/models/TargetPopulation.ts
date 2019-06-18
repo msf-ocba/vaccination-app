@@ -223,16 +223,17 @@ export class TargetPopulation {
         return this.data.ageDistributionByOrgUnit;
     }
 
-    public getDataValues(period: string): DataValue[] {
+    public async getDataValues(period: string): Promise<DataValue[]> {
         const { config } = this;
-        const catCombosByCode = _.keyBy(config.categoryCombos, "code");
-        const getCocsByName = (catComboCode: string): { [cocName: string]: string } => {
-            const catCombo = _(catCombosByCode).getOrFail(catComboCode);
-            return _(catCombo.categoryOptionCombos)
-                .keyBy("name")
-                .mapValues("id")
-                .value();
-        };
+        const categoryComboCodes = [
+            config.categoryComboCodeForAgeGroup,
+            config.categoryComboCodeForAntigenAgeGroup,
+        ];
+        const categoryOptionCombos = await this.db.getCocsByCategoryComboCode(categoryComboCodes);
+        const cocIdsByName = _(categoryOptionCombos)
+            .map(coc => [coc.name, coc.id])
+            .fromPairs()
+            .value();
 
         const dataValues = _.flatMap(this.data.targetPopulationList, targetPopulationItem => {
             const totalPopulation = get(
@@ -252,9 +253,6 @@ export class TargetPopulation {
                   ];
             const finalDistribution = this.getFinalDistribution(targetPopulationItem);
 
-            const antigenAgeGroupCocsByName = getCocsByName(
-                config.categoryComboCodeForAntigenAgeGroup
-            );
             const populationByAgeDataValues = _(finalDistribution)
                 .flatMap((ageGroupPercent_, ageGroup) => {
                     const ageGroupPercent = get(
@@ -276,9 +274,7 @@ export class TargetPopulation {
                                     period,
                                     orgUnit: targetPopulationItem.organisationUnit.id,
                                     dataElement: config.population.populationByAgeDataElement.id,
-                                    categoryOptionCombo: _(antigenAgeGroupCocsByName).getOrFail(
-                                        cocName
-                                    ),
+                                    categoryOptionCombo: _(cocIdsByName).getOrFail(cocName),
                                     value: populationForAgeRange.toString(),
                                 };
                             }
@@ -288,7 +284,6 @@ export class TargetPopulation {
                 })
                 .value();
 
-            const ageGroupCocsByName = getCocsByName(config.categoryComboCodeForAgeGroup);
             const ageDistributionDataValues = _.flatMap(
                 targetPopulationItem.populationDistributions,
                 populationDistribution => {
@@ -300,14 +295,13 @@ export class TargetPopulation {
                                 ageGroup
                             );
                             const newValue = getValue(pairValue);
+
                             return newValue
                                 ? {
                                       period,
                                       orgUnit: orgUnitId,
                                       dataElement: config.population.ageDistributionDataElement.id,
-                                      categoryOptionCombo: _(ageGroupCocsByName).getOrFail(
-                                          ageGroup
-                                      ),
+                                      categoryOptionCombo: _(cocIdsByName).getOrFail(ageGroup),
                                       value: newValue.toString(),
                                   }
                                 : null;
