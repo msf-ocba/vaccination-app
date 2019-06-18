@@ -9,7 +9,7 @@ import { Button, LinearProgress } from "@material-ui/core";
 import { withSnackbar } from "d2-ui-components";
 
 import { getFullOrgUnitName } from "../../../models/organisation-units";
-import { getShowValue } from "../target-population/utils";
+import { getShowValue } from "../../target-population/utils";
 import ExitWizardButton from "../../wizard/ExitWizardButton";
 
 const styles = _theme => ({

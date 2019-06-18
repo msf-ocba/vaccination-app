@@ -1,14 +1,14 @@
 import React from "react";
 
-import i18n from "../../../locales";
+import i18n from "../../locales";
 import EditButton from "./EditButton";
 import { WithStyles, TextField, Theme, createStyles } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 import { getShowValue } from "./utils";
 import Value from "./Value";
-import { TargetPopulationItem } from "../../../models/TargetPopulation";
+import { TargetPopulationItem } from "../../models/TargetPopulation";
 import OrgUnitName from "./OrgUnitName";
-import { OrganisationUnitLevel } from "../../../models/db.types";
+import { OrganisationUnitLevel } from "../../models/db.types";
 
 export interface TotalPopulationProps extends WithStyles<typeof styles> {
     organisationUnitLevels: OrganisationUnitLevel[];

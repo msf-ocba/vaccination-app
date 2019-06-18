@@ -16,7 +16,6 @@ import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 import { memoize } from "../../utils/memoize";
-import TargetPopulationStep from "../steps/target-population/TargetPopulationStep";
 import ExitWizardButton from "../wizard/ExitWizardButton";
 
 class CampaignWizard extends React.Component {
@@ -100,22 +99,6 @@ class CampaignWizard extends React.Component {
                 description: i18n.t(`Select indicators and categories for each antigen`),
                 help: i18n.t(`Select the indicators and breakdowns that you wish to monitor for each antigen in your campaign.\n
                 Standard age groups for each antigen appear by default. In some cases, you may click on an age group to select subdivisions if that information is important for your campaign. Compulsory indicators may not be un-selected.`),
-            },
-            {
-                key: "target-population",
-                label: i18n.t("Target Population"),
-                component: TargetPopulationStep,
-                validationKeys: ["targetPopulation"],
-                description: i18n.t(
-                    `Insert the total population and age distribution (as a percent) for each health site where the campaign will be implemented. This data will be used to calculate coverage rates for the campaign. The source of data may be {{- hyperlink}} or you may have access to local estimates based on population surveys through the Ministry of Health or other stakeholders that would be more updated or reliable. You may overwrite any existing data in HMIS, but please note that any changes you make in this step will only be applied once you run analytics.`,
-                    {
-                        hyperlink:
-                            "https://hmisocba.msf.es/external-static/Denominators_Tool_OCBA.xlsm",
-                    }
-                ),
-                help: i18n.t(
-                    `Specify the target population and population distribution by age group (percent) for each antigen.`
-                ),
             },
             {
                 key: "save",

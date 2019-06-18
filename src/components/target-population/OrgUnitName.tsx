@@ -4,7 +4,7 @@ import _ from "lodash";
 import { withStyles } from "@material-ui/core/styles";
 
 import { createStyles, WithStyles, Theme } from "@material-ui/core";
-import { OrganisationUnit, OrganisationUnitLevel } from "../../../models/db.types";
+import { OrganisationUnit, OrganisationUnitLevel } from "../../models/db.types";
 
 export interface OrgUnitNameProps extends WithStyles<typeof styles> {
     organisationUnitLevels: OrganisationUnitLevel[];

@@ -16,14 +16,14 @@ import {
 } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
-import { memoize } from "../../../utils/memoize";
-import { D2 } from "../../../models/d2.types";
-import Campaign from "../../../models/campaign";
-import { Maybe } from "../../../models/db.types";
+import { memoize } from "../../utils/memoize";
+import { D2 } from "../../models/d2.types";
+import Campaign from "../../models/campaign";
+import { Maybe } from "../../models/db.types";
 import TotalPopulation from "./TotalPopulation";
-import { createMuiThemeOverrides } from "../../../utils/styles";
+import { createMuiThemeOverrides } from "../../utils/styles";
 import PopulationDistribution from "./PopulationDistribution";
-import { getFullOrgUnitName } from "../../../models/organisation-units";
+import { getFullOrgUnitName } from "../../models/organisation-units";
 
 export interface AgeGroupRow {
     ouIndex: number;
