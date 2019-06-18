@@ -7,7 +7,7 @@ import _ from "lodash";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import PageHeader from "../shared/PageHeader";
-import { canManage, canUpdate, canCreate } from "d2-ui-components/auth";
+import { canUpdate, canCreate } from "d2-ui-components/auth";
 import { list } from "../../models/datasets";
 import { formatDateShort } from "../../utils/date";
 import Campaign from "../../models/campaign";
@@ -79,12 +79,6 @@ class CampaignConfiguration extends React.Component {
                 this.props.history.push(`/campaign-configuration/edit/${dataSet.id}`),
         },
         {
-            name: "share",
-            text: i18n.t("Share"),
-            multiple: true,
-            isActive: (d2, dataSets) => canManage(d2, d2.models.dataSet, dataSets),
-        },
-        {
             name: "delete",
             text: i18n.t("Delete"),
             multiple: true,
@@ -93,7 +87,6 @@ class CampaignConfiguration extends React.Component {
         {
             name: "dataEntry",
             icon: "library_books",
-            // TODO: isActive: (d2, dataSet) => canUpdate(d2, d2.models.dataSet, [dataSet]),
             text: i18n.t("Go to Data Entry"),
             multiple: false,
             onClick: dataSet => this.props.history.push(`/data-entry/${dataSet.id}`),
@@ -103,12 +96,6 @@ class CampaignConfiguration extends React.Component {
             text: i18n.t("Go to Dashboard"),
             multiple: false,
             onClick: dataSet => this.props.history.push(`/dashboard/${dataSet.id}`),
-        },
-        {
-            name: "download",
-            icon: "cloud_download",
-            text: i18n.t("Download data"),
-            multiple: false,
         },
     ];
 
