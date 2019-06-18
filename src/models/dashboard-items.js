@@ -8,7 +8,7 @@ export const dashboardItemsConfig = {
             elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
             dataType: "DATA_ELEMENT",
             appendCode: "vTable",
-            disaggregatedBy: ["team", "ageGroup"],
+            disaggregatedBy: ["team", "ageGroup", "doses"],
         },
         qsIndicators: {
             elements: [
@@ -69,7 +69,10 @@ function getDisaggregations(itemConfigs, disaggregationMetadata, antigen) {
 
     const teams = c => (c.disaggregatedBy.includes("team") ? disaggregationMetadata.teams() : null);
 
-    return _.compact([teams(itemConfigs), ageGroups(itemConfigs)]);
+    const doses = c =>
+        c.disaggregatedBy.includes("doses") ? disaggregationMetadata.doses(antigen) : null;
+
+    return _.compact([teams(itemConfigs), ageGroups(itemConfigs), doses(itemConfigs)]);
 }
 
 function getCharts(antigen, elements, organisationUnit, itemsMetadata, disaggregationMetadata) {
