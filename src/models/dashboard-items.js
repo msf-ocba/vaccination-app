@@ -5,7 +5,7 @@ export const dashboardItemsConfig = {
     antigenCategoryCode: "RVC_ANTIGEN",
     tables: {
         vaccines: {
-            elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
+            elements: ["RVC_DOSES_ADMINISTERED"],
             dataType: "DATA_ELEMENT",
             appendCode: "vTable",
             disaggregatedBy: ["team", "ageGroup", "doses"],
