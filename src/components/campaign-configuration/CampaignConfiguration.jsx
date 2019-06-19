@@ -12,6 +12,7 @@ import { list } from "../../models/datasets";
 import { formatDateShort } from "../../utils/date";
 import Campaign from "../../models/campaign";
 import TargetPopulationDialog from "./TargetPopulationDialog";
+import { hasCurrentUserRoles } from "../../utils/permissions";
 
 class CampaignConfiguration extends React.Component {
     static propTypes = {
@@ -103,6 +104,12 @@ class CampaignConfiguration extends React.Component {
             text: i18n.t("Set Target Population"),
             icon: "people",
             multiple: false,
+            isActive: () =>
+                hasCurrentUserRoles(
+                    this.props.d2,
+                    this.props.config.userRoles,
+                    this.props.config.userRoleNames.targetPopulation
+                ),
             onClick: dataSet => this.openTargetPopulation(dataSet),
         },
     ];

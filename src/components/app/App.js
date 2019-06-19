@@ -13,9 +13,9 @@ import muiThemeLegacy from "../../themes/dhis2-legacy.theme";
 import "./App.css";
 import Root from "./Root";
 import Share from "../share/Share";
-import { getCurrentUserRoles } from "../../utils/dhis2";
 import DbD2 from "../../models/db-d2";
 import { getMetadataConfig } from "../../models/config";
+import { hasCurrentUserRoles } from "../../utils/permissions";
 
 const generateClassName = createGenerateClassName({
     dangerouslyUseGlobalCSS: false,
@@ -30,17 +30,20 @@ class App extends Component {
 
     state = {
         config: null,
+        db: null,
     };
 
     async componentDidMount() {
         const { d2, appConfig } = this.props;
         const appKey = _(this.props.appConfig).get("appKey");
-        const currentUserRoles = getCurrentUserRoles(d2);
-        const config = await getMetadataConfig(new DbD2(d2));
-        const userRoleForFeedback = _(config.userRoles)
-            .keyBy("name")
-            .getOrFail(config.userRoleNameForFeedback);
-        const showFeedbackForCurrentUser = _(currentUserRoles).includes(userRoleForFeedback.id);
+        const db = new DbD2(d2);
+        const config = await getMetadataConfig(db);
+        window.config = config;
+        const showFeedbackForCurrentUser = hasCurrentUserRoles(
+            d2,
+            config.userRoles,
+            config.userRoleNames.feedback
+        );
 
         if (appConfig && appConfig.feedback && showFeedbackForCurrentUser) {
             const feedbackOptions = {
@@ -50,12 +53,12 @@ class App extends Component {
             window.$.feedbackDhis2(d2, appKey, feedbackOptions);
         }
 
-        this.setState({ config });
+        this.setState({ config, db });
     }
 
     render() {
         const { d2, appConfig } = this.props;
-        const { config } = this.state;
+        const { config, db } = this.state;
         const showShareButton = _(appConfig).get("appearance.showShareButton") || false;
         const showHeader = !process.env.REACT_APP_CYPRESS;
 
@@ -69,7 +72,7 @@ class App extends Component {
 
                                 <div id="app" className="content">
                                     <SnackbarProvider>
-                                        {config && <Root d2={d2} config={config} />}
+                                        {config && db && <Root d2={d2} db={db} config={config} />}
                                     </SnackbarProvider>
                                 </div>
 

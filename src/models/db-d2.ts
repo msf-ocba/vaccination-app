@@ -200,6 +200,11 @@ export const metadataFields: MetadataFields = {
         level: true,
     },
     sections: { id: true },
+    userRoles: {
+        id: true,
+        name: true,
+        authorities: true,
+    },
 };
 
 export type ApiResponse<Value> = { status: true; value: Value } | { status: false; error: string };
