@@ -12,7 +12,7 @@ import {
     CategoryOption,
     CategoryOptionCombo,
     Attribute,
-    UserRole,
+    NamedObject,
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
 
@@ -39,7 +39,7 @@ export const baseConfig = {
 type BaseConfig = typeof baseConfig;
 
 export interface MetadataConfig extends BaseConfig {
-    userRoles: UserRole[];
+    userRoles: NamedObject[];
     attributes: {
         app: Attribute;
         dashboard: Attribute;
@@ -289,7 +289,7 @@ interface RawMetadataConfig {
     dataElementGroups: DataElementGroup[];
     dataElements: DataElement[];
     organisationUnitLevels: OrganisationUnitLevel[];
-    userRoles: UserRole[];
+    userRoles: NamedObject[];
 }
 
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
@@ -308,7 +308,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         dataElementGroups: modelParams,
         dataElements: modelParams,
         organisationUnitLevels: {},
-        userRoles: { filters: [userRolesFilter] },
+        userRoles: { fields: { id: true, name: true }, filters: [userRolesFilter] },
     };
 
     const metadata = await db.getMetadata<RawMetadataConfig>(metadataParams);
