@@ -17,7 +17,6 @@ import {
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 import { memoize } from "../../utils/memoize";
-import { D2 } from "../../models/d2.types";
 import Campaign from "../../models/campaign";
 import { Maybe } from "../../models/db.types";
 import TotalPopulation from "./TotalPopulation";
@@ -31,7 +30,6 @@ export interface AgeGroupRow {
 }
 
 interface TargetPopulationProps extends WithStyles<typeof styles> {
-    d2: D2;
     campaign: Campaign;
     onChange: (campaign: Campaign) => void;
 }
@@ -49,11 +47,6 @@ class TargetPopulationComponent extends React.Component<
         editPopulation: undefined,
         editAgeGroupRow: undefined,
     };
-
-    async componentDidMount() {
-        const { campaign, onChange } = this.props;
-        onChange(await campaign.withTargetPopulation());
-    }
 
     onTotalPopulationChange = memoize(
         (ouIndex: number) => (ev: React.ChangeEvent<HTMLInputElement>) => {

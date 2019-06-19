@@ -11,11 +11,12 @@ import { canUpdate, canCreate } from "d2-ui-components/auth";
 import { list } from "../../models/datasets";
 import { formatDateShort } from "../../utils/date";
 import Campaign from "../../models/campaign";
-import DbD2 from "../../models/db-d2";
+import TargetPopulationDialog from "./TargetPopulationDialog";
 
 class CampaignConfiguration extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
+        db: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
         snackbar: PropTypes.object.isRequired,
         loading: PropTypes.object.isRequired,
@@ -23,10 +24,10 @@ class CampaignConfiguration extends React.Component {
 
     constructor(props) {
         super(props);
-        this.db = new DbD2(props.d2);
 
         this.state = {
             dataSetsToDelete: null,
+            targetPopulationDataSet: null,
             objectsTableKey: new Date(),
             filters: {
                 showOnlyUserCampaigns: true,
@@ -97,7 +98,22 @@ class CampaignConfiguration extends React.Component {
             multiple: false,
             onClick: dataSet => this.props.history.push(`/dashboard/${dataSet.id}`),
         },
+        {
+            name: "target-population",
+            text: i18n.t("Set Target Population"),
+            icon: "people",
+            multiple: false,
+            onClick: dataSet => this.openTargetPopulation(dataSet),
+        },
     ];
+
+    openTargetPopulation = dataSet => {
+        this.setState({ targetPopulationDataSet: dataSet });
+    };
+
+    closeTargetPopulation = () => {
+        this.setState({ targetPopulationDataSet: null });
+    };
 
     openDeleteConfirmation = dataSets => {
         this.setState({ dataSetsToDelete: dataSets });
@@ -198,8 +214,8 @@ class CampaignConfiguration extends React.Component {
     };
 
     render() {
-        const { d2 } = this.props;
-        const { dataSetsToDelete, objectsTableKey } = this.state;
+        const { d2, db, config } = this.props;
+        const { dataSetsToDelete, targetPopulationDataSet, objectsTableKey } = this.state;
         const DeleteConfirmationDialog = this.renderDeleteConfirmationDialog;
 
         return (
@@ -225,6 +241,14 @@ class CampaignConfiguration extends React.Component {
                 </div>
 
                 {dataSetsToDelete && <DeleteConfirmationDialog dataSets={dataSetsToDelete} />}
+                {targetPopulationDataSet && (
+                    <TargetPopulationDialog
+                        db={db}
+                        config={config}
+                        dataSet={targetPopulationDataSet}
+                        onClose={this.closeTargetPopulation}
+                    />
+                )}
             </React.Fragment>
         );
     }

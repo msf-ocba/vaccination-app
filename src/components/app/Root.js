@@ -19,8 +19,13 @@ class Root extends React.Component {
         d2: PropTypes.object.isRequired,
     };
 
+    constructor(props) {
+        super(props);
+        this.db = new DbD2(props.d2);
+    }
+
     async componentDidMount() {
-        const config = await getMetadataConfig(new DbD2(this.props.d2));
+        const config = await getMetadataConfig(this.db);
 
         this.setState({
             config: config,
@@ -29,39 +34,37 @@ class Root extends React.Component {
 
     render() {
         const { d2 } = this.props;
-        if (!this.state.config) return null;
+        const { config } = this.state;
+        const { db } = this;
+        if (!config) return null;
 
         return (
             <Switch>
                 <Route
                     path="/campaign-configuration/new"
-                    render={props => (
-                        <CampaignWizard d2={d2} config={this.state.config} {...props} />
-                    )}
+                    render={props => <CampaignWizard d2={d2} db={db} config={config} {...props} />}
                 />
 
                 <Route
                     path="/campaign-configuration/edit/:id"
-                    render={props => (
-                        <CampaignWizard d2={d2} config={this.state.config} {...props} />
-                    )}
+                    render={props => <CampaignWizard d2={d2} db={db} config={config} {...props} />}
                 />
 
                 <Route
                     path="/campaign-configuration"
                     render={props => (
-                        <CampaignConfiguration d2={d2} config={this.state.config} {...props} />
+                        <CampaignConfiguration d2={d2} db={db} config={config} {...props} />
                     )}
                 />
 
                 <Route
                     path="/data-entry/:id?"
-                    render={props => <DataEntry d2={d2} config={this.state.config} {...props} />}
+                    render={props => <DataEntry d2={d2} config={config} {...props} />}
                 />
 
                 <Route
                     path="/dashboard/:id?"
-                    render={props => <Dashboard d2={d2} config={this.state.config} {...props} />}
+                    render={props => <Dashboard d2={d2} config={config} {...props} />}
                 />
 
                 <Route render={() => <LandingPage d2={d2} />} />

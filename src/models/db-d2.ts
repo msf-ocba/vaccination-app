@@ -307,7 +307,7 @@ export default class DbD2 {
         return true;
     }
 
-    public async postDataValues(dataValues: DataValue[]): Promise<Response<any>> {
+    public async postDataValues(dataValues: DataValue[]): Promise<Response<object>> {
         const dataValueRequests: DataValueRequest[] = _(dataValues)
             .groupBy(dv => {
                 const parts = [

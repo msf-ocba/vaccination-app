@@ -33,7 +33,7 @@ export default class CampaignDb {
 
     public async save(): Promise<Response<string>> {
         const { campaign } = this;
-        const { db, targetPopulation, config: metadataConfig, teamsMetadata } = campaign;
+        const { db, config: metadataConfig, teamsMetadata } = campaign;
         const dataSetId = campaign.id || generateUid();
         const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
         const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
@@ -92,8 +92,6 @@ export default class CampaignDb {
             };
         } else if (!dashboard) {
             return { status: false, error: "Error creating dashboard" };
-        } else if (!targetPopulation) {
-            return { status: false, error: "There is no target population in campaign" };
         } else {
             const disaggregationData = campaign.getEnabledAntigensDisaggregation();
             const dataElements = getDataElements(metadataConfig, disaggregationData);
@@ -142,9 +140,31 @@ export default class CampaignDb {
                 sections: sections.map(section => ({ id: section.id })),
             };
 
+            return this.postSave(
+                {
+                    charts,
+                    reportTables,
+                    dashboards: [dashboard],
+                    dataSets: [dataSet],
+                    dataEntryForms: [dataEntryForm],
+                    sections,
+                    categoryOptions: newTeams,
+                },
+                teamsToDelete
+            );
+        }
+    }
+
+    public async saveTargetPopulation(): Promise<Response<string>> {
+        const { campaign } = this;
+        const { targetPopulation } = this.campaign;
+
+        if (!targetPopulation) {
+            return { status: false, error: "There is no target population in campaign" };
+        } else {
             const period = moment(campaign.startDate || new Date()).format("YYYYMMDD");
             const dataValues = await targetPopulation.getDataValues(period);
-            const populationResult = await db.postDataValues(dataValues);
+            const populationResult = await campaign.db.postDataValues(dataValues);
 
             if (!populationResult.status) {
                 return {
@@ -152,18 +172,7 @@ export default class CampaignDb {
                     error: JSON.stringify(populationResult.error, null, 2),
                 };
             } else {
-                return this.postSave(
-                    {
-                        charts,
-                        reportTables,
-                        dashboards: [dashboard],
-                        dataSets: [dataSet],
-                        dataEntryForms: [dataEntryForm],
-                        sections,
-                        categoryOptions: newTeams,
-                    },
-                    teamsToDelete
-                );
+                return { status: true };
             }
         }
     }

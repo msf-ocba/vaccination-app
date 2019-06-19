@@ -6,7 +6,6 @@ import _ from "lodash";
 import { withSnackbar } from "d2-ui-components";
 
 import Campaign from "models/campaign";
-import DbD2 from "models/db-d2";
 import Wizard from "../wizard/Wizard";
 import PageHeader from "../shared/PageHeader";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
@@ -21,6 +20,7 @@ import ExitWizardButton from "../wizard/ExitWizardButton";
 class CampaignWizard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
+        db: PropTypes.object.isRequired,
         history: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
         snackbar: PropTypes.object.isRequired,
@@ -36,12 +36,11 @@ class CampaignWizard extends React.Component {
     }
 
     async componentDidMount() {
-        const { d2, config, match } = this.props;
+        const { db, config, match } = this.props;
 
-        const dbD2 = new DbD2(d2);
         const campaign = this.isEdit()
-            ? await Campaign.get(config, dbD2, match.params.id)
-            : Campaign.create(config, dbD2);
+            ? await Campaign.get(config, db, match.params.id)
+            : Campaign.create(config, db);
 
         if (!campaign) {
             this.props.snackbar.error(i18n.t("Cannot load campaign"));
