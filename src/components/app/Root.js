@@ -7,35 +7,15 @@ import DataEntry from "../data-entry/DataEntry";
 import Dashboard from "../dashboard/Dashboard";
 import LandingPage from "./LandingPage";
 import CampaignWizard from "../campaign-wizard/CampaignWizard";
-import { getMetadataConfig } from "../../models/config";
-import DbD2 from "../../models/db-d2";
 
 class Root extends React.Component {
-    state = {
-        config: null,
-    };
-
     static propTypes = {
         d2: PropTypes.object.isRequired,
+        db: PropTypes.object.isRequired,
     };
 
-    constructor(props) {
-        super(props);
-        this.db = new DbD2(props.d2);
-    }
-
-    async componentDidMount() {
-        const config = await getMetadataConfig(this.db);
-
-        this.setState({
-            config: config,
-        });
-    }
-
     render() {
-        const { d2 } = this.props;
-        const { config } = this.state;
-        const { db } = this;
+        const { d2, config, db } = this.props;
         if (!config) return null;
 
         return (
