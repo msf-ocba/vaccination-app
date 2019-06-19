@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-06-19T09:42:22.174Z\n"
-"PO-Revision-Date: 2019-06-19T09:42:22.174Z\n"
+"POT-Creation-Date: 2019-06-19T11:19:52.000Z\n"
+"PO-Revision-Date: 2019-06-19T11:19:52.000Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -95,10 +95,10 @@ msgstr ""
 msgid "Cannot load campaign"
 msgstr ""
 
-msgid "Campaign created"
+msgid "Target population set"
 msgstr ""
 
-msgid "Error saving campaign"
+msgid "Error saving target population"
 msgstr ""
 
 msgid "There are unsaved changes, are you sure you want to close the dialog?"
@@ -211,6 +211,12 @@ msgstr ""
 msgid "Number of teams must be positive"
 msgstr ""
 
+msgid "Campaign created"
+msgstr ""
+
+msgid "Error saving campaign"
+msgstr ""
+
 msgid "Loading..."
 msgstr ""
 
@@ -220,10 +226,13 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
+msgid "Missing"
+msgstr ""
+
 msgid "Total population"
 msgstr ""
 
-msgid "Age distribution (%)"
+msgid "Age distribution"
 msgstr ""
 
 msgid "Period dates"
@@ -242,9 +251,6 @@ msgid "Population distribution (%)"
 msgstr ""
 
 msgid "Campaign Population Distribution"
-msgstr ""
-
-msgid "Missing"
 msgstr ""
 
 msgid "Cancel Campaign Creation?"

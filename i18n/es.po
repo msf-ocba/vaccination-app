@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-06-19T09:00:37.429Z\n"
+"POT-Creation-Date: 2019-06-19T11:18:34.521Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -98,11 +98,17 @@ msgstr "Crear Campaña"
 msgid "Cannot load campaign"
 msgstr "No se puede cargar la campaña"
 
-msgid "Campaign created"
-msgstr "Campaña creada"
+msgid "Target population set"
+msgstr "Población objetivo establecida"
 
-msgid "Error saving campaign"
-msgstr "Se produjo un error al guardar la campaña"
+msgid "Error saving target population"
+msgstr "Se produjo un error al guardar la población objetivo"
+
+msgid "There are unsaved changes, are you sure you want to close the dialog?"
+msgstr "Hay cambios sin guardar, ¿está seguro de que quiere cerrar la ventana?"
+
+msgid "No"
+msgstr "No"
 
 msgid ""
 "Insert the total population and age distribution (as a percent) for each "
@@ -132,12 +138,6 @@ msgstr "Guardando..."
 
 msgid "Save"
 msgstr "Guardar"
-
-msgid "There are unsaved changes, are you sure you want to close the dialog?"
-msgstr "Hay cambios sin guardar, ¿está seguro de que quiere cerrar la ventana?"
-
-msgid "No"
-msgstr "No"
 
 msgid "General info"
 msgstr "Información general"
@@ -241,6 +241,12 @@ msgstr "Número de equipos"
 msgid "Number of teams must be positive"
 msgstr "El número de equipos debe ser mayor que 0"
 
+msgid "Campaign created"
+msgstr "Campaña creada"
+
+msgid "Error saving campaign"
+msgstr "Se produjo un error al guardar la campaña"
+
 msgid "Loading..."
 msgstr "Cargando..."
 
@@ -250,11 +256,14 @@ msgstr "[Vacío]"
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr "[{{total}}] {{names}} y {{othersCount}} otros"
 
+msgid "Missing"
+msgstr "Vacío"
+
 msgid "Total population"
 msgstr "Población total"
 
-msgid "Age distribution (%)"
-msgstr "Distribución por edades (%)"
+msgid "Age distribution"
+msgstr "Distribución por edades"
 
 msgid "Period dates"
 msgstr "Periodo"
@@ -273,9 +282,6 @@ msgstr "Distribución por edades (%)"
 
 msgid "Campaign Population Distribution"
 msgstr "Distribución de población"
-
-msgid "Missing"
-msgstr "Vacío"
 
 msgid "Cancel Campaign Creation?"
 msgstr "¿Cancelar la creación de campaña?"

@@ -74,11 +74,11 @@ class TargetPopulationDialog extends React.Component<Props, State> {
             const saveResponse = await campaign.saveTargetPopulation();
 
             if (saveResponse.status) {
-                snackbar.success(`${i18n.t("Campaign created")} ${campaign.name}`);
+                snackbar.success(`${i18n.t("Target population set")}: ${campaign.name}`);
                 onClose();
             } else {
                 this.setState({ isSaving: false });
-                snackbar.error(i18n.t("Error saving campaign"));
+                snackbar.error(i18n.t("Error saving target population"));
             }
         } catch (err) {
             console.error(err);
@@ -141,7 +141,7 @@ class TargetPopulationDialog extends React.Component<Props, State> {
 
         return (
             <React.Fragment>
-                <Dialog fullWidth={true} maxWidth={"xl"} open={true}>
+                <Dialog fullWidth={true} maxWidth={"xl"} open={true} onClose={this.requestClose}>
                     <DialogTitle>
                         {title}
                         {isSaving && <LinearProgress />}
