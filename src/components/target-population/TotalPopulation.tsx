@@ -51,13 +51,13 @@ class TotalPopulation extends React.Component<TotalPopulationProps> {
                     {isEditing ? (
                         <TextField
                             className={classes.populationField}
-                            value={getShowValue(targetPopOu.populationTotal.pairValue)}
+                            value={getShowValue(targetPopOu.populationTotal.value)}
                             onChange={onChange}
                             inputRef={this.setFocusTextField}
                         />
                     ) : (
                         <Value
-                            value={getShowValue(targetPopOu.populationTotal.pairValue)}
+                            value={getShowValue(targetPopOu.populationTotal.value)}
                             className={classes.value}
                         />
                     )}

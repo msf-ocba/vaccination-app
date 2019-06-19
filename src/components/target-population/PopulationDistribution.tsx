@@ -9,7 +9,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { memoize } from "../../utils/memoize";
 import i18n from "../../locales";
 import EditButton from "./EditButton";
-import { getValue, getShowValue } from "./utils";
+import { getShowValue } from "./utils";
 import Value from "./Value";
 import {
     TargetPopulationItem,
@@ -73,7 +73,7 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
                 {this.renderOrgUnit(orgUnit)}
 
                 {ageGroups.map((ageGroup, index) => {
-                    const value = ageDistribution ? getValue(ageDistribution[ageGroup]) : undefined;
+                    const value = ageDistribution ? ageDistribution[ageGroup] : undefined;
 
                     return (
                         <TableCell key={ageGroup}>
