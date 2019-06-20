@@ -158,7 +158,9 @@ export class AntigensDisaggregation {
             const category = _(categoriesByCode).getOrFail(categoryRef.code);
             const isDosesCategory = category.code === config.categoryCodeForDoses;
             const isAntigensCategory = category.code === config.categoryCodeForAntigens;
-            const { $categoryOptions, ...categoryAttributes } = _(config.categoriesDisaggregation)
+            const { $categoryOptions, name: categoryName, ...categoryAttributes } = _(
+                config.categoriesDisaggregation
+            )
                 .keyBy("code")
                 .getOrFail(categoryRef.code);
 
@@ -216,8 +218,15 @@ export class AntigensDisaggregation {
 
             const selected = wasCategorySelected ? true : !optional;
 
+            // Example: _23.6 Displacement Status
+            const cleanCategoryName = categoryName
+                .replace(/^[_\d.\s]+/, "")
+                .replace("RVC", "")
+                .trim();
+
             return {
                 ...categoryAttributes,
+                name: cleanCategoryName,
                 optional,
                 selected,
                 options,
