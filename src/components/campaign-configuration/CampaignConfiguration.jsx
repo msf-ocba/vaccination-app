@@ -131,14 +131,14 @@ class CampaignConfiguration extends React.Component {
     };
 
     delete = async () => {
-        const { config, snackbar, loading } = this.props;
+        const { config, db, snackbar, loading } = this.props;
         const { dataSetsToDelete } = this.state;
 
         loading.show(true, i18n.t("Deleting campaign(s). This may take a while, please wait"), {
             count: dataSetsToDelete.length,
         });
         this.closeDeleteConfirmation();
-        const response = await Campaign.delete(config, this.db, dataSetsToDelete);
+        const response = await Campaign.delete(config, db, dataSetsToDelete);
         loading.hide();
 
         if (response.status) {
