@@ -7,6 +7,7 @@ import _ from "lodash";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import PageHeader from "../shared/PageHeader";
+import { canUpdate, canCreate } from "d2-ui-components/auth";
 import { list } from "../../models/datasets";
 import { formatDateShort } from "../../utils/date";
 import Campaign from "../../models/campaign";
@@ -35,13 +36,7 @@ class CampaignConfiguration extends React.Component {
         };
     }
 
-    hasCurrentUserRoles(userRoleNames) {
-        return hasCurrentUserRoles(this.props.d2, this.props.config.userRoles, userRoleNames);
-    }
-
-    roles = this.props.config.userRoleNames;
-    isCurrentUserManager = this.hasCurrentUserRoles(this.roles.manager);
-    canCurrentUserSetTargetPopulation = this.hasCurrentUserRoles(this.roles.targetPopulation);
+    canCreateDataSets = canCreate(this.props.d2, this.props.d2.models.dataSet, "public");
 
     columns = [
         { name: "displayName", text: i18n.t("Name"), sortable: true },
@@ -81,7 +76,7 @@ class CampaignConfiguration extends React.Component {
             name: "edit",
             text: i18n.t("Edit"),
             multiple: false,
-            isActive: (_d2, _dataSet) => this.isCurrentUserManager,
+            isActive: (d2, dataSet) => canUpdate(d2, d2.models.dataSet, [dataSet]),
             onClick: dataSet =>
                 this.props.history.push(`/campaign-configuration/edit/${dataSet.id}`),
         },
@@ -89,7 +84,6 @@ class CampaignConfiguration extends React.Component {
             name: "delete",
             text: i18n.t("Delete"),
             multiple: true,
-            isActive: (_d2, _dataSet) => this.isCurrentUserManager,
             onClick: dataSets => this.openDeleteConfirmation(dataSets),
         },
         {
@@ -110,7 +104,12 @@ class CampaignConfiguration extends React.Component {
             text: i18n.t("Set Target Population"),
             icon: "people",
             multiple: false,
-            isActive: () => this.canCurrentUserSetTargetPopulation,
+            isActive: () =>
+                hasCurrentUserRoles(
+                    this.props.d2,
+                    this.props.config.userRoles,
+                    this.props.config.userRoleNames.targetPopulation
+                ),
             onClick: dataSet => this.openTargetPopulation(dataSet),
         },
     ];
@@ -240,7 +239,7 @@ class CampaignConfiguration extends React.Component {
                         pageSize={20}
                         initialSorting={this.initialSorting}
                         actions={this.actions}
-                        onButtonClick={this.isCurrentUserManager ? this.onCreate : null}
+                        onButtonClick={this.canCreateDataSets ? this.onCreate : null}
                         list={this.list}
                         buttonLabel={i18n.t("Create Campaign")}
                         customFiltersComponent={this.renderCustomFilters}
