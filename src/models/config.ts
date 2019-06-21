@@ -31,6 +31,7 @@ export const baseConfig = {
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
     userRoleNames: {
+        manager: ["RVC Campaign Manager"],
         feedback: ["RVC Feedback"],
         targetPopulation: ["Medical Focal Point", "Field User", "Online Data Entry"],
     },
@@ -293,8 +294,8 @@ interface RawMetadataConfig {
 }
 
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
-    const { feedback, targetPopulation } = baseConfig.userRoleNames;
-    const userRoleNames = _.concat(feedback, targetPopulation);
+    const { manager, feedback, targetPopulation } = baseConfig.userRoleNames;
+    const userRoleNames = _.concat(manager, feedback, targetPopulation);
     const userRolesFilter = "name:in:[" + userRoleNames.join(",") + "]";
     const codeFilter = "code:startsWith:RVC_";
     const modelParams = { filters: [codeFilter] };
