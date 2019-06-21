@@ -99,8 +99,16 @@ function getCharts(antigen, elements, organisationUnit, itemsMetadata, disaggreg
         .value();
 }
 
-function getTables(antigen, elements, organisationUnit, itemsMetadata, disaggregationMetadata) {
-    return _(dashboardItemsConfig.tables)
+function getTables(
+    antigen,
+    elements,
+    organisationUnit,
+    itemsMetadata,
+    disaggregationMetadata,
+    general = null
+) {
+    const tables = general ? dashboardItemsConfig.globalTables : dashboardItemsConfig.tables;
+    return _(tables)
         .map((c, key) =>
             tableConstructor({
                 id: generateUid(),
@@ -146,11 +154,10 @@ export function buildDashboardItems(
         .value();
 
     const globalTables = organisationUnitsMetadata.map(ou =>
-        getTables(null, elements, ou, itemsMetadata, disaggregationMetadata)
+        getTables(null, elements, ou, itemsMetadata, disaggregationMetadata, true)
     );
 
-    const reportTables = _.flatten(tables).concat(globalTables);
-
+    const reportTables = _.flatten(tables).concat(...globalTables);
     return { charts: _.flatten(charts), reportTables };
 }
 
