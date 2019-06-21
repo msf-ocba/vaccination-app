@@ -55,6 +55,14 @@ export const dashboardItemsConfig = {
             type: "LINE",
         },
     },
+    globalTables: {
+        globalQsIndicators: {
+            elements: ["RVC_ADS_USED", "RVC_SAFETY_BOXES"],
+            dataType: "DATA_ELEMENT",
+            appendCode: "globalQsTable",
+            disaggregatedBy: ["team"],
+        },
+    },
 };
 
 export function buildDashboardItemsCode(datasetName, orgUnitName, antigenName, appendCode) {
@@ -65,7 +73,9 @@ function getDisaggregations(itemConfigs, disaggregationMetadata, antigen) {
     if (!itemConfigs.disaggregatedBy) return [];
 
     const ageGroups = c =>
-        c.disaggregatedBy.includes("ageGroup") ? disaggregationMetadata.ageGroups(antigen) : null;
+        c.disaggregatedBy.includes("ageGroup") && antigen
+            ? disaggregationMetadata.ageGroups(antigen)
+            : null;
 
     const teams = c => (c.disaggregatedBy.includes("team") ? disaggregationMetadata.teams() : null);
 
@@ -135,7 +145,13 @@ export function buildDashboardItems(
         )
         .value();
 
-    return { charts: _.flatten(charts), reportTables: _.flatten(tables) };
+    const globalTables = organisationUnitsMetadata.map(ou =>
+        getTables(null, elements, ou, itemsMetadata, disaggregationMetadata)
+    );
+
+    const reportTables = _.flatten(tables).concat(globalTables);
+
+    return { charts: _.flatten(charts), reportTables };
 }
 
 const dataMapper = (dataList, filterList) =>
@@ -153,9 +169,10 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
         antigenCategory,
         disaggregationMetadata,
     } = dashboardItemsMetadata;
-    const { tables, charts } = dashboardItemsConfig;
+    const { tables, charts, globalTables } = dashboardItemsConfig;
 
-    const tableElements = _(tables)
+    const allTables = { ...tables, ...globalTables };
+    const tableElements = _(allTables)
         .map((item, key) =>
             item.dataType === "INDICATOR"
                 ? [key, dataMapper(indicators, item.elements)]
@@ -182,11 +199,13 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
     return dashboardItemsElements;
 }
 
-function getDimensions(antigen, antigenCategory, disaggregations) {
-    const antigenCategoryDimension = {
-        category: { id: antigenCategory },
-        categoryOptions: [{ id: antigen.id }],
-    };
+function getDimensions(disaggregations, antigen, antigenCategory) {
+    const antigenCategoryDimension = antigen
+        ? {
+              category: { id: antigenCategory },
+              categoryOptions: [{ id: antigen.id }],
+          }
+        : {};
 
     const noDisaggregationDimension = {
         categoryDimensions: antigenCategoryDimension,
@@ -230,9 +249,9 @@ const chartConstructor = ({
     disaggregations,
 }) => {
     const { categoryDimensions, columns: allColumns } = getDimensions(
+        disaggregations,
         antigen,
-        antigenCategory,
-        disaggregations
+        antigenCategory
     );
 
     const columns = _.isEmpty(disaggregations) ? allColumns : allColumns.filter(c => c.id !== "dx");
@@ -365,14 +384,16 @@ const tableConstructor = ({
     disaggregations,
 }) => {
     const { columns, columnDimensions, categoryDimensions } = getDimensions(
+        disaggregations,
         antigen,
-        antigenCategory,
-        disaggregations
+        antigenCategory
     );
+
+    const subName = antigen ? antigen.name : "Global";
 
     return {
         id,
-        name: buildDashboardItemsCode(datasetName, organisationUnit.name, antigen.name, appendCode),
+        name: buildDashboardItemsCode(datasetName, organisationUnit.name, subName, appendCode),
         numberType: "VALUE",
         publicAccess: "rw------",
         userOrganisationUnitChildren: false,
@@ -396,7 +417,7 @@ const tableConstructor = ({
         displayName: buildDashboardItemsCode(
             datasetName,
             organisationUnit.name,
-            antigen.name,
+            subName,
             appendCode
         ),
         hideSubtitle: false,
@@ -468,7 +489,7 @@ const tableConstructor = ({
         dataElementGroupSetDimensions: [],
         attributeDimensions: [],
         translations: [],
-        filterDimensions: ["ou", antigenCategory],
+        filterDimensions: ["ou", antigen ? antigenCategory : null],
         interpretations: [],
         itemOrganisationUnitGroups: [],
         userGroupAccesses: [],
