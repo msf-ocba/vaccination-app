@@ -3,7 +3,7 @@ import _ from "lodash";
 const { createElement } = require("typed-html");
 
 import Campaign, { Antigen } from "./campaign";
-import { AntigenDisaggregationEnabled, CustomFormMetadata } from "./AntigensDisaggregation";
+import { AntigenDisaggregationEnabled, CocMetadata } from "./AntigensDisaggregation";
 import i18n from "../locales";
 import "../utils/lodash-mixins";
 
@@ -61,15 +61,8 @@ export class DataSetCustomForm {
     dataElementCodeDosesRegexp = /DOSES/;
     generalIndicatorsTabId = "GENERAL_QS";
 
-    constructor(public campaign: Campaign, private metadata: CustomFormMetadata) {
+    constructor(public campaign: Campaign, private metadata: CocMetadata) {
         this.config = campaign.config;
-    }
-
-    static async build(campaign: Campaign): Promise<DataSetCustomForm> {
-        const metadata = await campaign.antigensDisaggregation.getCustomFormMetadata(
-            campaign.config.categoryCombos
-        );
-        return new DataSetCustomForm(campaign, metadata);
     }
 
     renderHeaderForGroup(categoryOptionGroups: string[][], isSubTotal: boolean): Children {
@@ -137,7 +130,7 @@ export class DataSetCustomForm {
             const cocName = _([antigen ? antigen.name : null, ...categoryOptionNames])
                 .compact()
                 .join(", ");
-            return _(this.metadata.categoryOptionCombos).getOrFail(cocName);
+            return _(this.metadata.cocIdByName).getOrFail(cocName);
         });
     }
 

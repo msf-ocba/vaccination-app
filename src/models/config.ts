@@ -10,28 +10,13 @@ import {
     OrganisationUnitLevel,
     Ref,
     CategoryOption,
-    Attribute,
     CategoryOptionCombo,
+    Attribute,
+    NamedObject,
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
 
-export interface BaseConfig {
-    categoryCodeForAntigens: string;
-    categoryCodeForAgeGroup: string;
-    categoryCodeForDoses: string;
-    categoryComboCodeForAgeGroup: string;
-    categoryComboCodeForAntigenAgeGroup: string;
-    dataElementGroupCodeForAntigens: string;
-    categoryComboCodeForTeams: string;
-    categoryCodeForTeams: string;
-    attributeCodeForApp: string;
-    attributeCodeForDashboard: string;
-    dataElementCodeForTotalPopulation: string;
-    dataElementCodeForAgeDistribution: string;
-    dataElementCodeForPopulationByAge: string;
-}
-
-const baseConfig: BaseConfig = {
+export const baseConfig = {
     categoryCodeForAntigens: "RVC_ANTIGEN",
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
     categoryCodeForDoses: "RVC_DOSE",
@@ -45,9 +30,16 @@ const baseConfig: BaseConfig = {
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
+    userRoleNames: {
+        feedback: ["RVC Feedback"],
+        targetPopulation: ["Medical Focal Point", "Field User", "Online Data Entry"],
+    },
 };
 
+type BaseConfig = typeof baseConfig;
+
 export interface MetadataConfig extends BaseConfig {
+    userRoles: NamedObject[];
     attributes: {
         app: Attribute;
         dashboard: Attribute;
@@ -297,9 +289,13 @@ interface RawMetadataConfig {
     dataElementGroups: DataElementGroup[];
     dataElements: DataElement[];
     organisationUnitLevels: OrganisationUnitLevel[];
+    userRoles: NamedObject[];
 }
 
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
+    const { feedback, targetPopulation } = baseConfig.userRoleNames;
+    const userRoleNames = _.concat(feedback, targetPopulation);
+    const userRolesFilter = "name:in:[" + userRoleNames.join(",") + "]";
     const codeFilter = "code:startsWith:RVC_";
     const modelParams = { filters: [codeFilter] };
 
@@ -312,6 +308,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         dataElementGroups: modelParams,
         dataElements: modelParams,
         organisationUnitLevels: {},
+        userRoles: { fields: { id: true, name: true }, filters: [userRolesFilter] },
     };
 
     const metadata = await db.getMetadata<RawMetadataConfig>(metadataParams);
@@ -341,6 +338,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
             metadata.categoryOptionGroups
         ),
         population: getPopulationMetadata(metadata.dataElements, metadata.categories),
+        userRoles: metadata.userRoles,
     };
 
     return metadataConfig;
