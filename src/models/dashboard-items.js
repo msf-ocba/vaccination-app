@@ -105,7 +105,7 @@ function getTables(
     organisationUnit,
     itemsMetadata,
     disaggregationMetadata,
-    general = null
+    { general = false } = {}
 ) {
     const tables = general ? dashboardItemsConfig.globalTables : dashboardItemsConfig.tables;
     return _(tables)
@@ -154,7 +154,7 @@ export function buildDashboardItems(
         .value();
 
     const globalTables = organisationUnitsMetadata.map(ou =>
-        getTables(null, elements, ou, itemsMetadata, disaggregationMetadata, true)
+        getTables(null, elements, ou, itemsMetadata, disaggregationMetadata, { general: true })
     );
 
     const reportTables = _.flatten(tables).concat(...globalTables);
