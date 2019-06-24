@@ -52,6 +52,7 @@ interface DataSetWithAttributes {
 
 interface DashboardWithResources {
     id: string;
+    name: string;
     dashboardItems: {
         id: string;
         chart: Ref;
@@ -510,6 +511,7 @@ export default class Campaign {
             dashboards: {
                 fields: {
                     id: true,
+                    name: true,
                     dashboardItems: {
                         id: true,
                         chart: { id: true },
@@ -519,6 +521,13 @@ export default class Campaign {
                 },
                 filters: [`id:in:[${dashboardIds.join(",")}]`],
             },
+        });
+
+        const namesFilters = dashboards.map(d => `name:like:${d.name.replace("_DASHBOARD", "")}`);
+        const { categoryOptions: teams } = await db.api.get("/categoryOptions", {
+            fields: ["id,name"],
+            filter: namesFilters,
+            rootJunction: "OR",
         });
 
         const resources: { model: string; id: string }[] = _(dashboards)
@@ -535,7 +544,8 @@ export default class Campaign {
         return _.concat(
             dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
             dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id })),
-            resources
+            resources,
+            teams.map((team: Ref) => ({ model: "categoryOptions", id: team.id }))
         );
     }
 }

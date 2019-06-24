@@ -1,5 +1,6 @@
-/*
 import moment from "moment";
+import _ from "lodash";
+import { getApiUrl } from "../../support/utils";
 
 describe("Campaign configuration - Create", () => {
     before(() => {
@@ -9,7 +10,9 @@ describe("Campaign configuration - Create", () => {
         cy.get("[data-test=list-action-bar]").click();
     });
 
-    beforeEach(() => {});
+    after(() => {
+        deleteAllTestResources();
+    });
 
     it("gets data from the user", () => {
         cy.contains("New vaccination campaign");
@@ -19,7 +22,7 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Next").click();
         cy.contains("Field name cannot be blank");
 
-        cy.get("[data-field='name']").type("Test vaccination campaign");
+        cy.get("[data-field='name']").type("Test_vaccination_campaign_cypress");
         cy.contains("Start Date").click({ force: true });
         clickDay(11);
 
@@ -32,6 +35,8 @@ describe("Campaign configuration - Create", () => {
         cy.contains(
             "Select the health facilities or health area where the campaign will be implemented"
         );
+
+        cy.get("[data-field='teams']").type(1);
 
         cy.contains("Next").click();
         cy.contains("Select at least one organisation unit");
@@ -49,7 +54,6 @@ describe("Campaign configuration - Create", () => {
         cy.contains("Select at least one antigen");
 
         selectAntigen("Measles");
-        selectAntigen("Cholera");
 
         cy.contains("Next").click();
 
@@ -57,7 +61,6 @@ describe("Campaign configuration - Create", () => {
 
         waitForStepChange("Configure Indicators");
         cy.contains("Measles");
-        cy.contains("Cholera");
 
         cy.contains("Next").click();
 
@@ -67,7 +70,7 @@ describe("Campaign configuration - Create", () => {
         cy.get("[data-test-current=true]").contains("Save");
 
         cy.contains("Name");
-        cy.contains("Test vaccination campaign");
+        cy.contains("Test_vaccination_campaign_cypress");
 
         cy.contains("Period dates");
         const now = moment();
@@ -121,8 +124,7 @@ function clickDay(dayOfMonth) {
         }
     });
 
-    // eslint-disable cypress/no-unnecessary-waiting //
-    cy.wait(100);
+    cy.wait(100); // eslint-disable-line cypress/no-unnecessary-waiting
 }
 
 function selectAntigen(label) {
@@ -135,4 +137,58 @@ function selectAntigen(label) {
 function waitForStepChange(stepName) {
     cy.contains(stepName).should("have.class", "current-step");
 }
-*/
+
+function deleteAllTestResources() {
+    cy.request({
+        method: "GET",
+        url: getApiUrl(
+            "/dataSets?filter=name:like:Test_vaccination_campaign_cypress&fields=:owner,attributeValues[attribute[id,code],value]"
+        ),
+        failOnStatusCode: false,
+    }).then(({ body: { dataSets } }) => {
+        cy.request({
+            method: "GET",
+            url: getApiUrl("/categoryOptions?filter=name:like:Test_vaccination_campaign_cypress"),
+        }).then(({ body: { categoryOptions } }) => {
+            const dashboardId = _(dataSets[0].attributeValues)
+                .filter(attrVal => attrVal.attribute.code === "RVC_DASHBOARD_ID")
+                .map(attributeValue => attributeValue.value)
+                .value();
+
+            cy.request({
+                method: "GET",
+                url: getApiUrl(`/dashboards/${dashboardId[0]}`),
+                failOnStatusCode: false,
+            }).then(({ body: dashboard }) => {
+                const resources = _(dashboard.dashboardItems)
+                    .flatMap(item => [
+                        { model: "charts", ref: item.chart },
+                        { model: "reportTables", ref: item.reportTable },
+                        { model: "maps", ref: item.map },
+                    ])
+                    .map(({ model, ref }) => (ref ? { model, id: ref.id } : null))
+                    .compact()
+                    .value();
+                // Teams (categoryOptions) must be deleted last
+                const allResources = _.concat(
+                    [{ model: "dataSets", id: dataSets[0].id }],
+                    [{ model: "dashboards", id: dashboardId[0] }],
+                    resources,
+                    [{ model: "categoryOptions", id: categoryOptions[0].id }]
+                );
+
+                deleteMany(allResources);
+            });
+        });
+    });
+}
+
+function deleteMany(modelReferences) {
+    modelReferences.forEach(({ model, id }) => {
+        cy.request({
+            method: "DELETE",
+            url: getApiUrl(`/${model}/${id}`),
+            failOnStatusCode: false,
+        });
+    });
+}
