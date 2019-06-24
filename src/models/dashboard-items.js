@@ -496,7 +496,7 @@ const tableConstructor = ({
         dataElementGroupSetDimensions: [],
         attributeDimensions: [],
         translations: [],
-        filterDimensions: ["ou", antigen ? antigenCategory : null],
+        filterDimensions: _.compact(["ou", antigen ? antigenCategory : null]),
         interpretations: [],
         itemOrganisationUnitGroups: [],
         userGroupAccesses: [],
