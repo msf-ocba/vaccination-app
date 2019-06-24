@@ -1,10 +1,11 @@
-import { DataElement, CategoryCombo, Maybe, Ref } from "./db.types";
+import { DataElement, Maybe, Ref } from "./db.types";
 import _ from "lodash";
 const fp = require("lodash/fp");
 import { AntigenDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig, getCode } from "./config";
 import { Antigen } from "./campaign";
 import "../utils/lodash-mixins";
+import DbD2 from "./db-d2";
 
 export interface AntigenDisaggregation {
     name: string;
@@ -68,8 +69,8 @@ export type AntigenDisaggregationEnabled = Array<{
     }>;
 }>;
 
-export type CustomFormMetadata = {
-    categoryOptionCombos: { [cocName: string]: string };
+export type CocMetadata = {
+    cocIdByName: _.Dictionary<string>;
 };
 
 type AntigensDisaggregationData = {
@@ -158,7 +159,9 @@ export class AntigensDisaggregation {
             const category = _(categoriesByCode).getOrFail(categoryRef.code);
             const isDosesCategory = category.code === config.categoryCodeForDoses;
             const isAntigensCategory = category.code === config.categoryCodeForAntigens;
-            const { $categoryOptions, ...categoryAttributes } = _(config.categoriesDisaggregation)
+            const { $categoryOptions, name: categoryName, ...categoryAttributes } = _(
+                config.categoriesDisaggregation
+            )
                 .keyBy("code")
                 .getOrFail(categoryRef.code);
 
@@ -216,8 +219,15 @@ export class AntigensDisaggregation {
 
             const selected = wasCategorySelected ? true : !optional;
 
+            // Example: _23.6 Displacement Status
+            const cleanCategoryName = categoryName
+                .replace(/^[_\d.\s]+/, "")
+                .replace("RVC", "")
+                .trim();
+
             return {
                 ...categoryAttributes,
+                name: cleanCategoryName,
                 optional,
                 selected,
                 options,
@@ -325,33 +335,24 @@ export class AntigensDisaggregation {
         return res;
     }
 
-    public async getCustomFormMetadata(
-        categoryCombos: CategoryCombo[]
-    ): Promise<CustomFormMetadata> {
-        const data = _.flatMap(this.getEnabled(), ({ dataElements, antigen }) => {
-            const dataElementsDisaggregated = dataElements.filter(
-                de => !_(de.categories).isEmpty()
-            );
-            return dataElementsDisaggregated.map(({ code, categories }) => ({
-                antigenCode: antigen.code,
-                dataElementCode: code,
-                categoryComboCode: getCode(categories.map(category => category.code)),
-            }));
-        });
+    public async getCocMetadata(db: DbD2): Promise<CocMetadata> {
+        const categoryComboCodes = _(this.getEnabled())
+            .flatMap(disaggregation => disaggregation.dataElements)
+            .filter(dataElement => !_(dataElement.categories).isEmpty())
+            .map(dataElement => getCode(dataElement.categories.map(category => category.code)))
+            .uniq()
+            .value();
 
-        const categoryCombosByCode = _.keyBy(categoryCombos, "code");
-        const categoryOptionCombosIdByName = _(data)
-            .flatMap(({ categoryComboCode }) => {
-                return _(categoryCombosByCode).getOrFail(categoryComboCode).categoryOptionCombos;
-            })
-            .uniqBy("id")
+        const categoryOptionCombos = await db.getCocsByCategoryComboCode(categoryComboCodes);
+
+        const categoryOptionCombosIdByName = _(categoryOptionCombos)
             .map(coc => [coc.name, coc.id])
             .push(["", this.config.defaults.categoryOptionCombo.id])
             .fromPairs()
             .value();
 
         return {
-            categoryOptionCombos: categoryOptionCombosIdByName,
+            cocIdByName: categoryOptionCombosIdByName,
         };
     }
 }

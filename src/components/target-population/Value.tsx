@@ -2,7 +2,7 @@ import React from "react";
 import _ from "lodash";
 import classNames from "classnames";
 
-import i18n from "../../../locales";
+import i18n from "../../locales";
 import { WithStyles, Theme, createStyles } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 
