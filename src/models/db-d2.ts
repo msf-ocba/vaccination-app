@@ -18,6 +18,7 @@ import {
     Response,
     DataValue,
     MetadataOptions,
+    NamedObject,
 } from "./db.types";
 import _ from "lodash";
 import "../utils/lodash-mixins";
@@ -112,7 +113,6 @@ export const metadataFields: MetadataFields = {
         displayName: true,
         code: true,
         categories: ref,
-        categoryOptionCombos: { id: true, name: true },
     },
     categoryOptionCombos: {
         id: true,
@@ -266,6 +266,19 @@ export default class DbD2 {
             fields: ["id,code,displayName"],
         });
         return categoryCombos;
+    }
+
+    public async getCocsByCategoryComboCode(codes: string[]): Promise<NamedObject[]> {
+        const { categoryOptionCombos } = await this.getMetadata<{
+            categoryOptionCombos: NamedObject[];
+        }>({
+            categoryOptionCombos: {
+                fields: { id: true, name: true },
+                filters: [`categoryCombo.code:in:[${codes.join(",")}]`],
+            },
+        });
+
+        return categoryOptionCombos;
     }
 
     public async postMetadata<Metadata>(

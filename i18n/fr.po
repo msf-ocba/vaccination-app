@@ -292,6 +292,9 @@ msgstr ""
 msgid "Quality and safety indicators"
 msgstr ""
 
+msgid "General Q&S"
+msgstr ""
+
 msgid "Select at least one organisation unit"
 msgstr ""
 

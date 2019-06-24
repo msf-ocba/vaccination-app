@@ -335,6 +335,9 @@ msgstr "Dosis administradas"
 msgid "Quality and safety indicators"
 msgstr "Indicadores de calidad y seguridad"
 
+msgid "General Q&S"
+msgstr "Q&S General"
+
 msgid "Select at least one organisation unit"
 msgstr "Seleccione al menos una unidad organizativa"
 
