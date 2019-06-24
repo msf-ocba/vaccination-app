@@ -59,6 +59,17 @@ class DataEntry extends React.Component {
         iframeDocument.querySelector("#leftBar").style.top = "-10px";
         iframeDocument.querySelector("body").style.marginTop = "-55px";
         iframeDocument.querySelector("#moduleHeader").remove();
+
+        on(iframeDocument, "#currentSelection", el => el.remove());
+        on(iframeDocument, "#validationButton", el => el.remove());
+        on(iframeDocument, "#completenessDiv #validateButton", el => el.remove());
+        on(iframeDocument, "#completenessDiv .separator", el => el.remove());
+
+        on(iframeDocument, "#completenessDiv", div => {
+            div.style.display = "inline-block";
+            div.style.paddingRight = "20px";
+            div.style.width = "auto";
+        });
     }
 
     async setDatasetParameters(iframe, dataSetId, organisationUnits, d2) {
@@ -151,5 +162,9 @@ class DataEntry extends React.Component {
 const styles = {
     iframe: { width: "100%", height: 1000 },
 };
+
+function on(document, selector, cb) {
+    document.querySelectorAll(selector).forEach(cb);
+}
 
 export default withSnackbar(DataEntry);
