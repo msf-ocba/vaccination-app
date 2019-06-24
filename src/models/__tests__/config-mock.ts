@@ -223,6 +223,7 @@ const metadataConfig: MetadataConfig = {
             id: "1",
             name: "Measles",
             code: "RVC_MEASLES",
+            doses: [],
             dataElements: [
                 { id: "1", code: "RVC_DOSES_ADMINISTERED", optional: false, order: 1 },
                 { id: "2", code: "RVC_DOSES_USED", optional: false, order: 1 },
@@ -244,6 +245,7 @@ const metadataConfig: MetadataConfig = {
             id: "2",
             name: "Meningitis Polysaccharide",
             code: "RVC_MENPOLY",
+            doses: [],
             dataElements: [
                 { id: "1", code: "RVC_DOSES_ADMINISTERED", optional: false, order: 1 },
                 { id: "2", code: "RVC_DOSES_USED", optional: false, order: 1 },
@@ -260,6 +262,7 @@ const metadataConfig: MetadataConfig = {
             id: "3",
             name: "Meningitis Conjugate",
             code: "RVC_MENCONJ",
+            doses: [],
             dataElements: [
                 { id: "1", code: "RVC_DOSES_ADMINISTERED", optional: false, order: 1 },
                 { id: "2", code: "RVC_DOSES_USED", optional: false, order: 1 },
@@ -276,6 +279,7 @@ const metadataConfig: MetadataConfig = {
             id: "4",
             name: "Cholera",
             code: "RVC_CHOLERA",
+            doses: [],
             dataElements: [
                 { id: "1", code: "RVC_DOSES_ADMINISTERED", optional: false, order: 1 },
                 { id: "2", code: "RVC_DOSES_USED", optional: false, order: 1 },
@@ -287,6 +291,7 @@ const metadataConfig: MetadataConfig = {
             id: "5",
             name: "PCV",
             code: "RVC_PCV",
+            doses: [],
             dataElements: [
                 { id: "1", code: "RVC_DOSES_ADMINISTERED", optional: false, order: 1 },
                 { id: "2", code: "RVC_DOSES_USED", optional: false, order: 1 },
@@ -306,6 +311,7 @@ const metadataConfig: MetadataConfig = {
             id: "6",
             name: "Pertussis Penta",
             code: "RVC_PERTPENTA",
+            doses: [],
             dataElements: [
                 { id: "1", code: "RVC_DOSES_ADMINISTERED", optional: false, order: 1 },
                 { id: "2", code: "RVC_DOSES_USED", optional: false, order: 1 },
@@ -325,6 +331,7 @@ const metadataConfig: MetadataConfig = {
             id: "7",
             name: "Yellow Fever",
             code: "RVC_YELLOW_FEVER",
+            doses: [],
             dataElements: [
                 { id: "1", code: "RVC_DOSES_ADMINISTERED", optional: false, order: 1 },
                 { id: "2", code: "RVC_DOSES_USED", optional: false, order: 1 },
@@ -351,6 +358,7 @@ const metadataConfig: MetadataConfig = {
             id: "8",
             name: "Japanese Encephalitis",
             code: "RVC_JPENC",
+            doses: [],
             dataElements: [
                 { id: "1", code: "RVC_DOSES_ADMINISTERED", optional: false, order: 1 },
                 { id: "2", code: "RVC_DOSES_USED", optional: false, order: 1 },
@@ -372,6 +380,7 @@ const metadataConfig: MetadataConfig = {
             id: "9",
             name: "Dengue",
             code: "RVC_DENGUE",
+            doses: [],
             dataElements: [
                 { id: "1", code: "RVC_DOSES_ADMINISTERED", optional: false, order: 1 },
                 { id: "2", code: "RVC_DOSES_USED", optional: false, order: 1 },
@@ -388,6 +397,7 @@ const metadataConfig: MetadataConfig = {
             id: "10",
             name: "Typhoid Fever",
             code: "RVC_TYPHOID_FEVER",
+            doses: [],
             dataElements: [
                 { id: "1", code: "RVC_DOSES_ADMINISTERED", optional: false, order: 1 },
                 { id: "2", code: "RVC_DOSES_USED", optional: false, order: 1 },
