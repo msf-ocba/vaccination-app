@@ -186,7 +186,7 @@ export async function getTeamsForCampaign(
     });
 
     if (_.isEmpty(categoryOptions)) return [];
-    const expression = `^Team \\d ${campaignName}$`;
+    const expression = `^Team \\d - ${campaignName}$`;
     const matcher = new RegExp(expression);
 
     const teams = categoryOptions.filter(
