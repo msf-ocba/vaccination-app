@@ -18,6 +18,7 @@ import {
     Response,
     DataValue,
     MetadataOptions,
+    NamedObject,
 } from "./db.types";
 import _ from "lodash";
 import "../utils/lodash-mixins";
@@ -112,7 +113,12 @@ export const metadataFields: MetadataFields = {
         displayName: true,
         code: true,
         categories: ref,
-        categoryOptionCombos: { id: true, name: true },
+    },
+    categoryOptionCombos: {
+        id: true,
+        displayName: true,
+        categoryCombo: ref,
+        categoryOptions: ref,
     },
     categoryOptions: {
         id: true,
@@ -194,6 +200,11 @@ export const metadataFields: MetadataFields = {
         level: true,
     },
     sections: { id: true },
+    userRoles: {
+        id: true,
+        name: true,
+        authorities: true,
+    },
 };
 
 export type ApiResponse<Value> = { status: true; value: Value } | { status: false; error: string };
@@ -262,6 +273,19 @@ export default class DbD2 {
         return categoryCombos;
     }
 
+    public async getCocsByCategoryComboCode(codes: string[]): Promise<NamedObject[]> {
+        const { categoryOptionCombos } = await this.getMetadata<{
+            categoryOptionCombos: NamedObject[];
+        }>({
+            categoryOptionCombos: {
+                fields: { id: true, name: true },
+                filters: [`categoryCombo.code:in:[${codes.join(",")}]`],
+            },
+        });
+
+        return categoryOptionCombos;
+    }
+
     public async postMetadata<Metadata>(
         metadata: Metadata,
         options: MetadataOptions = {}
@@ -288,7 +312,7 @@ export default class DbD2 {
         return true;
     }
 
-    public async postDataValues(dataValues: DataValue[]): Promise<Response<any>> {
+    public async postDataValues(dataValues: DataValue[]): Promise<Response<object>> {
         const dataValueRequests: DataValueRequest[] = _(dataValues)
             .groupBy(dv => {
                 const parts = [

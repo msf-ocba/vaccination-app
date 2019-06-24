@@ -1,5 +1,5 @@
 import React from "react";
-import i18n from "../../../locales";
+import i18n from "../../locales";
 
 import { Icon, IconButton } from "@material-ui/core";
 

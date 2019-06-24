@@ -50,11 +50,9 @@ describe("Campaign configuration - List page", () => {
 
         cy.contains("Details");
         cy.contains("Edit");
-        cy.contains("Share");
         cy.contains("Delete");
         cy.contains("Go to Data Entry");
         cy.contains("Go to Dashboard");
-        cy.contains("Download data");
 
         cy.contains("Details").click();
     });

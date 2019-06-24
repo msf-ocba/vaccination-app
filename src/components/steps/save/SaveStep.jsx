@@ -9,7 +9,7 @@ import { Button, LinearProgress } from "@material-ui/core";
 import { withSnackbar } from "d2-ui-components";
 
 import { getFullOrgUnitName } from "../../../models/organisation-units";
-import { getShowValue } from "../target-population/utils";
+import { getShowValue } from "../../target-population/utils";
 import ExitWizardButton from "../../wizard/ExitWizardButton";
 
 const styles = _theme => ({
@@ -63,6 +63,7 @@ class SaveStep extends React.Component {
                 this.props.snackbar.error(i18n.t("Error saving campaign"));
             }
         } catch (err) {
+            console.error(err);
             this.props.snackbar.error(err.message || err.toString());
             this.setState({ isSaving: false });
         }
@@ -145,17 +146,18 @@ class SaveStep extends React.Component {
             item => item.organisationUnit.id
         );
         const targetPopOu = _(byOrgUnit).getOrFail(orgUnit.id);
-        const totalPopulation = getShowValue(targetPopOu.populationTotal.pairValue);
+        const missing = i18n.t("Missing");
+        const totalPopulation = getShowValue(targetPopOu.populationTotal.value) || missing;
         const populationDistribution = targetPopulation.getFinalDistribution(targetPopOu);
         const ageDistribution = targetPopulation.ageGroups
-            .map(ageGroup => [ageGroup, " = ", populationDistribution[ageGroup], "%"].join(""))
+            .map(ag => [ag, " = ", populationDistribution[ag] || missing, " %"].join(""))
             .join(", ");
 
         return (
             <LiEntry key={orgUnit.id} label={getFullOrgUnitName(orgUnit)}>
                 <ul>
                     <LiEntry label={i18n.t("Total population")} value={totalPopulation} />
-                    <LiEntry label={i18n.t("Age distribution (%)")} value={ageDistribution} />
+                    <LiEntry label={i18n.t("Age distribution")} value={ageDistribution} />
                 </ul>
             </LiEntry>
         );
@@ -197,7 +199,12 @@ class SaveStep extends React.Component {
                             [{disaggregation.length}]
                             <ul>
                                 {disaggregation.map(({ antigen, dataElements }) => (
-                                    <LiEntry key={antigen.code} label={antigen.name}>
+                                    <LiEntry
+                                        key={antigen.code}
+                                        label={`${antigen.name} (${i18n.t("doses")}: ${
+                                            antigen.doses.length
+                                        })`}
+                                    >
                                         <ul>{this.renderDataElements(dataElements)}</ul>
                                     </LiEntry>
                                 ))}

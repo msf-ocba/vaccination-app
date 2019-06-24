@@ -1,20 +1,22 @@
+import { MetadataConfig } from "./config";
 import _ from "lodash";
 const { createElement } = require("typed-html");
 
 import Campaign, { Antigen } from "./campaign";
-import { AntigenDisaggregationEnabled, CustomFormMetadata } from "./AntigensDisaggregation";
+import { AntigenDisaggregationEnabled, CocMetadata } from "./AntigensDisaggregation";
 import i18n from "../locales";
 import "../utils/lodash-mixins";
 
 type Children = string[];
 type Disaggregations = AntigenDisaggregationEnabled;
 type DataElement = Disaggregations[0]["dataElements"][0];
+type Category = DataElement["categories"][0];
 
-const dataElementCodeDosesRegexp = /DOSES/;
+type Maybe<T> = T | undefined;
 
 function h(tagName: string, attributes: object = {}, children: string | string[] = []) {
     const attrs = Object.keys(attributes).length === 0 ? undefined : attributes;
-    const args = typeof children === "string" ? [children] : children;
+    const args = typeof children === "string" ? [children] : _.compact(children);
     return createElement(tagName, attrs, ...args);
 }
 
@@ -55,13 +57,12 @@ function totalTd(dataElementId: string, cocIds: string[]): string {
 }
 
 export class DataSetCustomForm {
-    constructor(public campaign: Campaign, private metadata: CustomFormMetadata) {}
+    config: MetadataConfig;
+    dataElementCodeDosesRegexp = /DOSES/;
+    generalIndicatorsTabId = "GENERAL_QS";
 
-    static async build(campaign: Campaign): Promise<DataSetCustomForm> {
-        const metadata = await campaign.antigensDisaggregation.getCustomFormMetadata(
-            campaign.config.categoryCombos
-        );
-        return new DataSetCustomForm(campaign, metadata);
+    constructor(public campaign: Campaign, private metadata: CocMetadata) {
+        this.config = campaign.config;
     }
 
     renderHeaderForGroup(categoryOptionGroups: string[][], isSubTotal: boolean): Children {
@@ -109,45 +110,67 @@ export class DataSetCustomForm {
         }, initial).trs;
     }
 
-    getCocId(antigen: Antigen, dataElement: DataElement, categoryOptionNames: string[]): string {
-        const metadataCode = antigen.code + "-" + dataElement.code;
-        const cocName = [antigen.name, ...categoryOptionNames].join(", ");
-        const { cocIdByName } = _(this.metadata).getOrFail(metadataCode);
-        return _(cocIdByName).getOrFail(cocName);
-    }
-
     getCocIds(
-        antigen: Antigen,
+        antigen: Maybe<Antigen>,
         dataElement: DataElement,
-        categoryOptionGroups: string[][]
+        categoryOptionGroups: string[][],
+        options: { doseName?: string }
     ): string[] {
-        return _.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
-            this.getCocId(antigen, dataElement, categoryOptionNames)
-        );
+        const { doseName } = options;
+        const categoryDoses = this.getDosesCategory(dataElement);
+        const dosesNames =
+            categoryDoses && doseName === undefined
+                ? [categoryDoses.categoryOptions]
+                : doseName
+                ? [[doseName]]
+                : [];
+        const categoryOptionGroupsAll = [...dosesNames, ...categoryOptionGroups];
+
+        return _.cartesianProduct(categoryOptionGroupsAll).map(categoryOptionNames => {
+            const cocName = _([antigen ? antigen.name : null, ...categoryOptionNames])
+                .compact()
+                .join(", ");
+            return _(this.metadata.cocIdByName).getOrFail(cocName);
+        });
     }
 
     renderDataElement(
-        antigen: Antigen,
+        antigen: Maybe<Antigen>,
         dataElement: DataElement,
         categoryOptionGroups: string[][],
         idx: number
-    ): string {
+    ): string[] {
         const trType = idx === 0 ? "primary" : "secondary";
         const trClass = ["derow", `de-${dataElement.id}`, trType].join(" ");
-        const cocIds = _.cartesianProduct(categoryOptionGroups).map(categoryOptionNames =>
-            this.getCocId(antigen, dataElement, categoryOptionNames)
-        );
-        const dataElementId = dataElement.id;
-        const renderTotalCell = cocIds.length > 1;
 
-        return h("tr", { class: trClass }, [
-            h("td", { class: "data-element" }, dataElement.name),
-            ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
-            renderTotalCell ? totalTd(dataElementId, cocIds) : null,
-        ]);
+        // Doses are rendered as a separate data element rows
+        const categoryDoses = this.getDosesCategory(dataElement);
+        const dosesNames: Array<string | undefined> = categoryDoses
+            ? categoryDoses.categoryOptions
+            : [undefined];
+        const showDoseName = dosesNames.length > 1;
+
+        return dosesNames.map(doseName => {
+            const cocIds = this.getCocIds(antigen, dataElement, categoryOptionGroups, { doseName });
+            const dataElementId = dataElement.id;
+            const renderTotalCell = cocIds.length > 1;
+
+            return h("tr", { class: trClass }, [
+                h(
+                    "td",
+                    { class: "data-element" },
+                    _.compact([dataElement.name, showDoseName ? doseName : null]).join(" - ")
+                ),
+                ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
+                renderTotalCell ? totalTd(dataElementId, cocIds) : null,
+            ]);
+        });
     }
 
     getDataElementByCategoryOptionsLists(dataElements: DataElement[]) {
+        const { categoryCodeForAntigens, categoryCodeForDoses } = this.config;
+        const outerCategories = [categoryCodeForAntigens, categoryCodeForDoses];
+
         return _(dataElements)
             .groupBy(({ categories }) =>
                 categories.map(category => [category.code, ...category.categoryOptions])
@@ -155,6 +178,7 @@ export class DataSetCustomForm {
             .values()
             .map(dataElementsGroup => {
                 const categoryOptionGroups = _(dataElementsGroup[0].categories)
+                    .reject(category => _(outerCategories).includes(category.code))
                     .map(cat => cat.categoryOptions)
                     .value();
 
@@ -180,7 +204,7 @@ export class DataSetCustomForm {
     }
 
     renderGroupWrapper(
-        antigen: Antigen,
+        antigen: Maybe<Antigen>,
         data: {
             dataElements: DataElement[];
             categoryOptionGroupsList: string[][][][];
@@ -209,7 +233,7 @@ export class DataSetCustomForm {
                                 h(
                                     "tbody",
                                     {},
-                                    dataElements.map(dataElement =>
+                                    _.flatMap(dataElements, dataElement =>
                                         this.renderDataElement(
                                             antigen,
                                             dataElement,
@@ -228,12 +252,22 @@ export class DataSetCustomForm {
         );
     }
 
+    private getDosesCategory(dataElement: DataElement): Maybe<Category> {
+        const { categoryCodeForDoses } = this.config;
+        return dataElement.categories.find(category => category.code === categoryCodeForDoses);
+    }
+
     private renderTotalTables(
-        antigen: Antigen,
+        antigen: Maybe<Antigen>,
         dataElements: DataElement[],
         categoryOptionGroupsArray: string[][][]
     ): Children {
-        const dataElementsToShow = categoryOptionGroupsArray.length > 1 ? dataElements : [];
+        const areTablesSplit = categoryOptionGroupsArray.length > 1;
+        const dataElementDoses = dataElements.find(de => !!this.getDosesCategory(de));
+        const categoryDoses = dataElementDoses ? this.getDosesCategory(dataElementDoses) : null;
+        const hasDosesSplit = categoryDoses && categoryDoses.categoryOptions.length > 1;
+        const dataElementsToShow =
+            dataElementDoses && (areTablesSplit || hasDosesSplit) ? [dataElementDoses] : [];
 
         return dataElementsToShow.map(dataElement =>
             h("table", { class: "dataValuesTable" }, [
@@ -253,7 +287,7 @@ export class DataSetCustomForm {
                         totalTd(
                             dataElement.id,
                             _.flatMap(categoryOptionGroupsArray, categoryOptionGroupsGroups =>
-                                this.getCocIds(antigen, dataElement, categoryOptionGroupsGroups)
+                                this.getCocIds(antigen, dataElement, categoryOptionGroupsGroups, {})
                             )
                         ),
                     ])
@@ -262,22 +296,35 @@ export class DataSetCustomForm {
         );
     }
 
-    renderAntigen(disaggregation: Disaggregations[0]): string {
+    renderAntigenTab(disaggregation: Disaggregations[0]): string {
         const { antigen, dataElements: allDataElements } = disaggregation;
+        const dataElementHasAntigenDisaggregation = (dataElement: DataElement) =>
+            _(dataElement.categories).some(
+                deCategory => deCategory.code == this.config.categoryCodeForAntigens
+            );
 
-        const [dosesDataElements, otherDataElements] = _.partition(allDataElements, de =>
-            de.code.match(dataElementCodeDosesRegexp)
-        );
+        const [dosesDataElements, qualityDataElements] = _(allDataElements)
+            .filter(dataElementHasAntigenDisaggregation)
+            .partition(de => de.code.match(this.dataElementCodeDosesRegexp))
+            .value();
 
         const groups = [
             { title: i18n.t("Doses administered"), dataElements: dosesDataElements },
-            { title: i18n.t("Quality and safety indicators"), dataElements: otherDataElements },
+            { title: i18n.t("Quality and safety indicators"), dataElements: qualityDataElements },
         ];
 
+        return this.renderTab(antigen.code, groups, { antigen: disaggregation.antigen });
+    }
+
+    private renderTab(
+        id: string,
+        groups: Array<{ title?: string; dataElements: DataElement[] }>,
+        options: { antigen?: Antigen }
+    ): string {
         return h(
             "div",
             {
-                id: `tab-${antigen.code}`,
+                id: `tab-${id}`,
                 role: "tabpanel",
                 class: "ui-tabs-panel ui-corner-bottom ui-widget-content",
             },
@@ -286,13 +333,13 @@ export class DataSetCustomForm {
                 {},
                 _.flatMap(groups, ({ title, dataElements }) => [
                     h("div", { class: "dataelement-group" }, [
-                        h("div", { class: "title" }, title),
+                        title ? h("div", { class: "title" }, title) : null,
                         h(
                             "div",
                             { class: "formSection sectionContainer" },
                             _.flatMap(
                                 this.getDataElementByCategoryOptionsLists(dataElements),
-                                data => this.renderGroupWrapper(disaggregation.antigen, data)
+                                data => this.renderGroupWrapper(options.antigen, data)
                             )
                         ),
                     ]),
@@ -301,7 +348,43 @@ export class DataSetCustomForm {
         );
     }
 
+    getGeneralDataElements(disaggregations: Disaggregations): DataElement[] {
+        const hasAntigensDisaggregation = (dataElement: DataElement) =>
+            !_(dataElement.categories)
+                .map("code")
+                .includes(this.config.dataElementGroupCodeForAntigens);
+
+        return _(disaggregations)
+            .flatMap("dataElements")
+            .filter(hasAntigensDisaggregation)
+            .uniqBy("id")
+            .value();
+    }
+
+    renderGeneralIndicatorsTab(disaggregations: Disaggregations): string | null {
+        const generalDataElements = this.getGeneralDataElements(disaggregations);
+
+        if (_(generalDataElements).isEmpty()) {
+            return null;
+        } else {
+            return this.renderTab(
+                this.generalIndicatorsTabId,
+                [{ dataElements: generalDataElements }],
+                {}
+            );
+        }
+    }
+
     renderTabs(disaggregations: Disaggregations): string {
+        const generalDataElements = this.getGeneralDataElements(disaggregations);
+
+        const tabs = _.compact([
+            ...disaggregations.map(({ antigen }) => ({ name: antigen.name, id: antigen.code })),
+            !_(generalDataElements).isEmpty()
+                ? { name: i18n.t("General Q&S"), id: this.generalIndicatorsTabId }
+                : null,
+        ]);
+
         return h(
             "ul",
             {
@@ -309,7 +392,7 @@ export class DataSetCustomForm {
                 class:
                     "ui-tabs-nav ui-corner-all ui-helper-reset ui-helper-clearfix ui-widget-header",
             },
-            disaggregations.map(({ antigen }) =>
+            tabs.map(tab =>
                 h(
                     "li",
                     {
@@ -320,12 +403,12 @@ export class DataSetCustomForm {
                     h(
                         "a",
                         {
-                            href: `#tab-${antigen.code}`,
+                            href: `#tab-${tab.id}`,
                             role: "presentation",
                             tabindex: "-1",
                             class: "ui-tabs-anchor",
                         },
-                        antigen.name
+                        tab.name
                     )
                 )
             )
@@ -340,7 +423,8 @@ export class DataSetCustomForm {
             { id: "tabs", class: "ui-tabs ui-corner-all ui-widget ui-widget-content" },
             [
                 this.renderTabs(disaggregations),
-                ...disaggregations.map(disaggregation => this.renderAntigen(disaggregation)),
+                ...disaggregations.map(disaggregation => this.renderAntigenTab(disaggregation)),
+                this.renderGeneralIndicatorsTab(disaggregations),
                 h("style", {}, css),
                 h("script", {}, script),
             ]

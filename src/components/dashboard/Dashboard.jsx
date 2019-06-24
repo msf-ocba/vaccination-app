@@ -88,14 +88,21 @@ class Dashboard extends React.Component {
     };
 
     async getDashboardURL(dataSetId, config, d2) {
+        const { snackbar } = this.props;
         const dataSet = dataSetId ? await getDatasetById(dataSetId, d2) : null;
+        const msg = i18n.t("Cannot find dashboard associated with the campaign");
+
         if (!dataSetId) {
             return getDhis2Url(d2, `/dhis-web-dashboard/#/`);
         } else if (dataSet) {
-            const dashboardId = getDashboardId(dataSet, config);
-            return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboardId}`);
+            const dashboardId = await getDashboardId(d2, dataSet, config);
+            if (dashboardId) {
+                return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboardId}`);
+            } else {
+                snackbar.error(msg);
+            }
         } else {
-            this.props.snackbar.error(i18n.t("Cannot find dashboard associated with the campaign"));
+            snackbar.error(msg);
         }
     }
 

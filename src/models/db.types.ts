@@ -16,6 +16,17 @@ export interface PaginatedObjects<T> {
     objects: T[];
 }
 
+export interface NamedObject {
+    id: string;
+    name: string;
+}
+
+export interface UserRole {
+    id: string;
+    name: string;
+    authorities: string[];
+}
+
 export interface OrganisationUnitPathOnly {
     id: string;
     path: string;
@@ -62,7 +73,13 @@ export interface CategoryCombo {
     code: string;
     displayName: string;
     categories: Ref[];
-    categoryOptionCombos: { id: string; name: string }[];
+}
+
+export interface CategoryOptionCombo {
+    id: string;
+    displayName: string;
+    categoryCombo: Ref;
+    categoryOptions: Ref[];
 }
 
 export interface Attribute {
@@ -258,6 +275,7 @@ export type ModelName =
     | "attributes"
     | "categories"
     | "categoryCombos"
+    | "categoryOptionCombos"
     | "categoryOptions"
     | "categoryOptionGroups"
     | "dashboards"
@@ -268,7 +286,8 @@ export type ModelName =
     | "dataInputPeriods"
     | "organisationUnits"
     | "organisationUnitLevels"
-    | "sections";
+    | "sections"
+    | "userRoles";
 
 export interface MetadataGetModelParams {
     fields?: ModelFields;
