@@ -64,25 +64,6 @@ describe("Campaign configuration - Create", () => {
 
         cy.contains("Next").click();
 
-        // Target population
-        waitForStepChange("Target Population");
-        cy.contains("Cholera Intervention Addis 2016");
-
-        cy.get("[test-total-population=0] [aria-label=Edit]").click();
-        cy.get("[test-total-population=0] input")
-            .clear()
-            .type(1000);
-
-        cy.get("[test-population-distribution=0] [aria-label=Edit] :first").click();
-        cy.get("[test-population-distribution=0] input").each(($el, idx) => {
-            cy.wrap($el)
-                .clear()
-                .type(idx + 1);
-        });
-        cy.get("#root")
-            .contains("Next")
-            .click();
-
         // Save step
 
         waitForStepChange("Save");

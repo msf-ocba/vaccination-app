@@ -65,7 +65,7 @@ msgstr ""
 msgid "Go to Dashboard"
 msgstr ""
 
-msgid "Download data"
+msgid "Set Target Population"
 msgstr ""
 
 msgid "Deleting campaign(s). This may take a while, please wait"
@@ -98,12 +98,57 @@ msgstr ""
 msgid "Cannot load campaign"
 msgstr ""
 
+msgid "Target population set"
+msgstr ""
+
+msgid "Error saving target population"
+msgstr ""
+
+msgid "There are unsaved changes, are you sure you want to close the dialog?"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid ""
+"Insert the total population and age distribution (as a percent) for each "
+"health site where the campaign will be implemented. This data will be used "
+"to calculate coverage rates for the campaign. The source of data may be {{- "
+"hyperlink}} or you may have access to local estimates based on population "
+"surveys through the Ministry of Health or other stakeholders that would be "
+"more updated or reliable. You may overwrite any existing data in HMIS, but "
+"please note that any changes you make in this step will only be applied "
+"once you run analytics."
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Saving..."
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
 msgid "General info"
 msgstr ""
 
 msgid ""
 "Choose a name for the campaign and define the period for which data entry "
 "will be enabled"
+msgstr ""
+
+msgid ""
+"Give your campaign a name that will make it easy to recognize in an HMIS "
+"hierarchy. Suggested format is \"RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... "
+"- {CAMPAIGN PERIOD}\". Example -> \"RCV Shabunda - Measles/Cholera - "
+"Jan-Mar 2019\".\n"
+"\n"
+"                    The start and end date should define the period for "
+"which you expect to enter data - i.e .the first and last day of your "
+"campaign. If you are not certain of the end date, enter a date a few weeks "
+"later than the expected date of completion (refer to your microplan). It is "
+"possible to edit the dates at any point."
 msgstr ""
 
 msgid "Organisation Units"
@@ -143,28 +188,6 @@ msgid ""
 "some cases, you may click on an age group to select subdivisions if that "
 "information is important for your campaign. Compulsory indicators may not "
 "be un-selected."
-msgstr ""
-
-msgid "Target Population"
-msgstr ""
-
-msgid ""
-"Insert the total population and age distribution (as a percent) for each "
-"health site where the campaign will be implemented. This data will be used "
-"to calculate coverage rates for the campaign. The source of data may be {{- "
-"hyperlink}} or you may have access to local estimates based on population "
-"surveys through the Ministry of Health or other stakeholders that would be "
-"more updated or reliable. You may overwrite any existing data in HMIS, but "
-"please note that any changes you make in this step will only be applied "
-"once you run analytics."
-msgstr ""
-
-msgid ""
-"Specify the target population and population distribution by age group "
-"(percent) for each antigen."
-msgstr ""
-
-msgid "Save"
 msgstr ""
 
 msgid ""
@@ -219,10 +242,13 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
+msgid "Missing"
+msgstr ""
+
 msgid "Total population"
 msgstr ""
 
-msgid "Age distribution (%)"
+msgid "Age distribution"
 msgstr ""
 
 msgid "Period dates"
@@ -241,9 +267,6 @@ msgid "Population distribution (%)"
 msgstr ""
 
 msgid "Campaign Population Distribution"
-msgstr ""
-
-msgid "Missing"
 msgstr ""
 
 msgid "Cancel Campaign Creation?"
@@ -276,6 +299,9 @@ msgid "Doses administered"
 msgstr ""
 
 msgid "Quality and safety indicators"
+msgstr ""
+
+msgid "General Q&S"
 msgstr ""
 
 msgid "Select at least one organisation unit"
@@ -315,17 +341,4 @@ msgid ""
 msgstr ""
 
 msgid "There already exists a campaign with the same name"
-msgstr ""
-
-msgctxt ""
-"YEAR\n"
-"\n"
-"                    The start and end date should define the period for "
-"which you expect to enter data - i.e .the first and last day of your "
-"campaign. If you are not certain of the end date, enter a date a few weeks "
-"later than the expected date of completion (refer to your microplan). It is "
-"possible to edit the dates at any point."
-msgid ""
-"Give your campaign a name that will make it easy to recognize in an HMIS "
-"hierarchy. Suggested format is REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH"
 msgstr ""

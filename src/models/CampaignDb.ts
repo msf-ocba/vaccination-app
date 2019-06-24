@@ -9,7 +9,7 @@ import { DataSetCustomForm } from "./DataSetCustomForm";
 import { Maybe, MetadataResponse, DataEntryForm, Section } from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
-import { getDataElements } from "./AntigensDisaggregation";
+import { getDataElements, CocMetadata } from "./AntigensDisaggregation";
 import { Dashboard } from "./Dashboard";
 import { Teams, CategoryOptionTeam } from "./Teams";
 
@@ -33,7 +33,7 @@ export default class CampaignDb {
 
     public async save(): Promise<Response<string>> {
         const { campaign } = this;
-        const { db, targetPopulation, config: metadataConfig, teamsMetadata } = campaign;
+        const { db, config: metadataConfig, teamsMetadata } = campaign;
         const dataSetId = campaign.id || generateUid();
         const {
             categoryComboCodeForTeams,
@@ -101,8 +101,6 @@ export default class CampaignDb {
             };
         } else if (!dashboard) {
             return { status: false, error: "Error creating dashboard" };
-        } else if (!targetPopulation) {
-            return { status: false, error: "There is no target population in campaign" };
         } else {
             const disaggregationData = campaign.getEnabledAntigensDisaggregation();
             const dataElements = getDataElements(metadataConfig, disaggregationData);
@@ -120,8 +118,9 @@ export default class CampaignDb {
             }));
 
             const existingDataSet = await this.getExistingDataSet();
-            const dataEntryForm = await this.getDataEntryForm(existingDataSet);
-            const sections = await this.getSections(dataSetId, existingDataSet);
+            const metadataCoc = await campaign.antigensDisaggregation.getCocMetadata(db);
+            const dataEntryForm = await this.getDataEntryForm(existingDataSet, metadataCoc);
+            const sections = await this.getSections(db, dataSetId, existingDataSet, metadataCoc);
 
             const dataSet: DataSet = {
                 id: dataSetId,
@@ -150,9 +149,31 @@ export default class CampaignDb {
                 sections: sections.map(section => ({ id: section.id })),
             };
 
+            return this.postSave(
+                {
+                    charts,
+                    reportTables,
+                    dashboards: [dashboard],
+                    dataSets: [dataSet],
+                    dataEntryForms: [dataEntryForm],
+                    sections,
+                    categoryOptions: newTeams,
+                },
+                teamsToDelete
+            );
+        }
+    }
+
+    public async saveTargetPopulation(): Promise<Response<string>> {
+        const { campaign } = this;
+        const { targetPopulation } = this.campaign;
+
+        if (!targetPopulation) {
+            return { status: false, error: "There is no target population in campaign" };
+        } else {
             const period = moment(campaign.startDate || new Date()).format("YYYYMMDD");
-            const dataValues = targetPopulation.getDataValues(period);
-            const populationResult = await db.postDataValues(dataValues);
+            const dataValues = await targetPopulation.getDataValues(period);
+            const populationResult = await campaign.db.postDataValues(dataValues);
 
             if (!populationResult.status) {
                 return {
@@ -160,18 +181,7 @@ export default class CampaignDb {
                     error: JSON.stringify(populationResult.error, null, 2),
                 };
             } else {
-                return this.postSave(
-                    {
-                        charts,
-                        reportTables,
-                        dashboards: [dashboard],
-                        dataSets: [dataSet],
-                        dataEntryForms: [dataEntryForm],
-                        sections,
-                        categoryOptions: newTeams,
-                    },
-                    teamsToDelete
-                );
+                return { status: true };
             }
         }
     }
@@ -242,17 +252,15 @@ export default class CampaignDb {
     }
 
     private async getSections(
+        db: DbD2,
         dataSetId: string,
-        existingDataSet: Maybe<DataSetWithSections>
+        existingDataSet: Maybe<DataSetWithSections>,
+        cocMetadata: CocMetadata
     ): Promise<Section[]> {
         const { campaign } = this;
         const existingSections = existingDataSet ? existingDataSet.sections : [];
         const existingSectionsByName = _.keyBy(existingSections, "name");
         const disaggregationData = campaign.getEnabledAntigensDisaggregation();
-
-        const disMetadata = await campaign.antigensDisaggregation.getCustomFormMetadata(
-            campaign.config.categoryCombos
-        );
 
         const sectionsUsed: Section[] = disaggregationData.map((disaggregationData, index) => {
             const sectionName = disaggregationData.antigen.code;
@@ -262,16 +270,13 @@ export default class CampaignDb {
 
             const greyedFields = _(disaggregationData.dataElements)
                 .flatMap(dataElementDis => {
-                    const { antigen } = disaggregationData;
                     const groups: string[][] = _.cartesianProduct(
                         dataElementDis.categories.map(category => category.categoryOptions)
                     );
 
                     return groups.map(group => {
-                        const cocName = [antigen.name, ...group].join(", ");
-                        const disCode = antigen.code + "-" + dataElementDis.code;
-                        const { cocIdByName } = _(disMetadata).getOrFail(disCode);
-                        const cocId = _(cocIdByName).getOrFail(cocName);
+                        const cocName = group.join(", ");
+                        const cocId = _(cocMetadata.cocIdByName).getOrFail(cocName);
 
                         return {
                             dataElement: { id: dataElementDis.id },
@@ -326,10 +331,11 @@ export default class CampaignDb {
     }
 
     private async getDataEntryForm(
-        existingDataSet: Maybe<DataSetWithSections>
+        existingDataSet: Maybe<DataSetWithSections>,
+        cocMetadata: CocMetadata
     ): Promise<DataEntryForm> {
         const { campaign } = this;
-        const customForm = await DataSetCustomForm.build(campaign);
+        const customForm = new DataSetCustomForm(campaign, cocMetadata);
         const customFormHtml = customForm.generate();
         const formId =
             (existingDataSet &&

@@ -6,7 +6,6 @@ import _ from "lodash";
 import { withSnackbar } from "d2-ui-components";
 
 import Campaign from "models/campaign";
-import DbD2 from "models/db-d2";
 import Wizard from "../wizard/Wizard";
 import PageHeader from "../shared/PageHeader";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
@@ -16,12 +15,12 @@ import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 import { memoize } from "../../utils/memoize";
-import TargetPopulationStep from "../steps/target-population/TargetPopulationStep";
 import ExitWizardButton from "../wizard/ExitWizardButton";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
+        db: PropTypes.object.isRequired,
         history: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
         snackbar: PropTypes.object.isRequired,
@@ -37,12 +36,11 @@ class CampaignWizard extends React.Component {
     }
 
     async componentDidMount() {
-        const { d2, config, match } = this.props;
+        const { db, config, match } = this.props;
 
-        const dbD2 = new DbD2(d2);
         const campaign = this.isEdit()
-            ? await Campaign.get(config, dbD2, match.params.id)
-            : Campaign.create(config, dbD2);
+            ? await Campaign.get(config, db, match.params.id)
+            : Campaign.create(config, db);
 
         if (!campaign) {
             this.props.snackbar.error(i18n.t("Cannot load campaign"));
@@ -67,7 +65,7 @@ class CampaignWizard extends React.Component {
                     `Choose a name for the campaign and define the period for which data entry will be enabled`
                 ),
                 help: i18n.t(
-                    `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format is REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH_YEAR\n
+                    `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format is "RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... - {CAMPAIGN PERIOD}". Example -> "RCV Shabunda - Measles/Cholera - Jan-Mar 2019".\n
                     The start and end date should define the period for which you expect to enter data - i.e .the first and last day of your campaign. If you are not certain of the end date, enter a date a few weeks later than the expected date of completion (refer to your microplan). It is possible to edit the dates at any point.`
                 ),
             },
@@ -100,22 +98,6 @@ class CampaignWizard extends React.Component {
                 description: i18n.t(`Select indicators and categories for each antigen`),
                 help: i18n.t(`Select the indicators and breakdowns that you wish to monitor for each antigen in your campaign.\n
                 Standard age groups for each antigen appear by default. In some cases, you may click on an age group to select subdivisions if that information is important for your campaign. Compulsory indicators may not be un-selected.`),
-            },
-            {
-                key: "target-population",
-                label: i18n.t("Target Population"),
-                component: TargetPopulationStep,
-                validationKeys: ["targetPopulation"],
-                description: i18n.t(
-                    `Insert the total population and age distribution (as a percent) for each health site where the campaign will be implemented. This data will be used to calculate coverage rates for the campaign. The source of data may be {{- hyperlink}} or you may have access to local estimates based on population surveys through the Ministry of Health or other stakeholders that would be more updated or reliable. You may overwrite any existing data in HMIS, but please note that any changes you make in this step will only be applied once you run analytics.`,
-                    {
-                        hyperlink:
-                            "https://hmisocba.msf.es/external-static/Denominators_Tool_OCBA.xlsm",
-                    }
-                ),
-                help: i18n.t(
-                    `Specify the target population and population distribution by age group (percent) for each antigen.`
-                ),
             },
             {
                 key: "save",

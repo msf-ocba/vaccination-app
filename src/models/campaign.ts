@@ -1,3 +1,4 @@
+import { Dashboard } from "./Dashboard";
 import { OrganisationUnit, Maybe, Ref, AttributeValue } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
@@ -197,7 +198,7 @@ export default class Campaign {
             dashboardId,
         };
 
-        return new Campaign(db, config, initialData);
+        return new Campaign(db, config, initialData).withTargetPopulation();
     }
 
     public update(newData: Data) {
@@ -401,6 +402,11 @@ export default class Campaign {
 
     /* Target population */
 
+    public async saveTargetPopulation(): Promise<Response<string>> {
+        const campaignDb = new CampaignDb(this);
+        return campaignDb.saveTargetPopulation();
+    }
+
     public get targetPopulation(): Maybe<TargetPopulation> {
         return this.data.targetPopulation;
     }
@@ -438,6 +444,29 @@ export default class Campaign {
         return this.data.dashboardId;
     }
 
+    public async getDashboard(): Promise<Maybe<Dashboard>> {
+        if (this.dashboardId) {
+            const metadata = await this.db.getMetadata<{ dashboards: Dashboard[] }>({
+                dashboards: { filters: [`id:eq:${this.dashboardId}`] },
+            });
+            return _.first(metadata.dashboards);
+        } else {
+            return undefined;
+        }
+    }
+
+    public async getDashboardOrCreate(): Promise<Maybe<Dashboard>> {
+        const dashboard = await this.getDashboard();
+
+        if (dashboard) {
+            return dashboard;
+        } else {
+            await this.save();
+            const savedCampaign = await this.reload();
+            return savedCampaign ? savedCampaign.getDashboard() : undefined;
+        }
+    }
+
     /* Teams */
 
     public get teams(): Maybe<number> {
@@ -461,6 +490,10 @@ export default class Campaign {
     public async save(): Promise<Response<string>> {
         const campaignDb = new CampaignDb(this);
         return campaignDb.save();
+    }
+
+    public async reload(): Promise<Maybe<Campaign>> {
+        return this.id ? Campaign.get(this.config, this.db, this.id) : undefined;
     }
 
     public static async getResources(

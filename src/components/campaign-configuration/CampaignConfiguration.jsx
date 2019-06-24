@@ -7,15 +7,17 @@ import _ from "lodash";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import PageHeader from "../shared/PageHeader";
-import { canManage, canUpdate, canCreate } from "d2-ui-components/auth";
+import { canUpdate, canCreate } from "d2-ui-components/auth";
 import { list } from "../../models/datasets";
 import { formatDateShort } from "../../utils/date";
 import Campaign from "../../models/campaign";
-import DbD2 from "../../models/db-d2";
+import TargetPopulationDialog from "./TargetPopulationDialog";
+import { hasCurrentUserRoles } from "../../utils/permissions";
 
 class CampaignConfiguration extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
+        db: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
         snackbar: PropTypes.object.isRequired,
         loading: PropTypes.object.isRequired,
@@ -23,10 +25,10 @@ class CampaignConfiguration extends React.Component {
 
     constructor(props) {
         super(props);
-        this.db = new DbD2(props.d2);
 
         this.state = {
             dataSetsToDelete: null,
+            targetPopulationDataSet: null,
             objectsTableKey: new Date(),
             filters: {
                 showOnlyUserCampaigns: true,
@@ -79,12 +81,6 @@ class CampaignConfiguration extends React.Component {
                 this.props.history.push(`/campaign-configuration/edit/${dataSet.id}`),
         },
         {
-            name: "share",
-            text: i18n.t("Share"),
-            multiple: true,
-            isActive: (d2, dataSets) => canManage(d2, d2.models.dataSet, dataSets),
-        },
-        {
             name: "delete",
             text: i18n.t("Delete"),
             multiple: true,
@@ -93,7 +89,6 @@ class CampaignConfiguration extends React.Component {
         {
             name: "dataEntry",
             icon: "library_books",
-            // TODO: isActive: (d2, dataSet) => canUpdate(d2, d2.models.dataSet, [dataSet]),
             text: i18n.t("Go to Data Entry"),
             multiple: false,
             onClick: dataSet => this.props.history.push(`/data-entry/${dataSet.id}`),
@@ -105,12 +100,27 @@ class CampaignConfiguration extends React.Component {
             onClick: dataSet => this.props.history.push(`/dashboard/${dataSet.id}`),
         },
         {
-            name: "download",
-            icon: "cloud_download",
-            text: i18n.t("Download data"),
+            name: "target-population",
+            text: i18n.t("Set Target Population"),
+            icon: "people",
             multiple: false,
+            isActive: () =>
+                hasCurrentUserRoles(
+                    this.props.d2,
+                    this.props.config.userRoles,
+                    this.props.config.userRoleNames.targetPopulation
+                ),
+            onClick: dataSet => this.openTargetPopulation(dataSet),
         },
     ];
+
+    openTargetPopulation = dataSet => {
+        this.setState({ targetPopulationDataSet: dataSet });
+    };
+
+    closeTargetPopulation = () => {
+        this.setState({ targetPopulationDataSet: null });
+    };
 
     openDeleteConfirmation = dataSets => {
         this.setState({ dataSetsToDelete: dataSets });
@@ -121,14 +131,14 @@ class CampaignConfiguration extends React.Component {
     };
 
     delete = async () => {
-        const { config, snackbar, loading } = this.props;
+        const { config, db, snackbar, loading } = this.props;
         const { dataSetsToDelete } = this.state;
 
         loading.show(true, i18n.t("Deleting campaign(s). This may take a while, please wait"), {
             count: dataSetsToDelete.length,
         });
         this.closeDeleteConfirmation();
-        const response = await Campaign.delete(config, this.db, dataSetsToDelete);
+        const response = await Campaign.delete(config, db, dataSetsToDelete);
         loading.hide();
 
         if (response.status) {
@@ -211,8 +221,8 @@ class CampaignConfiguration extends React.Component {
     };
 
     render() {
-        const { d2 } = this.props;
-        const { dataSetsToDelete, objectsTableKey } = this.state;
+        const { d2, db, config } = this.props;
+        const { dataSetsToDelete, targetPopulationDataSet, objectsTableKey } = this.state;
         const DeleteConfirmationDialog = this.renderDeleteConfirmationDialog;
 
         return (
@@ -238,6 +248,14 @@ class CampaignConfiguration extends React.Component {
                 </div>
 
                 {dataSetsToDelete && <DeleteConfirmationDialog dataSets={dataSetsToDelete} />}
+                {targetPopulationDataSet && (
+                    <TargetPopulationDialog
+                        db={db}
+                        config={config}
+                        dataSet={targetPopulationDataSet}
+                        onClose={this.closeTargetPopulation}
+                    />
+                )}
             </React.Fragment>
         );
     }

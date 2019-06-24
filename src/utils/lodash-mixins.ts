@@ -35,7 +35,13 @@ function cartesianProduct<T>(arr: T[][]): T[][] {
 function getOrFail(obj: any, key: string | number): any {
     const value = _.get(obj, key);
     if (value === undefined) {
-        throw new Error(`Key ${key} not found: ${_.keys(obj).join(", ")}`);
+        const maxKeys = 20;
+        const keys = _.keys(obj);
+        const availableKeys = [
+            _.take(keys, maxKeys).join(", "),
+            keys.length > maxKeys ? ` ... and ${keys.length} more` : "",
+        ].join("");
+        throw new Error(`Key '${key}' not found: ${availableKeys}`);
     } else {
         return value;
     }
