@@ -286,7 +286,8 @@ export type ModelName =
     | "dataInputPeriods"
     | "organisationUnits"
     | "organisationUnitLevels"
-    | "sections";
+    | "sections"
+    | "userRoles";
 
 export interface MetadataGetModelParams {
     fields?: ModelFields;

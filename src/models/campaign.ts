@@ -401,6 +401,11 @@ export default class Campaign {
 
     /* Target population */
 
+    public async saveTargetPopulation(): Promise<Response<string>> {
+        const campaignDb = new CampaignDb(this);
+        return campaignDb.saveTargetPopulation();
+    }
+
     public get targetPopulation(): Maybe<TargetPopulation> {
         return this.data.targetPopulation;
     }

@@ -6,20 +6,20 @@ import { createStyles, WithStyles, Theme } from "@material-ui/core";
 import { Table, TableRow, TableHead, TableCell, TableBody } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 
-import { memoize } from "../../../utils/memoize";
-import i18n from "../../../locales";
+import { memoize } from "../../utils/memoize";
+import i18n from "../../locales";
 import EditButton from "./EditButton";
-import { getValue, getShowValue } from "./utils";
+import { getShowValue } from "./utils";
 import Value from "./Value";
 import {
     TargetPopulationItem,
     PopulationDistribution,
     TargetPopulation,
-} from "../../../models/TargetPopulation";
-import { OrganisationUnit, OrganisationUnitLevel, Maybe } from "../../../models/db.types";
+} from "../../models/TargetPopulation";
+import { OrganisationUnit, OrganisationUnitLevel, Maybe } from "../../models/db.types";
 import OrgUnitName from "./OrgUnitName";
 import "./PopulationDistribution.css";
-import { NumericField } from "../../shared/NumericField";
+import { NumericField } from "../shared/NumericField";
 
 export interface PopulationDistributionProps extends WithStyles<typeof styles> {
     organisationUnitLevels: OrganisationUnitLevel[];
@@ -73,7 +73,7 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
                 {this.renderOrgUnit(orgUnit)}
 
                 {ageGroups.map((ageGroup, index) => {
-                    const value = ageDistribution ? getValue(ageDistribution[ageGroup]) : undefined;
+                    const value = ageDistribution ? ageDistribution[ageGroup] : undefined;
 
                     return (
                         <TableCell key={ageGroup}>

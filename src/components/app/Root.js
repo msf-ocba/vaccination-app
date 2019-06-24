@@ -11,26 +11,30 @@ import CampaignWizard from "../campaign-wizard/CampaignWizard";
 class Root extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
+        db: PropTypes.object.isRequired,
     };
 
     render() {
-        const { d2, config } = this.props;
+        const { d2, config, db } = this.props;
+        if (!config) return null;
 
         return (
             <Switch>
                 <Route
                     path="/campaign-configuration/new"
-                    render={props => <CampaignWizard d2={d2} config={config} {...props} />}
+                    render={props => <CampaignWizard d2={d2} db={db} config={config} {...props} />}
                 />
 
                 <Route
                     path="/campaign-configuration/edit/:id"
-                    render={props => <CampaignWizard d2={d2} config={config} {...props} />}
+                    render={props => <CampaignWizard d2={d2} db={db} config={config} {...props} />}
                 />
 
                 <Route
                     path="/campaign-configuration"
-                    render={props => <CampaignConfiguration d2={d2} config={config} {...props} />}
+                    render={props => (
+                        <CampaignConfiguration d2={d2} db={db} config={config} {...props} />
+                    )}
                 />
 
                 <Route

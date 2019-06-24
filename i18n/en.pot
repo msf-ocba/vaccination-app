@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-06-18T08:44:12.082Z\n"
-"PO-Revision-Date: 2019-06-18T08:44:12.082Z\n"
+"POT-Creation-Date: 2019-06-19T11:19:52.000Z\n"
+"PO-Revision-Date: 2019-06-19T11:19:52.000Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -53,9 +53,6 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-msgid "Share"
-msgstr ""
-
 msgid "Delete"
 msgstr ""
 
@@ -65,7 +62,7 @@ msgstr ""
 msgid "Go to Dashboard"
 msgstr ""
 
-msgid "Download data"
+msgid "Set Target Population"
 msgstr ""
 
 msgid "Deleting campaign(s). This may take a while, please wait"
@@ -96,6 +93,38 @@ msgid "Create Campaign"
 msgstr ""
 
 msgid "Cannot load campaign"
+msgstr ""
+
+msgid "Target population set"
+msgstr ""
+
+msgid "Error saving target population"
+msgstr ""
+
+msgid "There are unsaved changes, are you sure you want to close the dialog?"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid ""
+"Insert the total population and age distribution (as a percent) for each "
+"health site where the campaign will be implemented. This data will be used "
+"to calculate coverage rates for the campaign. The source of data may be {{- "
+"hyperlink}} or you may have access to local estimates based on population "
+"surveys through the Ministry of Health or other stakeholders that would be "
+"more updated or reliable. You may overwrite any existing data in HMIS, but "
+"please note that any changes you make in this step will only be applied "
+"once you run analytics."
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Saving..."
+msgstr ""
+
+msgid "Save"
 msgstr ""
 
 msgid "General info"
@@ -158,28 +187,6 @@ msgid ""
 "be un-selected."
 msgstr ""
 
-msgid "Target Population"
-msgstr ""
-
-msgid ""
-"Insert the total population and age distribution (as a percent) for each "
-"health site where the campaign will be implemented. This data will be used "
-"to calculate coverage rates for the campaign. The source of data may be {{- "
-"hyperlink}} or you may have access to local estimates based on population "
-"surveys through the Ministry of Health or other stakeholders that would be "
-"more updated or reliable. You may overwrite any existing data in HMIS, but "
-"please note that any changes you make in this step will only be applied "
-"once you run analytics."
-msgstr ""
-
-msgid ""
-"Specify the target population and population distribution by age group "
-"(percent) for each antigen."
-msgstr ""
-
-msgid "Save"
-msgstr ""
-
 msgid ""
 "Setup of your campaign is complete. Click the \"Save\" button to save your "
 "campaign and access tally sheets, data entry or analysis"
@@ -232,10 +239,13 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
+msgid "Missing"
+msgstr ""
+
 msgid "Total population"
 msgstr ""
 
-msgid "Age distribution (%)"
+msgid "Age distribution"
 msgstr ""
 
 msgid "Period dates"
@@ -254,9 +264,6 @@ msgid "Population distribution (%)"
 msgstr ""
 
 msgid "Campaign Population Distribution"
-msgstr ""
-
-msgid "Missing"
 msgstr ""
 
 msgid "Cancel Campaign Creation?"
