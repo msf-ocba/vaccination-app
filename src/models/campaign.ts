@@ -1,3 +1,4 @@
+import { Dashboard } from "./Dashboard";
 import { OrganisationUnit, Maybe, Ref, AttributeValue } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
@@ -17,6 +18,7 @@ export interface Antigen {
     id: string;
     name: string;
     code: string;
+    doses: { id: string; name: string }[];
 }
 
 export interface Data {
@@ -50,6 +52,7 @@ interface DataSetWithAttributes {
 
 interface DashboardWithResources {
     id: string;
+    name: string;
     dashboardItems: {
         id: string;
         chart: Ref;
@@ -195,7 +198,7 @@ export default class Campaign {
             dashboardId,
         };
 
-        return new Campaign(db, config, initialData);
+        return new Campaign(db, config, initialData).withTargetPopulation();
     }
 
     public update(newData: Data) {
@@ -441,6 +444,29 @@ export default class Campaign {
         return this.data.dashboardId;
     }
 
+    public async getDashboard(): Promise<Maybe<Dashboard>> {
+        if (this.dashboardId) {
+            const metadata = await this.db.getMetadata<{ dashboards: Dashboard[] }>({
+                dashboards: { filters: [`id:eq:${this.dashboardId}`] },
+            });
+            return _.first(metadata.dashboards);
+        } else {
+            return undefined;
+        }
+    }
+
+    public async getDashboardOrCreate(): Promise<Maybe<Dashboard>> {
+        const dashboard = await this.getDashboard();
+
+        if (dashboard) {
+            return dashboard;
+        } else {
+            await this.save();
+            const savedCampaign = await this.reload();
+            return savedCampaign ? savedCampaign.getDashboard() : undefined;
+        }
+    }
+
     /* Teams */
 
     public get teams(): Maybe<number> {
@@ -466,6 +492,10 @@ export default class Campaign {
         return campaignDb.save();
     }
 
+    public async reload(): Promise<Maybe<Campaign>> {
+        return this.id ? Campaign.get(this.config, this.db, this.id) : undefined;
+    }
+
     public static async getResources(
         config: MetadataConfig,
         db: DbD2,
@@ -481,6 +511,7 @@ export default class Campaign {
             dashboards: {
                 fields: {
                     id: true,
+                    name: true,
                     dashboardItems: {
                         id: true,
                         chart: { id: true },
@@ -490,6 +521,13 @@ export default class Campaign {
                 },
                 filters: [`id:in:[${dashboardIds.join(",")}]`],
             },
+        });
+
+        const namesFilters = dashboards.map(d => `name:like:${d.name.replace("_DASHBOARD", "")}`);
+        const { categoryOptions: teams } = await db.api.get("/categoryOptions", {
+            fields: ["id,name"],
+            filter: namesFilters,
+            rootJunction: "OR",
         });
 
         const resources: { model: string; id: string }[] = _(dashboards)
@@ -506,7 +544,8 @@ export default class Campaign {
         return _.concat(
             dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
             dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id })),
-            resources
+            resources,
+            teams.map((team: Ref) => ({ model: "categoryOptions", id: team.id }))
         );
     }
 }
