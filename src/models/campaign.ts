@@ -1,3 +1,4 @@
+import { Dashboard } from "./Dashboard";
 import { OrganisationUnit, Maybe, Ref, AttributeValue } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
@@ -17,6 +18,7 @@ export interface Antigen {
     id: string;
     name: string;
     code: string;
+    doses: { id: string; name: string }[];
 }
 
 export interface Data {
@@ -34,7 +36,12 @@ export interface Data {
     dashboardId: Maybe<string>;
 }
 
-function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined) {
+type ValidationErrors = Array<{
+    key: string;
+    namespace?: _.Dictionary<string>;
+}>;
+
+function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined): ValidationErrors {
     return namespace ? [{ key, namespace }] : [{ key }];
 }
 
@@ -55,6 +62,17 @@ interface DashboardWithResources {
 
 export default class Campaign {
     public selectableLevels: number[] = [5];
+
+    validations: _.Dictionary<() => ValidationErrors | Promise<ValidationErrors>> = {
+        name: this.validateName,
+        startDate: this.validateStartDate,
+        endDate: this.validateEndDate,
+        teams: this.validateTeams,
+        organisationUnits: this.validateOrganisationUnits,
+        antigens: this.validateAntigens,
+        targetPopulation: this.validateTargetPopulation,
+        antigensDisaggregation: this.validateAntigensDisaggregation,
+    };
 
     constructor(public db: DbD2, public config: MetadataConfig, private data: Data) {}
 
@@ -179,7 +197,7 @@ export default class Campaign {
             dashboardId,
         };
 
-        return new Campaign(db, config, initialData);
+        return new Campaign(db, config, initialData).withTargetPopulation();
     }
 
     public update(newData: Data) {
@@ -196,40 +214,32 @@ export default class Campaign {
         return db.deleteMany(modelReferencesToDelete);
     }
 
-    public async validate() {
-        const {
-            startDate,
-            endDate,
-            antigens,
-            targetPopulation,
-            antigensDisaggregation,
-            teams,
-        } = this.data;
+    public async validate(
+        validationKeys: Maybe<string[]> = undefined
+    ): Promise<Dictionary<ValidationErrors>> {
+        const obj = _(this.validations)
+            .pickBy((_value, key) => !validationKeys || _(validationKeys).includes(key))
+            .mapValues(fn => (fn ? fn.call(this) : []))
+            .value();
+        const [keys, promises] = _.unzip(_.toPairs(obj));
+        const values = await Promise.all(promises as Promise<ValidationErrors>[]);
+        return _.fromPairs(_.zip(keys, values));
+    }
 
-        const validation = {
-            name: await this.validateName(),
+    validateStartDate(): ValidationErrors {
+        return !this.data.startDate ? getError("cannot_be_blank", { field: "start date" }) : [];
+    }
 
-            startDate: !startDate ? getError("cannot_be_blank", { field: "start date" }) : [],
+    validateEndDate(): ValidationErrors {
+        return !this.data.endDate ? getError("cannot_be_blank", { field: "end date" }) : [];
+    }
 
-            endDate: !endDate ? getError("cannot_be_blank", { field: "end date" }) : [],
-
-            teams: _.compact([
-                !teams ? getError("cannot_be_blank", { field: "teams" })[0] : null,
-                teams && teams <= 0 ? getError("must_be_bigger_than_zero")[0] : null,
-            ]),
-
-            organisationUnits: await this.validateOrganisationUnits(),
-
-            antigens: _(antigens).isEmpty() ? getError("no_antigens_selected") : [],
-
-            targetPopulation: !targetPopulation
-                ? getError("no_target_population_defined")
-                : targetPopulation.validate(),
-
-            antigensDisaggregation: antigensDisaggregation.validate(),
-        };
-
-        return validation;
+    validateTeams(): ValidationErrors {
+        const { teams } = this.data;
+        return _.compact([
+            !teams ? getError("cannot_be_blank", { field: "teams" })[0] : null,
+            teams && teams <= 0 ? getError("must_be_bigger_than_zero")[0] : null,
+        ]);
     }
 
     /* Organisation units */
@@ -303,7 +313,7 @@ export default class Campaign {
         return dataSets.some(ds => ds.id !== id && ds.name.toLowerCase() === nameLowerCase);
     }
 
-    private async validateName() {
+    private async validateName(): Promise<ValidationErrors> {
         const { name } = this.data;
         const trimmedName = name.trim();
 
@@ -367,6 +377,10 @@ export default class Campaign {
         return this.config.antigens;
     }
 
+    validateAntigens(): ValidationErrors {
+        return _(this.data.antigens).isEmpty() ? getError("no_antigens_selected") : [];
+    }
+
     /* Antigens disaggregation */
 
     public get antigensDisaggregation(): AntigensDisaggregation {
@@ -379,6 +393,10 @@ export default class Campaign {
 
     public getEnabledAntigensDisaggregation(): AntigenDisaggregationEnabled {
         return this.antigensDisaggregation.getEnabled();
+    }
+
+    validateAntigensDisaggregation(): ValidationErrors {
+        return this.data.antigensDisaggregation.validate();
     }
 
     /* Target population */
@@ -407,10 +425,40 @@ export default class Campaign {
         });
     }
 
+    validateTargetPopulation(): ValidationErrors {
+        const { targetPopulation } = this.data;
+        return !targetPopulation
+            ? getError("no_target_population_defined")
+            : targetPopulation.validate();
+    }
+
     // Attribute Values
 
     public get dashboardId(): Maybe<string> {
         return this.data.dashboardId;
+    }
+
+    public async getDashboard(): Promise<Maybe<Dashboard>> {
+        if (this.dashboardId) {
+            const metadata = await this.db.getMetadata<{ dashboards: Dashboard[] }>({
+                dashboards: { filters: [`id:eq:${this.dashboardId}`] },
+            });
+            return _.first(metadata.dashboards);
+        } else {
+            return undefined;
+        }
+    }
+
+    public async getDashboardOrCreate(): Promise<Maybe<Dashboard>> {
+        const dashboard = await this.getDashboard();
+
+        if (dashboard) {
+            return dashboard;
+        } else {
+            await this.save();
+            const savedCampaign = await this.reload();
+            return savedCampaign ? savedCampaign.getDashboard() : undefined;
+        }
     }
 
     /* Teams */
@@ -436,6 +484,10 @@ export default class Campaign {
     public async save(): Promise<Response<string>> {
         const campaignDb = new CampaignDb(this);
         return campaignDb.save();
+    }
+
+    public async reload(): Promise<Maybe<Campaign>> {
+        return this.id ? Campaign.get(this.config, this.db, this.id) : undefined;
     }
 
     public static async getResources(

@@ -245,6 +245,9 @@ msgstr ""
 msgid "Antigens"
 msgstr ""
 
+msgid "doses"
+msgstr ""
+
 msgid "Cancel"
 msgstr ""
 

@@ -286,6 +286,9 @@ msgstr "Periodo"
 msgid "Antigens"
 msgstr "Antígenos"
 
+msgid "doses"
+msgstr "dosis"
+
 msgid "Cancel"
 msgstr "Cancelar"
 

@@ -11,29 +11,16 @@ import {
     Ref,
     CategoryOption,
     Attribute,
+    UserRole,
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
 
-export interface BaseConfig {
-    categoryCodeForAntigens: string;
-    categoryCodeForAgeGroup: string;
-    categoryComboCodeForAgeGroup: string;
-    categoryComboCodeForAntigenAgeGroup: string;
-    dataElementGroupCodeForAntigens: string;
-    categoryComboCodeForTeams: string;
-    categoryCodeForTeams: string;
-    attributeCodeForApp: string;
-    attributeCodeForDashboard: string;
-    dataElementCodeForTotalPopulation: string;
-    dataElementCodeForAgeDistribution: string;
-    dataElementCodeForPopulationByAge: string;
-}
-
-const baseConfig: BaseConfig = {
+export const baseConfig = {
     categoryCodeForAntigens: "RVC_ANTIGEN",
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
+    categoryCodeForDoses: "RVC_DOSE",
     categoryComboCodeForAgeGroup: "RVC_AGE_GROUP",
-    categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_RVC_AGE_GROUP",
+    categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_AGE_GROUP",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
@@ -42,9 +29,13 @@ const baseConfig: BaseConfig = {
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
+    userRoleNameForFeedback: "RVC Feedback",
 };
 
+type BaseConfig = typeof baseConfig;
+
 export interface MetadataConfig extends BaseConfig {
+    userRoles: UserRole[];
     attributes: {
         app: Attribute;
         dashboard: Attribute;
@@ -59,6 +50,7 @@ export interface MetadataConfig extends BaseConfig {
         $categoryOptions:
             | { kind: "fromAntigens" }
             | { kind: "fromAgeGroups" }
+            | { kind: "fromDoses" }
             | { kind: "values"; values: string[] };
     }>;
     categoryOptions: CategoryOption[];
@@ -82,6 +74,7 @@ export interface MetadataConfig extends BaseConfig {
         code: string;
         dataElements: { id: string; code: string; optional: boolean; order: number }[];
         ageGroups: Array<string[][]>;
+        doses: Array<{ id: string; name: string }>;
     }>;
 }
 
@@ -95,6 +88,8 @@ function getCategoriesDisaggregation(
             $categoryOptions = { kind: "fromAntigens" };
         } else if (category.code === baseConfig.categoryCodeForAgeGroup) {
             $categoryOptions = { kind: "fromAgeGroups" };
+        } else if (category.code === baseConfig.categoryCodeForDoses) {
+            $categoryOptions = { kind: "fromDoses" };
         } else {
             $categoryOptions = {
                 kind: "values",
@@ -113,8 +108,16 @@ function getCategoriesDisaggregation(
     });
 }
 
-function getCode(parts: string[]): string {
-    return parts.map(part => part.replace(/\s*/g, "").toUpperCase()).join("_");
+export function getCode(parts: string[]): string {
+    const code = parts
+        .map(part =>
+            part
+                .replace(/\s*/g, "")
+                .replace(/^RVC_/, "")
+                .toUpperCase()
+        )
+        .join("_");
+    return "RVC_" + code;
 }
 
 function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
@@ -137,7 +140,7 @@ function getConfigDataElementsDisaggregation(
 
     return dataElementsForAntigens.map(dataElement => {
         const getCategories = (typeString: string): Category[] => {
-            const code = "RVC_DE_" + dataElement.code + "_" + typeString;
+            const code = getCode(["RVC_DE", dataElement.code]) + "_" + typeString;
             const categoryRefs = (catCombosByCode[code] || { categories: [] }).categories;
             return getFromRefs(categoryRefs, categories);
         };
@@ -204,12 +207,23 @@ function getAntigens(
             return [[mainAgeGroup], ...disaggregatedAgeGroups];
         });
 
+        const dosesIds = _(categoryOptionGroupsByCode)
+            .getOrFail(getCode([categoryOption.code, "DOSES"]))
+            .categoryOptions.map(co => co.id);
+        const allDoses = _(categoriesByCode).getOrFail(baseConfig.categoryCodeForDoses)
+            .categoryOptions;
+        const doses = _(allDoses)
+            .map(co => (_(dosesIds).includes(co.id) ? { id: co.id, name: co.displayName } : null))
+            .compact()
+            .value();
+
         return {
             id: categoryOption.id,
             name: categoryOption.displayName,
             code: categoryOption.code,
             dataElements: dataElementSorted,
-            ageGroups: ageGroups,
+            ageGroups,
+            doses,
         };
     });
 
@@ -263,6 +277,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         dataElementGroups: modelParams,
         dataElements: modelParams,
         organisationUnitLevels: {},
+        userRoles: { filters: ["name:startsWith:RVC"] },
     };
 
     const metadata = await db.getMetadata<{
@@ -273,6 +288,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         dataElementGroups: DataElementGroup[];
         dataElements: DataElement[];
         organisationUnitLevels: OrganisationUnitLevel[];
+        userRoles: UserRole[];
     }>(metadataParams);
 
     const metadataConfig = {
@@ -299,6 +315,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
             metadata.categoryOptionGroups
         ),
         population: getPopulationMetadata(metadata.dataElements, metadata.categories),
+        userRoles: metadata.userRoles,
     };
 
     return metadataConfig;
