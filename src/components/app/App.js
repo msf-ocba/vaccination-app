@@ -13,6 +13,9 @@ import muiThemeLegacy from "../../themes/dhis2-legacy.theme";
 import "./App.css";
 import Root from "./Root";
 import Share from "../share/Share";
+import { getCurrentUserRoles } from "../../utils/dhis2";
+import DbD2 from "../../models/db-d2";
+import { getMetadataConfig } from "../../models/config";
 
 const generateClassName = createGenerateClassName({
     dangerouslyUseGlobalCSS: false,
@@ -25,21 +28,34 @@ class App extends Component {
         appConfig: PropTypes.object.isRequired,
     };
 
-    componentDidMount() {
+    state = {
+        config: null,
+    };
+
+    async componentDidMount() {
         const { d2, appConfig } = this.props;
         const appKey = _(this.props.appConfig).get("appKey");
+        const currentUserRoles = getCurrentUserRoles(d2);
+        const config = await getMetadataConfig(new DbD2(d2));
+        const userRoleForFeedback = _(config.userRoles)
+            .keyBy("name")
+            .getOrFail(config.userRoleNameForFeedback);
+        const showFeedbackForCurrentUser = _(currentUserRoles).includes(userRoleForFeedback.id);
 
-        if (appConfig && appConfig.feedback) {
+        if (appConfig && appConfig.feedback && showFeedbackForCurrentUser) {
             const feedbackOptions = {
                 ...appConfig.feedback,
                 i18nPath: "feedback-tool/i18n",
             };
             window.$.feedbackDhis2(d2, appKey, feedbackOptions);
         }
+
+        this.setState({ config });
     }
 
     render() {
         const { d2, appConfig } = this.props;
+        const { config } = this.state;
         const showShareButton = _(appConfig).get("appearance.showShareButton") || false;
         const showHeader = !process.env.REACT_APP_CYPRESS;
 
@@ -53,7 +69,7 @@ class App extends Component {
 
                                 <div id="app" className="content">
                                     <SnackbarProvider>
-                                        <Root d2={d2} />
+                                        {config && <Root d2={d2} config={config} />}
                                     </SnackbarProvider>
                                 </div>
 

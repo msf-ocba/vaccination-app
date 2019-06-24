@@ -18,6 +18,7 @@ export interface Antigen {
     id: string;
     name: string;
     code: string;
+    doses: { id: string; name: string }[];
 }
 
 export interface Data {
