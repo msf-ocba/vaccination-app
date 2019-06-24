@@ -26,6 +26,7 @@ export interface UserRole {
     name: string;
     authorities: string[];
 }
+
 export interface OrganisationUnitPathOnly {
     id: string;
     path: string;

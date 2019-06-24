@@ -99,7 +99,7 @@ export class Teams {
         nameOffset: number = 0
     ): CategoryOptionTeam[] {
         const teamsData: CategoryOptionTeam[] = _.range(1, teams + 1).map(i => {
-            const name = `Team ${nameOffset + i} ${campaignName}`;
+            const name = `Team ${nameOffset + i} - ${campaignName}`;
             const categoryOption = {
                 id: generateUid(),
                 name,
@@ -186,7 +186,7 @@ export async function getTeamsForCampaign(
     });
 
     if (_.isEmpty(categoryOptions)) return [];
-    const expression = `^Team \\d ${campaignName}$`;
+    const expression = `^Team \\d - ${campaignName}$`;
     const matcher = new RegExp(expression);
 
     const teams = categoryOptions.filter(

@@ -1,4 +1,6 @@
 import _ from "lodash";
+import DbD2 from "./db-d2";
+import Campaign from "./campaign";
 
 const fields = [
     "id",
@@ -61,11 +63,11 @@ async function getByAttribute(config, d2) {
     return ids;
 }
 
-export function getDashboardId(dataSet, config) {
-    return _(dataSet.attributeValues || [])
-        .filter(av => av.attribute.code === config.attributeCodeForDashboard)
-        .map(av => av.value)
-        .first();
+export async function getDashboardId(d2, dataSet, config) {
+    const db = new DbD2(d2);
+    const campaign = await Campaign.get(config, db, dataSet.id);
+    const dashboard = campaign ? await campaign.getDashboardOrCreate() : undefined;
+    return dashboard ? dashboard.id : undefined;
 }
 
 export async function getOrganisationUnitsById(id, d2) {
