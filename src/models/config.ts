@@ -12,8 +12,6 @@ import {
     CategoryOption,
     CategoryOptionCombo,
     Attribute,
-    UserRole,
-    CategoryOptionCombo,
     NamedObject,
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
