@@ -11,26 +11,11 @@ import {
     Ref,
     CategoryOption,
     Attribute,
+    UserRole,
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
 
-export interface BaseConfig {
-    categoryCodeForAntigens: string;
-    categoryCodeForAgeGroup: string;
-    categoryCodeForDoses: string;
-    categoryComboCodeForAgeGroup: string;
-    categoryComboCodeForAntigenAgeGroup: string;
-    dataElementGroupCodeForAntigens: string;
-    categoryComboCodeForTeams: string;
-    categoryCodeForTeams: string;
-    attributeCodeForApp: string;
-    attributeCodeForDashboard: string;
-    dataElementCodeForTotalPopulation: string;
-    dataElementCodeForAgeDistribution: string;
-    dataElementCodeForPopulationByAge: string;
-}
-
-const baseConfig: BaseConfig = {
+export const baseConfig = {
     categoryCodeForAntigens: "RVC_ANTIGEN",
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
     categoryCodeForDoses: "RVC_DOSE",
@@ -44,9 +29,13 @@ const baseConfig: BaseConfig = {
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
+    userRoleNameForFeedback: "RVC Feedback",
 };
 
+type BaseConfig = typeof baseConfig;
+
 export interface MetadataConfig extends BaseConfig {
+    userRoles: UserRole[];
     attributes: {
         app: Attribute;
         dashboard: Attribute;
@@ -288,6 +277,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         dataElementGroups: modelParams,
         dataElements: modelParams,
         organisationUnitLevels: {},
+        userRoles: { filters: ["name:startsWith:RVC"] },
     };
 
     const metadata = await db.getMetadata<{
@@ -298,6 +288,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         dataElementGroups: DataElementGroup[];
         dataElements: DataElement[];
         organisationUnitLevels: OrganisationUnitLevel[];
+        userRoles: UserRole[];
     }>(metadataParams);
 
     const metadataConfig = {
@@ -324,6 +315,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
             metadata.categoryOptionGroups
         ),
         population: getPopulationMetadata(metadata.dataElements, metadata.categories),
+        userRoles: metadata.userRoles,
     };
 
     return metadataConfig;
