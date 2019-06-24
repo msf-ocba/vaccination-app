@@ -1,4 +1,4 @@
-import { list, getDashboardId } from "../datasets";
+import { list } from "../datasets";
 import { getD2Stub } from "../../utils/testing";
 import metadataConfig from "./config-mock";
 
@@ -100,27 +100,6 @@ describe("DataSets", () => {
                     filter: [`id:in:[${testIds[0]},${testIds[2]}]`],
                 });
             });
-        });
-    });
-
-    describe("getDashboardId", () => {
-        it("returns ID for related dashboard", () => {
-            const dataSet = {
-                attributeValues: [
-                    { value: "545", attribute: { code: "SOME_CODE" } },
-                    { value: "1234", attribute: { code: "RVC_DASHBOARD_ID" } },
-                ],
-            };
-
-            expect(getDashboardId(dataSet, metadataConfig)).toEqual("1234");
-        });
-
-        it("returns nothing if there is no dashboard related", () => {
-            const dataSet = {
-                attributeValues: [{ value: "1234", attribute: { code: "SOME_OTHER_CODE" } }],
-            };
-
-            expect(getDashboardId(dataSet, metadataConfig)).toBeFalsy();
         });
     });
 });

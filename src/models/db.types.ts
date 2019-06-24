@@ -16,6 +16,11 @@ export interface PaginatedObjects<T> {
     objects: T[];
 }
 
+export interface UserRole {
+    id: string;
+    name: string;
+    authorities: string[];
+}
 export interface OrganisationUnitPathOnly {
     id: string;
     path: string;
