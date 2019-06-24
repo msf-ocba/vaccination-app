@@ -50,7 +50,7 @@ export function translateError(error) {
 export async function getValidationMessages(campaign, validationKeys) {
     if (_(validationKeys).isEmpty()) return [];
 
-    const validationObj = await campaign.validate();
+    const validationObj = await campaign.validate(validationKeys);
 
     return _(validationObj)
         .at(validationKeys)

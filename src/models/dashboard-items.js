@@ -5,10 +5,10 @@ export const dashboardItemsConfig = {
     antigenCategoryCode: "RVC_ANTIGEN",
     tables: {
         vaccines: {
-            elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
+            elements: ["RVC_DOSES_ADMINISTERED"],
             dataType: "DATA_ELEMENT",
             appendCode: "vTable",
-            disaggregatedBy: ["team", "ageGroup"],
+            disaggregatedBy: ["team", "ageGroup", "doses"],
         },
         qsIndicators: {
             elements: [
@@ -69,7 +69,10 @@ function getDisaggregations(itemConfigs, disaggregationMetadata, antigen) {
 
     const teams = c => (c.disaggregatedBy.includes("team") ? disaggregationMetadata.teams() : null);
 
-    return _.compact([teams(itemConfigs), ageGroups(itemConfigs)]);
+    const doses = c =>
+        c.disaggregatedBy.includes("doses") ? disaggregationMetadata.doses(antigen) : null;
+
+    return _.compact([teams(itemConfigs), ageGroups(itemConfigs), doses(itemConfigs)]);
 }
 
 function getCharts(antigen, elements, organisationUnit, itemsMetadata, disaggregationMetadata) {

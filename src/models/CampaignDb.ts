@@ -35,7 +35,11 @@ export default class CampaignDb {
         const { campaign } = this;
         const { db, targetPopulation, config: metadataConfig, teamsMetadata } = campaign;
         const dataSetId = campaign.id || generateUid();
-        const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
+        const {
+            categoryComboCodeForTeams,
+            categoryCodeForTeams,
+            categoryCodeForDoses,
+        } = metadataConfig;
         const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
         const categoryComboIdForTeams = _(metadataConfig.categoryCombos)
             .keyBy("code")
@@ -43,6 +47,10 @@ export default class CampaignDb {
         const teamsCategoryId = _(metadataConfig.categories)
             .keyBy("code")
             .getOrFail(categoryCodeForTeams).id;
+
+        const dosesCategoryId = _(metadataConfig.categories)
+            .keyBy("code")
+            .getOrFail(categoryCodeForDoses).id;
 
         if (!campaign.startDate || !campaign.endDate) {
             return { status: false, error: "Campaign Dates not set" };
@@ -81,6 +89,7 @@ export default class CampaignDb {
             ageGroupCategoryId,
             teamsCategoyId: teamsCategoryId,
             teamIds,
+            dosesCategoryId,
         });
 
         if (!attributeForApp || !dashboardAttribute) {

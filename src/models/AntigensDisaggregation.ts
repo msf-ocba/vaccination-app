@@ -2,7 +2,7 @@ import { DataElement, CategoryCombo, Maybe, Ref } from "./db.types";
 import _, { Dictionary } from "lodash";
 const fp = require("lodash/fp");
 import { AntigenDisaggregation } from "./AntigensDisaggregation";
-import { MetadataConfig } from "./config";
+import { MetadataConfig, getCode } from "./config";
 import { Antigen } from "./campaign";
 import "../utils/lodash-mixins";
 
@@ -10,6 +10,7 @@ export interface AntigenDisaggregation {
     name: string;
     code: string;
     id: string;
+    doses: Array<{ id: string; name: string }>;
     dataElements: Array<{
         name: string;
         code: string;
@@ -22,6 +23,7 @@ export interface AntigenDisaggregation {
             code: string;
             optional: boolean;
             selected: boolean;
+            visible: boolean;
 
             options: Array<{
                 indexSelected: number;
@@ -130,7 +132,7 @@ export class AntigensDisaggregation {
         return new AntigensDisaggregation(this.config, dataUpdated);
     }
 
-    public validate(): Array<{ key: string; namespace: object }> {
+    public validate(): Array<{ key: string; namespace: _.Dictionary<string> }> {
         const errors = _(this.getEnabled())
             .flatMap(antigen => antigen.dataElements)
             .flatMap(dataElement => dataElement.categories)
@@ -148,7 +150,7 @@ export class AntigensDisaggregation {
     static getCategories(
         config: MetadataConfig,
         dataElementConfig: MetadataConfig["dataElementsDisaggregation"][0],
-        ageGroups: MetadataConfig["antigens"][0]["ageGroups"],
+        antigenConfig: MetadataConfig["antigens"][0],
         section: Maybe<SectionForDisaggregation>
     ): AntigenDisaggregationCategoriesData {
         const categoriesByCode = _.keyBy(config.categories, "code");
@@ -156,15 +158,18 @@ export class AntigensDisaggregation {
         return dataElementConfig.categories.map(categoryRef => {
             const optional = categoryRef.optional;
             const category = _(categoriesByCode).getOrFail(categoryRef.code);
+            const isDosesCategory = category.code === config.categoryCodeForDoses;
             const { $categoryOptions, ...categoryAttributes } = _(config.categoriesDisaggregation)
                 .keyBy("code")
                 .getOrFail(categoryRef.code);
 
             let groups: string[][][];
             if ($categoryOptions.kind === "fromAgeGroups") {
-                groups = ageGroups;
+                groups = antigenConfig.ageGroups;
             } else if ($categoryOptions.kind === "fromAntigens") {
                 groups = config.antigens.map(antigen => [[antigen.name]]);
+            } else if ($categoryOptions.kind === "fromDoses") {
+                groups = antigenConfig.doses.map(dose => [[dose.name]]);
             } else {
                 groups = $categoryOptions.values.map(option => [[option]]);
             }
@@ -212,7 +217,13 @@ export class AntigensDisaggregation {
 
             const selected = wasCategorySelected ? true : !optional;
 
-            return { ...categoryAttributes, optional, selected, options };
+            return {
+                ...categoryAttributes,
+                optional,
+                selected,
+                options,
+                visible: !isDosesCategory,
+            };
         });
     }
 
@@ -259,6 +270,7 @@ export class AntigensDisaggregation {
                     code: antigenDisaggregation.code,
                     name: antigenDisaggregation.name,
                     id: antigenDisaggregation.id,
+                    doses: antigenDisaggregation.doses,
                 },
                 dataElements,
             };
@@ -286,7 +298,7 @@ export class AntigensDisaggregation {
             const categoriesDisaggregation = AntigensDisaggregation.getCategories(
                 config,
                 dataElementConfig,
-                antigenConfig.ageGroups,
+                antigenConfig,
                 section
             );
             const selected =
@@ -309,6 +321,7 @@ export class AntigensDisaggregation {
             name: antigenConfig.name,
             code: antigenConfig.code,
             dataElements: dataElementsProcessed,
+            doses: antigenConfig.doses,
         };
 
         return res;
@@ -321,10 +334,10 @@ export class AntigensDisaggregation {
             return dataElements.map(({ code, categories }) => ({
                 antigenCode: antigen.code,
                 dataElementCode: code,
-                categoryComboCode: [
+                categoryComboCode: getCode([
                     this.config.categoryCodeForAntigens,
                     ...categories.map(category => category.code),
-                ].join("_"),
+                ]),
             }));
         });
 

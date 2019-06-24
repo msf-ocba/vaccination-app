@@ -55,7 +55,8 @@ export class Dashboard {
         categoryOptions: CategoryOption[],
         ageGroupCategoryId: string,
         teamsCategoryId: string,
-        teamIds: string[]
+        teamIds: string[],
+        dosesCategoryId: string
     ) {
         const orgUnitsId = _(organisationUnitsPathOnly).map("id");
         const dashboardItems = [dashboardItemsConfig.charts, dashboardItemsConfig.tables];
@@ -121,6 +122,11 @@ export class Dashboard {
             .fromPairs()
             .value();
 
+        const dosesByAntigen = _(antigensDisaggregation)
+            .map(d => [d.antigen.id, d.antigen.doses])
+            .fromPairs()
+            .value();
+
         const dashboardMetadata = {
             antigenCategory: antigenCategory.id,
             dataElements: {
@@ -144,6 +150,10 @@ export class Dashboard {
                     categoryId: ageGroupCategoryId,
                     elements: ageGroupsByAntigen[antigen.id],
                 }),
+                doses: (antigen: Ref) => ({
+                    categoryId: dosesCategoryId,
+                    elements: dosesByAntigen[antigen.id],
+                }),
             },
         };
 
@@ -162,6 +172,7 @@ export class Dashboard {
         ageGroupCategoryId,
         teamsCategoyId,
         teamIds,
+        dosesCategoryId,
     }: {
         dashboardId?: string;
         datasetName: string;
@@ -174,6 +185,7 @@ export class Dashboard {
         ageGroupCategoryId: string;
         teamsCategoyId: string;
         teamIds: string[];
+        dosesCategoryId: string;
     }): Promise<{ dashboard: DashboardData; charts: Array<object>; reportTables: Array<object> }> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
@@ -182,7 +194,8 @@ export class Dashboard {
             categoryOptions,
             ageGroupCategoryId,
             teamsCategoyId,
-            teamIds
+            teamIds,
+            dosesCategoryId
         );
         const dashboardItems = this.createDashboardItems(
             datasetName,

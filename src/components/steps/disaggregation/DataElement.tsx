@@ -41,7 +41,11 @@ const DataElement: SFC<DataElementProps> = props => {
         <div className={classes.categories}>
             <div className={classes.categoriesTitle}>{i18n.t("Disaggregation")}</div>
             {categories.map((category, categoryIdx) => (
-                <div key={category.code} className={classes.categoriesWrapper}>
+                <div
+                    key={category.code}
+                    className={classes.categoriesWrapper}
+                    style={{ display: category.visible ? "" : "none" }}
+                >
                     <div className={classes.categoriesInnerWrapper}>
                         <SimpleCheckbox
                             key={category.code}
