@@ -47,6 +47,7 @@ function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined)
 
 interface DataSetWithAttributes {
     id: string;
+    name: string;
     attributeValues: AttributeValue[];
 }
 
@@ -523,7 +524,7 @@ export default class Campaign {
             },
         });
 
-        const namesFilters = dashboards.map(d => `name:like:${d.name.replace("_DASHBOARD", "")}`);
+        const namesFilters = dataSets.map(d => `name:like$:${d.name}`);
         const { categoryOptions: teams } = await db.api.get("/categoryOptions", {
             fields: ["id,name"],
             filter: namesFilters,
