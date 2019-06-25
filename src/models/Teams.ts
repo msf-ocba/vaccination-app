@@ -170,7 +170,7 @@ export class Teams {
     // Teams must be deleted after all asociated dashboard and dashboard items (favorites) are deleted
     static async deleteTeams(db: DbD2, teams: CategoryOptionTeam[]) {
         const toDelete = teams.map(t => ({ model: "categoryOptions", id: t.id }));
-        return await db.deleteMany(toDelete);
+        return await db.deleteMany(toDelete, ["categoryOptions"]);
     }
 }
 

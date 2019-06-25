@@ -212,7 +212,7 @@ export default class Campaign {
     ): Promise<Response<string>> {
         const modelReferencesToDelete = await this.getResources(config, db, dataSets);
 
-        return db.deleteMany(modelReferencesToDelete);
+        return db.deleteMany(modelReferencesToDelete, ["categoryOptions"]);
     }
 
     public async validate(
