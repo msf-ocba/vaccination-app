@@ -198,7 +198,7 @@ export default class Campaign {
             dashboardId,
         };
 
-        return new Campaign(db, config, initialData).withTargetPopulation();
+        return new Campaign(db, config, initialData);
     }
 
     public update(newData: Data) {

@@ -47,8 +47,15 @@ class TargetPopulationDialog extends React.Component<Props, State> {
         const campaign = await Campaign.get(config, db, dataSet.id);
 
         if (campaign) {
-            const campaignWithTargetPopulation = await campaign.withTargetPopulation();
-            this.setState({ campaign: campaignWithTargetPopulation });
+            try {
+                const campaignWithTargetPopulation = await campaign.withTargetPopulation();
+                this.setState({ campaign: campaignWithTargetPopulation });
+            } catch (err) {
+                snackbar.error(
+                    i18n.t("Cannot get target population") + ": " + (err.message || err)
+                );
+                onClose();
+            }
         } else {
             onClose();
             snackbar.error(i18n.t("Cannot load campaign"));
