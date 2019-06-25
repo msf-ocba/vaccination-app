@@ -154,11 +154,13 @@ class TargetPopulationDialog extends React.Component<Props, State> {
                     </DialogTitle>
 
                     <DialogContent>
-                        {campaign && (
+                        {campaign ? (
                             <React.Fragment>
                                 <Linkify>{description}</Linkify>
                                 <TargetPopulation campaign={campaign} onChange={this.onChange} />
                             </React.Fragment>
+                        ) : (
+                            i18n.t("Loading...")
                         )}
                     </DialogContent>
 
