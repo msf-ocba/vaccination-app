@@ -39,9 +39,12 @@ class SaveStep extends React.Component {
     };
 
     async componentDidMount() {
-        const { campaign } = this.props;
+        const { campaign, snackbar } = this.props;
         const { objects: orgUnits } = await campaign.getOrganisationUnitsWithName();
-        const campaignWithTargetPopulation = await campaign.withTargetPopulation();
+        const campaignWithTargetPopulation = await campaign.withTargetPopulation().catch(err => {
+            snackbar.warning(err.message || err);
+            return campaign;
+        });
         this.setState({ orgUnits, campaign: campaignWithTargetPopulation });
     }
 
@@ -141,23 +144,36 @@ class SaveStep extends React.Component {
     renderOrgUnit = orgUnit => {
         const { targetPopulation } = this.state.campaign;
         const LiEntry = this.renderLiEntry;
-        const byOrgUnit = _.keyBy(
-            targetPopulation.targetPopulationList,
-            item => item.organisationUnit.id
-        );
-        const targetPopOu = _(byOrgUnit).getOrFail(orgUnit.id);
-        const missing = i18n.t("Missing");
-        const totalPopulation = getShowValue(targetPopOu.populationTotal.value) || missing;
-        const populationDistribution = targetPopulation.getFinalDistribution(targetPopOu);
-        const ageDistribution = targetPopulation.ageGroups
-            .map(ag => [ag, " = ", populationDistribution[ag] || missing, " %"].join(""))
-            .join(", ");
+
+        let totalPopulation, ageDistribution;
+        if (targetPopulation) {
+            const byOrgUnit = _.keyBy(
+                targetPopulation.targetPopulationList,
+                item => item.organisationUnit.id
+            );
+            const targetPopOu = _(byOrgUnit).getOrFail(orgUnit.id);
+            const missing = i18n.t("Missing");
+            const populationDistribution = targetPopulation.getFinalDistribution(targetPopOu);
+
+            totalPopulation = getShowValue(targetPopOu.populationTotal.value) || missing;
+            ageDistribution = targetPopulation.ageGroups
+                .map(ag => [ag, " = ", populationDistribution[ag] || missing, " %"].join(""))
+                .join(", ");
+        }
+
+        const unknown = i18n.t("Unknown");
 
         return (
             <LiEntry key={orgUnit.id} label={getFullOrgUnitName(orgUnit)}>
                 <ul>
-                    <LiEntry label={i18n.t("Total population")} value={totalPopulation} />
-                    <LiEntry label={i18n.t("Age distribution")} value={ageDistribution} />
+                    <LiEntry
+                        label={i18n.t("Total population")}
+                        value={totalPopulation || unknown}
+                    />
+                    <LiEntry
+                        label={i18n.t("Age distribution")}
+                        value={ageDistribution || unknown}
+                    />
                 </ul>
             </LiEntry>
         );
