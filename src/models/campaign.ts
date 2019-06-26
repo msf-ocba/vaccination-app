@@ -502,6 +502,8 @@ export default class Campaign {
         db: DbD2,
         dataSets: DataSetWithAttributes[]
     ) {
+        if (_.isEmpty(dataSets)) return [];
+
         const dashboardIds = _(dataSets)
             .flatMap(dataSet => dataSet.attributeValues)
             .filter(attrVal => attrVal.attribute.code === config.attributeCodeForDashboard)
