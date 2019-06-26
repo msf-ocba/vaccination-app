@@ -528,19 +528,12 @@ export default class Campaign {
 
         const campaignNames = dataSets.map(d => d.name);
 
-        const options = _.isEmpty(campaignNames)
-            ? {
-                  fields: ["id,name,categories[id]"],
-                  paging: false,
-              }
-            : {
-                  fields: ["id,name,categories[id]"],
-                  filter: campaignNames.map(cn => `name:like$:${cn}`),
-                  rootJunction: "OR",
-                  paging: false,
-              };
-
-        const { categoryOptions: teams } = await db.api.get("/categoryOptions", options);
+        const { categoryOptions: teams } = await db.api.get("/categoryOptions", {
+            fields: ["id,name,categories[id]"],
+            filter: campaignNames.map(cn => `name:like$:${cn}`),
+            rootJunction: "OR",
+            paging: false,
+        });
 
         const teamsCategoyId = _(config.categories)
             .keyBy("code")
