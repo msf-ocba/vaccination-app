@@ -4,6 +4,7 @@ import Campaign from "./campaign";
 
 const fields = [
     "id",
+    "name",
     "displayName",
     "displayDescription",
     "shortName",

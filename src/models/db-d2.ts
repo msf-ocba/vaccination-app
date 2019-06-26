@@ -355,13 +355,23 @@ export default class DbD2 {
         }
     }
 
-    public async deleteMany(modelReferences: ModelReference[]): Promise<Response<string>> {
+    public async deleteMany(
+        modelReferences: ModelReference[],
+        ignoreErrorsFrom: string[] = []
+    ): Promise<Response<string>> {
         const errors = _.compact(
             await promiseMap(modelReferences, async ({ model, id }) => {
                 const { httpStatus, httpStatusCode, status, message } = await this.api
                     .delete(`/${model}/${id}`)
                     .catch((err: DeleteResponse) => {
-                        if (err.httpStatusCode) {
+                        if (_.includes(ignoreErrorsFrom, model)) {
+                            return {
+                                httpStatus: "OK",
+                                httpStatusCode: 204,
+                                status: "OK",
+                                message: `Deletion of ${model} resources failed but are ignored`,
+                            };
+                        } else if (err.httpStatusCode) {
                             return err;
                         } else {
                             throw err;
