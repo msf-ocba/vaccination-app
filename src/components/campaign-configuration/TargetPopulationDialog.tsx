@@ -12,7 +12,7 @@ import {
 } from "@material-ui/core";
 
 import i18n from "../../locales";
-import { DataSet, Maybe } from "../../models/db.types";
+import { Maybe } from "../../models/db.types";
 import TargetPopulation from "../target-population/TargetPopulation";
 import DbD2 from "../../models/db-d2";
 import Campaign from "../../models/campaign";
@@ -20,7 +20,7 @@ import { MetadataConfig } from "../../models/config";
 import { getValidationMessages } from "../../utils/validations";
 
 interface Props {
-    dataSet: DataSet;
+    dataSet: { id: string; displayName: string };
     config: MetadataConfig;
     onClose: () => void;
     db: DbD2;
@@ -42,8 +42,13 @@ class TargetPopulationDialog extends React.Component<Props, State> {
         confirmClose: false,
     };
 
+    styles = {
+        progress: { marginTop: 10 },
+    };
+
     async componentDidMount() {
         const { dataSet, db, config, onClose, snackbar } = this.props;
+        const campaign = await Campaign.get(config, db, dataSet.id);
 
         try {
             const campaign = await Campaign.get(config, db, dataSet.id);
@@ -128,10 +133,12 @@ class TargetPopulationDialog extends React.Component<Props, State> {
     };
 
     public render() {
+        const { dataSet } = this.props;
         const { campaign, isSaving, confirmClose } = this.state;
         const ConfirmationCloseDialog = this.confirmationCloseDialog;
 
-        const title = i18n.t("Set Target Population") + " - " + (campaign ? campaign.name : "...");
+        const isReady = campaign && !isSaving;
+        const title = [i18n.t("Set Target Population"), dataSet.displayName].join(" - ");
         const description = i18n.t(
             `Insert the total population and age distribution (as a percent) for each health site where the campaign will be implemented. This data will be used to calculate coverage rates for the campaign. The source of data may be {{- hyperlink}} or you may have access to local estimates based on population surveys through the Ministry of Health or other stakeholders that would be more updated or reliable. You may overwrite any existing data in HMIS, but please note that any changes you make in this step will only be applied once you run analytics.`,
             {
@@ -144,14 +151,17 @@ class TargetPopulationDialog extends React.Component<Props, State> {
                 <Dialog fullWidth={true} maxWidth={"xl"} open={true} onClose={this.requestClose}>
                     <DialogTitle>
                         {title}
-                        {isSaving && <LinearProgress />}
+                        {!isReady && <LinearProgress style={this.styles.progress} />}
                     </DialogTitle>
 
                     <DialogContent>
-                        <Linkify>{description}</Linkify>
-
-                        {campaign && (
-                            <TargetPopulation campaign={campaign} onChange={this.onChange} />
+                        {campaign ? (
+                            <React.Fragment>
+                                <Linkify>{description}</Linkify>
+                                <TargetPopulation campaign={campaign} onChange={this.onChange} />
+                            </React.Fragment>
+                        ) : (
+                            i18n.t("Loading...")
                         )}
                     </DialogContent>
 
@@ -160,7 +170,7 @@ class TargetPopulationDialog extends React.Component<Props, State> {
                             {i18n.t("Close")}
                         </Button>
 
-                        <Button onClick={this.save} disabled={isSaving}>
+                        <Button onClick={this.save} disabled={!isReady}>
                             {isSaving ? i18n.t("Saving...") : i18n.t("Save")}
                         </Button>
                     </DialogActions>
