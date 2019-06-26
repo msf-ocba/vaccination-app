@@ -185,16 +185,27 @@ export async function getTeamsForCampaign(
         "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
     });
 
-    if (_.isEmpty(categoryOptions)) return [];
-    const expression = `^Team \\d - ${campaignName}$`;
-    const matcher = new RegExp(expression);
+    return filterTeamsByNames(categoryOptions, [campaignName], teamCategoryId);
+}
 
-    const teams = categoryOptions.filter(
+export function filterTeamsByNames(
+    teams: CategoryOptionTeam[],
+    campaignNames: string[],
+    teamCategoryId: string
+): CategoryOptionTeam[] {
+    if (_.isEmpty(teams)) return [];
+
+    const matchers = campaignNames.map(name => new RegExp(`^Team \\d - ${name}$`));
+
+    const filteredTeams = teams.filter(
         (co: { categories: Array<{ id: string }>; name: string }) => {
             const categoryIds = co.categories.map(c => c.id);
-            return _.includes(categoryIds, teamCategoryId) && matcher.test(co.name);
+            return (
+                _.includes(categoryIds, teamCategoryId) &&
+                matchers.some(matcher => matcher.test(co.name))
+            );
         }
     );
 
-    return teams;
+    return filteredTeams;
 }

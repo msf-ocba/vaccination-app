@@ -371,8 +371,7 @@ export default class DbD2 {
                                 status: "OK",
                                 message: `Deletion of ${model} resources failed but are ignored`,
                             };
-                        }
-                        if (err.httpStatusCode) {
+                        } else if (err.httpStatusCode) {
                             return err;
                         } else {
                             throw err;

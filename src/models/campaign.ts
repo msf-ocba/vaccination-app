@@ -10,7 +10,7 @@ import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
-import { TeamsMetadata, getTeamsForCampaign } from "./Teams";
+import { TeamsMetadata, getTeamsForCampaign, filterTeamsByNames } from "./Teams";
 
 export type TargetPopulationData = TargetPopulationData;
 
@@ -524,12 +524,27 @@ export default class Campaign {
             },
         });
 
-        const namesFilters = dataSets.map(d => `name:like$:${d.name}`);
-        const { categoryOptions: teams } = await db.api.get("/categoryOptions", {
-            fields: ["id,name"],
-            filter: namesFilters,
-            rootJunction: "OR",
-        });
+        const campaignNames = dataSets.map(d => d.name);
+
+        const options = _.isEmpty(campaignNames)
+            ? {
+                  fields: ["id,name,categories[id]"],
+                  paging: false,
+              }
+            : {
+                  fields: ["id,name,categories[id]"],
+                  filter: campaignNames.map(cn => `name:like$:${cn}`),
+                  rootJunction: "OR",
+                  paging: false,
+              };
+
+        const { categoryOptions: teams } = await db.api.get("/categoryOptions", options);
+
+        const teamsCategoyId = _(config.categories)
+            .keyBy("code")
+            .getOrFail(config.categoryComboCodeForTeams).id;
+
+        const filteredTeams = filterTeamsByNames(teams, campaignNames, teamsCategoyId);
 
         const resources: { model: string; id: string }[] = _(dashboards)
             .flatMap(dashboard => dashboard.dashboardItems)
@@ -546,7 +561,7 @@ export default class Campaign {
             dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
             dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id })),
             resources,
-            teams.map((team: Ref) => ({ model: "categoryOptions", id: team.id }))
+            filteredTeams.map((team: Ref) => ({ model: "categoryOptions", id: team.id }))
         );
     }
 }
