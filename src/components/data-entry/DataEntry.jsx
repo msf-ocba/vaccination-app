@@ -8,6 +8,7 @@ import moment from "moment";
 import PageHeader from "../shared/PageHeader";
 import { getOrganisationUnitsById, getDataInputPeriodsById } from "../../models/datasets";
 import { getDhis2Url } from "../../utils/routes";
+import { LinearProgress } from "@material-ui/core";
 
 class DataEntry extends React.Component {
     static propTypes = {
@@ -145,13 +146,15 @@ class DataEntry extends React.Component {
                     onBackClick={this.backCampaignConfiguration}
                 />
                 <div>
-                    {isDataEntryIdValid && (
+                    {isDataEntryIdValid ? (
                         <iframe
                             ref="iframe"
                             title={i18n.t("Data Entry")}
                             src={dataEntryUrl}
                             style={styles.iframe}
                         />
+                    ) : (
+                        <LinearProgress />
                     )}
                 </div>
             </React.Fragment>
