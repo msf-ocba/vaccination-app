@@ -147,6 +147,7 @@ class CampaignConfiguration extends React.Component {
             this.setState({ objectsTableKey: new Date() });
         } else {
             snackbar.error(`${i18n.t("Error deleting campaign(s)")}:\n${response.error}`);
+            this.setState({ objectsTableKey: new Date() });
         }
     };
 

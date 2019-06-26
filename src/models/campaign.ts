@@ -11,6 +11,7 @@ import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
 import { TeamsMetadata, getTeamsForCampaign } from "./Teams";
+import { promiseMap } from "../utils/promises";
 
 export type TargetPopulationData = TargetPopulationData;
 
@@ -212,7 +213,42 @@ export default class Campaign {
     ): Promise<Response<string>> {
         const modelReferencesToDelete = await this.getResources(config, db, dataSets);
 
-        return db.deleteMany(modelReferencesToDelete);
+        // When trying to delete all objects all at once, we get this error from the /metadata API:
+        // "Could not delete due to association with another object: CategoryDimension"
+        // We have to delete objects in this order: 1) Dashboards, 3) Category Options, 2) Everything else
+        const referencesGroups = _(modelReferencesToDelete)
+            .groupBy(({ model }) => {
+                if (model === "dashboards") {
+                    return 1;
+                } else if (model === "categoryOptions") {
+                    return 3;
+                } else {
+                    return 2;
+                }
+            })
+            .toPairs()
+            .sortBy(([order, _group]) => order)
+            .map(([_order, group]) => group)
+            .value();
+
+        const results = await promiseMap(referencesGroups, references => {
+            const metadata = _(references)
+                .groupBy("model")
+                .mapValues(groups => groups.map(group => ({ id: group.id })))
+                .value();
+            return db.postMetadata(metadata, { importStrategy: "DELETE" });
+        });
+
+        const errors = _(results)
+            .map(result => (result.status ? null : result.error))
+            .compact()
+            .value();
+
+        if (_.isEmpty(errors)) {
+            return { status: true };
+        } else {
+            return { status: false, error: errors.join("\n") };
+        }
     }
 
     public async validate(
