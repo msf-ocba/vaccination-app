@@ -106,7 +106,7 @@ export default class Campaign {
         config: MetadataConfig,
         db: DbD2,
         dataSetId: string
-    ): Promise<Maybe<Campaign>> {
+    ): Promise<Campaign> {
         const {
             dataSets: [dataSet],
         } = await db.getMetadata<{
@@ -150,7 +150,7 @@ export default class Campaign {
                 filters: [`id:eq:${dataSetId}`],
             },
         });
-        if (!dataSet) return;
+        if (!dataSet) throw new Error(`Dataset id=${dataSetId} not found`);
 
         const antigensByCode = _.keyBy(config.antigens, "code");
         const antigens = _(dataSet.sections)
@@ -199,7 +199,7 @@ export default class Campaign {
             dashboardId,
         };
 
-        return new Campaign(db, config, initialData).withTargetPopulation();
+        return new Campaign(db, config, initialData);
     }
 
     public update(newData: Data) {

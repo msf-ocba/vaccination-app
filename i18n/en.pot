@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-06-24T14:40:50.871Z\n"
-"PO-Revision-Date: 2019-06-24T14:40:50.871Z\n"
+"POT-Creation-Date: 2019-06-26T18:30:01.012Z\n"
+"PO-Revision-Date: 2019-06-26T18:30:01.012Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -118,6 +118,9 @@ msgid ""
 "once you run analytics."
 msgstr ""
 
+msgid "Loading..."
+msgstr ""
+
 msgid "Close"
 msgstr ""
 
@@ -138,7 +141,7 @@ msgstr ""
 msgid ""
 "Give your campaign a name that will make it easy to recognize in an HMIS "
 "hierarchy. Suggested format is \"RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... "
-"- {CAMPAIGN PERIOD}\". Example -> \"RCV Shabunda - Measles/Cholera - "
+"- {CAMPAIGN PERIOD}\". Example -> \"RVC Shabunda - Measles/Cholera - "
 "Jan-Mar 2019\".\n"
 "\n"
 "                    The start and end date should define the period for "
@@ -230,9 +233,6 @@ msgstr ""
 msgid "Error saving campaign"
 msgstr ""
 
-msgid "Loading..."
-msgstr ""
-
 msgid "[None]"
 msgstr ""
 
@@ -240,6 +240,9 @@ msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
 msgid "Missing"
+msgstr ""
+
+msgid "Unknown"
 msgstr ""
 
 msgid "Total population"

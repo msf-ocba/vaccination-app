@@ -67,7 +67,7 @@ async function getByAttribute(config, d2) {
 export async function getDashboardId(d2, dataSet, config) {
     const db = new DbD2(d2);
     const campaign = await Campaign.get(config, db, dataSet.id);
-    const dashboard = campaign ? await campaign.getDashboardOrCreate() : undefined;
+    const dashboard = await campaign.getDashboardOrCreate();
     return dashboard ? dashboard.id : undefined;
 }
 

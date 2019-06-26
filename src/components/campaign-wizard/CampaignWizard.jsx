@@ -16,6 +16,7 @@ import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionSte
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 import { memoize } from "../../utils/memoize";
 import ExitWizardButton from "../wizard/ExitWizardButton";
+import { LinearProgress } from "@material-ui/core";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
@@ -38,15 +39,14 @@ class CampaignWizard extends React.Component {
     async componentDidMount() {
         const { db, config, match } = this.props;
 
-        const campaign = this.isEdit()
-            ? await Campaign.get(config, db, match.params.id)
-            : Campaign.create(config, db);
-
-        if (!campaign) {
-            this.props.snackbar.error(i18n.t("Cannot load campaign"));
-            this.props.history.push("/campaign-configuration");
-        } else {
+        try {
+            const campaign = this.isEdit()
+                ? await Campaign.get(config, db, match.params.id)
+                : Campaign.create(config, db);
             this.setState({ campaign });
+        } catch (err) {
+            this.props.snackbar.error(i18n.t("Cannot load campaign") + `: ${err.message || err}`);
+            this.props.history.push("/campaign-configuration");
         }
     }
 
@@ -65,7 +65,7 @@ class CampaignWizard extends React.Component {
                     `Choose a name for the campaign and define the period for which data entry will be enabled`
                 ),
                 help: i18n.t(
-                    `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format is "RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... - {CAMPAIGN PERIOD}". Example -> "RCV Shabunda - Measles/Cholera - Jan-Mar 2019".\n
+                    `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format is "RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... - {CAMPAIGN PERIOD}". Example -> "RVC Shabunda - Measles/Cholera - Jan-Mar 2019".\n
                     The start and end date should define the period for which you expect to enter data - i.e .the first and last day of your campaign. If you are not certain of the end date, enter a date a few weeks later than the expected date of completion (refer to your microplan). It is possible to edit the dates at any point.`
                 ),
             },
@@ -143,7 +143,6 @@ class CampaignWizard extends React.Component {
         const { d2, location } = this.props;
         const { campaign, dialogOpen } = this.state;
         window.campaign = campaign;
-        if (!campaign) return null;
 
         const steps = this.getStepsBaseInfo().map(step => ({
             ...step,
@@ -171,15 +170,22 @@ class CampaignWizard extends React.Component {
                     onConfirm={this.handleConfirm}
                     onCancel={this.handleDialogCancel}
                 />
-                <PageHeader title={`${title}: ${campaign.name}`} onBackClick={this.cancelSave} />
-
-                <Wizard
-                    steps={steps}
-                    initialStepKey={initialStepKey}
-                    useSnackFeedback={true}
-                    onStepChangeRequest={this.onStepChangeRequest}
-                    lastClickableStepIndex={lastClickableStepIndex}
+                <PageHeader
+                    title={`${title}: ${campaign ? campaign.name : i18n.t("Loading...")}`}
+                    onBackClick={this.cancelSave}
                 />
+
+                {campaign ? (
+                    <Wizard
+                        steps={steps}
+                        initialStepKey={initialStepKey}
+                        useSnackFeedback={true}
+                        onStepChangeRequest={this.onStepChangeRequest}
+                        lastClickableStepIndex={lastClickableStepIndex}
+                    />
+                ) : (
+                    <LinearProgress />
+                )}
             </React.Fragment>
         );
     }
