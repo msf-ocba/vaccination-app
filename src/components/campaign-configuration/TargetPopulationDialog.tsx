@@ -48,7 +48,6 @@ class TargetPopulationDialog extends React.Component<Props, State> {
 
     async componentDidMount() {
         const { dataSet, db, config, onClose, snackbar } = this.props;
-        const campaign = await Campaign.get(config, db, dataSet.id);
 
         try {
             const campaign = await Campaign.get(config, db, dataSet.id);
