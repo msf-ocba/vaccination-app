@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-06-25T13:03:35.241Z\n"
+"POT-Creation-Date: 2019-06-26T18:30:01.012Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -119,6 +119,9 @@ msgid ""
 "you run analytics."
 msgstr ""
 
+msgid "Loading..."
+msgstr ""
+
 msgid "Close"
 msgstr ""
 
@@ -139,7 +142,7 @@ msgstr ""
 msgid ""
 "Give your campaign a name that will make it easy to recognize in an HMIS "
 "hierarchy. Suggested format is \"RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... "
-"- {CAMPAIGN PERIOD}\". Example -> \"RCV Shabunda - Measles/Cholera - Jan-Mar "
+"- {CAMPAIGN PERIOD}\". Example -> \"RVC Shabunda - Measles/Cholera - Jan-Mar "
 "2019\".\n"
 "\n"
 "                    The start and end date should define the period for "
@@ -229,9 +232,6 @@ msgid "Campaign created"
 msgstr ""
 
 msgid "Error saving campaign"
-msgstr ""
-
-msgid "Loading..."
 msgstr ""
 
 msgid "[None]"
