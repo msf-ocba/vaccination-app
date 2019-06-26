@@ -1,17 +1,20 @@
 import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
-import { withSnackbar } from "d2-ui-components";
+import { withSnackbar, withLoading } from "d2-ui-components";
 import ReactDOM from "react-dom";
 
 import PageHeader from "../shared/PageHeader";
-import { getDatasetById, getDashboardId } from "../../models/datasets";
+import { getDatasetById } from "../../models/datasets";
 import { getDhis2Url } from "../../utils/routes";
+import Campaign from "../../models/campaign";
+import { LinearProgress } from "@material-ui/core";
 
 class Dashboard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
+        db: PropTypes.object.isRequired,
     };
 
     state = {
@@ -88,16 +91,27 @@ class Dashboard extends React.Component {
     };
 
     async getDashboardURL(dataSetId, config, d2) {
-        const { snackbar } = this.props;
+        const { snackbar, loading, db } = this.props;
         const dataSet = dataSetId ? await getDatasetById(dataSetId, d2) : null;
         const msg = i18n.t("Cannot find dashboard associated with the campaign");
 
         if (!dataSetId) {
             return getDhis2Url(d2, `/dhis-web-dashboard/#/`);
         } else if (dataSet) {
-            const dashboardId = await getDashboardId(d2, dataSet, config);
-            if (dashboardId) {
-                return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboardId}`);
+            const campaign = await Campaign.get(config, db, dataSet.id);
+            const existingDashboard = await campaign.getDashboard();
+
+            let dashboard;
+            if (existingDashboard) {
+                dashboard = existingDashboard;
+            } else {
+                loading.show(true, i18n.t("Generating dashboard"));
+                dashboard = await campaign.buildDashboard();
+                loading.hide();
+            }
+
+            if (dashboard) {
+                return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboard.id}`);
             } else {
                 snackbar.error(msg);
             }
@@ -115,13 +129,15 @@ class Dashboard extends React.Component {
                     onBackClick={this.backCampaignConfiguration}
                 />
                 <div>
-                    {iFrameSrc && (
+                    {iFrameSrc ? (
                         <iframe
                             ref="iframe"
                             title={i18n.t("Dashboard")}
                             src={iFrameSrc}
                             style={styles.iframe}
                         />
+                    ) : (
+                        <LinearProgress />
                     )}
                 </div>
             </React.Fragment>
@@ -133,4 +149,4 @@ const styles = {
     iframe: { width: "100%", height: 1000 },
 };
 
-export default withSnackbar(Dashboard);
+export default withLoading(withSnackbar(Dashboard));

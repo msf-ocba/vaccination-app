@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-06-25T13:03:35.241Z\n"
+"POT-Creation-Date: 2019-06-26T08:35:32.326Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -204,7 +204,13 @@ msgstr ""
 msgid "New vaccination campaign"
 msgstr ""
 
+msgid "Loading..."
+msgstr ""
+
 msgid "Cannot find dashboard associated with the campaign"
+msgstr ""
+
+msgid "Generating dashboard"
 msgstr ""
 
 msgid "Cannot find dataset associated with the campaign"
@@ -229,9 +235,6 @@ msgid "Campaign created"
 msgstr ""
 
 msgid "Error saving campaign"
-msgstr ""
-
-msgid "Loading..."
 msgstr ""
 
 msgid "[None]"

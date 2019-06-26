@@ -455,16 +455,10 @@ export default class Campaign {
         }
     }
 
-    public async getDashboardOrCreate(): Promise<Maybe<Dashboard>> {
-        const dashboard = await this.getDashboard();
-
-        if (dashboard) {
-            return dashboard;
-        } else {
-            await this.save();
-            const savedCampaign = await this.reload();
-            return savedCampaign ? savedCampaign.getDashboard() : undefined;
-        }
+    public async buildDashboard(): Promise<Maybe<Dashboard>> {
+        await this.save();
+        const savedCampaign = await this.reload();
+        return savedCampaign ? savedCampaign.getDashboard() : undefined;
     }
 
     /* Teams */

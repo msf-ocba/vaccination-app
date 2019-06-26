@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-06-25T13:03:35.241Z\n"
-"PO-Revision-Date: 2019-06-25T13:03:35.241Z\n"
+"POT-Creation-Date: 2019-06-26T08:35:32.326Z\n"
+"PO-Revision-Date: 2019-06-26T08:35:32.326Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -203,7 +203,13 @@ msgstr ""
 msgid "New vaccination campaign"
 msgstr ""
 
+msgid "Loading..."
+msgstr ""
+
 msgid "Cannot find dashboard associated with the campaign"
+msgstr ""
+
+msgid "Generating dashboard"
 msgstr ""
 
 msgid "Cannot find dataset associated with the campaign"
@@ -228,9 +234,6 @@ msgid "Campaign created"
 msgstr ""
 
 msgid "Error saving campaign"
-msgstr ""
-
-msgid "Loading..."
 msgstr ""
 
 msgid "[None]"

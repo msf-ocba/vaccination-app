@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-06-25T13:03:35.241Z\n"
+"POT-Creation-Date: 2019-06-26T08:35:32.326Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -243,8 +243,14 @@ msgstr "Editar campaña"
 msgid "New vaccination campaign"
 msgstr "Nueva campaña"
 
+msgid "Loading..."
+msgstr "Cargando..."
+
 msgid "Cannot find dashboard associated with the campaign"
 msgstr "No hay ningún tablero asociado a la campaña"
+
+msgid "Generating dashboard"
+msgstr "Generando tablero"
 
 msgid "Cannot find dataset associated with the campaign"
 msgstr "No hay ningún dataset asociado a la campaña"
@@ -269,9 +275,6 @@ msgstr "Campaña creada"
 
 msgid "Error saving campaign"
 msgstr "Se produjo un error al guardar la campaña"
-
-msgid "Loading..."
-msgstr "Cargando..."
 
 msgid "[None]"
 msgstr "[Vacío]"
