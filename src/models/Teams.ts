@@ -100,10 +100,11 @@ export class Teams {
     ): CategoryOptionTeam[] {
         const teamsData: CategoryOptionTeam[] = _.range(1, teams + 1).map(i => {
             const name = `Team ${nameOffset + i} - ${campaignName}`;
+            const id = generateUid();
             const categoryOption = {
-                id: generateUid(),
+                id,
                 name,
-                shortName: name,
+                shortName: `Team ${nameOffset + i}_${id}`,
                 displayName: name,
                 publicAccess: "rw------",
                 displayShortName: name,
