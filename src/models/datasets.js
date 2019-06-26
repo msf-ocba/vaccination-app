@@ -2,6 +2,7 @@ import _ from "lodash";
 
 const fields = [
     "id",
+    "name",
     "displayName",
     "displayDescription",
     "shortName",
