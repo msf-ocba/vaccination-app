@@ -76,6 +76,10 @@ class Dashboard extends React.Component {
             await this.waitforElementToLoad(iframeDocument, ".titlebar-wrapper");
             const editButton = iframeDocument.querySelector(".titlebar-wrapper a[href*='edit']");
             if (editButton) editButton.remove();
+
+            iframeDocument.querySelectorAll("a").forEach(link => {
+                link.setAttribute("target", "_blank");
+            });
         }
     }
 
