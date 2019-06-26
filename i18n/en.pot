@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-06-25T12:53:37.954Z\n"
-"PO-Revision-Date: 2019-06-25T12:53:37.954Z\n"
+"POT-Creation-Date: 2019-06-25T13:03:35.241Z\n"
+"PO-Revision-Date: 2019-06-25T13:03:35.241Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -90,9 +90,6 @@ msgid "Campaigns"
 msgstr ""
 
 msgid "Create Campaign"
-msgstr ""
-
-msgid "Cannot get target population"
 msgstr ""
 
 msgid "Cannot load campaign"
