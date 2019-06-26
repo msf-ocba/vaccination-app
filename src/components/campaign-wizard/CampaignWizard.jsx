@@ -16,6 +16,7 @@ import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionSte
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 import { memoize } from "../../utils/memoize";
 import ExitWizardButton from "../wizard/ExitWizardButton";
+import { LinearProgress } from "@material-ui/core";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
@@ -39,7 +40,7 @@ class CampaignWizard extends React.Component {
         const { db, config, match } = this.props;
 
         const campaign = this.isEdit()
-            ? await Campaign.get(config, db, match.params.id)
+            ? await Campaign.get(config, db, match.params.id).catch(_err => undefined)
             : Campaign.create(config, db);
 
         if (!campaign) {
@@ -143,7 +144,6 @@ class CampaignWizard extends React.Component {
         const { d2, location } = this.props;
         const { campaign, dialogOpen } = this.state;
         window.campaign = campaign;
-        if (!campaign) return null;
 
         const steps = this.getStepsBaseInfo().map(step => ({
             ...step,
@@ -171,15 +171,22 @@ class CampaignWizard extends React.Component {
                     onConfirm={this.handleConfirm}
                     onCancel={this.handleDialogCancel}
                 />
-                <PageHeader title={`${title}: ${campaign.name}`} onBackClick={this.cancelSave} />
-
-                <Wizard
-                    steps={steps}
-                    initialStepKey={initialStepKey}
-                    useSnackFeedback={true}
-                    onStepChangeRequest={this.onStepChangeRequest}
-                    lastClickableStepIndex={lastClickableStepIndex}
+                <PageHeader
+                    title={`${title}: ${campaign ? campaign.name : i18n.t("Loading...")}`}
+                    onBackClick={this.cancelSave}
                 />
+
+                {campaign ? (
+                    <Wizard
+                        steps={steps}
+                        initialStepKey={initialStepKey}
+                        useSnackFeedback={true}
+                        onStepChangeRequest={this.onStepChangeRequest}
+                        lastClickableStepIndex={lastClickableStepIndex}
+                    />
+                ) : (
+                    <LinearProgress />
+                )}
             </React.Fragment>
         );
     }
