@@ -39,15 +39,14 @@ class CampaignWizard extends React.Component {
     async componentDidMount() {
         const { db, config, match } = this.props;
 
-        const campaign = this.isEdit()
-            ? await Campaign.get(config, db, match.params.id).catch(_err => undefined)
-            : Campaign.create(config, db);
-
-        if (!campaign) {
-            this.props.snackbar.error(i18n.t("Cannot load campaign"));
-            this.props.history.push("/campaign-configuration");
-        } else {
+        try {
+            const campaign = this.isEdit()
+                ? await Campaign.get(config, db, match.params.id)
+                : Campaign.create(config, db);
             this.setState({ campaign });
+        } catch (err) {
+            this.props.snackbar.error(i18n.t("Cannot load campaign") + `: ${err.message || err}`);
+            this.props.history.push("/campaign-configuration");
         }
     }
 
