@@ -66,7 +66,7 @@ class AntigenSection extends React.Component<AntigenSectionProps, Disaggregation
                             </TableCell>
                         </TableRow>,
 
-                        dataElement.selected && !_(dataElement.categories).isEmpty() && (
+                        dataElement.selected && _(dataElement.categories).some("visible") && (
                             <TableRow key={dataElementIdx + "-dis"}>
                                 <TableCell colSpan={2}>
                                     <DataElement

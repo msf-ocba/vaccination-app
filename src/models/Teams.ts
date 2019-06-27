@@ -100,10 +100,11 @@ export class Teams {
     ): CategoryOptionTeam[] {
         const teamsData: CategoryOptionTeam[] = _.range(1, teams + 1).map(i => {
             const name = `Team ${nameOffset + i} - ${campaignName}`;
+            const id = generateUid();
             const categoryOption = {
-                id: generateUid(),
+                id,
                 name,
-                shortName: name,
+                shortName: `Team ${nameOffset + i}_${id}`,
                 displayName: name,
                 publicAccess: "rw------",
                 displayShortName: name,
@@ -170,7 +171,7 @@ export class Teams {
     // Teams must be deleted after all asociated dashboard and dashboard items (favorites) are deleted
     static async deleteTeams(db: DbD2, teams: CategoryOptionTeam[]) {
         const toDelete = teams.map(t => ({ model: "categoryOptions", id: t.id }));
-        return await db.deleteMany(toDelete);
+        return await db.deleteMany(toDelete, ["categoryOptions"]);
     }
 }
 
@@ -185,16 +186,27 @@ export async function getTeamsForCampaign(
         "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
     });
 
-    if (_.isEmpty(categoryOptions)) return [];
-    const expression = `^Team \\d - ${campaignName}$`;
-    const matcher = new RegExp(expression);
+    return filterTeamsByNames(categoryOptions, [campaignName], teamCategoryId);
+}
 
-    const teams = categoryOptions.filter(
+export function filterTeamsByNames(
+    teams: CategoryOptionTeam[],
+    campaignNames: string[],
+    teamCategoryId: string
+): CategoryOptionTeam[] {
+    if (_.isEmpty(teams)) return [];
+
+    const matchers = campaignNames.map(name => new RegExp(`^Team \\d - ${name}$`));
+
+    const filteredTeams = teams.filter(
         (co: { categories: Array<{ id: string }>; name: string }) => {
             const categoryIds = co.categories.map(c => c.id);
-            return _.includes(categoryIds, teamCategoryId) && matcher.test(co.name);
+            return (
+                _.includes(categoryIds, teamCategoryId) &&
+                matchers.some(matcher => matcher.test(co.name))
+            );
         }
     );
 
-    return teams;
+    return filteredTeams;
 }

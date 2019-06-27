@@ -66,18 +66,16 @@ class TargetPopulationComponent extends React.Component<
         this.setState({ editPopulation: editPopulation === ouIndex ? undefined : ouIndex });
     });
 
-    onAgeGroupPopulationChange = memoize(
-        (ouIndex: number) => (orgUnitId: string, ageGroup: string, value: number) => {
-            const { campaign, onChange } = this.props;
-            if (!campaign.targetPopulation) return;
-            const ageGroupSelector = { orgUnitId, ageGroup };
+    onAgeGroupPopulationChange = (orgUnitId: string, ageGroup: string, value: number) => {
+        const { campaign, onChange } = this.props;
+        const ageGroupSelector = { orgUnitId, ageGroup };
+        if (!campaign.targetPopulation) return;
 
-            const campaignUpdated = campaign.setTargetPopulation(
-                campaign.targetPopulation.setAgeGroupPopulation(ageGroupSelector, value)
-            );
-            onChange(campaignUpdated);
-        }
-    );
+        const campaignUpdated = campaign.setTargetPopulation(
+            campaign.targetPopulation.setAgeGroupPopulation(ageGroupSelector, value)
+        );
+        onChange(campaignUpdated);
+    };
 
     onAgeGroupPopulationToggle = memoize((ouIndex: number) => (distributionIdx: number) => {
         const { editAgeGroupRow } = this.state;
@@ -130,7 +128,7 @@ class TargetPopulationComponent extends React.Component<
                                         }
                                         targetPopulation={targetPopulation}
                                         targetPopOu={targetPopOu}
-                                        onChange={this.onAgeGroupPopulationChange(ouIndex)}
+                                        onChange={this.onAgeGroupPopulationChange}
                                         onToggle={this.onAgeGroupPopulationToggle(ouIndex)}
                                     />
                                 </CardContent>

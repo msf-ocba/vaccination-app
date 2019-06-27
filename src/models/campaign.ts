@@ -10,7 +10,7 @@ import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
-import { TeamsMetadata, getTeamsForCampaign } from "./Teams";
+import { TeamsMetadata, getTeamsForCampaign, filterTeamsByNames } from "./Teams";
 
 export type TargetPopulationData = TargetPopulationData;
 
@@ -47,6 +47,7 @@ function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined)
 
 interface DataSetWithAttributes {
     id: string;
+    name: string;
     attributeValues: AttributeValue[];
 }
 
@@ -212,7 +213,7 @@ export default class Campaign {
     ): Promise<Response<string>> {
         const modelReferencesToDelete = await this.getResources(config, db, dataSets);
 
-        return db.deleteMany(modelReferencesToDelete);
+        return db.deleteMany(modelReferencesToDelete, ["categoryOptions"]);
     }
 
     public async validate(
@@ -495,6 +496,8 @@ export default class Campaign {
         db: DbD2,
         dataSets: DataSetWithAttributes[]
     ) {
+        if (_.isEmpty(dataSets)) return [];
+
         const dashboardIds = _(dataSets)
             .flatMap(dataSet => dataSet.attributeValues)
             .filter(attrVal => attrVal.attribute.code === config.attributeCodeForDashboard)
@@ -517,12 +520,20 @@ export default class Campaign {
             },
         });
 
-        const namesFilters = dashboards.map(d => `name:like:${d.name.replace("_DASHBOARD", "")}`);
+        const campaignNames = dataSets.map(d => d.name);
+
         const { categoryOptions: teams } = await db.api.get("/categoryOptions", {
-            fields: ["id,name"],
-            filter: namesFilters,
+            fields: ["id,name,categories[id]"],
+            filter: campaignNames.map(cn => `name:like$:${cn}`),
             rootJunction: "OR",
+            paging: false,
         });
+
+        const teamsCategoyId = _(config.categories)
+            .keyBy("code")
+            .getOrFail(config.categoryComboCodeForTeams).id;
+
+        const filteredTeams = filterTeamsByNames(teams, campaignNames, teamsCategoyId);
 
         const resources: { model: string; id: string }[] = _(dashboards)
             .flatMap(dashboard => dashboard.dashboardItems)
@@ -539,7 +550,7 @@ export default class Campaign {
             dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
             dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id })),
             resources,
-            teams.map((team: Ref) => ({ model: "categoryOptions", id: team.id }))
+            filteredTeams.map((team: Ref) => ({ model: "categoryOptions", id: team.id }))
         );
     }
 }
