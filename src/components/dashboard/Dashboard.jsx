@@ -19,6 +19,7 @@ class Dashboard extends React.Component {
 
     state = {
         iFrameSrc: "",
+        isGenerating: false,
     };
 
     async componentDidMount() {
@@ -26,20 +27,28 @@ class Dashboard extends React.Component {
             d2,
             match: { params },
             config,
+            snackbar,
+            loading,
         } = this.props;
         const dataSetId = params.id;
-        const dashboardURL = await this.getDashboardURL(dataSetId, config, d2);
 
-        this.setState({ iFrameSrc: dashboardURL }, () => {
-            const { iFrameSrc } = this.state;
-            if (iFrameSrc) {
-                const iframe = ReactDOM.findDOMNode(this.refs.iframe);
-                iframe.addEventListener(
-                    "load",
-                    this.setDashboardStyling.bind(this, iframe, dataSetId)
-                );
-            }
-        });
+        try {
+            const dashboardURL = await this.getDashboardURL(dataSetId, config, d2);
+            this.setState({ iFrameSrc: dashboardURL }, () => {
+                const { iFrameSrc } = this.state;
+                if (iFrameSrc) {
+                    const iframe = ReactDOM.findDOMNode(this.refs.iframe);
+                    iframe.addEventListener(
+                        "load",
+                        this.setDashboardStyling.bind(this, iframe, dataSetId)
+                    );
+                }
+            });
+        } catch (err) {
+            loading.hide();
+            snackbar.error(err.message || err);
+            this.backCampaignConfiguration();
+        }
     }
 
     waitforElementToLoad(iframeDocument, selector) {
@@ -109,9 +118,16 @@ class Dashboard extends React.Component {
             if (existingDashboard) {
                 dashboard = existingDashboard;
             } else {
-                loading.show(true, i18n.t("Generating dashboard"));
+                loading.show(
+                    true,
+                    i18n.t(
+                        "It loooks like it's the first time you are accessing the dashboard for this campaign. Generating dashboard. This may take up to a couple of minutes"
+                    )
+                );
+                this.setState({ isGenerating: true });
                 dashboard = await campaign.buildDashboard();
                 loading.hide();
+                this.setState({ isGenerating: false });
             }
 
             if (dashboard) {
@@ -125,7 +141,8 @@ class Dashboard extends React.Component {
     }
 
     render() {
-        const { iFrameSrc } = this.state;
+        const { iFrameSrc, isGenerating } = this.state;
+
         return (
             <React.Fragment>
                 <PageHeader
@@ -141,7 +158,7 @@ class Dashboard extends React.Component {
                             style={styles.iframe}
                         />
                     ) : (
-                        <LinearProgress />
+                        !isGenerating && <LinearProgress />
                     )}
                 </div>
             </React.Fragment>
