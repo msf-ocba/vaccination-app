@@ -1,6 +1,4 @@
 import _ from "lodash";
-import DbD2 from "./db-d2";
-import Campaign from "./campaign";
 
 const fields = [
     "id",
@@ -62,13 +60,6 @@ async function getByAttribute(config, d2) {
         )
         .map(el => el.id);
     return ids;
-}
-
-export async function getDashboardId(d2, dataSet, config) {
-    const db = new DbD2(d2);
-    const campaign = await Campaign.get(config, db, dataSet.id);
-    const dashboard = await campaign.getDashboardOrCreate();
-    return dashboard ? dashboard.id : undefined;
 }
 
 export async function getOrganisationUnitsById(id, d2) {

@@ -44,7 +44,7 @@ class Root extends React.Component {
 
                 <Route
                     path="/dashboard/:id?"
-                    render={props => <Dashboard d2={d2} config={config} {...props} />}
+                    render={props => <Dashboard d2={d2} db={db} config={config} {...props} />}
                 />
 
                 <Route render={() => <LandingPage d2={d2} />} />

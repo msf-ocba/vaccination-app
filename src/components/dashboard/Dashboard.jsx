@@ -1,21 +1,25 @@
 import React from "react";
 import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
-import { withSnackbar } from "d2-ui-components";
+import { withSnackbar, withLoading } from "d2-ui-components";
 import ReactDOM from "react-dom";
 
 import PageHeader from "../shared/PageHeader";
-import { getDatasetById, getDashboardId } from "../../models/datasets";
+import { getDatasetById } from "../../models/datasets";
 import { getDhis2Url } from "../../utils/routes";
+import Campaign from "../../models/campaign";
+import { LinearProgress } from "@material-ui/core";
 
 class Dashboard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
+        db: PropTypes.object.isRequired,
     };
 
     state = {
         iFrameSrc: "",
+        isGenerating: false,
     };
 
     async componentDidMount() {
@@ -23,20 +27,28 @@ class Dashboard extends React.Component {
             d2,
             match: { params },
             config,
+            snackbar,
+            loading,
         } = this.props;
         const dataSetId = params.id;
-        const dashboardURL = await this.getDashboardURL(dataSetId, config, d2);
 
-        this.setState({ iFrameSrc: dashboardURL }, () => {
-            const { iFrameSrc } = this.state;
-            if (iFrameSrc) {
-                const iframe = ReactDOM.findDOMNode(this.refs.iframe);
-                iframe.addEventListener(
-                    "load",
-                    this.setDashboardStyling.bind(this, iframe, dataSetId)
-                );
-            }
-        });
+        try {
+            const dashboardURL = await this.getDashboardURL(dataSetId, config, d2);
+            this.setState({ iFrameSrc: dashboardURL }, () => {
+                const { iFrameSrc } = this.state;
+                if (iFrameSrc) {
+                    const iframe = ReactDOM.findDOMNode(this.refs.iframe);
+                    iframe.addEventListener(
+                        "load",
+                        this.setDashboardStyling.bind(this, iframe, dataSetId)
+                    );
+                }
+            });
+        } catch (err) {
+            loading.hide();
+            snackbar.error(err.message || err);
+            this.backCampaignConfiguration();
+        }
     }
 
     waitforElementToLoad(iframeDocument, selector) {
@@ -73,6 +85,10 @@ class Dashboard extends React.Component {
             await this.waitforElementToLoad(iframeDocument, ".titlebar-wrapper");
             const editButton = iframeDocument.querySelector(".titlebar-wrapper a[href*='edit']");
             if (editButton) editButton.remove();
+
+            iframeDocument.querySelectorAll("a").forEach(link => {
+                link.setAttribute("target", "_blank");
+            });
         }
     }
 
@@ -88,16 +104,34 @@ class Dashboard extends React.Component {
     };
 
     async getDashboardURL(dataSetId, config, d2) {
-        const { snackbar } = this.props;
+        const { snackbar, loading, db } = this.props;
         const dataSet = dataSetId ? await getDatasetById(dataSetId, d2) : null;
         const msg = i18n.t("Cannot find dashboard associated with the campaign");
 
         if (!dataSetId) {
             return getDhis2Url(d2, `/dhis-web-dashboard/#/`);
         } else if (dataSet) {
-            const dashboardId = await getDashboardId(d2, dataSet, config);
-            if (dashboardId) {
-                return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboardId}`);
+            const campaign = await Campaign.get(config, db, dataSet.id);
+            const existingDashboard = await campaign.getDashboard();
+
+            let dashboard;
+            if (existingDashboard) {
+                dashboard = existingDashboard;
+            } else {
+                loading.show(
+                    true,
+                    i18n.t(
+                        "It loooks like it's the first time you are accessing the dashboard for this campaign. Generating dashboard. This may take up to a couple of minutes"
+                    )
+                );
+                this.setState({ isGenerating: true });
+                dashboard = await campaign.buildDashboard();
+                loading.hide();
+                this.setState({ isGenerating: false });
+            }
+
+            if (dashboard) {
+                return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboard.id}`);
             } else {
                 snackbar.error(msg);
             }
@@ -107,7 +141,8 @@ class Dashboard extends React.Component {
     }
 
     render() {
-        const { iFrameSrc } = this.state;
+        const { iFrameSrc, isGenerating } = this.state;
+
         return (
             <React.Fragment>
                 <PageHeader
@@ -115,13 +150,15 @@ class Dashboard extends React.Component {
                     onBackClick={this.backCampaignConfiguration}
                 />
                 <div>
-                    {iFrameSrc && (
+                    {iFrameSrc ? (
                         <iframe
                             ref="iframe"
                             title={i18n.t("Dashboard")}
                             src={iFrameSrc}
                             style={styles.iframe}
                         />
+                    ) : (
+                        !isGenerating && <LinearProgress />
                     )}
                 </div>
             </React.Fragment>
@@ -133,4 +170,4 @@ const styles = {
     iframe: { width: "100%", height: 1000 },
 };
 
-export default withSnackbar(Dashboard);
+export default withLoading(withSnackbar(Dashboard));
