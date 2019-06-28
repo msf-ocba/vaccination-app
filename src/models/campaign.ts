@@ -1,10 +1,10 @@
 import { Dashboard } from "./Dashboard";
-import { OrganisationUnit, Maybe, Ref, AttributeValue } from "./db.types";
+import { OrganisationUnit, Maybe, Ref, AttributeValue, MetadataResponse } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
 
 import { PaginatedObjects, OrganisationUnitPathOnly, Response } from "./db.types";
-import DbD2 from "./db-d2";
+import DbD2, { ApiResponse } from "./db-d2";
 import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
@@ -12,6 +12,7 @@ import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
 import { TeamsMetadata, getTeamsForCampaign } from "./Teams";
 import { promiseMap } from "../utils/promises";
+import i18n from "../locales";
 
 export type TargetPopulationData = TargetPopulationData;
 
@@ -210,44 +211,62 @@ export default class Campaign {
         config: MetadataConfig,
         db: DbD2,
         dataSets: DataSetWithAttributes[]
-    ): Promise<Response<string>> {
+    ): Promise<Response<{ level: string; message: string }>> {
         const modelReferencesToDelete = await this.getResources(config, db, dataSets);
 
-        // When trying to delete all objects all at once, we get this error from the /metadata API:
+        // If we try to delete all objects all at once, we get this error from the /metadata endpoint:
         // "Could not delete due to association with another object: CategoryDimension"
-        // We have to delete objects in this order: 1) Dashboards, 3) Category Options, 2) Everything else
+        // It does work, however, if we delete the objects in this order:
+        // 1) Dashboards, 2) Everything else except Category options 3) Category options (teams),
+        const keys = ["dashboards", "other", "teams"];
         const referencesGroups = _(modelReferencesToDelete)
             .groupBy(({ model }) => {
                 if (model === "dashboards") {
-                    return 1;
+                    return "dashboards";
                 } else if (model === "categoryOptions") {
-                    return 3;
+                    return "teams";
                 } else {
-                    return 2;
+                    return "other";
                 }
             })
             .toPairs()
-            .sortBy(([order, _group]) => order)
-            .map(([_order, group]) => group)
+            .sortBy(([key, _group]) => _.indexOf(keys, key))
             .value();
 
-        const results = await promiseMap(referencesGroups, references => {
-            const metadata = _(references)
-                .groupBy("model")
-                .mapValues(groups => groups.map(group => ({ id: group.id })))
-                .value();
-            return db.postMetadata(metadata, { importStrategy: "DELETE" });
-        });
+        const results: Array<[string, ApiResponse<MetadataResponse>]> = await promiseMap(
+            referencesGroups,
+            async ([key, references]) => {
+                const metadata = _(references)
+                    .groupBy("model")
+                    .mapValues(groups => groups.map(group => ({ id: group.id })))
+                    .value();
+                return [key, await db.postMetadata(metadata, { importStrategy: "DELETE" })] as [
+                    string,
+                    ApiResponse<MetadataResponse>
+                ];
+            }
+        );
 
-        const errors = _(results)
-            .map(result => (result.status ? null : result.error))
+        const [keysWithErrors, errors] = _(results)
+            .map(([key, result]) => (result.status ? null : [key, result.error]))
             .compact()
+            .unzip()
             .value();
 
-        if (_.isEmpty(errors)) {
+        if (_.isEmpty(keysWithErrors)) {
             return { status: true };
+        } else if (_.isEqual(keysWithErrors, ["teams"])) {
+            return {
+                status: false,
+                error: {
+                    level: "warning",
+                    message: i18n.t(
+                        "Campaign teams (category options) could not be deleted, probably there are associated data values"
+                    ),
+                },
+            };
         } else {
-            return { status: false, error: errors.join("\n") };
+            return { status: false, error: { level: "error", message: errors.join("\n") } };
         }
     }
 

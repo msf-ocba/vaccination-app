@@ -146,7 +146,12 @@ class CampaignConfiguration extends React.Component {
             snackbar.success(i18n.t("Campaign(s) deleted"));
             this.setState({ objectsTableKey: new Date() });
         } else {
-            snackbar.error(`${i18n.t("Error deleting campaign(s)")}:\n${response.error}`);
+            const { level, message } = response.error;
+            if (level === "warning") {
+                snackbar.warning(message);
+            } else {
+                snackbar.error(`${i18n.t("Error deleting campaign(s)")}:\n${message}`);
+            }
             this.setState({ objectsTableKey: new Date() });
         }
     };
