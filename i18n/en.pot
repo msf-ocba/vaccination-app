@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-06-24T14:40:50.871Z\n"
-"PO-Revision-Date: 2019-06-24T14:40:50.871Z\n"
+"POT-Creation-Date: 2019-06-28T10:13:46.239Z\n"
+"PO-Revision-Date: 2019-06-28T10:13:46.239Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -77,7 +77,11 @@ msgstr ""
 msgid "Only my campaigns"
 msgstr ""
 
-msgid "Are you sure you want to delete those campaign(s) (dataset and dashboards)?"
+msgid ""
+"Are you sure you want to delete those campaign(s) (datasets and "
+"dashboards)? If you proceed, the associated datasets and dashboards will be "
+"removed from this server, but any data already registered will continue in "
+"the system"
 msgstr ""
 
 msgid "Delete campaign(s)"
@@ -116,6 +120,9 @@ msgid ""
 "more updated or reliable. You may overwrite any existing data in HMIS, but "
 "please note that any changes you make in this step will only be applied "
 "once you run analytics."
+msgstr ""
+
+msgid "Loading..."
 msgstr ""
 
 msgid "Close"
@@ -228,9 +235,6 @@ msgid "Campaign created"
 msgstr ""
 
 msgid "Error saving campaign"
-msgstr ""
-
-msgid "Loading..."
 msgstr ""
 
 msgid "[None]"
