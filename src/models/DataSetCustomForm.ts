@@ -34,6 +34,7 @@ function inputTd(dataElementId: string, cocId: string): string {
             name: "entryfield",
             class: "entryfield",
             id: `${dataElementId}-${cocId}-val`,
+            autocomplete: "off",
         })
     );
 }
