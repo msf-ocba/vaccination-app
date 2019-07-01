@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-06-28T10:13:46.239Z\n"
-"PO-Revision-Date: 2019-06-28T10:13:46.239Z\n"
+"POT-Creation-Date: 2019-07-01T08:55:42.716Z\n"
+"PO-Revision-Date: 2019-07-01T08:55:42.716Z\n"
 
 msgid "Campaign Configuration"
 msgstr ""
@@ -311,6 +311,11 @@ msgid "Quality and safety indicators"
 msgstr ""
 
 msgid "General Q&S"
+msgstr ""
+
+msgid ""
+"Campaign teams (category options) could not be deleted, probably there are "
+"associated data values"
 msgstr ""
 
 msgid "Select at least one organisation unit"
