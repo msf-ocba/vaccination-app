@@ -145,7 +145,7 @@ msgstr ""
 msgid ""
 "Give your campaign a name that will make it easy to recognize in an HMIS "
 "hierarchy. Suggested format is \"RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... "
-"- {CAMPAIGN PERIOD}\". Example -> \"RCV Shabunda - Measles/Cholera - "
+"- {CAMPAIGN PERIOD}\". Example -> \"RVC Shabunda - Measles/Cholera - "
 "Jan-Mar 2019\".\n"
 "\n"
 "                    The start and end date should define the period for "
@@ -213,6 +213,11 @@ msgstr ""
 msgid "Cannot find dashboard associated with the campaign"
 msgstr ""
 
+msgid ""
+"It loooks like it's the first time you are accessing the dashboard for this "
+"campaign. Generating dashboard. This may take up to a couple of minutes"
+msgstr ""
+
 msgid "Cannot find dataset associated with the campaign"
 msgstr ""
 
@@ -244,6 +249,9 @@ msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
 msgid "Missing"
+msgstr ""
+
+msgid "Unknown"
 msgstr ""
 
 msgid "Total population"

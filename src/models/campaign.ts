@@ -10,9 +10,9 @@ import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
-import { TeamsMetadata, getTeamsForCampaign } from "./Teams";
 import { promiseMap } from "../utils/promises";
 import i18n from "../locales";
+import { TeamsMetadata, getTeamsForCampaign, filterTeamsByNames } from "./Teams";
 
 export type TargetPopulationData = TargetPopulationData;
 
@@ -49,6 +49,7 @@ function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined)
 
 interface DataSetWithAttributes {
     id: string;
+    name: string;
     attributeValues: AttributeValue[];
 }
 
@@ -107,7 +108,7 @@ export default class Campaign {
         config: MetadataConfig,
         db: DbD2,
         dataSetId: string
-    ): Promise<Maybe<Campaign>> {
+    ): Promise<Campaign> {
         const {
             dataSets: [dataSet],
         } = await db.getMetadata<{
@@ -151,7 +152,7 @@ export default class Campaign {
                 filters: [`id:eq:${dataSetId}`],
             },
         });
-        if (!dataSet) return;
+        if (!dataSet) throw new Error(`Dataset id=${dataSetId} not found`);
 
         const antigensByCode = _.keyBy(config.antigens, "code");
         const antigens = _(dataSet.sections)
@@ -200,7 +201,7 @@ export default class Campaign {
             dashboardId,
         };
 
-        return new Campaign(db, config, initialData).withTargetPopulation();
+        return new Campaign(db, config, initialData);
     }
 
     public update(newData: Data) {
@@ -510,16 +511,10 @@ export default class Campaign {
         }
     }
 
-    public async getDashboardOrCreate(): Promise<Maybe<Dashboard>> {
-        const dashboard = await this.getDashboard();
-
-        if (dashboard) {
-            return dashboard;
-        } else {
-            await this.save();
-            const savedCampaign = await this.reload();
-            return savedCampaign ? savedCampaign.getDashboard() : undefined;
-        }
+    public async buildDashboard(): Promise<Maybe<Dashboard>> {
+        await this.save();
+        const savedCampaign = await this.reload();
+        return savedCampaign ? savedCampaign.getDashboard() : undefined;
     }
 
     /* Teams */
@@ -556,6 +551,8 @@ export default class Campaign {
         db: DbD2,
         dataSets: DataSetWithAttributes[]
     ) {
+        if (_.isEmpty(dataSets)) return [];
+
         const dashboardIds = _(dataSets)
             .flatMap(dataSet => dataSet.attributeValues)
             .filter(attrVal => attrVal.attribute.code === config.attributeCodeForDashboard)
@@ -578,12 +575,20 @@ export default class Campaign {
             },
         });
 
-        const namesFilters = dashboards.map(d => `name:like:${d.name.replace("_DASHBOARD", "")}`);
+        const campaignNames = dataSets.map(d => d.name);
+
         const { categoryOptions: teams } = await db.api.get("/categoryOptions", {
-            fields: ["id,name"],
-            filter: namesFilters,
+            fields: ["id,name,categories[id]"],
+            filter: campaignNames.map(cn => `name:like$:${cn}`),
             rootJunction: "OR",
+            paging: false,
         });
+
+        const teamsCategoyId = _(config.categories)
+            .keyBy("code")
+            .getOrFail(config.categoryComboCodeForTeams).id;
+
+        const filteredTeams = filterTeamsByNames(teams, campaignNames, teamsCategoyId);
 
         const resources: { model: string; id: string }[] = _(dashboards)
             .flatMap(dashboard => dashboard.dashboardItems)
@@ -600,7 +605,7 @@ export default class Campaign {
             dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
             dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id })),
             resources,
-            teams.map((team: Ref) => ({ model: "categoryOptions", id: team.id }))
+            filteredTeams.map((team: Ref) => ({ model: "categoryOptions", id: team.id }))
         );
     }
 }
