@@ -12,6 +12,7 @@ import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements, CocMetadata } from "./AntigensDisaggregation";
 import { Dashboard } from "./Dashboard";
 import { Teams, CategoryOptionTeam } from "./Teams";
+import { getDashboardCode } from "./config";
 
 interface DataSetWithSections {
     sections: Array<{ id: string; name: string; dataSet: { id: string } }>;
@@ -40,7 +41,7 @@ export default class CampaignDb {
             categoryCodeForTeams,
             categoryCodeForDoses,
         } = metadataConfig;
-        const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
+        const { app: attributeForApp } = metadataConfig.attributes;
         const categoryComboIdForTeams = _(metadataConfig.categoryCombos)
             .keyBy("code")
             .getOrFail(categoryComboCodeForTeams).id;
@@ -90,9 +91,10 @@ export default class CampaignDb {
             teamsCategoyId: teamsCategoryId,
             teamIds,
             dosesCategoryId,
+            dashboardCode: getDashboardCode(metadataConfig, dataSetId),
         });
 
-        if (!attributeForApp || !dashboardAttribute) {
+        if (!attributeForApp) {
             return { status: false, error: "Metadata not found: attributes" };
         } else if (!categoryComboIdForTeams) {
             return {
@@ -138,13 +140,7 @@ export default class CampaignDb {
                 expiryDays: 0,
                 formType: "CUSTOM",
                 dataInputPeriods,
-                attributeValues: [
-                    { value: "true", attribute: { id: attributeForApp.id } },
-                    {
-                        value: dashboard.id,
-                        attribute: { id: dashboardAttribute.id, code: dashboardAttribute.code },
-                    },
-                ],
+                attributeValues: [{ value: "true", attribute: { id: attributeForApp.id } }],
                 dataEntryForm: { id: dataEntryForm.id },
                 sections: sections.map(section => ({ id: section.id })),
             };
