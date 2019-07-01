@@ -146,7 +146,13 @@ class CampaignConfiguration extends React.Component {
             snackbar.success(i18n.t("Campaign(s) deleted"));
             this.setState({ objectsTableKey: new Date() });
         } else {
-            snackbar.error(`${i18n.t("Error deleting campaign(s)")}:\n${response.error}`);
+            const { level, message } = response.error;
+            if (level === "warning") {
+                snackbar.warning(message);
+            } else {
+                snackbar.error(`${i18n.t("Error deleting campaign(s)")}:\n${message}`);
+            }
+            this.setState({ objectsTableKey: new Date() });
         }
     };
 
@@ -205,7 +211,9 @@ class CampaignConfiguration extends React.Component {
 
     renderDeleteConfirmationDialog = ({ dataSets }) => {
         const description =
-            i18n.t("Are you sure you want to delete those campaign(s) (dataset and dashboards)?") +
+            i18n.t(
+                "Are you sure you want to delete those campaign(s) (datasets and dashboards)? If you proceed, the associated datasets and dashboards will be removed from this server, but any data already registered will continue in the system"
+            ) +
             "\n\n" +
             dataSets.map(ds => ds.displayName).join("\n");
 
