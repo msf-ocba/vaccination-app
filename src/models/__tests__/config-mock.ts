@@ -7,6 +7,7 @@ const metadataConfig: MetadataConfig = {
     categoryCombos: [],
     categoryOptions: [],
     legendSets: [],
+    indicators: [],
     defaults: {
         categoryOptionCombo: {
             displayName: "default",

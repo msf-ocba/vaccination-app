@@ -35,22 +35,12 @@ export default class CampaignDb {
         const { campaign } = this;
         const { db, config: metadataConfig, teamsMetadata } = campaign;
         const dataSetId = campaign.id || generateUid();
-        const {
-            categoryComboCodeForTeams,
-            categoryCodeForTeams,
-            categoryCodeForDoses,
-        } = metadataConfig;
+        const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
         const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
-        const categoryComboIdForTeams = _(metadataConfig.categoryCombos)
-            .keyBy("code")
-            .getOrFail(categoryComboCodeForTeams).id;
+
         const teamsCategoryId = _(metadataConfig.categories)
             .keyBy("code")
             .getOrFail(categoryCodeForTeams).id;
-
-        const dosesCategoryId = _(metadataConfig.categories)
-            .keyBy("code")
-            .getOrFail(categoryCodeForDoses).id;
 
         if (!campaign.startDate || !campaign.endDate) {
             return { status: false, error: "Campaign Dates not set" };
@@ -72,9 +62,7 @@ export default class CampaignDb {
         const teamsToDelete = _.differenceBy(teamsMetadata.elements, newTeams, "id");
 
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
-        const ageGroupCategoryId = _(metadataConfig.categories)
-            .keyBy("code")
-            .getOrFail(metadataConfig.categoryCodeForAgeGroup).id;
+
         const teamIds: string[] = _.map(newTeams, "id");
         const dashboardGenerator = Dashboard.build(db);
         const { dashboard, charts, reportTables } = await dashboardGenerator.create({
@@ -85,12 +73,13 @@ export default class CampaignDb {
             startDate,
             endDate,
             antigensDisaggregation,
-            categoryOptions: metadataConfig.categoryOptions,
-            ageGroupCategoryId,
-            teamsCategoyId: teamsCategoryId,
             teamIds,
-            dosesCategoryId,
+            metadataConfig,
         });
+
+        const categoryComboIdForTeams = _(metadataConfig.categoryCombos)
+            .keyBy("code")
+            .getOrFail(categoryComboCodeForTeams).id;
 
         if (!attributeForApp || !dashboardAttribute) {
             return { status: false, error: "Metadata not found: attributes" };

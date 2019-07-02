@@ -13,6 +13,7 @@ import {
     CategoryOptionCombo,
     Attribute,
     NamedObject,
+    Indicator,
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
 
@@ -78,6 +79,7 @@ export interface MetadataConfig extends BaseConfig {
         id: string;
         categories: { code: string; optional: boolean }[];
     }>;
+    indicators: Indicator[];
     antigens: Array<{
         id: string;
         name: string;
@@ -294,6 +296,7 @@ interface RawMetadataConfig {
     categoryOptionGroups: CategoryOptionGroup[];
     dataElementGroups: DataElementGroup[];
     dataElements: DataElement[];
+    indicators: Indicator[];
     organisationUnitLevels: OrganisationUnitLevel[];
     userRoles: NamedObject[];
     legendSets: Ref[];
@@ -314,6 +317,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         categoryOptionCombos: { filters: ["name:eq:default"] },
         dataElementGroups: modelParams,
         dataElements: modelParams,
+        indicators: { fields: { id: true, code: true }, filters: [codeFilter] },
         legendSets: { fields: { id: true, code: true }, filters: [codeFilter] },
         organisationUnitLevels: {},
         userRoles: { fields: { id: true, name: true }, filters: [userRolesFilter] },
@@ -348,6 +352,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         population: getPopulationMetadata(metadata.dataElements, metadata.categories),
         userRoles: metadata.userRoles,
         legendSets: metadata.legendSets,
+        indicators: metadata.indicators,
     };
 
     return metadataConfig;

@@ -6,16 +6,12 @@ import {
     itemsMetadataConstructor,
     buildDashboardItems,
 } from "./dashboard-items";
-import {
-    Ref,
-    OrganisationUnitPathOnly,
-    CategoryOption,
-    OrganisationUnitWithName,
-} from "./db.types";
+import { Ref, OrganisationUnitPathOnly, OrganisationUnitWithName } from "./db.types";
 import { Antigen } from "./campaign";
 import { Moment } from "moment";
 import { getDaysRange } from "../utils/date";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
+import { MetadataConfig } from "./config";
 
 type DashboardItem = {
     type: string;
@@ -52,66 +48,34 @@ export class Dashboard {
         antigens: Antigen[],
         organisationUnitsPathOnly: OrganisationUnitPathOnly[],
         antigensDisaggregation: AntigenDisaggregationEnabled,
-        categoryOptions: CategoryOption[],
-        ageGroupCategoryId: string,
-        teamsCategoryId: string,
         teamIds: string[],
-        dosesCategoryId: string
+        metadataConfig: MetadataConfig
     ) {
         const orgUnitsId = _(organisationUnitsPathOnly).map("id");
-        //const dashboardItems = [dashboardItemsConfig.charts, dashboardItemsConfig.tables];
-        const elementsToFetch = dashboardItemsConfig.metadataToFetch;
-        /*
-        const elements = _(dashboardItems)
-            .values()
-            .flatMap(_.values)
-            .groupBy("dataType")
-            .mapValues(objs => _.flatMap(objs, "elements"))
-            .value();
-        */
-        const allDataElementCodes = elementsToFetch.DATA_ELEMENT.join(",");
-        const allIndicatorCodes = elementsToFetch.INDICATOR.join(",");
-        const antigenCodes = antigens.map(an => an.code);
-        const { antigenCategoryCode } = dashboardItemsConfig;
-
-        const {
-            categories,
-            dataElements,
-            indicators,
-            organisationUnits: organisationUnitsWithName,
-        } = await this.db.api.get<{
-            categories?: {
-                id: string;
-                code: string;
-                categoryOptions: { id: string; code: string; name: string }[];
-            }[];
-            dataElements?: { id: string; code: string }[];
-            indicators?: { id: string; code: string }[];
-            categoryOptions?: {
-                id: string;
-                categories: { id: string; code: string }[];
-                organisationUnits: { id: string };
-            }[];
+        const { organisationUnits: organisationUnitsWithName } = await this.db.api.get<{
             organisationUnits?: { id: string; displayName: string; path: string }[];
         }>("/metadata", {
-            "categories:fields": "id,code,categoryOptions[id,code,name]",
-            "categories:filter": `code:in:[${antigenCategoryCode}]`,
-            "dataElements:fields": "id,code",
-            "dataElements:filter": `code:in:[${allDataElementCodes}]`,
-            "indicators:fields": "id,code",
-            "indicators:filter": `code:in:[${allIndicatorCodes}]`,
             "organisationUnits:fields": "id,displayName,path",
             "organisationUnits:filter": `id:in:[${orgUnitsId}]`,
         });
-
-        const categoriesByCode = _(categories).keyBy(category => category.code);
-        const antigenCategory = categoriesByCode.getOrFail(antigenCategoryCode);
-
-        const antigensMeta = _.filter(antigenCategory.categoryOptions, op =>
-            _.includes(antigenCodes, op.code)
+        const antigenCodes = antigens.map(an => an.code);
+        const antigensMeta = _.filter(metadataConfig.antigens, an =>
+            _.includes(antigenCodes, an.code)
         );
 
-        const categoryOptionsByName: _.Dictionary<string> = _(categoryOptions)
+        const elementsToFetch = dashboardItemsConfig.metadataToFetch;
+
+        const allDataElementCodes = elementsToFetch.DATA_ELEMENT.join(",");
+        const dataElements = _.filter(metadataConfig.dataElements, de =>
+            _.includes(allDataElementCodes, de.code)
+        );
+
+        const allIndicatorCodes = elementsToFetch.INDICATOR.join(",");
+        const indicators = _.filter(metadataConfig.indicators, indicator =>
+            _.includes(allIndicatorCodes, indicator.code)
+        );
+
+        const categoryOptionsByName: _.Dictionary<string> = _(metadataConfig.categoryOptions)
             .map(co => [co.displayName, co.id])
             .fromPairs()
             .value();
@@ -129,8 +93,18 @@ export class Dashboard {
             .fromPairs()
             .value();
 
+        const { categories: metadataCategories } = metadataConfig;
+        const categoriesByCode = _(metadataCategories).keyBy("code");
+        const ageGroupCategoryId = categoriesByCode.getOrFail(
+            metadataConfig.categoryCodeForAgeGroup
+        ).id;
+        const antigenCategoryId = categoriesByCode.getOrFail(metadataConfig.categoryCodeForAntigens)
+            .id;
+        const teamsCategoryId = categoriesByCode.getOrFail(metadataConfig.categoryCodeForTeams).id;
+        const dosesCategoryId = categoriesByCode.getOrFail(metadataConfig.categoryCodeForDoses).id;
+
         const dashboardMetadata = {
-            antigenCategory: antigenCategory.id,
+            antigenCategory: antigenCategoryId,
             elementsMetadata: [
                 {
                     type: "DATA_ELEMENT",
@@ -143,17 +117,6 @@ export class Dashboard {
                     key: "indicator",
                 },
             ],
-            /*
-            dataElements: {
-                type: "DATA_ELEMENT",
-                data: dataElements,
-                key: "dataElement",
-            },
-            indicators: {
-                type: "INDICATOR",
-                data: indicators,
-                key: "indicator",
-            },*/
             antigensMeta,
             organisationUnitsWithName,
             disaggregationMetadata: {
@@ -183,11 +146,8 @@ export class Dashboard {
         startDate,
         endDate,
         antigensDisaggregation,
-        categoryOptions,
-        ageGroupCategoryId,
-        teamsCategoyId,
         teamIds,
-        dosesCategoryId,
+        metadataConfig,
     }: {
         dashboardId?: string;
         datasetName: string;
@@ -196,22 +156,17 @@ export class Dashboard {
         startDate: Moment;
         endDate: Moment;
         antigensDisaggregation: AntigenDisaggregationEnabled;
-        categoryOptions: CategoryOption[];
-        ageGroupCategoryId: string;
-        teamsCategoyId: string;
         teamIds: string[];
-        dosesCategoryId: string;
+        metadataConfig: MetadataConfig;
     }): Promise<{ dashboard: DashboardData; charts: Array<object>; reportTables: Array<object> }> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
             organisationUnits,
             antigensDisaggregation,
-            categoryOptions,
-            ageGroupCategoryId,
-            teamsCategoyId,
             teamIds,
-            dosesCategoryId
+            metadataConfig
         );
+
         const dashboardItems = this.createDashboardItems(
             datasetName,
             startDate,
@@ -253,7 +208,7 @@ export class Dashboard {
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
 
-        const { antigenCategoryCode, metadataToFetch, ...itemsConfig } = dashboardItemsConfig;
+        const { metadataToFetch, ...itemsConfig } = dashboardItemsConfig;
         const expectedCharts = _.flatMap(itemsConfig, _.keys);
 
         const keys = ["antigenCategory", "disaggregationMetadata", ...expectedCharts] as Array<

@@ -15,7 +15,6 @@ tables: {
 */
 
 export const dashboardItemsConfig = {
-    antigenCategoryCode: "RVC_ANTIGEN",
     metadataToFetch: {
         INDICATOR: [
             "RVC_ADS_WASTAGE",
@@ -27,51 +26,7 @@ export const dashboardItemsConfig = {
         DATA_ELEMENT: ["RVC_AEB", "RVC_AEFI", "RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
     },
     /*
-    tables: {
-        vaccines: {
-            elements: ["RVC_DOSES_ADMINISTERED"],
-            dataType: "DATA_ELEMENT",
-            appendCode: "vTable",
-            disaggregatedBy: ["team", "ageGroup", "doses"],
-        },
-        qsIndicators: {
-            elements: [
-                "RVC_ADS_USED",
-                "RVC_SYRINGES",
-                "RVC_SAFETY_BOXES",
-                "RVC_NEEDLES",
-                "RVC_AEB",
-                "RVC_AEFI",
-            ],
-            dataType: "DATA_ELEMENT",
-            appendCode: "qsTable",
-            disaggregatedBy: ["team"],
-        },
-        indicators: {
-            elements: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
-            dataType: "INDICATOR",
-            appendCode: "indicatorsTable",
-        },
-        campaignCoverage: {
-            elements: ["RVC_CAMPAIGN_COVERAGE"],
-            dataType: "INDICATOR",
-            appendCode: "campaignCoverageTable",
-        },
-    },
     charts: {
-        utilizationRate: {
-            elements: ["RVC_VACCINE_UTILIZATION"],
-            dataType: "INDICATOR",
-            appendCode: "utilizationRateChart",
-            type: "LINE",
-            disaggregatedBy: ["team"],
-        },
-        indicators: {
-            elements: ["RVC_SAFETY_BOXES", "RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO"],
-            dataType: "INDICATOR",
-            appendCode: "indicatorsChart",
-            type: "COLUMN",
-        },
         campaignCoverage: {
             elements: ["RVC_CAMPAIGN_COVERAGE"],
             dataType: "INDICATOR",
@@ -125,7 +80,7 @@ export const dashboardItemsConfig = {
             appendCode: "adverseEvents",
             disaggregatedBy: [],
             area: false,
-            legend: "ZqMqvbq6oNm",
+            legend: "mSeU2MastzO",
             title: "AEFI and AEB indicators",
         },
     },
@@ -224,13 +179,6 @@ export function buildDashboardItems(
             )
         )
         .value();
-    const tables = _(antigensMeta)
-        .flatMap(antigen =>
-            organisationUnitsMetadata.map(ou =>
-                getTables(antigen, elements, ou, itemsMetadata, disaggregationMetadata)
-            )
-        )
-        .value();
     */
 
     const tables = _(antigensMeta)
@@ -254,7 +202,6 @@ export function buildDashboardItems(
         { general: true }
     );
 
-    //const reportTables = _.flatten(tables).concat(...globalTables);
     const reportTables = [...tables, ...globalTables];
 
     //return { charts: _.flatten(charts), reportTables };
@@ -275,15 +222,9 @@ const dataMapper = (elementsMetadata, filterList) =>
         .value();
 
 export function itemsMetadataConstructor(dashboardItemsMetadata) {
-    const {
-        //dataElements,
-        elementsMetadata,
-        //indicators,
-        antigenCategory,
-        disaggregationMetadata,
-    } = dashboardItemsMetadata;
-    //const { tables, charts, globalTables } = dashboardItemsConfig;
+    const { elementsMetadata, antigenCategory, disaggregationMetadata } = dashboardItemsMetadata;
 
+    //const { tables, charts, globalTables } = dashboardItemsConfig;
     const { globalTables, tables } = dashboardItemsConfig;
     const allTables = { ...tables, ...globalTables };
 
