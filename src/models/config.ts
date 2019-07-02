@@ -26,6 +26,7 @@ export const baseConfig = {
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
+    legendSetsCode: "RVC_LEGEND_ZERO",
     attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     attributeCodeForDashboard: "RVC_DASHBOARD_ID",
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
@@ -84,6 +85,9 @@ export interface MetadataConfig extends BaseConfig {
         dataElements: { id: string; code: string; optional: boolean; order: number }[];
         ageGroups: Array<string[][]>;
         doses: Array<{ id: string; name: string }>;
+    }>;
+    legendSets: Array<{
+        id: string;
     }>;
 }
 
@@ -292,6 +296,7 @@ interface RawMetadataConfig {
     dataElements: DataElement[];
     organisationUnitLevels: OrganisationUnitLevel[];
     userRoles: NamedObject[];
+    legendSets: Ref[];
 }
 
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
@@ -309,6 +314,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         categoryOptionCombos: { filters: ["name:eq:default"] },
         dataElementGroups: modelParams,
         dataElements: modelParams,
+        legendSets: { fields: { id: true, code: true }, filters: [codeFilter] },
         organisationUnitLevels: {},
         userRoles: { fields: { id: true, name: true }, filters: [userRolesFilter] },
     };
@@ -341,6 +347,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         ),
         population: getPopulationMetadata(metadata.dataElements, metadata.categories),
         userRoles: metadata.userRoles,
+        legendSets: metadata.legendSets,
     };
 
     return metadataConfig;
