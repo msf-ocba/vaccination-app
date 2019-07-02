@@ -82,12 +82,30 @@ export const dashboardItemsConfig = {
     tables: {
         qsPerAntigen: {
             elements: ["RVC_DILUTION_SYRINGES_RATIO"],
-            rows: ["ou", "teams"],
-            filterDataBy: ["pe"],
+            rows: ["pe", "teams"],
+            filterDataBy: ["ou"],
             area: false,
             disaggregatedBy: [],
             title: "QS Indicators",
             appendCode: "qsIndicatorsTable",
+        },
+        vaccinesPerArea: {
+            elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED", "RVC_VACCINE_UTILIZATION"],
+            rows: ["ou"],
+            area: true,
+            filterDataBy: ["pe"],
+            appendCode: "vaccinesPerArea",
+            title: "Vaccines Per Area",
+            disaggregatedBy: [],
+        },
+        vaccinesPerDateTeam: {
+            elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED", "RVC_VACCINE_UTILIZATION"],
+            rows: ["pe", "teams"],
+            area: false,
+            filterDataBy: ["ou"],
+            appendCode: "vaccinesPerDateTeam",
+            title: "Vaccines Per Team",
+            disaggregatedBy: [],
         },
     },
     globalTables: {
@@ -159,6 +177,7 @@ function getTables(
     { general = false } = {}
 ) {
     const tables = general ? dashboardItemsConfig.globalTables : dashboardItemsConfig.tables;
+
     return _(tables)
         .map((c, key) => {
             const teamMetadata = disaggregationMetadata.teams();
@@ -237,7 +256,7 @@ export function buildDashboardItems(
 
     //const reportTables = _.flatten(tables).concat(...globalTables);
     const reportTables = [...tables, ...globalTables];
-    console.log(reportTables);
+
     //return { charts: _.flatten(charts), reportTables };
     return { charts: _.flatten([]), reportTables };
 }
