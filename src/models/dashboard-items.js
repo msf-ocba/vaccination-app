@@ -80,7 +80,7 @@ export const dashboardItemsConfig = {
             appendCode: "adverseEvents",
             disaggregatedBy: [],
             area: false,
-            legend: "mSeU2MastzO",
+            legendCode: "RVC_LEGEND_ZERO",
             title: "AEFI and AEB indicators",
         },
     },
@@ -123,14 +123,15 @@ function getCharts(antigen, elements, organisationUnit, itemsMetadata, disaggreg
         .value();
 }
 */
-function getTables(
+function getTables({
     antigen,
     elements,
     organisationUnits,
     itemsMetadata,
     disaggregationMetadata,
-    { general = false } = {}
-) {
+    general = false,
+    legendsMetadata,
+}) {
     const tables = general ? dashboardItemsConfig.globalTables : dashboardItemsConfig.tables;
 
     return _(tables)
@@ -138,6 +139,8 @@ function getTables(
             const teamMetadata = disaggregationMetadata.teams();
             const rows = c.rows.map(row => (row === "teams" ? teamMetadata.categoryId : row));
             const teamRowRawDimension = _.some(c.rows, r => r === "teams") ? teamMetadata : null;
+
+            const legendId = c.legendCode ? legendsMetadata.get(c.legendCode) : null;
             return tableConstructor({
                 id: generateUid(),
                 antigen,
@@ -148,7 +151,7 @@ function getTables(
                 organisationUnits,
                 title: c.title,
                 area: c.area || false,
-                legend: c.legend || null,
+                legendId,
                 teamRowRawDimension,
                 ...itemsMetadata,
                 disaggregations: getDisaggregations(c, disaggregationMetadata, antigen),
@@ -164,7 +167,8 @@ export function buildDashboardItems(
     period,
     antigenCategory,
     disaggregationMetadata,
-    elements
+    elements,
+    legendsMetadata
 ) {
     const itemsMetadata = {
         datasetName,
@@ -183,24 +187,26 @@ export function buildDashboardItems(
 
     const tables = _(antigensMeta)
         .map(antigen =>
-            getTables(
+            getTables({
                 antigen,
                 elements,
-                organisationUnitsMetadata,
+                organisationUnits: organisationUnitsMetadata,
                 itemsMetadata,
-                disaggregationMetadata
-            )
+                disaggregationMetadata,
+                legendsMetadata,
+            })
         )
         .flatten()
         .value();
-    const globalTables = getTables(
-        null,
+    const globalTables = getTables({
+        antigen: null,
         elements,
-        organisationUnitsMetadata,
+        organisationUnits: organisationUnitsMetadata,
         itemsMetadata,
         disaggregationMetadata,
-        { general: true }
-    );
+        legendsMetadata,
+        general: true,
+    });
 
     const reportTables = [...tables, ...globalTables];
 
@@ -439,7 +445,7 @@ const tableConstructor = ({
     filterDataBy,
     area,
     title,
-    legend,
+    legendId,
     teamRowRawDimension = null,
 }) => {
     const { columns, columnDimensions, categoryDimensions } = getDimensions(
@@ -507,7 +513,7 @@ const tableConstructor = ({
         externalAccess: false,
         legendDisplayStrategy: "FIXED",
         colSubTotals: false,
-        legendSet: legend ? { id: legend } : null,
+        legendSet: legendId ? { id: legendId } : null,
         showHierarchy: false,
         rowTotals: false,
         cumulative: false,

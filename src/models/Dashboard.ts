@@ -119,6 +119,12 @@ export class Dashboard {
             ],
             antigensMeta,
             organisationUnitsWithName,
+            legendMetadata: {
+                get: (code: string) =>
+                    _(metadataConfig.legendSets)
+                        .keyBy("code")
+                        .getOrFail(code).id,
+            },
             disaggregationMetadata: {
                 teams: () => ({
                     categoryId: teamsCategoryId,
@@ -195,7 +201,7 @@ export class Dashboard {
         endDate: Moment,
         dashboardItemsMetadata: Dictionary<any>
     ): allDashboardElements {
-        const { organisationUnitsWithName } = dashboardItemsMetadata;
+        const { organisationUnitsWithName, legendMetadata } = dashboardItemsMetadata;
         const organisationUnitsMetadata = organisationUnitsWithName.map(
             (ou: OrganisationUnitWithName) => ({
                 id: ou.id,
@@ -214,7 +220,7 @@ export class Dashboard {
         const keys = ["antigenCategory", "disaggregationMetadata", ...expectedCharts] as Array<
             keyof typeof dashboardItemsElements
         >;
-        const { antigenCategory, disaggregationMetadata, ...elements } = _(keys)
+        const { antigenCategory, disaggregationMetadata, legendsMetadata, ...elements } = _(keys)
             .map(key => [key, _(dashboardItemsElements).getOrFail(key)])
             .fromPairs()
             .value();
@@ -226,7 +232,8 @@ export class Dashboard {
             period,
             antigenCategory,
             disaggregationMetadata,
-            elements
+            elements,
+            legendMetadata
         );
         //const charts = _(dashboardItems).getOrFail("charts");
         const reportTables = _(dashboardItems).getOrFail("reportTables");
