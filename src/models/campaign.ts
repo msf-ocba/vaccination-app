@@ -1,4 +1,3 @@
-import { Dashboard } from "./Dashboard";
 import { OrganisationUnit, Maybe, Ref } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
@@ -6,7 +5,7 @@ import moment from "moment";
 import { PaginatedObjects, OrganisationUnitPathOnly, Response } from "./db.types";
 import DbD2 from "./db-d2";
 import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
-import { MetadataConfig, getDashboardCode } from "./config";
+import { MetadataConfig, getDashboardCode, getByIndex } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
@@ -167,18 +166,12 @@ export default class Campaign {
             period ? moment(period).toDate() : null
         );
 
-        const organisationUnitIds = dataSet.organisationUnits.map(ou => ou.id);
-
-        const teamsCategoyId = _(config.categories)
-            .keyBy("code")
-            .getOrFail(config.categoryComboCodeForTeams).id;
-
-        const teamsMetadata = await getTeamsForCampaign(
-            db,
-            organisationUnitIds,
-            teamsCategoyId,
-            dataSet.name
-        );
+        const { categoryComboCodeForTeams } = config;
+        const { name, sections } = dataSet;
+        const ouIds = dataSet.organisationUnits.map(ou => ou.id);
+        const teamsCategoyId = getByIndex(config.categories, "code", categoryComboCodeForTeams).id;
+        const teamsMetadata = await getTeamsForCampaign(db, ouIds, teamsCategoyId, name);
+        const antigensDisaggregation = AntigensDisaggregation.build(config, antigens, sections);
 
         const initialData = {
             id: dataSet.id,
@@ -188,16 +181,10 @@ export default class Campaign {
             startDate,
             endDate,
             antigens: antigens,
-            antigensDisaggregation: AntigensDisaggregation.build(
-                config,
-                antigens,
-                dataSet.sections
-            ),
+            antigensDisaggregation,
             targetPopulation: undefined,
             teams: _.size(teamsMetadata),
-            teamsMetadata: {
-                elements: teamsMetadata,
-            },
+            teamsMetadata: { elements: teamsMetadata },
             dashboardId: dashboard ? dashboard.id : undefined,
         };
 
@@ -441,27 +428,14 @@ export default class Campaign {
             : targetPopulation.validate();
     }
 
-    // Attribute Values
+    /* Dashboard */
 
     public get dashboardId(): Maybe<string> {
         return this.data.dashboardId;
     }
 
-    public async getDashboard(): Promise<Maybe<Dashboard>> {
-        if (this.dashboardId) {
-            const metadata = await this.db.getMetadata<{ dashboards: Dashboard[] }>({
-                dashboards: { filters: [`id:eq:${this.dashboardId}`] },
-            });
-            return _.first(metadata.dashboards);
-        } else {
-            return undefined;
-        }
-    }
-
-    public async buildDashboard(): Promise<Maybe<Dashboard>> {
-        await this.save();
-        const savedCampaign = await this.reload();
-        return savedCampaign ? savedCampaign.getDashboard() : undefined;
+    public async createDashboard(): Promise<Maybe<string>> {
+        return new CampaignDb(this).createDashboard();
     }
 
     /* Teams */
@@ -527,9 +501,8 @@ export default class Campaign {
             paging: false,
         });
 
-        const teamsCategoyId = _(config.categories)
-            .keyBy("code")
-            .getOrFail(config.categoryComboCodeForTeams).id;
+        const { categories, categoryComboCodeForTeams } = config;
+        const teamsCategoyId = getByIndex(categories, "code", categoryComboCodeForTeams).id;
 
         const filteredTeams = filterTeamsByNames(teams, campaignNames, teamsCategoyId);
 

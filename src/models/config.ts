@@ -131,6 +131,12 @@ export function getDashboardCode(config: MetadataConfig, dataSetId: string): str
     return config.dataSetDashboardCodePrefix + "_" + dataSetId;
 }
 
+export function getByIndex<T, K extends keyof T>(objects: T[], key: K, value: T[K]): T {
+    return _(objects)
+        .keyBy(key)
+        .getOrFail(value as any) as T;
+}
+
 function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
     const objectsById = _.keyBy(objects, "id");
     return refs.map(ref => _(objectsById).getOrFail(ref.id));

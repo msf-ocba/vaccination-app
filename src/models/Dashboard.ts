@@ -42,6 +42,12 @@ type allDashboardElements = {
     items: Array<ChartItem | ReportTableItem>;
 };
 
+export type DashboardMetadata = {
+    dashboards: DashboardData[];
+    charts: object[];
+    reportTables: object[];
+};
+
 export class Dashboard {
     constructor(private db: DbD2) {}
 
@@ -189,7 +195,7 @@ export class Dashboard {
         teamIds: string[];
         dosesCategoryId: string;
         dashboardCode: string;
-    }): Promise<{ dashboard: DashboardData; charts: Array<object>; reportTables: Array<object> }> {
+    }): Promise<DashboardMetadata> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
             organisationUnits,
@@ -220,7 +226,7 @@ export class Dashboard {
             dashboardItems: items,
         };
 
-        return { dashboard, charts, reportTables };
+        return { dashboards: [dashboard], charts, reportTables };
     }
 
     createDashboardItems(
