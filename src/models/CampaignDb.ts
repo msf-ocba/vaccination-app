@@ -126,7 +126,7 @@ export default class CampaignDb {
                 id: dataSetId,
                 name: campaign.name,
                 description: campaign.description,
-                publicAccess: "r-r-----", // Metadata can view-only, Data can view-only
+                publicAccess: "rwrw----", // Open until sharing implemented
                 periodType: "Daily",
                 categoryCombo: { id: categoryComboIdForTeams },
                 dataElementDecoration: true,
