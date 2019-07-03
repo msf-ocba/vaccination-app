@@ -4,7 +4,7 @@ import _, { Dictionary } from "lodash";
 import moment from "moment";
 
 import { PaginatedObjects, OrganisationUnitPathOnly, Response } from "./db.types";
-import DbD2, { ApiResponse } from "./db-d2";
+import DbD2, { ApiResponse, toStatusResponse } from "./db-d2";
 import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
@@ -241,10 +241,8 @@ export default class Campaign {
                     .groupBy("model")
                     .mapValues(groups => groups.map(group => ({ id: group.id })))
                     .value();
-                return [key, await db.postMetadata(metadata, { importStrategy: "DELETE" })] as [
-                    string,
-                    ApiResponse<MetadataResponse>
-                ];
+                const response = await db.postMetadata(metadata, { importStrategy: "DELETE" });
+                return [key, toStatusResponse(response)] as [string, ApiResponse<MetadataResponse>];
             }
         );
 
