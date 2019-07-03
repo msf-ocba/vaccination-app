@@ -10,8 +10,9 @@ import { Maybe, MetadataResponse, DataEntryForm, Section } from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements, CocMetadata } from "./AntigensDisaggregation";
-import { Dashboard } from "./Dashboard";
+import { Dashboard, DashboardMetadata } from "./Dashboard";
 import { Teams, CategoryOptionTeam } from "./Teams";
+import { getDashboardCode, getByIndex } from "./config";
 
 interface DataSetWithSections {
     sections: Array<{ id: string; name: string; dataSet: { id: string } }>;
@@ -29,28 +30,48 @@ interface PostSaveMetadata {
 }
 
 export default class CampaignDb {
-    constructor(public campaign: Campaign) {}
+    ageGroupCategoryId: string;
+    teamsCategoryId: string;
+    dosesCategoryId: string;
+    catComboIdForTeams: string;
+
+    constructor(public campaign: Campaign) {
+        const { categories, categoryCombos, categoryCodeForAgeGroup } = campaign.config;
+        const { categoryCodeForTeams, categoryCodeForDoses } = campaign.config;
+        const { categoryComboCodeForTeams } = campaign.config;
+        const categoriesByCode = _(categories).keyBy("code");
+
+        this.ageGroupCategoryId = categoriesByCode.getOrFail(categoryCodeForAgeGroup).id;
+        this.teamsCategoryId = categoriesByCode.getOrFail(categoryCodeForTeams).id;
+        this.dosesCategoryId = categoriesByCode.getOrFail(categoryCodeForDoses).id;
+        this.catComboIdForTeams = getByIndex(categoryCombos, "code", categoryComboCodeForTeams).id;
+    }
+
+    public async createDashboard(): Promise<string> {
+        if (!this.campaign.id) throw new Error("Cannot create dashboard for unpersisted campaign");
+        const dashboardMetadata = await this.getDashboardMetadata(this.campaign.id);
+        const metadata: PostSaveMetadata = {
+            ...dashboardMetadata,
+            dataSets: [],
+            dataEntryForms: [],
+            sections: [],
+            categoryOptions: [],
+        };
+        const response = await this.postSave(metadata, []);
+        const dashboard = dashboardMetadata.dashboards[0];
+
+        if (!response.status || !dashboard || !dashboard.id) {
+            throw new Error("Error creating dashboard");
+        } else {
+            return dashboard.id;
+        }
+    }
 
     public async save(): Promise<Response<string>> {
         const { campaign } = this;
         const { db, config: metadataConfig, teamsMetadata } = campaign;
         const dataSetId = campaign.id || generateUid();
-        const {
-            categoryComboCodeForTeams,
-            categoryCodeForTeams,
-            categoryCodeForDoses,
-        } = metadataConfig;
-        const { app: attributeForApp, dashboard: dashboardAttribute } = metadataConfig.attributes;
-        const categoryComboIdForTeams = _(metadataConfig.categoryCombos)
-            .keyBy("code")
-            .getOrFail(categoryComboCodeForTeams).id;
-        const teamsCategoryId = _(metadataConfig.categories)
-            .keyBy("code")
-            .getOrFail(categoryCodeForTeams).id;
-
-        const dosesCategoryId = _(metadataConfig.categories)
-            .keyBy("code")
-            .getOrFail(categoryCodeForDoses).id;
+        const { app: attributeForApp } = metadataConfig.attributes;
 
         if (!campaign.startDate || !campaign.endDate) {
             return { status: false, error: "Campaign Dates not set" };
@@ -63,7 +84,7 @@ export default class CampaignDb {
             teams: campaign.teams || 0,
             name: campaign.name,
             organisationUnits: campaign.organisationUnits,
-            teamsCategoyId: teamsCategoryId,
+            teamsCategoyId: this.teamsCategoryId,
             startDate,
             endDate,
             isEdit: campaign.isEdit(),
@@ -71,97 +92,59 @@ export default class CampaignDb {
 
         const teamsToDelete = _.differenceBy(teamsMetadata.elements, newTeams, "id");
 
-        const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
-        const ageGroupCategoryId = _(metadataConfig.categories)
-            .keyBy("code")
-            .getOrFail(metadataConfig.categoryCodeForAgeGroup).id;
-        const teamIds: string[] = _.map(newTeams, "id");
-        const dashboardGenerator = Dashboard.build(db);
-        const { dashboard, charts, reportTables } = await dashboardGenerator.create({
-            dashboardId: campaign.dashboardId,
-            datasetName: campaign.name,
-            organisationUnits: campaign.organisationUnits,
-            antigens: campaign.antigens,
-            startDate,
-            endDate,
-            antigensDisaggregation,
-            categoryOptions: metadataConfig.categoryOptions,
-            ageGroupCategoryId,
-            teamsCategoyId: teamsCategoryId,
-            teamIds,
-            dosesCategoryId,
-        });
+        const disaggregationData = campaign.getEnabledAntigensDisaggregation();
+        const dataElements = getDataElements(metadataConfig, disaggregationData);
 
-        if (!attributeForApp || !dashboardAttribute) {
-            return { status: false, error: "Metadata not found: attributes" };
-        } else if (!categoryComboIdForTeams) {
-            return {
-                status: false,
-                error: `Metadata not found: categoryCombo.code=${categoryComboCodeForTeams}`,
-            };
-        } else if (!dashboard) {
-            return { status: false, error: "Error creating dashboard" };
-        } else {
-            const disaggregationData = campaign.getEnabledAntigensDisaggregation();
-            const dataElements = getDataElements(metadataConfig, disaggregationData);
+        const dataSetElements = dataElements.map(dataElement => ({
+            dataSet: { id: dataSetId },
+            dataElement: { id: dataElement.id },
+            categoryCombo: { id: dataElement.categoryCombo.id },
+        }));
 
-            const dataSetElements = dataElements.map(dataElement => ({
-                dataSet: { id: dataSetId },
-                dataElement: { id: dataElement.id },
-                categoryCombo: { id: dataElement.categoryCombo.id },
-            }));
+        const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
+            openingDate: toISOStringNoTZ(startDate),
+            closingDate: toISOStringNoTZ(endDate),
+            period: { id: date.format("YYYYMMDD") },
+        }));
 
-            const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
-                openingDate: toISOStringNoTZ(startDate),
-                closingDate: toISOStringNoTZ(endDate),
-                period: { id: date.format("YYYYMMDD") },
-            }));
+        const existingDataSet = await this.getExistingDataSet();
+        const metadataCoc = await campaign.antigensDisaggregation.getCocMetadata(db);
+        const dataEntryForm = await this.getDataEntryForm(existingDataSet, metadataCoc);
+        const sections = await this.getSections(db, dataSetId, existingDataSet, metadataCoc);
 
-            const existingDataSet = await this.getExistingDataSet();
-            const metadataCoc = await campaign.antigensDisaggregation.getCocMetadata(db);
-            const dataEntryForm = await this.getDataEntryForm(existingDataSet, metadataCoc);
-            const sections = await this.getSections(db, dataSetId, existingDataSet, metadataCoc);
+        const dataSet: DataSet = {
+            id: dataSetId,
+            name: campaign.name,
+            description: campaign.description,
+            publicAccess: "rwrw----", // Open until sharing implemented
+            periodType: "Daily",
+            categoryCombo: { id: this.catComboIdForTeams },
+            dataElementDecoration: true,
+            renderAsTabs: true,
+            organisationUnits: campaign.organisationUnits.map(ou => ({ id: ou.id })),
+            dataSetElements,
+            openFuturePeriods: 1,
+            timelyDays: 0,
+            expiryDays: 0,
+            formType: "CUSTOM",
+            dataInputPeriods,
+            attributeValues: [{ value: "true", attribute: { id: attributeForApp.id } }],
+            dataEntryForm: { id: dataEntryForm.id },
+            sections: sections.map(section => ({ id: section.id })),
+        };
 
-            const dataSet: DataSet = {
-                id: dataSetId,
-                name: campaign.name,
-                description: campaign.description,
-                publicAccess: "rwrw----", // Open until sharing implemented
-                periodType: "Daily",
-                categoryCombo: { id: categoryComboIdForTeams },
-                dataElementDecoration: true,
-                renderAsTabs: true,
-                organisationUnits: campaign.organisationUnits.map(ou => ({ id: ou.id })),
-                dataSetElements,
-                openFuturePeriods: 1,
-                timelyDays: 0,
-                expiryDays: 0,
-                formType: "CUSTOM",
-                dataInputPeriods,
-                attributeValues: [
-                    { value: "true", attribute: { id: attributeForApp.id } },
-                    {
-                        value: dashboard.id,
-                        attribute: { id: dashboardAttribute.id, code: dashboardAttribute.code },
-                    },
-                ],
-                dataEntryForm: { id: dataEntryForm.id },
-                sections: sections.map(section => ({ id: section.id })),
-            };
+        const dashboardMetadata = await this.getDashboardMetadata(dataSetId);
 
-            return this.postSave(
-                {
-                    charts,
-                    reportTables,
-                    dashboards: [dashboard],
-                    dataSets: [dataSet],
-                    dataEntryForms: [dataEntryForm],
-                    sections,
-                    categoryOptions: newTeams,
-                },
-                teamsToDelete
-            );
-        }
+        return this.postSave(
+            {
+                ...dashboardMetadata,
+                dataSets: [dataSet],
+                dataEntryForms: [dataEntryForm],
+                sections,
+                categoryOptions: newTeams,
+            },
+            teamsToDelete
+        );
     }
 
     public async saveTargetPopulation(): Promise<Response<string>> {
@@ -201,12 +184,12 @@ export default class CampaignDb {
             // often responds with a 500 Server Error when a data set and their sections are
             // posted on the same request. Workaround: post the sections on a separate request.
 
-            const resultSections: ApiResponse<MetadataResponse> = await db.postMetadata({
-                sections: sections,
-            });
+            if (!_(sections).isEmpty()) {
+                const resultSections = await db.postMetadata({ sections });
 
-            if (!resultSections.status) {
-                return { status: false, error: "Cannot update sections" };
+                if (!resultSections.status) {
+                    return { status: false, error: "Cannot update sections" };
+                }
             }
             metadata = nonSectionsMetadata;
             modelReferencesToDelete = await Campaign.getResources(config, db, allMetadata.dataSets);
@@ -349,5 +332,36 @@ export default class CampaignDb {
             htmlCode: customFormHtml,
             style: "NONE",
         };
+    }
+
+    private async getDashboardMetadata(dataSetId: string): Promise<DashboardMetadata> {
+        const { campaign } = this;
+        const { db, config: metadataConfig } = campaign;
+        const dashboardGenerator = Dashboard.build(db);
+
+        if (!campaign.startDate || !campaign.endDate) {
+            throw new Error("Campaign Dates not set");
+        }
+        const startDate = moment(campaign.startDate).startOf("day");
+        const endDate = moment(campaign.endDate).endOf("day");
+
+        const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
+        const teamIds: string[] = campaign.teamsMetadata.elements.map(co => co.id);
+
+        return dashboardGenerator.create({
+            dashboardId: campaign.dashboardId,
+            datasetName: campaign.name,
+            organisationUnits: campaign.organisationUnits,
+            antigens: campaign.antigens,
+            startDate,
+            endDate,
+            antigensDisaggregation,
+            categoryOptions: metadataConfig.categoryOptions,
+            ageGroupCategoryId: this.ageGroupCategoryId,
+            teamsCategoyId: this.teamsCategoryId,
+            teamIds,
+            dosesCategoryId: this.dosesCategoryId,
+            dashboardCode: getDashboardCode(metadataConfig, dataSetId),
+        });
     }
 }
