@@ -22,6 +22,7 @@ export const dashboardItemsConfig = {
             "RVC_SAFETY_BOXES",
             "RVC_CAMPAIGN_COVERAGE",
             "RVC_VACCINE_UTILIZATION",
+            "RVC_CAMPAIGN_NEEDLES_RATIO",
         ],
         DATA_ELEMENT: ["RVC_AEB", "RVC_AEFI", "RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED"],
     },
@@ -36,7 +37,7 @@ export const dashboardItemsConfig = {
     }, */
     tables: {
         qsPerAntigen: {
-            elements: ["RVC_DILUTION_SYRINGES_RATIO"],
+            elements: ["RVC_DILUTION_SYRINGES_RATIO", "RVC_CAMPAIGN_NEEDLES_RATIO"],
             rows: ["pe", "teams"],
             filterDataBy: ["ou"],
             area: false,
@@ -65,7 +66,12 @@ export const dashboardItemsConfig = {
     },
     globalTables: {
         globalQsIndicators: {
-            elements: ["RVC_ADS_WASTAGE", "RVC_DILUTION_SYRINGES_RATIO", "RVC_SAFETY_BOXES"],
+            elements: [
+                "RVC_ADS_WASTAGE",
+                "RVC_DILUTION_SYRINGES_RATIO",
+                "RVC_SAFETY_BOXES",
+                "RVC_CAMPAIGN_NEEDLES_RATIO",
+            ],
             rows: ["ou"],
             filterDataBy: ["pe"],
             appendCode: "globalQsTable",
