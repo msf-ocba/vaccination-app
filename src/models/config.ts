@@ -22,6 +22,7 @@ export const baseConfig = {
     categoryCodeForDoses: "RVC_DOSE",
     categoryComboCodeForAgeGroup: "RVC_AGE_GROUP",
     categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_AGE_GROUP",
+    categoryComboCodeForAntigenDosesAgeGroup: "RVC_ANTIGEN_DOSE_AGE_GROUP",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
