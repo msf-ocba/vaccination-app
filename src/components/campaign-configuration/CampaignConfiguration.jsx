@@ -12,6 +12,7 @@ import { formatDateShort } from "../../utils/date";
 import Campaign from "../../models/campaign";
 import TargetPopulationDialog from "./TargetPopulationDialog";
 import { hasCurrentUserRoles } from "../../utils/permissions";
+import "./CampaignConfiguration.css";
 
 class CampaignConfiguration extends React.Component {
     static propTypes = {
