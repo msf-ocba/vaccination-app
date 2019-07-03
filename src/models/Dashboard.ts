@@ -32,6 +32,7 @@ export interface ReportTableItem extends DashboardItem {
 type DashboardData = {
     id: string;
     name: string;
+    code: string;
     dashboardItems: Array<ReportTableItem | ChartItem>;
 };
 
@@ -39,6 +40,12 @@ type allDashboardElements = {
     charts: Array<object>;
     reportTables: Array<object>;
     items: Array<ChartItem | ReportTableItem>;
+};
+
+export type DashboardMetadata = {
+    dashboards: DashboardData[];
+    charts: object[];
+    reportTables: object[];
 };
 
 export class Dashboard {
@@ -173,6 +180,7 @@ export class Dashboard {
         teamsCategoyId,
         teamIds,
         dosesCategoryId,
+        dashboardCode,
     }: {
         dashboardId?: string;
         datasetName: string;
@@ -186,7 +194,8 @@ export class Dashboard {
         teamsCategoyId: string;
         teamIds: string[];
         dosesCategoryId: string;
-    }): Promise<{ dashboard: DashboardData; charts: Array<object>; reportTables: Array<object> }> {
+        dashboardCode: string;
+    }): Promise<DashboardMetadata> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
             organisationUnits,
@@ -213,10 +222,11 @@ export class Dashboard {
         const dashboard = {
             id: dashboardId || generateUid(),
             name: `${datasetName}_DASHBOARD`,
+            code: dashboardCode,
             dashboardItems: items,
         };
 
-        return { dashboard, charts, reportTables };
+        return { dashboards: [dashboard], charts, reportTables };
     }
 
     createDashboardItems(

@@ -2,11 +2,11 @@ import moment from "moment";
 import _ from "lodash";
 import { getApiUrl } from "../../support/utils";
 
-describe("Campaign configuration - Create", () => {
+describe("Campaigns - Create", () => {
     before(() => {
         cy.login("admin");
         cy.loadPage();
-        cy.contains("Campaign Configuration").click();
+        cy.contains("Campaigns").click();
         cy.get("[data-test=list-action-bar]").click();
     });
 
@@ -146,20 +146,18 @@ function deleteAllTestResources() {
         ),
         failOnStatusCode: false,
     }).then(({ body: { dataSets } }) => {
+        const dataSet = dataSets[0];
         cy.request({
             method: "GET",
-            url: getApiUrl("/categoryOptions?filter=name:like:Test_vaccination_campaign_cypress"),
-        }).then(({ body: { categoryOptions } }) => {
-            const dashboardId = _(dataSets[0].attributeValues)
-                .filter(attrVal => attrVal.attribute.code === "RVC_DASHBOARD_ID")
-                .map(attributeValue => attributeValue.value)
-                .value();
-
+            url: getApiUrl(`/dashboards?filter=code:eq:RVC_CAMPAIGN_${dataSet.id}`),
+            failOnStatusCode: false,
+        }).then(({ body: { dashboards: [dashboard] } }) => {
             cy.request({
                 method: "GET",
-                url: getApiUrl(`/dashboards/${dashboardId[0]}`),
-                failOnStatusCode: false,
-            }).then(({ body: dashboard }) => {
+                url: getApiUrl(
+                    "/categoryOptions?filter=name:like:Test_vaccination_campaign_cypress"
+                ),
+            }).then(({ body: { categoryOptions } }) => {
                 const resources = _(dashboard.dashboardItems)
                     .flatMap(item => [
                         { model: "charts", ref: item.chart },
@@ -172,7 +170,7 @@ function deleteAllTestResources() {
                 // Teams (categoryOptions) must be deleted last
                 const allResources = _.concat(
                     [{ model: "dataSets", id: dataSets[0].id }],
-                    [{ model: "dashboards", id: dashboardId[0] }],
+                    dashboard ? [{ model: "dashboards", id: dashboard.id }] : [],
                     resources,
                     [{ model: "categoryOptions", id: categoryOptions[0].id }]
                 );
