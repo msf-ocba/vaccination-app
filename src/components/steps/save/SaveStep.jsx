@@ -10,7 +10,6 @@ import { withSnackbar } from "d2-ui-components";
 
 import { getFullOrgUnitName } from "../../../models/organisation-units";
 import { getShowValue } from "../../target-population/utils";
-import ExitWizardButton from "../../wizard/ExitWizardButton";
 
 const styles = _theme => ({
     wrapper: {
@@ -28,7 +27,6 @@ class SaveStep extends React.Component {
         isSaving: false,
         orgUnits: null,
         errorMessage: [],
-        dialogOpen: false,
     };
 
     static propTypes = {
@@ -70,19 +68,6 @@ class SaveStep extends React.Component {
             this.props.snackbar.error(err.message || err.toString());
             this.setState({ isSaving: false });
         }
-    };
-
-    cancel = () => {
-        this.setState({ dialogOpen: true });
-    };
-
-    confirmCancel = () => {
-        this.setState({ dialogOpen: false });
-        this.props.history.push("/campaign-configuration");
-    };
-
-    dialogCancel = () => {
-        this.setState({ dialogOpen: false });
     };
 
     getMessageFromPaginated(paginatedObjects) {
@@ -181,7 +166,7 @@ class SaveStep extends React.Component {
 
     render() {
         const { classes } = this.props;
-        const { campaign, orgUnits, errorMessage, isSaving, dialogOpen } = this.state;
+        const { campaign, orgUnits, errorMessage, isSaving } = this.state;
         if (!campaign) return null;
 
         const LiEntry = this.renderLiEntry;
@@ -189,11 +174,6 @@ class SaveStep extends React.Component {
 
         return (
             <React.Fragment>
-                <ExitWizardButton
-                    isOpen={dialogOpen}
-                    onConfirm={this.props.onCancel}
-                    onCancel={this.dialogCancel}
-                />
                 <div className={classes.wrapper}>
                     <ul>
                         <LiEntry label={i18n.t("Name")} value={campaign.name} />
