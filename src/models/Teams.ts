@@ -106,7 +106,7 @@ export class Teams {
                 name,
                 shortName: `Team ${nameOffset + i}_${id}`,
                 displayName: name,
-                publicAccess: "rw------",
+                publicAccess: "rwrw----",
                 displayShortName: name,
                 startDate,
                 endDate,

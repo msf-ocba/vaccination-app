@@ -112,11 +112,10 @@ class Dashboard extends React.Component {
             return getDhis2Url(d2, `/dhis-web-dashboard/#/`);
         } else if (dataSet) {
             const campaign = await Campaign.get(config, db, dataSet.id);
-            const existingDashboard = await campaign.getDashboard();
 
-            let dashboard;
-            if (existingDashboard) {
-                dashboard = existingDashboard;
+            let dashboardId;
+            if (campaign.dashboardId) {
+                dashboardId = campaign.dashboardId;
             } else {
                 loading.show(
                     true,
@@ -125,13 +124,13 @@ class Dashboard extends React.Component {
                     )
                 );
                 this.setState({ isGenerating: true });
-                dashboard = await campaign.buildDashboard();
+                dashboardId = await campaign.createDashboard();
                 loading.hide();
                 this.setState({ isGenerating: false });
             }
 
-            if (dashboard) {
-                return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboard.id}`);
+            if (dashboardId) {
+                return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboardId}`);
             } else {
                 snackbar.error(msg);
             }
@@ -142,12 +141,16 @@ class Dashboard extends React.Component {
 
     render() {
         const { iFrameSrc, isGenerating } = this.state;
+        const help = i18n.t(
+            "Please click on the grey arrow on the right of the chart/table title if you want to modify it"
+        );
 
         return (
             <React.Fragment>
                 <PageHeader
                     title={i18n.t("Dashboard")}
                     onBackClick={this.backCampaignConfiguration}
+                    help={help}
                 />
                 <div>
                     {iFrameSrc ? (

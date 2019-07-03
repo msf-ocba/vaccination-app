@@ -9,10 +9,9 @@ import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
 import StepButton from "@material-ui/core/StepButton";
 import Button from "@material-ui/core/Button";
-import { IconButton } from "@material-ui/core";
-import Icon from "@material-ui/core/Icon";
-import { DialogButton, withSnackbar } from "d2-ui-components";
+import { withSnackbar } from "d2-ui-components";
 import Linkify from "react-linkify";
+import HelpButton from "../help-button/HelpButton";
 
 const styles = theme => ({
     root: {
@@ -147,22 +146,6 @@ class Wizard extends React.Component {
         this.setStep(stepKey);
     });
 
-    renderHelp = ({ step }) => {
-        const Button = ({ onClick }) => (
-            <IconButton tooltip={i18n.t("Help")} onClick={onClick}>
-                <Icon color="primary">help</Icon>
-            </IconButton>
-        );
-
-        return (
-            <DialogButton
-                buttonComponent={Button}
-                title={`${step.label} - ${i18n.t("Help")}`}
-                contents={step.help}
-            />
-        );
-    };
-
     renderFeedbackMessages = () => {
         const { classes, useSnackFeedback } = this.props;
         const { messages } = this.state;
@@ -190,7 +173,6 @@ class Wizard extends React.Component {
         const currentStep = steps[currentStepIndex];
         const { prevStepKey, nextStepKey } = this.getAdjacentSteps();
         const NavigationButton = this.renderNavigationButton;
-        const Help = this.renderHelp;
         const FeedbackMessages = this.renderFeedbackMessages;
 
         return (
@@ -212,7 +194,12 @@ class Wizard extends React.Component {
                                 {step.label}
                             </StepButton>
 
-                            {step.help && step === currentStep ? <Help step={step} /> : null}
+                            {step.help && step === currentStep ? (
+                                <HelpButton
+                                    title={`${step.label} - ${i18n.t("Help")}`}
+                                    contents={step.help}
+                                />
+                            ) : null}
                         </Step>
                     ))}
                 </Stepper>

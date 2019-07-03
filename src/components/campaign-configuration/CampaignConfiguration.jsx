@@ -71,12 +71,13 @@ class CampaignConfiguration extends React.Component {
         { name: "href", text: i18n.t("API link") },
     ];
 
-    actions = [
+    _actions = [
         {
             name: "details",
             text: i18n.t("Details"),
             multiple: false,
             type: "details",
+            isPrimary: true,
         },
         {
             name: "edit",
@@ -94,7 +95,7 @@ class CampaignConfiguration extends React.Component {
             onClick: dataSets => this.openDeleteConfirmation(dataSets),
         },
         {
-            name: "dataEntry",
+            name: "data-entry",
             icon: "library_books",
             text: i18n.t("Go to Data Entry"),
             multiple: false,
@@ -115,6 +116,11 @@ class CampaignConfiguration extends React.Component {
             onClick: dataSet => this.openTargetPopulation(dataSet),
         },
     ];
+
+    actions = _(this._actions)
+        .keyBy("name")
+        .at(["target-population", "data-entry", "dashboard", "details", "edit", "delete"])
+        .value();
 
     openTargetPopulation = dataSet => {
         this.setState({ targetPopulationDataSet: dataSet });
@@ -234,10 +240,13 @@ class CampaignConfiguration extends React.Component {
         const { d2, db, config } = this.props;
         const { dataSetsToDelete, targetPopulationDataSet, objectsTableKey } = this.state;
         const DeleteConfirmationDialog = this.renderDeleteConfirmationDialog;
+        const help = i18n.t(
+            "Click the blue button to create a new campaign or select a previously created campaign that you may want to access"
+        );
 
         return (
             <React.Fragment>
-                <PageHeader title={i18n.t("Campaigns")} onBackClick={this.backHome} />
+                <PageHeader title={i18n.t("Campaigns")} help={help} onBackClick={this.backHome} />
 
                 <div style={styles.objectsTableContainer}>
                     <ObjectsTable
