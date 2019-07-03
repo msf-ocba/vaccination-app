@@ -239,10 +239,13 @@ class CampaignConfiguration extends React.Component {
         const { d2, db, config } = this.props;
         const { dataSetsToDelete, targetPopulationDataSet, objectsTableKey } = this.state;
         const DeleteConfirmationDialog = this.renderDeleteConfirmationDialog;
+        const help = i18n.t(
+            "Click the blue button to create a new campaign or select a previously created campaign that you may want to access"
+        );
 
         return (
             <React.Fragment>
-                <PageHeader title={i18n.t("Campaigns")} onBackClick={this.backHome} />
+                <PageHeader title={i18n.t("Campaigns")} help={help} onBackClick={this.backHome} />
 
                 <div style={styles.objectsTableContainer}>
                     <ObjectsTable

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-07-03T09:06:57.359Z\n"
-"PO-Revision-Date: 2019-07-03T09:06:57.359Z\n"
+"POT-Creation-Date: 2019-07-03T10:33:08.394Z\n"
+"PO-Revision-Date: 2019-07-03T10:33:08.394Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -88,6 +88,11 @@ msgid "Delete campaign(s)"
 msgstr ""
 
 msgid "Yes"
+msgstr ""
+
+msgid ""
+"Click the blue button to create a new campaign or select a previously "
+"created campaign that you may want to access"
 msgstr ""
 
 msgid "Create Campaign"
@@ -215,7 +220,27 @@ msgid ""
 "campaign. Generating dashboard. This may take up to a couple of minutes"
 msgstr ""
 
+msgid ""
+"Please click on the grey arrow on the right of the chart/table title if you "
+"want to modify it"
+msgstr ""
+
 msgid "Cannot find dataset associated with the campaign"
+msgstr ""
+
+msgid ""
+"Select a) organizational unit where vaccination was performed, b) data set, "
+"c) date of vaccination, d) team that performed vaccination\n"
+"\n"
+"Then enter data for the fields shown in the screen.\n"
+msgstr ""
+
+msgid ""
+"Once cells turn into green, all information is saved and you can leave the "
+"Data Entry Section"
+msgstr ""
+
+msgid "Help"
 msgstr ""
 
 msgid "Back"
@@ -281,9 +306,6 @@ msgstr ""
 msgid ""
 "You are about to exit the Campaign Creation Wizard. All your changes will "
 "be lost. Are you sure you want to proceed?"
-msgstr ""
-
-msgid "Help"
 msgstr ""
 
 msgid "Previous"
