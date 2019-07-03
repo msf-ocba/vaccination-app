@@ -8,8 +8,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-msgid "Campaign Configuration"
-msgstr "Configurador de campaña"
+msgid "Campaigns"
+msgstr "Campañas"
 
 msgid "Data Entry"
 msgstr "Entrada de datos"
@@ -98,9 +98,6 @@ msgid ""
 msgstr ""
 "Haga clic en el botón azul para crear una nueva campaña o seleccione "
 "una campaña creada anteriormente a la que desee acceder"
-
-msgid "Campaigns"
-msgstr "Campañas"
 
 msgid "Create Campaign"
 msgstr "Crear Campaña"

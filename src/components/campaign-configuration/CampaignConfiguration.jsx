@@ -70,12 +70,13 @@ class CampaignConfiguration extends React.Component {
         { name: "href", text: i18n.t("API link") },
     ];
 
-    actions = [
+    _actions = [
         {
             name: "details",
             text: i18n.t("Details"),
             multiple: false,
             type: "details",
+            isPrimary: true,
         },
         {
             name: "edit",
@@ -93,7 +94,7 @@ class CampaignConfiguration extends React.Component {
             onClick: dataSets => this.openDeleteConfirmation(dataSets),
         },
         {
-            name: "dataEntry",
+            name: "data-entry",
             icon: "library_books",
             text: i18n.t("Go to Data Entry"),
             multiple: false,
@@ -114,6 +115,11 @@ class CampaignConfiguration extends React.Component {
             onClick: dataSet => this.openTargetPopulation(dataSet),
         },
     ];
+
+    actions = _(this._actions)
+        .keyBy("name")
+        .at(["target-population", "data-entry", "dashboard", "details", "edit", "delete"])
+        .value();
 
     openTargetPopulation = dataSet => {
         this.setState({ targetPopulationDataSet: dataSet });

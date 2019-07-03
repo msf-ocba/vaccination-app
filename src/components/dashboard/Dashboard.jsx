@@ -112,11 +112,10 @@ class Dashboard extends React.Component {
             return getDhis2Url(d2, `/dhis-web-dashboard/#/`);
         } else if (dataSet) {
             const campaign = await Campaign.get(config, db, dataSet.id);
-            const existingDashboard = await campaign.getDashboard();
 
-            let dashboard;
-            if (existingDashboard) {
-                dashboard = existingDashboard;
+            let dashboardId;
+            if (campaign.dashboardId) {
+                dashboardId = campaign.dashboardId;
             } else {
                 loading.show(
                     true,
@@ -125,13 +124,13 @@ class Dashboard extends React.Component {
                     )
                 );
                 this.setState({ isGenerating: true });
-                dashboard = await campaign.buildDashboard();
+                dashboardId = await campaign.createDashboard();
                 loading.hide();
                 this.setState({ isGenerating: false });
             }
 
-            if (dashboard) {
-                return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboard.id}`);
+            if (dashboardId) {
+                return getDhis2Url(d2, `/dhis-web-dashboard/#/${dashboardId}`);
             } else {
                 snackbar.error(msg);
             }

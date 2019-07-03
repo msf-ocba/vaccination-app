@@ -222,7 +222,7 @@ export class TargetPopulation {
         const { config } = this;
         const categoryComboCodes = [
             config.categoryComboCodeForAgeGroup,
-            config.categoryComboCodeForAntigenAgeGroup,
+            config.categoryComboCodeForAntigenDosesAgeGroup,
         ];
         const categoryOptionCombos = await this.db.getCocsByCategoryComboCode(categoryComboCodes);
         const cocIdsByName = _(categoryOptionCombos)
@@ -249,31 +249,25 @@ export class TargetPopulation {
             const finalDistribution = this.getFinalDistribution(targetPopulationItem);
 
             const populationByAgeDataValues = _(finalDistribution)
-                .flatMap((ageGroupPercent_, ageGroup) => {
-                    const ageGroupPercent = get(
-                        ageGroupPercent_,
-                        `Value not found for age group ${ageGroup}`
-                    );
+                .flatMap((ageGroupPer_, ageGroup) => {
+                    const ageGroupPer = get(ageGroupPer_, `Value not found for ${ageGroup}`);
 
                     return _(this.data.antigensDisaggregation)
-                        .map(({ antigen, ageGroups: ageGroupsForAntigen }) => {
-                            const cocName = [antigen.name, ageGroup].join(", ");
-                            if (!_(ageGroupsForAntigen).includes(ageGroup)) {
-                                return null;
-                            } else {
-                                const populationForAgeRange = Math.ceil(
-                                    (totalPopulation * ageGroupPercent) / 100
-                                );
+                        .filter(antigenInfo => _(antigenInfo.ageGroups).includes(ageGroup))
+                        .flatMap(({ antigen }) =>
+                            antigen.doses.map(dose => {
+                                const cocName = [antigen.name, dose.name, ageGroup].join(", ");
+                                const populationForAgeRange = (totalPopulation * ageGroupPer) / 100;
 
                                 return {
                                     period,
                                     orgUnit: targetPopulationItem.organisationUnit.id,
                                     dataElement: config.population.populationByAgeDataElement.id,
                                     categoryOptionCombo: _(cocIdsByName).getOrFail(cocName),
-                                    value: populationForAgeRange.toString(),
+                                    value: Math.ceil(populationForAgeRange).toString(),
                                 };
-                            }
-                        })
+                            })
+                        )
                         .compact()
                         .value();
                 })

@@ -1,12 +1,11 @@
-import { Dashboard } from "./Dashboard";
-import { OrganisationUnit, Maybe, Ref, AttributeValue, MetadataResponse } from "./db.types";
+import { OrganisationUnit, Maybe, Ref, MetadataResponse } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
 
 import { PaginatedObjects, OrganisationUnitPathOnly, Response } from "./db.types";
-import DbD2, { ApiResponse } from "./db-d2";
+import DbD2, { ApiResponse, toStatusResponse } from "./db-d2";
 import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
-import { MetadataConfig } from "./config";
+import { MetadataConfig, getDashboardCode, getByIndex } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
@@ -50,7 +49,6 @@ function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined)
 interface DataSetWithAttributes {
     id: string;
     name: string;
-    attributeValues: AttributeValue[];
 }
 
 interface DashboardWithResources {
@@ -111,6 +109,7 @@ export default class Campaign {
     ): Promise<Campaign> {
         const {
             dataSets: [dataSet],
+            dashboards: [dashboard],
         } = await db.getMetadata<{
             dataSets: Array<{
                 id: string;
@@ -119,7 +118,9 @@ export default class Campaign {
                 organisationUnits: Array<OrganisationUnitPathOnly>;
                 dataInputPeriods: Array<{ period: { id: string } }>;
                 sections: Array<SectionForDisaggregation>;
-                attributeValues: Array<AttributeValue>;
+            }>;
+            dashboards: Array<{
+                id: string;
             }>;
         }>({
             dataSets: {
@@ -147,9 +148,12 @@ export default class Campaign {
                             dataElement: { id: true },
                         },
                     },
-                    attributeValues: { value: true, attribute: { id: true, code: true } },
                 },
                 filters: [`id:eq:${dataSetId}`],
+            },
+            dashboards: {
+                fields: { id: true },
+                filters: [`code:eq:${getDashboardCode(config, dataSetId)}`],
             },
         });
         if (!dataSet) throw new Error(`Dataset id=${dataSetId} not found`);
@@ -164,21 +168,12 @@ export default class Campaign {
             period ? moment(period).toDate() : null
         );
 
-        const organisationUnitIds = dataSet.organisationUnits.map(ou => ou.id);
-
-        const teamsCategoyId = _(config.categories)
-            .keyBy("code")
-            .getOrFail(config.categoryComboCodeForTeams).id;
-
-        const teamsMetadata = await getTeamsForCampaign(
-            db,
-            organisationUnitIds,
-            teamsCategoyId,
-            dataSet.name
-        );
-        const dashboardId: Maybe<string> = _(dataSet.attributeValues)
-            .keyBy(attributeValue => attributeValue.attribute.id)
-            .get([config.attributes.dashboard.id, "value"]);
+        const { categoryComboCodeForTeams } = config;
+        const { name, sections } = dataSet;
+        const ouIds = dataSet.organisationUnits.map(ou => ou.id);
+        const teamsCategoyId = getByIndex(config.categories, "code", categoryComboCodeForTeams).id;
+        const teamsMetadata = await getTeamsForCampaign(db, ouIds, teamsCategoyId, name);
+        const antigensDisaggregation = AntigensDisaggregation.build(config, antigens, sections);
 
         const initialData = {
             id: dataSet.id,
@@ -188,17 +183,11 @@ export default class Campaign {
             startDate,
             endDate,
             antigens: antigens,
-            antigensDisaggregation: AntigensDisaggregation.build(
-                config,
-                antigens,
-                dataSet.sections
-            ),
+            antigensDisaggregation,
             targetPopulation: undefined,
             teams: _.size(teamsMetadata),
-            teamsMetadata: {
-                elements: teamsMetadata,
-            },
-            dashboardId,
+            teamsMetadata: { elements: teamsMetadata },
+            dashboardId: dashboard ? dashboard.id : undefined,
         };
 
         return new Campaign(db, config, initialData);
@@ -241,10 +230,8 @@ export default class Campaign {
                     .groupBy("model")
                     .mapValues(groups => groups.map(group => ({ id: group.id })))
                     .value();
-                return [key, await db.postMetadata(metadata, { importStrategy: "DELETE" })] as [
-                    string,
-                    ApiResponse<MetadataResponse>
-                ];
+                const response = await db.postMetadata(metadata, { importStrategy: "DELETE" });
+                return [key, toStatusResponse(response)] as [string, ApiResponse<MetadataResponse>];
             }
         );
 
@@ -494,27 +481,14 @@ export default class Campaign {
             : targetPopulation.validate();
     }
 
-    // Attribute Values
+    /* Dashboard */
 
     public get dashboardId(): Maybe<string> {
         return this.data.dashboardId;
     }
 
-    public async getDashboard(): Promise<Maybe<Dashboard>> {
-        if (this.dashboardId) {
-            const metadata = await this.db.getMetadata<{ dashboards: Dashboard[] }>({
-                dashboards: { filters: [`id:eq:${this.dashboardId}`] },
-            });
-            return _.first(metadata.dashboards);
-        } else {
-            return undefined;
-        }
-    }
-
-    public async buildDashboard(): Promise<Maybe<Dashboard>> {
-        await this.save();
-        const savedCampaign = await this.reload();
-        return savedCampaign ? savedCampaign.getDashboard() : undefined;
+    public async createDashboard(): Promise<Maybe<string>> {
+        return new CampaignDb(this).createDashboard();
     }
 
     /* Teams */
@@ -553,11 +527,7 @@ export default class Campaign {
     ) {
         if (_.isEmpty(dataSets)) return [];
 
-        const dashboardIds = _(dataSets)
-            .flatMap(dataSet => dataSet.attributeValues)
-            .filter(attrVal => attrVal.attribute.code === config.attributeCodeForDashboard)
-            .map(attributeValue => attributeValue.value)
-            .value();
+        const codes = dataSets.map(dataSet => getDashboardCode(config, dataSet.id));
 
         const { dashboards } = await db.getMetadata<{ dashboards: DashboardWithResources[] }>({
             dashboards: {
@@ -571,7 +541,7 @@ export default class Campaign {
                         reportTable: { id: true },
                     },
                 },
-                filters: [`id:in:[${dashboardIds.join(",")}]`],
+                filters: [`code:in:[${codes.join(",")}]`],
             },
         });
 
@@ -584,9 +554,8 @@ export default class Campaign {
             paging: false,
         });
 
-        const teamsCategoyId = _(config.categories)
-            .keyBy("code")
-            .getOrFail(config.categoryComboCodeForTeams).id;
+        const { categories, categoryComboCodeForTeams } = config;
+        const teamsCategoyId = getByIndex(categories, "code", categoryComboCodeForTeams).id;
 
         const filteredTeams = filterTeamsByNames(teams, campaignNames, teamsCategoyId);
 
