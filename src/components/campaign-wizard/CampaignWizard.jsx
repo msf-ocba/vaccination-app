@@ -3,10 +3,10 @@ import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { withRouter } from "react-router";
 import _ from "lodash";
-import { withSnackbar } from "d2-ui-components";
+import { withSnackbar, Wizard } from "d2-ui-components";
+import { LinearProgress } from "@material-ui/core";
 
 import Campaign from "models/campaign";
-import Wizard from "../wizard/Wizard";
 import PageHeader from "../shared/PageHeader";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
 import SaveStep from "../steps/save/SaveStep";
@@ -16,7 +16,6 @@ import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionSte
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 import { memoize } from "../../utils/memoize";
 import ExitWizardButton from "../wizard/ExitWizardButton";
-import { LinearProgress } from "@material-ui/core";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
@@ -174,7 +173,6 @@ class CampaignWizard extends React.Component {
                     title={`${title}: ${campaign ? campaign.name : i18n.t("Loading...")}`}
                     onBackClick={this.cancelSave}
                 />
-
                 {campaign ? (
                     <Wizard
                         steps={steps}
