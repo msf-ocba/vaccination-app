@@ -2,11 +2,11 @@ import moment from "moment";
 import _ from "lodash";
 import { getApiUrl } from "../../support/utils";
 
-describe("Campaign configuration - Create", () => {
+describe("Campaigns - Create", () => {
     before(() => {
         cy.login("admin");
         cy.loadPage();
-        cy.contains("Campaign Configuration").click();
+        cy.contains("Campaigns").click();
         cy.get("[data-test=list-action-bar]").click();
     });
 
