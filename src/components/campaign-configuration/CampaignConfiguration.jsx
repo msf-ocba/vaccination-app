@@ -76,6 +76,7 @@ class CampaignConfiguration extends React.Component {
             text: i18n.t("Details"),
             multiple: false,
             type: "details",
+            isPrimary: true,
         },
         {
             name: "edit",
