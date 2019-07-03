@@ -235,25 +235,25 @@ export class Dashboard {
             elements,
             legendMetadata
         );
-        //const charts = _(dashboardItems).getOrFail("charts");
+        const charts = _(dashboardItems).getOrFail("charts");
         const reportTables = _(dashboardItems).getOrFail("reportTables");
 
-        //const chartIds = charts.map(chart => chart.id);
+        const chartIds = charts.map((chart: any) => chart.id);
         const reportTableIds = reportTables.map(table => table.id);
 
-        /*const dashboardCharts = chartIds.map((id: string) => ({
+        const dashboardCharts = chartIds.map((id: string) => ({
             type: "CHART",
             chart: { id },
-        }));*/
+        }));
+
         const dashboardTables = reportTableIds.map((id: string) => ({
             type: "REPORT_TABLE",
             reportTable: { id },
         }));
 
         const dashboardData = {
-            //items: [...dashboardCharts, ...dashboardTables],
-            items: [...dashboardTables],
-            charts: [],
+            items: [...dashboardCharts, ...dashboardTables],
+            charts,
             reportTables,
         };
 
