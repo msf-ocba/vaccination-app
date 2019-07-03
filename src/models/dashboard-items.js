@@ -35,35 +35,6 @@ export const dashboardItemsConfig = {
             type: "LINE",
         },
     }, */
-    tables: {
-        qsPerAntigen: {
-            elements: ["RVC_DILUTION_SYRINGES_RATIO", "RVC_CAMPAIGN_NEEDLES_RATIO"],
-            rows: ["pe", "teams"],
-            filterDataBy: ["ou"],
-            area: false,
-            disaggregatedBy: [],
-            title: "QS Indicators",
-            appendCode: "qsIndicatorsTable",
-        },
-        vaccinesPerArea: {
-            elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED", "RVC_VACCINE_UTILIZATION"],
-            rows: ["ou"],
-            area: true,
-            filterDataBy: ["pe"],
-            appendCode: "vaccinesPerArea",
-            title: "Vaccines Per Area",
-            disaggregatedBy: [],
-        },
-        vaccinesPerDateTeam: {
-            elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED", "RVC_VACCINE_UTILIZATION"],
-            rows: ["pe", "teams"],
-            area: false,
-            filterDataBy: ["ou"],
-            appendCode: "vaccinesPerDateTeam",
-            title: "Vaccines Per Team",
-            disaggregatedBy: [],
-        },
-    },
     globalTables: {
         globalQsIndicators: {
             elements: [
@@ -74,20 +45,69 @@ export const dashboardItemsConfig = {
             ],
             rows: ["ou"],
             filterDataBy: ["pe"],
-            appendCode: "globalQsTable",
             disaggregatedBy: [],
             area: true,
             title: "Global QS Indicators",
+            appendCode: "globalQsTable",
         },
         aefiAEB: {
             elements: ["RVC_AEB", "RVC_AEFI"],
             rows: ["pe"],
             filterDataBy: ["ou"],
-            appendCode: "adverseEvents",
             disaggregatedBy: [],
             area: false,
-            legendCode: "RVC_LEGEND_ZERO",
             title: "AEFI and AEB indicators",
+            appendCode: "adverseEvents",
+            legendCode: "RVC_LEGEND_ZERO",
+        },
+    },
+    tablesByAntigen: {
+        coverageByArea: {
+            elements: ["RVC_DOSES_ADMINISTERED", "RVC_CAMPAIGN_COVERAGE"],
+            rows: ["ou"],
+            filterDataBy: ["pe"],
+            disaggregatedBy: ["ageGroup", "doses"],
+            area: true,
+            title: "Campaign Coverage by Area",
+            appendCode: "coverageByArea",
+        },
+        qsPerAntigen: {
+            elements: ["RVC_DILUTION_SYRINGES_RATIO", "RVC_CAMPAIGN_NEEDLES_RATIO"],
+            rows: ["pe", "teams"],
+            filterDataBy: ["ou"],
+            disaggregatedBy: [],
+            area: false,
+            title: "QS Indicators",
+            appendCode: "qsIndicatorsTable",
+        },
+        vaccinesPerArea: {
+            elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED", "RVC_VACCINE_UTILIZATION"],
+            rows: ["ou"],
+            filterDataBy: ["pe"],
+            disaggregatedBy: [],
+            area: true,
+            title: "Vaccines Per Area",
+            appendCode: "vaccinesPerArea",
+        },
+        vaccinesPerDateTeam: {
+            elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED", "RVC_VACCINE_UTILIZATION"],
+            rows: ["pe", "teams"],
+            filterDataBy: ["ou"],
+            disaggregatedBy: [],
+            area: false,
+            title: "Vaccines Per Team",
+            appendCode: "vaccinesPerDateTeam",
+        },
+    },
+    tablesByAntigenAndSite: {
+        coverageByPeriod: {
+            elements: ["RVC_DOSES_ADMINISTERED", "RVC_CAMPAIGN_COVERAGE"],
+            rows: ["pe"],
+            filterDataBy: ["ou"],
+            disaggregatedBy: ["ageGroup", "doses"],
+            area: false,
+            title: "Campaign Coverage by day",
+            appendCode: "coverageByPeriod",
         },
     },
 };
@@ -130,16 +150,14 @@ function getCharts(antigen, elements, organisationUnit, itemsMetadata, disaggreg
 }
 */
 function getTables({
+    tables,
     antigen,
     elements,
     organisationUnits,
     itemsMetadata,
     disaggregationMetadata,
-    general = false,
     legendsMetadata,
 }) {
-    const tables = general ? dashboardItemsConfig.globalTables : dashboardItemsConfig.tables;
-
     return _(tables)
         .map((c, key) => {
             const teamMetadata = disaggregationMetadata.teams();
@@ -191,9 +209,16 @@ export function buildDashboardItems(
         .value();
     */
 
-    const tables = _(antigensMeta)
+    const {
+        globalTables: globalTablesMetadata,
+        tablesByAntigen: tablesByAntigenMetadata,
+        tablesByAntigenAndSite: tablesByAntigenAndSiteMetadata,
+    } = dashboardItemsConfig;
+
+    const tablesByAntigen = _(antigensMeta)
         .map(antigen =>
             getTables({
+                tables: tablesByAntigenMetadata,
                 antigen,
                 elements,
                 organisationUnits: organisationUnitsMetadata,
@@ -204,7 +229,25 @@ export function buildDashboardItems(
         )
         .flatten()
         .value();
+
+    const tablesByAntigenAndSite = _(antigensMeta)
+        .flatMap(antigen =>
+            organisationUnitsMetadata.map(ou =>
+                getTables({
+                    tables: tablesByAntigenAndSiteMetadata,
+                    antigen,
+                    elements,
+                    organisationUnits: [ou],
+                    itemsMetadata,
+                    disaggregationMetadata,
+                    legendsMetadata,
+                })
+            )
+        )
+        .value();
+
     const globalTables = getTables({
+        tables: globalTablesMetadata,
         antigen: null,
         elements,
         organisationUnits: organisationUnitsMetadata,
@@ -214,7 +257,11 @@ export function buildDashboardItems(
         general: true,
     });
 
-    const reportTables = [...tables, ...globalTables];
+    const reportTables = [
+        ...globalTables,
+        ...tablesByAntigen,
+        ..._.flatten(tablesByAntigenAndSite),
+    ];
 
     //return { charts: _.flatten(charts), reportTables };
     return { charts: _.flatten([]), reportTables };
@@ -237,8 +284,8 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
     const { elementsMetadata, antigenCategory, disaggregationMetadata } = dashboardItemsMetadata;
 
     //const { tables, charts, globalTables } = dashboardItemsConfig;
-    const { globalTables, tables } = dashboardItemsConfig;
-    const allTables = { ...tables, ...globalTables };
+    const { globalTables, tablesByAntigen, tablesByAntigenAndSite } = dashboardItemsConfig;
+    const allTables = { ...globalTables, ...tablesByAntigen, ...tablesByAntigenAndSite };
 
     const tableElements = _(allTables)
         .map((item, key) => [key, dataMapper(elementsMetadata, item.elements)])
