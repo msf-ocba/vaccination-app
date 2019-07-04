@@ -29,7 +29,7 @@ export const dashboardItemsConfig = {
     chartsByAntigen: {
         coverageBySite: {
             elements: ["RVC_CAMPAIGN_COVERAGE"],
-            disaggregatedBy: [], //["doses"],
+            disaggregatedBy: ["doses"],
             type: "COLUMN",
             rows: ["ou"],
             filterDataBy: ["pe"],
@@ -39,7 +39,7 @@ export const dashboardItemsConfig = {
         },
         coverageByArea: {
             elements: ["RVC_CAMPAIGN_COVERAGE"],
-            disaggregatedBy: [], //["doses"],
+            disaggregatedBy: ["doses"],
             type: "COLUMN",
             rows: ["ou"],
             filterDataBy: ["pe"],
@@ -289,8 +289,6 @@ export function buildDashboardItems(
             })
         )
         .value();
-
-    console.log({ reportTables, chartsByAntigen });
 
     return { charts: chartsByAntigen, reportTables };
 }
