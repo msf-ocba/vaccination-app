@@ -1,18 +1,6 @@
 import _ from "lodash";
 import { generateUid } from "d2/uid";
-
-/*
-tables: {
-    elements: [
-        { code: 'RVC_DOSES_ADMINISTERED', dataType: 'DATA_ELEMENT' },
-    ],
-    rows: ["ou"],
-    filter: ["pe"],
-    appendCode: "globalQsTable",
-    disaggregatedBy: [],
-}
-
-*/
+import moment from "moment";
 
 export const dashboardItemsConfig = {
     metadataToFetch: {
@@ -373,34 +361,6 @@ function getDimensions(disaggregations, antigen, antigenCategory) {
         .value();
 }
 
-/*
-chartConstructor({
-                id: generateUid(),
-                antigen,
-                data: elements[key],
-                type: chart.type,
-                appendCode: chart.appendCode,
-                organisationUnits,
-                title: chart.title,
-                area: chart.area || false,
-                ...itemsMetadata,
-                disaggregations: getDisaggregations(chart, disaggregationMetadata, antigen),
-            })
-
-
-     coverageBySite: {
-            elements: ["RVC_CAMPAIGN_COVERAGE"],
-            dataType: "INDICATOR",
-            disaggregatedBy: [], //["doses"],
-            type: "COLUMN",
-            rows: ["ou"],
-            filterDataBy: ["pe"],
-            area: false,
-            title: period => `Coverage by Site ${period}`,
-            appendCode: "coverageBySiteChart",
-        },
-*/
-
 const chartConstructor = ({
     id,
     datasetName,
@@ -415,33 +375,32 @@ const chartConstructor = ({
     area = false,
     rows,
     filterDataBy,
-    //title,
+    title,
 }) => {
-    //Check columns, must be doses category ID
-    // "columns": [{ "id": "WuatkvLRte5" }]
-
     const { categoryDimensions, columns: allColumns } = getDimensions(
         disaggregations,
         antigen,
         antigenCategory
     );
 
+    const periodForTitle = `${moment(period[0].id).format("DD/MM/YYYY")} - ${moment(
+        period[period.length - 1].id
+    ).format("DD/MM/YYYY")}`;
+    const chartTitle = title(periodForTitle);
+
     const columns = _.isEmpty(disaggregations) ? allColumns : allColumns.filter(c => c.id !== "dx");
 
-    // must include filteredBy from chartMetadata
     const filterDimensions = _.compact([
         ...filterDataBy,
         antigenCategory,
         _.isEmpty(disaggregations) ? null : "dx",
     ]);
 
-    // Check it includes disaggregation id (Doses)
     const series = _.isEmpty(disaggregations) ? "dx" : columns[0].id;
 
     let organisationUnitElements;
     const organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
 
-    // Converts selected OrganisationUnits into their parents (Sites => Areas)
     if (area) {
         const organisationUnitParents = organisationUnits.map(ou => ou.parents[ou.id].split("/"));
         organisationUnitElements = organisationUnitParents.map(pArray => ({
@@ -450,12 +409,7 @@ const chartConstructor = ({
     } else {
         organisationUnitElements = organisationUnits.map(ou => ({ id: ou.id }));
     }
-    /*
-    const parentGraphMap = _(organisationUnits)
-        .map(ou => [ou.id, ou.parents[ou.id]])
-        .fromPairs()
-        .value();
-    */
+
     return {
         id,
         name: buildDashboardItemsCode(datasetName, organisationUnitNames, antigen.name, appendCode),
@@ -472,6 +426,7 @@ const chartConstructor = ({
         sortOrder: 0,
         favorite: false,
         topLimit: 0,
+        title: chartTitle,
         hideEmptyRowItems: "AFTER_LAST",
         aggregationType: "DEFAULT",
         userOrganisationUnitGrandChildren: false,
@@ -481,14 +436,13 @@ const chartConstructor = ({
             antigen.name,
             appendCode
         ),
-        hideSubtitle: false,
+        hideSubtitle: true,
         hideLegend: false,
         externalAccess: false,
         percentStackedValues: false,
         noSpaceBetweenColumns: false,
         hideTitle: false,
         series,
-        // category: ou !!
         category: rows[0],
         access: {
             read: true,
@@ -560,7 +514,6 @@ const chartConstructor = ({
         periods: period,
         organisationUnits: organisationUnitElements,
         categoryDimensions,
-        // Filters also wrong { dx, antigenCategory, pe }
         filters: filterDimensions.map(fd => ({ id: fd })),
         rows: rows.map(r => ({ id: r })),
     };
