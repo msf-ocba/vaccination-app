@@ -23,9 +23,7 @@ function PageHeader({ variant, title, onBackClick, help }) {
 
             <Typography variant={variant} style={{ display: "inline-block", fontWeight: 300 }}>
                 {title}
-                {help && (
-                    <HelpButton title={`${title} - ${i18n.t("Help")}`} contents={help + "."} />
-                )}
+                {help && <HelpButton title={`${title} - ${i18n.t("Help")}`} contents={help} />}
             </Typography>
         </div>
     );

@@ -142,7 +142,7 @@ class Dashboard extends React.Component {
     render() {
         const { iFrameSrc, isGenerating } = this.state;
         const help = i18n.t(
-            "Please click on the grey arrow on the right of the chart/table title if you want to modify it"
+            "Please click on the grey arrow on the right of the chart/table title if you want to modify it."
         );
 
         return (
