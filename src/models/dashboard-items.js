@@ -129,8 +129,14 @@ function getDisaggregations(itemConfigs, disaggregationMetadata, antigen) {
 
     const teams = c => (c.disaggregatedBy.includes("team") ? disaggregationMetadata.teams() : null);
 
-    const doses = c =>
-        c.disaggregatedBy.includes("doses") ? disaggregationMetadata.doses(antigen) : null;
+    const doses = c => {
+        if (c.disaggregatedBy.includes("doses") && antigen) {
+            const dosesDisaggregation = disaggregationMetadata.doses(antigen);
+            return dosesDisaggregation.elements.length === 1 ? null : dosesDisaggregation;
+        } else {
+            return null;
+        }
+    };
 
     return _.compact([teams(itemConfigs), ageGroups(itemConfigs), doses(itemConfigs)]);
 }
