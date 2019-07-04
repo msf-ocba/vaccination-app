@@ -20,6 +20,10 @@ class DataEntry extends React.Component {
         isDataEntryIdValid: false,
     };
 
+    styles = {
+        subtitle: { marginBottom: 10, marginLeft: 15 },
+    };
+
     async componentDidMount() {
         const {
             d2,
@@ -138,13 +142,22 @@ class DataEntry extends React.Component {
     render() {
         const { isDataEntryIdValid } = this.state;
         const dataEntryUrl = getDhis2Url(this.props.d2, "/dhis-web-dataentry/index.action");
+        const help = i18n.t(`Select a) organizational unit where vaccination was performed, b) data set, c) date of vaccination, d) team that performed vaccination
+
+Then enter data for the fields shown in the screen.
+`);
+        const subtitle = i18n.t(
+            `Once cells turn into green, all information is saved and you can leave the Data Entry Section`
+        );
 
         return (
             <React.Fragment>
                 <PageHeader
                     title={i18n.t("Data Entry")}
+                    help={help}
                     onBackClick={this.backCampaignConfiguration}
                 />
+                <div style={this.styles.subtitle}>{subtitle}</div>
                 <div>
                     {isDataEntryIdValid ? (
                         <iframe

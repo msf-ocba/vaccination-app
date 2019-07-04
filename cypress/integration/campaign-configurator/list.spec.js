@@ -1,7 +1,7 @@
 import { getApiUrl } from "../../support/utils";
 import _ from "lodash";
 
-describe("Campaign configuration - List page", () => {
+describe("Campaigns - List page", () => {
     before(() => {
         cy.login("admin");
         cy.fixture("datasets.json").then(testDataSets => {
@@ -14,7 +14,7 @@ describe("Campaign configuration - List page", () => {
     beforeEach(() => {
         cy.login("admin");
         cy.loadPage();
-        cy.contains("Campaign Configuration").click();
+        cy.contains("Campaigns").click();
     });
 
     after(() => {

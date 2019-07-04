@@ -21,15 +21,15 @@ context("Landing page", () => {
                 .should("have.length", 1)
                 .should("be.visible");
 
-            cy.contains("Campaign Configuration");
+            cy.contains("Campaigns");
             cy.contains("Data Entry");
             cy.contains("Dashboard");
         });
     });
 
-    describe("when clicked on Campaign Configuration", () => {
-        it("redirects to Campaign Configuration", () => {
-            cy.contains("Campaign Configuration").click();
+    describe("when clicked on Campaigns", () => {
+        it("redirects to Campaigns", () => {
+            cy.contains("Campaigns").click();
             cy.url().should("include", "/campaign-configuration");
         });
     });
