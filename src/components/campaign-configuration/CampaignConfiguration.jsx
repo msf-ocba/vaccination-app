@@ -241,7 +241,8 @@ class CampaignConfiguration extends React.Component {
         const { dataSetsToDelete, targetPopulationDataSet, objectsTableKey } = this.state;
         const DeleteConfirmationDialog = this.renderDeleteConfirmationDialog;
         const help = i18n.t(
-            "Click the blue button to create a new campaign or select a previously created campaign that you may want to access."
+            `Click the blue button to create a new campaign or select a previously created campaign that you may want to access.
+Click the three dots on the right side of the screen if you wish to perform any of the following actions -> Set Target Population, Go to Data Entry, Go To Dashboards, See Details, Edit or Delete.`
         );
 
         return (

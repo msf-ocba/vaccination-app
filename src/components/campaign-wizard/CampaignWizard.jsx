@@ -104,10 +104,10 @@ class CampaignWizard extends React.Component {
                 component: SaveStep,
                 validationKeys: [],
                 description: i18n.t(
-                    'Setup of your campaign is complete. Click the "Save" button to save your campaign and access tally sheets, data entry or analysis'
+                    'Setup of your campaign is complete. Click the "Save" button to save your campaign, then you can set your target population, go to data entry and go to dashboard'
                 ),
                 help: i18n.t(
-                    `Click the "Save" button to create the data set and all associated metadata for this campaign`
+                    `Please review your vaccination campaign summary. Click the "Save" button to create the data set and all associated metadata for this campaign`
                 ),
             },
         ];
