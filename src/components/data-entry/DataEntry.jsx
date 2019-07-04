@@ -144,8 +144,7 @@ class DataEntry extends React.Component {
         const dataEntryUrl = getDhis2Url(this.props.d2, "/dhis-web-dataentry/index.action");
         const help = i18n.t(`Select a) organizational unit where vaccination was performed, b) data set, c) date of vaccination, d) team that performed vaccination
 
-Then enter data for the fields shown in the screen.
-`);
+Then enter data for the fields shown in the screen.`);
         const subtitle = i18n.t(
             `Once cells turn into green, all information is saved and you can leave the Data Entry Section`
         );
