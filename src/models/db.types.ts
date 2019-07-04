@@ -21,6 +21,30 @@ export interface NamedObject {
     name: string;
 }
 
+export interface Access {
+    id: string;
+    access: string;
+    displayName?: string;
+}
+
+export interface Sharing {
+    publicAccess: string;
+    externalAccess: boolean;
+    userAccesses: Access[];
+    userGroupAccesses: Access[];
+}
+
+export interface User {
+    id: string;
+    name: string;
+}
+
+export interface UserGroup {
+    id: string;
+    name: string;
+    users: Ref[];
+}
+
 export interface UserRole {
     id: string;
     name: string;
@@ -38,6 +62,15 @@ export interface OrganisationUnit {
     level: number;
     path: string;
     ancestors: Maybe<OrganisationUnit[]>;
+}
+
+export interface OrganisationUnitGroupSet {
+    id: string;
+    name: string;
+    organisationUnitGroups: Array<{
+        name: string;
+        organisationUnits: Ref[];
+    }>;
 }
 
 export interface OrganisationUnitLevel {
@@ -230,7 +263,7 @@ export interface MetadataResponse {
     typeReports: TypeReport[];
 }
 
-export interface Dashboard {
+export interface Dashboard extends Sharing {
     id: string;
     dashboardItems: Array<{
         id: string;
@@ -296,7 +329,10 @@ export type ModelName =
     | "dataInputPeriods"
     | "organisationUnits"
     | "organisationUnitLevels"
+    | "organisationUnitGroupSets"
     | "sections"
+    | "users"
+    | "userGroups"
     | "userRoles";
 
 export interface MetadataGetModelParams {

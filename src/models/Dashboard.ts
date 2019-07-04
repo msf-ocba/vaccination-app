@@ -11,6 +11,7 @@ import {
     OrganisationUnitPathOnly,
     CategoryOption,
     OrganisationUnitWithName,
+    Sharing,
 } from "./db.types";
 import { Antigen } from "./campaign";
 import { Moment } from "moment";
@@ -181,6 +182,7 @@ export class Dashboard {
         teamIds,
         dosesCategoryId,
         dashboardCode,
+        sharing,
     }: {
         dashboardId?: string;
         datasetName: string;
@@ -195,6 +197,7 @@ export class Dashboard {
         teamIds: string[];
         dosesCategoryId: string;
         dashboardCode: string;
+        sharing: Sharing;
     }): Promise<DashboardMetadata> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
@@ -224,6 +227,7 @@ export class Dashboard {
             name: `${datasetName}_DASHBOARD`,
             code: dashboardCode,
             dashboardItems: items,
+            ...sharing,
         };
 
         return { dashboards: [dashboard], charts, reportTables };

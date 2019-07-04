@@ -347,6 +347,7 @@ export default class CampaignDb {
 
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
         const teamIds: string[] = campaign.teamsMetadata.elements.map(co => co.id);
+        const sharing = await campaign.getDashboardSharing();
 
         return dashboardGenerator.create({
             dashboardId: campaign.dashboardId,
@@ -362,6 +363,7 @@ export default class CampaignDb {
             teamIds,
             dosesCategoryId: this.dosesCategoryId,
             dashboardCode: getDashboardCode(metadataConfig, dataSetId),
+            sharing,
         });
     }
 }
