@@ -74,7 +74,7 @@ export const dashboardItemsConfig = {
         },
         qsPerAntigen: {
             elements: ["RVC_DILUTION_SYRINGES_RATIO", "RVC_CAMPAIGN_NEEDLES_RATIO"],
-            rows: ["pe", "teams"],
+            rows: ["pe", "team"],
             filterDataBy: ["ou"],
             disaggregatedBy: [],
             area: false,
@@ -92,7 +92,7 @@ export const dashboardItemsConfig = {
         },
         vaccinesPerDateTeam: {
             elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED", "RVC_VACCINE_UTILIZATION"],
-            rows: ["pe", "teams"],
+            rows: ["pe", "team"],
             filterDataBy: ["ou"],
             disaggregatedBy: [],
             area: false,
@@ -173,8 +173,9 @@ function getTables({
     return _(tables)
         .map((c, key) => {
             const teamMetadata = disaggregationMetadata.teams();
-            const rows = c.rows.map(row => (row === "teams" ? teamMetadata.categoryId : row));
-            const teamRowRawDimension = _.some(c.rows, r => r === "teams") ? teamMetadata : null;
+
+            const rows = c.rows.map(row => (row === "team" ? teamMetadata.categoryId : row));
+            const teamRowRawDimension = _.some(c.rows, r => r === "team") ? teamMetadata : null;
 
             const legendId = c.legendCode ? legendsMetadata.get(c.legendCode) : null;
             return tableConstructor({
@@ -547,7 +548,7 @@ const tableConstructor = ({
               ...categoryDimensions,
               {
                   category: { id: teamRowRawDimension.categoryId },
-                  categoryOptions: teamRowRawDimension.elements.map(co => ({ id: co.id })),
+                  categoryOptions: teamRowRawDimension.elements.map(co => ({ id: co })),
               },
           ]
         : categoryDimensions;
