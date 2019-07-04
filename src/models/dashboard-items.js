@@ -71,6 +71,7 @@ export const dashboardItemsConfig = {
             area: true,
             title: "Campaign Coverage by Area",
             appendCode: "coverageByArea",
+            showRowSubTotals: false,
         },
         qsPerAntigen: {
             elements: ["RVC_DILUTION_SYRINGES_RATIO", "RVC_CAMPAIGN_NEEDLES_RATIO"],
@@ -109,6 +110,7 @@ export const dashboardItemsConfig = {
             area: false,
             title: "Campaign Coverage by day",
             appendCode: "coverageByPeriod",
+            showRowSubTotals: false,
         },
     },
 };
@@ -192,6 +194,7 @@ function getTables({
                 teamRowRawDimension,
                 ...itemsMetadata,
                 disaggregations: getDisaggregations(c, disaggregationMetadata, antigen),
+                showRowSubTotals: c.showRowSubTotals,
             });
         })
         .value();
@@ -536,6 +539,7 @@ const tableConstructor = ({
     title,
     legendId,
     teamRowRawDimension = null,
+    showRowSubTotals = true,
 }) => {
     const { columns, columnDimensions, categoryDimensions } = getDimensions(
         disaggregations,
@@ -580,7 +584,7 @@ const tableConstructor = ({
         hideEmptyRows: true,
         parentGraphMap: {},
         userOrganisationUnit: false,
-        rowSubTotals: !_.isEmpty(disaggregations),
+        rowSubTotals: showRowSubTotals && !_.isEmpty(disaggregations),
         displayDensity: "NORMAL",
         completedOnly: false,
         colTotals: true,
