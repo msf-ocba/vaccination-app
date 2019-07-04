@@ -23,12 +23,6 @@ const metadataConfig: MetadataConfig = {
             displayName: "Created by app",
             valueType: "BOOLEAN",
         },
-        dashboard: {
-            code: "RVC_DASHBOARD_ID",
-            id: "2",
-            displayName: "Dashboard ID",
-            valueType: "TEXT",
-        },
     },
     categories: [],
     categoriesDisaggregation: [

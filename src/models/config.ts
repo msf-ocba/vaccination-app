@@ -29,10 +29,10 @@ export const baseConfig = {
     categoryCodeForTeams: "RVC_TEAM",
     legendSetsCode: "RVC_LEGEND_ZERO",
     attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
-    attributeCodeForDashboard: "RVC_DASHBOARD_ID",
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
+    dataSetDashboardCodePrefix: "RVC_CAMPAIGN",
     userRoleNames: {
         manager: ["RVC Campaign Manager"],
         feedback: ["RVC Feedback"],
@@ -46,7 +46,6 @@ export interface MetadataConfig extends BaseConfig {
     userRoles: NamedObject[];
     attributes: {
         app: Attribute;
-        dashboard: Attribute;
     };
     organisationUnitLevels: OrganisationUnitLevel[];
     categories: Category[];
@@ -133,6 +132,16 @@ export function getCode(parts: string[]): string {
         )
         .join("_");
     return "RVC_" + code;
+}
+
+export function getDashboardCode(config: MetadataConfig, dataSetId: string): string {
+    return config.dataSetDashboardCodePrefix + "_" + dataSetId;
+}
+
+export function getByIndex<T, K extends keyof T>(objects: T[], key: K, value: T[K]): T {
+    return _(objects)
+        .keyBy(key)
+        .getOrFail(value as any) as T;
 }
 
 function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
@@ -276,7 +285,6 @@ function getAttributes(attributes: Attribute[]) {
     const attributesByCode = _(attributes).keyBy("code");
     return {
         app: attributesByCode.getOrFail(baseConfig.attributeCodeForApp),
-        dashboard: attributesByCode.getOrFail(baseConfig.attributeCodeForDashboard),
     };
 }
 

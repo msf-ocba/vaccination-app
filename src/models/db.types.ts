@@ -235,6 +235,16 @@ export interface MetadataResponse {
     typeReports: TypeReport[];
 }
 
+export interface Dashboard {
+    id: string;
+    dashboardItems: Array<{
+        id: string;
+        chart: { id: string };
+        map: { id: string };
+        reportTable: { id: string };
+    }>;
+}
+
 export interface DataValue {
     dataSet?: string;
     completeDate?: string;

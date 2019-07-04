@@ -28,6 +28,7 @@ export interface ReportTableItem extends DashboardItem {
 type DashboardData = {
     id: string;
     name: string;
+    code: string;
     dashboardItems: Array<ReportTableItem | ChartItem>;
 };
 
@@ -35,6 +36,12 @@ type allDashboardElements = {
     charts: Array<object>;
     reportTables: Array<object>;
     items: Array<ChartItem | ReportTableItem>;
+};
+
+export type DashboardMetadata = {
+    dashboards: DashboardData[];
+    charts: object[];
+    reportTables: object[];
 };
 
 export class Dashboard {
@@ -49,7 +56,8 @@ export class Dashboard {
         organisationUnitsPathOnly: OrganisationUnitPathOnly[],
         antigensDisaggregation: AntigenDisaggregationEnabled,
         teamIds: string[],
-        metadataConfig: MetadataConfig
+        metadataConfig: MetadataConfig,
+        allCategoryIds: { ageGroup: string; doses: string; teams: string; antigen: string }
     ) {
         const orgUnitsId = _(organisationUnitsPathOnly).map("id");
         const { organisationUnits: organisationUnitsWithName } = await this.db.api.get<{
@@ -93,18 +101,8 @@ export class Dashboard {
             .fromPairs()
             .value();
 
-        const { categories: metadataCategories } = metadataConfig;
-        const categoriesByCode = _(metadataCategories).keyBy("code");
-        const ageGroupCategoryId = categoriesByCode.getOrFail(
-            metadataConfig.categoryCodeForAgeGroup
-        ).id;
-        const antigenCategoryId = categoriesByCode.getOrFail(metadataConfig.categoryCodeForAntigens)
-            .id;
-        const teamsCategoryId = categoriesByCode.getOrFail(metadataConfig.categoryCodeForTeams).id;
-        const dosesCategoryId = categoriesByCode.getOrFail(metadataConfig.categoryCodeForDoses).id;
-
         const dashboardMetadata = {
-            antigenCategory: antigenCategoryId,
+            antigenCategory: allCategoryIds.antigen,
             elementsMetadata: [
                 {
                     type: "DATA_ELEMENT",
@@ -127,15 +125,15 @@ export class Dashboard {
             },
             disaggregationMetadata: {
                 teams: () => ({
-                    categoryId: teamsCategoryId,
+                    categoryId: allCategoryIds.teams,
                     elements: teamIds,
                 }),
                 ageGroups: (antigen: Ref) => ({
-                    categoryId: ageGroupCategoryId,
+                    categoryId: allCategoryIds.ageGroup,
                     elements: ageGroupsByAntigen[antigen.id],
                 }),
                 doses: (antigen: Ref) => ({
-                    categoryId: dosesCategoryId,
+                    categoryId: allCategoryIds.doses,
                     elements: dosesByAntigen[antigen.id],
                 }),
             },
@@ -154,6 +152,8 @@ export class Dashboard {
         antigensDisaggregation,
         teamIds,
         metadataConfig,
+        dashboardCode,
+        allCategoryIds,
     }: {
         dashboardId?: string;
         datasetName: string;
@@ -163,14 +163,17 @@ export class Dashboard {
         endDate: Moment;
         antigensDisaggregation: AntigenDisaggregationEnabled;
         teamIds: string[];
+        dashboardCode: string;
+        allCategoryIds: { ageGroup: string; doses: string; antigen: string; teams: string };
         metadataConfig: MetadataConfig;
-    }): Promise<{ dashboard: DashboardData; charts: Array<object>; reportTables: Array<object> }> {
+    }): Promise<DashboardMetadata> {
         const dashboardItemsMetadata = await this.getMetadataForDashboardItems(
             antigens,
             organisationUnits,
             antigensDisaggregation,
             teamIds,
-            metadataConfig
+            metadataConfig,
+            allCategoryIds
         );
 
         const dashboardItems = this.createDashboardItems(
@@ -189,10 +192,11 @@ export class Dashboard {
         const dashboard = {
             id: dashboardId || generateUid(),
             name: `${datasetName}_DASHBOARD`,
+            code: dashboardCode,
             dashboardItems: items,
         };
 
-        return { dashboard, charts, reportTables };
+        return { dashboards: [dashboard], charts, reportTables };
     }
 
     createDashboardItems(
