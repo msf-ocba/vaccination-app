@@ -214,7 +214,7 @@ export class Dashboard {
             })
         );
         const periodRange = getDaysRange(startDate, endDate);
-        const period = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
+        const periodItems = periodRange.map(date => ({ id: date.format("YYYYMMDD") }));
         const antigensMeta = _(dashboardItemsMetadata).getOrFail("antigensMeta");
         const dashboardItemsElements = itemsMetadataConstructor(dashboardItemsMetadata);
 
@@ -233,7 +233,7 @@ export class Dashboard {
             antigensMeta,
             datasetName,
             organisationUnitsMetadata,
-            period,
+            periodItems,
             antigenCategory,
             disaggregationMetadata,
             elements,

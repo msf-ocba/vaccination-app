@@ -159,7 +159,7 @@ function getCharts({
                 appendCode: chart.appendCode,
                 organisationUnits,
                 title: chart.title,
-                area: chart.area || false,
+                area: !!chart.area,
                 rows: chart.rows,
                 filterDataBy: chart.filterDataBy,
                 ...itemsMetadata,
@@ -195,7 +195,7 @@ function getTables({
                 filterDataBy: c.filterDataBy,
                 organisationUnits,
                 title: c.title,
-                area: c.area || false,
+                area: !!c.area,
                 legendId,
                 teamRowRawDimension,
                 ...itemsMetadata,
@@ -210,7 +210,7 @@ export function buildDashboardItems(
     antigensMeta,
     datasetName,
     organisationUnitsMetadata,
-    period,
+    periodItems,
     antigenCategory,
     disaggregationMetadata,
     elements,
@@ -218,7 +218,7 @@ export function buildDashboardItems(
 ) {
     const itemsMetadata = {
         datasetName,
-        period,
+        periodItems,
         antigenCategory,
     };
 
@@ -257,6 +257,7 @@ export function buildDashboardItems(
                 })
             )
         )
+        .flatten()
         .value();
 
     const globalTables = getTables({
@@ -269,11 +270,7 @@ export function buildDashboardItems(
         legendsMetadata,
     });
 
-    const reportTables = [
-        ...globalTables,
-        ...tablesByAntigen,
-        ..._.flatten(tablesByAntigenAndSite),
-    ];
+    const reportTables = _.concat(globalTables, tablesByAntigen, tablesByAntigenAndSite);
 
     const chartsByAntigen = _(antigensMeta)
         .flatMap(antigen =>
@@ -375,7 +372,7 @@ const chartConstructor = ({
     id,
     datasetName,
     antigen,
-    period,
+    periodItems,
     antigenCategory,
     data,
     type,
@@ -393,9 +390,10 @@ const chartConstructor = ({
         antigenCategory
     );
 
-    const periodForTitle = `${moment(period[0].id).format("DD/MM/YYYY")} - ${moment(
-        period[period.length - 1].id
+    const periodForTitle = `${moment(periodItems[0].id).format("DD/MM/YYYY")} - ${moment(
+        _.last(periodItems).id
     ).format("DD/MM/YYYY")}`;
+
     const chartTitle = title(periodForTitle);
 
     const columns = _.isEmpty(disaggregations) ? allColumns : allColumns.filter(c => c.id !== "dx");
@@ -521,7 +519,7 @@ const chartConstructor = ({
         organisationUnitGroupSetDimensions: [],
         organisationUnitLevels: [],
         dataElementDimensions: [],
-        periods: period,
+        periods: periodItems,
         organisationUnits: organisationUnitElements,
         categoryDimensions,
         filters: filterDimensions.map(fd => ({ id: fd })),
@@ -533,7 +531,7 @@ const tableConstructor = ({
     id,
     datasetName,
     antigen,
-    period,
+    periodItems,
     antigenCategory,
     data,
     appendCode,
@@ -694,7 +692,7 @@ const tableConstructor = ({
         organisationUnitGroupSetDimensions: [],
         organisationUnitLevels: [],
         dataElementDimensions: [],
-        periods: period,
+        periods: periodItems,
         organisationUnits: organisationUnitElements,
         categoryDimensions: categoryDimensionsWithRows,
         filters: filterDataBy.map(f => ({ id: f })),
