@@ -3,26 +3,24 @@ import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { withRouter } from "react-router";
 import _ from "lodash";
+import { withSnackbar, Wizard } from "d2-ui-components";
+import { LinearProgress } from "@material-ui/core";
 
 import Campaign from "models/campaign";
-import DbD2 from "models/db-d2";
-
-import Wizard from "../wizard/Wizard";
 import PageHeader from "../shared/PageHeader";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
 import SaveStep from "../steps/save/SaveStep";
 import { getValidationMessages } from "../../utils/validations";
 import GeneralInfoStep from "../steps/general-info/GeneralInfoStep";
 import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionStep";
-import ConfirmationDialog from "../confirmation-dialog/ConfirmationDialog";
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 import { memoize } from "../../utils/memoize";
-import { withSnackbar } from "d2-ui-components";
-import TargetPopulationStep from "../steps/target-population/TargetPopulationStep";
+import ExitWizardButton from "../wizard/ExitWizardButton";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
+        db: PropTypes.object.isRequired,
         history: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
         snackbar: PropTypes.object.isRequired,
@@ -31,39 +29,55 @@ class CampaignWizard extends React.Component {
     constructor(props) {
         super(props);
 
-        const campaign = Campaign.create(props.config, new DbD2(props.d2));
-
         this.state = {
-            campaign: campaign,
+            campaign: null,
             dialogOpen: false,
         };
     }
 
+    async componentDidMount() {
+        const { db, config, match } = this.props;
+
+        try {
+            const campaign = this.isEdit()
+                ? await Campaign.get(config, db, match.params.id)
+                : Campaign.create(config, db);
+            this.setState({ campaign });
+        } catch (err) {
+            this.props.snackbar.error(i18n.t("Cannot load campaign") + `: ${err.message || err}`);
+            this.props.history.push("/campaign-configuration");
+        }
+    }
+
+    isEdit() {
+        return !!this.props.match.params.id;
+    }
+
     getStepsBaseInfo() {
         return [
-            {
-                key: "organisation-units",
-                label: i18n.t("Organisation Units"),
-                component: OrganisationUnitsStep,
-                validationKeys: ["organisationUnits"],
-                description: i18n.t(
-                    `Select the health facilities or health area where the campaign will be implemented`
-                ),
-                help: i18n.t(
-                    `Select the organisation units which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
-                ),
-            },
             {
                 key: "general-info",
                 label: i18n.t("General info"),
                 component: GeneralInfoStep,
                 validationKeys: ["name", "startDate", "endDate"],
                 description: i18n.t(
-                    `Name your campaign and choose dates for which data entry will be enabled`
+                    `Choose a name for the campaign and define the period for which data entry will be enabled`
                 ),
                 help: i18n.t(
-                    `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format: REACTIVE_VACC_LOCATION_ANTIGEN(S) _MONTH_YEAR\n
+                    `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format is "RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... - {CAMPAIGN PERIOD}". Example -> "RVC Shabunda - Measles/Cholera - Jan-Mar 2019".\n
                     The start and end date should define the period for which you expect to enter data - i.e .the first and last day of your campaign. If you are not certain of the end date, enter a date a few weeks later than the expected date of completion (refer to your microplan). It is possible to edit the dates at any point.`
+                ),
+            },
+            {
+                key: "organisation-units",
+                label: i18n.t("Organisation Units"),
+                component: OrganisationUnitsStep,
+                validationKeys: ["organisationUnits", "teams"],
+                description: i18n.t(
+                    `Select the health facilities or health area where the campaign will be implemented`
+                ),
+                help: i18n.t(
+                    `Select the health facilities or health areas which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
                 ),
             },
             {
@@ -85,27 +99,16 @@ class CampaignWizard extends React.Component {
                 Standard age groups for each antigen appear by default. In some cases, you may click on an age group to select subdivisions if that information is important for your campaign. Compulsory indicators may not be un-selected.`),
             },
             {
-                key: "target-population",
-                label: i18n.t("Target Population"),
-                component: TargetPopulationStep,
-                validationKeys: ["targetPopulation"],
-                description: i18n.t(
-                    `Specify target population, totals and age percentages for the age ranges required by all selected antigens. The source of those values are the DHIS2 analytics endpoint. Like-wise, any change you make in this step will only be applied once you run the analytics.`
-                ),
-                help: i18n.t(
-                    `Specify target population, totals and age percentages for the age ranges required by all selected antigens.`
-                ),
-            },
-            {
                 key: "save",
                 label: i18n.t("Save"),
                 component: SaveStep,
                 validationKeys: [],
                 description: i18n.t(
-                    'Setup of your campaign is complete. Click the "Save" button to save your campaign and access tally sheets, data entry or analysis'
+                    'Setup of your campaign is complete. Click the "Save" button to save your campaign, then you can set your target population, go to data entry and go to dashboard'
                 ),
-                help: i18n.t(`Press the button to create the \
-dataset and all the metadata associated with this vaccination campaign.`),
+                help: i18n.t(
+                    `Please review your vaccination campaign summary. Click the "Save" button to create the data set and all associated metadata for this campaign`
+                ),
             },
         ];
     }
@@ -123,17 +126,16 @@ dataset and all the metadata associated with this vaccination campaign.`),
         this.setState({ dialogOpen: false });
     };
 
-    onChange = memoize(step => campaign => {
-        const errors = getValidationMessages(campaign, step.validationKeysLive || []);
-        if (_(errors).isEmpty()) {
-            this.setState({ campaign });
-        } else {
+    onChange = memoize(step => async campaign => {
+        const errors = await getValidationMessages(campaign, step.validationKeysLive || []);
+        this.setState({ campaign });
+        if (!_(errors).isEmpty()) {
             this.props.snackbar.error(errors.join("\n"));
         }
     });
 
-    onStepChangeRequest = currentStep => {
-        return getValidationMessages(this.state.campaign, currentStep.validationKeys);
+    onStepChangeRequest = async currentStep => {
+        return await getValidationMessages(this.state.campaign, currentStep.validationKeys);
     };
 
     render() {
@@ -147,6 +149,7 @@ dataset and all the metadata associated with this vaccination campaign.`),
                 d2,
                 campaign,
                 onChange: this.onChange(step),
+                onCancel: this.handleConfirm,
             },
         }));
 
@@ -154,29 +157,33 @@ dataset and all the metadata associated with this vaccination campaign.`),
         const stepExists = steps.find(step => step.key === urlHash);
         const firstStepKey = steps.map(step => step.key)[0];
         const initialStepKey = stepExists ? urlHash : firstStepKey;
+        const lastClickableStepIndex = this.isEdit() ? steps.length - 1 : 0;
+        const title = this.isEdit()
+            ? i18n.t("Edit vaccination campaign")
+            : i18n.t("New vaccination campaign");
 
         return (
             <React.Fragment>
-                <ConfirmationDialog
-                    dialogOpen={dialogOpen}
-                    handleConfirm={this.handleConfirm}
-                    handleCancel={this.handleDialogCancel}
-                    title={i18n.t("Cancel Campaign Creation?")}
-                    contents={i18n.t(
-                        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
-                    )}
+                <ExitWizardButton
+                    isOpen={dialogOpen}
+                    onConfirm={this.handleConfirm}
+                    onCancel={this.handleDialogCancel}
                 />
                 <PageHeader
-                    title={i18n.t("New vaccination campaign")}
+                    title={`${title}: ${campaign ? campaign.name : i18n.t("Loading...")}`}
                     onBackClick={this.cancelSave}
                 />
-
-                <Wizard
-                    steps={steps}
-                    initialStepKey={initialStepKey}
-                    useSnackFeedback={true}
-                    onStepChangeRequest={this.onStepChangeRequest}
-                />
+                {campaign ? (
+                    <Wizard
+                        steps={steps}
+                        initialStepKey={initialStepKey}
+                        useSnackFeedback={true}
+                        onStepChangeRequest={this.onStepChangeRequest}
+                        lastClickableStepIndex={lastClickableStepIndex}
+                    />
+                ) : (
+                    <LinearProgress />
+                )}
             </React.Fragment>
         );
     }

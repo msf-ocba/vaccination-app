@@ -13,44 +13,49 @@ const translations = {
     no_antigens_selected: () => i18n.t("Select at least one antigen"),
 
     select_at_least_one_option_for_category: () =>
-        i18n.t("You must select at least one option of the category"),
+        i18n.t("You must select at least one category option"),
 
     no_target_population_defined: () => i18n.t("No target population defined"),
     total_population_invalid: namespace =>
         i18n.t(
-            "Org unit {{organisationUnit}} has an invalid total population value: {{value}}",
+            "Org unit {{organisationUnit}} has an invalid total population value -> {{value}}",
             namespace
         ),
 
     age_groups_population_invalid: namespace =>
         i18n.t(
-            "Org unit {{organisationUnit}} has invalid distribution values for age ranges: {{ageGroups}}",
+            "Org unit {{organisationUnit}} has invalid distribution values for age ranges -> {{ageGroups}}",
             namespace
         ),
 
     age_groups_population_for_antigen_invalid: namespace =>
         i18n.t(
-            "Org unit {{organisationUnit}} has an invalid total value for antigen {{antigen}} ({{ageGroups}}): {{- value}}",
+            "Org unit {{organisationUnit}} has an invalid total value for antigen {{antigen}} ({{ageGroups}}) -> {{- value}}",
             namespace
         ),
+    must_be_bigger_than_zero: () => i18n.t("Number of teams must be positive"),
+    name_must_be_unique: () => i18n.t("There already exists a campaign with the same name"),
 };
 
-export function getValidationMessages(campaign, validationKeys) {
+export function translateError(error) {
+    const translation = translations[error.key];
+
+    if (translation) {
+        return i18n.t(translation(error.namespace));
+    } else {
+        return `Missing translation: ${error.key}`;
+    }
+}
+
+export async function getValidationMessages(campaign, validationKeys) {
     if (_(validationKeys).isEmpty()) return [];
 
-    const validationObj = campaign.validate();
+    const validationObj = await campaign.validate(validationKeys);
 
     return _(validationObj)
         .at(validationKeys)
         .flatten()
         .compact()
-        .map(error => {
-            const translation = translations[error.key];
-            if (translation) {
-                return i18n.t(translation(error.namespace));
-            } else {
-                return `Missing translation: ${error.key}`;
-            }
-        })
+        .map(translateError)
         .value();
 }

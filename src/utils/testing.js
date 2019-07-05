@@ -39,8 +39,10 @@ const mocks = {
 
 function deepMerge(object, source) {
     return _.mergeWith(object, source, function(objValue, srcValue) {
-        if (_.isObject(objValue) && srcValue) {
+        if (_.isObject(objValue) && !_.isFunction(objValue) && srcValue) {
             return deepMerge(objValue, srcValue);
+        } else if (_.isFunction(objValue) && _.isFunction(srcValue)) {
+            return srcValue;
         }
     });
 }

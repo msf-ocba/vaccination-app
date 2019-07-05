@@ -1,17 +1,25 @@
 language: node_js
 node_js:
 - 8.10.0
+addons:
+  apt:
+    packages:
+      - libgconf-2-4
 cache:
   directories:
   - "$HOME/.cache"
+addons:
+  apt:
+    packages:
+    - libgconf-2-4
 install:
     - yarn install --frozen-lockfile
     - yarn cy:verify
     - yarn build
 script:
-    - PORT=8081 REACT_APP_DHIS2_BASE_URL=http://dev2.eyeseetea.com:8082 yarn start &
-    - yarn run wait-on http://localhost:8081 && sleep 10s
-    - REACT_APP_CYPRESS=true CYPRESS_EXTERNAL_API=http://dev2.eyeseetea.com:8082 CYPRESS_ROOT_URL=http://localhost:8081 yarn cy:e2e:run
+    - PORT=8081 REACT_APP_CYPRESS=true REACT_APP_DHIS2_BASE_URL=http://dev2.eyeseetea.com:8082 yarn start &
+    - yarn run wait-on http-get://localhost:8081
+    - CYPRESS_EXTERNAL_API=http://dev2.eyeseetea.com:8082 CYPRESS_ROOT_URL=http://localhost:8081 yarn cy:e2e:run --record --key $CYPRESS_KEY
     - kill $(jobs -p) || true
 notifications:
   slack:

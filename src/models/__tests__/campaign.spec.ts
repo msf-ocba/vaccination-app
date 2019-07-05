@@ -4,14 +4,15 @@ import { getD2Stub } from "../../utils/testing";
 import _ from "lodash";
 import metadataConfig from "./config-mock";
 
-const d2 = getD2Stub();
+const metadataStub = jest.fn(() => Promise.resolve({ categoryOptions: [], organisationUnits: [] }));
+
+const d2 = getD2Stub({ Api: { getApi: () => ({ get: metadataStub }) } });
 const db = new DbD2(d2);
 const campaign = Campaign.create(metadataConfig, db);
-
 describe("Campaign", () => {
     describe("Validations", () => {
-        it("requires a name", () => {
-            const messages = campaign.validate();
+        it("requires a name", async () => {
+            const messages = await campaign.validate();
             expect(messages).toEqual(
                 expect.objectContaining({
                     name: [
@@ -24,8 +25,8 @@ describe("Campaign", () => {
             );
         });
 
-        it("requires at least one orgunit", () => {
-            const messages = campaign.validate();
+        it("requires at least one orgunit", async () => {
+            const messages = await campaign.validate();
             expect(messages).toEqual(
                 expect.objectContaining({
                     organisationUnits: [{ key: "no_organisation_units_selected" }],
@@ -33,7 +34,7 @@ describe("Campaign", () => {
             );
         });
 
-        it("requires at least one orgunit of level 5", () => {
+        it("requires at least one orgunit of level 5", async () => {
             const ids = [
                 "zOyMxdCLXBM",
                 "G7g4TvbjFlX",
@@ -48,7 +49,7 @@ describe("Campaign", () => {
             ];
             _(1)
                 .range(10)
-                .forEach(level => {
+                .forEach(async level => {
                     const path =
                         "/" +
                         _(ids)
@@ -63,14 +64,10 @@ describe("Campaign", () => {
                             path: path,
                         },
                     ]);
-                    const messages = campaignWithOrgUnit.validate();
+                    const messages = await campaignWithOrgUnit.validate();
 
                     if (level == 5) {
-                        expect(messages).toEqual(
-                            expect.objectContaining({
-                                organisationUnits: [],
-                            })
-                        );
+                        expect(messages).toEqual(expect.objectContaining({}));
                     } else {
                         expect(messages).toEqual(
                             expect.objectContaining({

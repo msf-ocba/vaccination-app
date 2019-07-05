@@ -9,41 +9,47 @@ import {
     DataElement,
     OrganisationUnitLevel,
     Ref,
+    CategoryOption,
+    CategoryOptionCombo,
+    Attribute,
+    NamedObject,
+    Indicator,
 } from "./db.types";
+import { sortAgeGroups } from "../utils/age-groups";
 
-export interface BaseConfig {
-    categoryCodeForAntigens: string;
-    categoryCodeForAgeGroup: string;
-    categoryComboCodeForAgeGroup: string;
-    categoryComboCodeForAntigenAgeGroup: string;
-    dataElementGroupCodeForAntigens: string;
-    categoryComboCodeForTeams: string;
-    categoryCodeForTeams: string;
-    attibuteCodeForApp: string;
-    attributeCodeForDashboard: string;
-    dataElementCodeForTotalPopulation: string;
-    dataElementCodeForAgeDistribution: string;
-    dataElementCodeForPopulationByAge: string;
-}
-
-const baseConfig: BaseConfig = {
+export const baseConfig = {
     categoryCodeForAntigens: "RVC_ANTIGEN",
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
+    categoryCodeForDoses: "RVC_DOSE",
     categoryComboCodeForAgeGroup: "RVC_AGE_GROUP",
-    categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_RVC_AGE_GROUP",
+    categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_AGE_GROUP",
+    categoryComboCodeForAntigenDosesAgeGroup: "RVC_ANTIGEN_DOSE_AGE_GROUP",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
-    attibuteCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
-    attributeCodeForDashboard: "RVC_DASHBOARD_ID",
+    legendSetsCode: "RVC_LEGEND_ZERO",
+    attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
+    dataSetDashboardCodePrefix: "RVC_CAMPAIGN",
+    userRoleNames: {
+        manager: ["RVC Campaign Manager"],
+        feedback: ["RVC Feedback"],
+        targetPopulation: ["Medical Focal Point", "Field User", "Online Data Entry"],
+    },
 };
 
+type BaseConfig = typeof baseConfig;
+
 export interface MetadataConfig extends BaseConfig {
+    userRoles: NamedObject[];
+    attributes: {
+        app: Attribute;
+    };
     organisationUnitLevels: OrganisationUnitLevel[];
-    categories: Array<{
+    categories: Category[];
+    categoriesDisaggregation: Array<{
         name: string;
         code: string;
         dataDimensionType: "DISAGGREGATION" | "ATTRIBUTE";
@@ -51,8 +57,13 @@ export interface MetadataConfig extends BaseConfig {
         $categoryOptions:
             | { kind: "fromAntigens" }
             | { kind: "fromAgeGroups" }
+            | { kind: "fromDoses" }
             | { kind: "values"; values: string[] };
     }>;
+    defaults: {
+        categoryOptionCombo: CategoryOptionCombo;
+    };
+    categoryOptions: CategoryOption[];
     categoryCombos: CategoryCombo[];
     population: {
         totalPopulationDataElement: DataElement;
@@ -60,28 +71,39 @@ export interface MetadataConfig extends BaseConfig {
         populationByAgeDataElement: DataElement;
         ageGroupCategory: Category;
     };
-    dataElements: Array<{
+    dataElements: DataElement[];
+    dataElementsDisaggregation: Array<{
         name: string;
         code: string;
         id: string;
         categories: { code: string; optional: boolean }[];
     }>;
+    indicators: Indicator[];
     antigens: Array<{
+        id: string;
         name: string;
         code: string;
-        dataElements: { code: string; optional: boolean }[];
+        dataElements: { id: string; code: string; optional: boolean; order: number }[];
         ageGroups: Array<string[][]>;
+        doses: Array<{ id: string; name: string }>;
+    }>;
+    legendSets: Array<{
+        id: string;
     }>;
 }
 
-function getConfigCategories(categories: Category[]): MetadataConfig["categories"] {
+function getCategoriesDisaggregation(
+    categories: Category[]
+): MetadataConfig["categoriesDisaggregation"] {
     return categories.map(category => {
-        let $categoryOptions: MetadataConfig["categories"][0]["$categoryOptions"];
+        let $categoryOptions: MetadataConfig["categoriesDisaggregation"][0]["$categoryOptions"];
 
         if (category.code === baseConfig.categoryCodeForAntigens) {
             $categoryOptions = { kind: "fromAntigens" };
         } else if (category.code === baseConfig.categoryCodeForAgeGroup) {
             $categoryOptions = { kind: "fromAgeGroups" };
+        } else if (category.code === baseConfig.categoryCodeForDoses) {
+            $categoryOptions = { kind: "fromDoses" };
         } else {
             $categoryOptions = {
                 kind: "values",
@@ -90,6 +112,7 @@ function getConfigCategories(categories: Category[]): MetadataConfig["categories
         }
 
         return {
+            id: category.id,
             name: category.displayName,
             code: category.code,
             dataDimensionType: category.dataDimensionType,
@@ -99,8 +122,26 @@ function getConfigCategories(categories: Category[]): MetadataConfig["categories
     });
 }
 
-function getCode(parts: string[]): string {
-    return parts.map(part => part.replace(/\s*/g, "").toUpperCase()).join("_");
+export function getCode(parts: string[]): string {
+    const code = parts
+        .map(part =>
+            part
+                .replace(/\s*/g, "")
+                .replace(/^RVC_/, "")
+                .toUpperCase()
+        )
+        .join("_");
+    return "RVC_" + code;
+}
+
+export function getDashboardCode(config: MetadataConfig, dataSetId: string): string {
+    return config.dataSetDashboardCodePrefix + "_" + dataSetId;
+}
+
+export function getByIndex<T, K extends keyof T>(objects: T[], key: K, value: T[K]): T {
+    return _(objects)
+        .keyBy(key)
+        .getOrFail(value as any) as T;
 }
 
 function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
@@ -108,22 +149,22 @@ function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
     return refs.map(ref => _(objectsById).getOrFail(ref.id));
 }
 
-function getConfigDataElements(
+function getConfigDataElementsDisaggregation(
     dataElementGroups: DataElementGroup[],
     dataElements: DataElement[],
     categoryCombos: CategoryCombo[],
     categories: Category[]
-): MetadataConfig["dataElements"] {
+): MetadataConfig["dataElementsDisaggregation"] {
     const groupsByCode = _.keyBy(dataElementGroups, "code");
     const catCombosByCode = _.keyBy(categoryCombos, "code");
     const dataElementsForAntigens = getFromRefs(
-        _(groupsByCode).getOrFail("RVC_ANTIGEN").dataElements,
+        _(groupsByCode).getOrFail(baseConfig.dataElementGroupCodeForAntigens).dataElements,
         dataElements
     );
 
     return dataElementsForAntigens.map(dataElement => {
         const getCategories = (typeString: string): Category[] => {
-            const code = "RVC_DE_" + dataElement.code + "_" + typeString;
+            const code = getCode(["RVC_DE", dataElement.code]) + "_" + typeString;
             const categoryRefs = (catCombosByCode[code] || { categories: [] }).categories;
             return getFromRefs(categoryRefs, categories);
         };
@@ -142,34 +183,6 @@ function getConfigDataElements(
     });
 }
 
-function sortAgeGroups(names: string[]) {
-    const timeUnits: _.Dictionary<number> = { d: 1, w: 7, m: 30, y: 365 };
-    const getOrThrow = _.getOrFail;
-
-    return _.sortBy(names, name => {
-        const parts = name.split(" ");
-        let pair;
-        if (parts.length === 4) {
-            // "2 - 5 y"
-            const days = getOrThrow(timeUnits, parts[3]);
-            pair = [parseInt(parts[0]) * days, parseInt(parts[2]) * days];
-        } else if (parts.length === 5) {
-            // "2 w - 3 y" {
-            const days1 = getOrThrow(timeUnits, parts[1]);
-            const days2 = getOrThrow(timeUnits, parts[4]);
-            pair = [parseInt(parts[0]) * days1, parseInt(parts[3]) * days2];
-        } else if (parts.length === 3) {
-            // ""> 30 y"
-            const days = getOrThrow(timeUnits, parts[2]);
-            pair = [parseInt(parts[1]) * days, 0];
-        } else {
-            throw new Error(`Invalid age range format: ${name}`);
-        }
-
-        return 100000 * pair[0] + pair[1];
-    });
-}
-
 function getAntigens(
     dataElementGroups: DataElementGroup[],
     dataElements: DataElement[],
@@ -177,27 +190,32 @@ function getAntigens(
     categoryOptionGroups: CategoryOptionGroup[]
 ): MetadataConfig["antigens"] {
     const categoriesByCode = _.keyBy(categories, "code");
-    const categoryOptions = _(categoriesByCode).getOrFail("RVC_ANTIGEN").categoryOptions;
+    const categoryOptions = _(categoriesByCode).getOrFail(baseConfig.categoryCodeForAntigens)
+        .categoryOptions;
     const dataElementGroupsByCode = _.keyBy(dataElementGroups, "code");
     const categoryOptionGroupsByCode = _.keyBy(categoryOptionGroups, "code");
 
     const antigensMetadata = categoryOptions.map(categoryOption => {
         const getDataElements = (typeString: string) => {
             const code = getCode([categoryOption.code, typeString]);
-            return getFromRefs(
+            const dataElementsForType = getFromRefs(
                 _(dataElementGroupsByCode).getOrFail(code).dataElements,
                 dataElements
             );
+            return dataElementsForType.map(de => ({
+                id: de.id,
+                code: de.code,
+                optional: typeString === "OPTIONAL",
+                order: parseInt(de.formName.split(" - ")[1] || "0"), // formName: Name - INDEX
+            }));
         };
 
         const dataElementsForAntigens = _.concat(
-            getDataElements("REQUIRED").map(({ code }) => ({ code, optional: false })),
-            getDataElements("OPTIONAL").map(({ code }) => ({ code, optional: true }))
+            getDataElements("REQUIRED"),
+            getDataElements("OPTIONAL")
         );
 
-        const dataElementSorted = _(dataElementsForAntigens)
-            .orderBy([de => de.code.match(/DOSES/), "code"], ["asc", "asc"])
-            .value();
+        const dataElementSorted = _.orderBy(dataElementsForAntigens, "order");
 
         const mainAgeGroups = _(categoryOptionGroupsByCode)
             .getOrFail(getCode([categoryOption.code, "AGE_GROUP"]))
@@ -213,11 +231,23 @@ function getAntigens(
             return [[mainAgeGroup], ...disaggregatedAgeGroups];
         });
 
+        const dosesIds = _(categoryOptionGroupsByCode)
+            .getOrFail(getCode([categoryOption.code, "DOSES"]))
+            .categoryOptions.map(co => co.id);
+        const allDoses = _(categoriesByCode).getOrFail(baseConfig.categoryCodeForDoses)
+            .categoryOptions;
+        const doses = _(allDoses)
+            .map(co => (_(dosesIds).includes(co.id) ? { id: co.id, name: co.displayName } : null))
+            .compact()
+            .value();
+
         return {
+            id: categoryOption.id,
             name: categoryOption.displayName,
             code: categoryOption.code,
             dataElements: dataElementSorted,
-            ageGroups: ageGroups,
+            ageGroups,
+            doses,
         };
     });
 
@@ -251,39 +281,76 @@ function getPopulationMetadata(
     };
 }
 
+function getAttributes(attributes: Attribute[]) {
+    const attributesByCode = _(attributes).keyBy("code");
+    return {
+        app: attributesByCode.getOrFail(baseConfig.attributeCodeForApp),
+    };
+}
+
+function getDefaults(metadata: RawMetadataConfig): MetadataConfig["defaults"] {
+    return {
+        categoryOptionCombo: _(metadata.categoryOptionCombos)
+            .keyBy("displayName")
+            .getOrFail("default"),
+    };
+}
+
+interface RawMetadataConfig {
+    attributes: Attribute[];
+    categories: Category[];
+    categoryCombos: CategoryCombo[];
+    categoryOptionCombos: CategoryOptionCombo[];
+    categoryOptionGroups: CategoryOptionGroup[];
+    dataElementGroups: DataElementGroup[];
+    dataElements: DataElement[];
+    indicators: Indicator[];
+    organisationUnitLevels: OrganisationUnitLevel[];
+    userRoles: NamedObject[];
+    legendSets: Ref[];
+}
+
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
+    const { manager, feedback, targetPopulation } = baseConfig.userRoleNames;
+    const userRoleNames = _.concat(manager, feedback, targetPopulation);
+    const userRolesFilter = "name:in:[" + userRoleNames.join(",") + "]";
     const codeFilter = "code:startsWith:RVC_";
     const modelParams = { filters: [codeFilter] };
 
     const metadataParams = {
+        attributes: modelParams,
         categories: modelParams,
         categoryCombos: modelParams,
         categoryOptionGroups: modelParams,
+        categoryOptionCombos: { filters: ["name:eq:default"] },
         dataElementGroups: modelParams,
         dataElements: modelParams,
+        indicators: { fields: { id: true, code: true }, filters: [codeFilter] },
+        legendSets: { fields: { id: true, code: true }, filters: [codeFilter] },
         organisationUnitLevels: {},
+        userRoles: { fields: { id: true, name: true }, filters: [userRolesFilter] },
     };
 
-    const metadata = await db.getMetadata<{
-        categories: Category[];
-        categoryCombos: CategoryCombo[];
-        categoryOptionGroups: CategoryOptionGroup[];
-        dataElementGroups: DataElementGroup[];
-        dataElements: DataElement[];
-        organisationUnitLevels: OrganisationUnitLevel[];
-    }>(metadataParams);
+    const metadata = await db.getMetadata<RawMetadataConfig>(metadataParams);
 
     const metadataConfig = {
         ...baseConfig,
+        attributes: getAttributes(metadata.attributes),
         organisationUnitLevels: metadata.organisationUnitLevels,
-        categories: getConfigCategories(metadata.categories),
+        categories: metadata.categories,
+        categoriesDisaggregation: getCategoriesDisaggregation(metadata.categories),
+        categoryOptions: _(metadata.categories)
+            .flatMap("categoryOptions")
+            .value(),
         categoryCombos: metadata.categoryCombos,
-        dataElements: getConfigDataElements(
+        dataElements: metadata.dataElements,
+        dataElementsDisaggregation: getConfigDataElementsDisaggregation(
             metadata.dataElementGroups,
             metadata.dataElements,
             metadata.categoryCombos,
             metadata.categories
         ),
+        defaults: getDefaults(metadata),
         antigens: getAntigens(
             metadata.dataElementGroups,
             metadata.dataElements,
@@ -291,6 +358,9 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
             metadata.categoryOptionGroups
         ),
         population: getPopulationMetadata(metadata.dataElements, metadata.categories),
+        userRoles: metadata.userRoles,
+        legendSets: metadata.legendSets,
+        indicators: metadata.indicators,
     };
 
     return metadataConfig;

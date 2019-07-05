@@ -7,6 +7,7 @@ context("Landing page", () => {
     });
 
     beforeEach(() => {
+        cy.login("admin");
         cy.visit("/");
     });
 
@@ -15,32 +16,31 @@ context("Landing page", () => {
             cy.title().should("equal", "Vaccination App");
         });
 
-        it("shows 4 pages of the application", () => {
+        it("shows 3 pages of the application", () => {
             cy.get('[data-test="pages"]')
                 .should("have.length", 1)
                 .should("be.visible");
 
-            cy.contains("Campaign Configuration");
+            cy.contains("Campaigns");
             cy.contains("Data Entry");
             cy.contains("Dashboard");
-            cy.contains("Maintenance");
         });
     });
 
-    describe("when clicked on Campaign Configuration", () => {
-        it("redirects to Campaign Configuration", () => {
-            cy.contains("Campaign Configuration").click();
+    describe("when clicked on Campaigns", () => {
+        it("redirects to Campaigns", () => {
+            cy.contains("Campaigns").click();
             cy.url().should("include", "/campaign-configuration");
         });
     });
 
+    /*
     describe("when clicked on Data Entry", () => {
         it("redirects to Data Entry", () => {
             cy.contains("Data Entry").click({ force: true });
             cy.url().should("include", "/dhis-web-dataentry");
         });
     });
-    /*
     describe("when clicked on Dashboard", () => {
         it("redirects to Dashboard", () => {
             cy.contains("Dashboard").click();

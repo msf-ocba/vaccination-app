@@ -10,39 +10,37 @@ import {
     DataValue,
 } from "./db.types";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
+import { sortAgeGroups } from "../utils/age-groups";
 
 const levelsConfig = {
     levelForPopulation: 5,
-    levelsForAgeDistribution: [{ level: 4, isEditable: false }, { level: 5, isEditable: true }],
+    levelsForAgeDistribution: [{ level: 4, isEditable: true }, { level: 5, isEditable: true }],
 };
 
 export type TargetPopulationList = Array<TargetPopulationItem>;
+
+export type AgeDistributionByOrgUnit = { [orgUnitId: string]: AgeDistribution };
 
 export type TargetPopulationData = {
     organisationUnitLevels: OrganisationUnitLevel[];
     antigensDisaggregation: AntigenDisaggregationEnabled;
     targetPopulationList: TargetPopulationList;
     ageGroups: string[];
-};
-
-type PairValue = {
-    value: Maybe<number>;
-    newValue: Maybe<number>;
+    ageDistributionByOrgUnit: AgeDistributionByOrgUnit;
 };
 
 interface AgeDistribution {
-    [ageGroup: string]: PairValue;
+    [ageGroup: string]: Maybe<number>;
 }
 
 type PopulationTotal = {
     organisationUnit: OrganisationUnit;
-    pairValue: PairValue;
+    value: Maybe<number>;
 };
 
 export type PopulationDistribution = {
     isEditable: boolean;
     organisationUnit: OrganisationUnit;
-    ageDistribution: AgeDistribution;
 };
 
 export interface TargetPopulationItem {
@@ -52,8 +50,7 @@ export interface TargetPopulationItem {
 }
 
 export interface AgeGroupSelector {
-    ouIndex: number;
-    distributionIdx: number;
+    orgUnitId: string;
     ageGroup: string;
 }
 
@@ -70,12 +67,13 @@ export class TargetPopulation {
             targetPopulationList: [],
             antigensDisaggregation: [],
             ageGroups: [],
+            ageDistributionByOrgUnit: {},
         });
     }
 
     public validate(): Array<{ key: string; namespace: _.Dictionary<string> }> {
         const totalPopulationValidations = this.data.targetPopulationList.map(targetPopOu => {
-            const value = getValue(targetPopOu.populationTotal.pairValue);
+            const value = targetPopOu.populationTotal.value;
             return _.isUndefined(value) || _.isNaN(value) || value <= 0
                 ? {
                       key: "total_population_invalid",
@@ -88,10 +86,7 @@ export class TargetPopulation {
         });
 
         const ageGroupPopulationValidations = this.data.targetPopulationList.map(targetPopOu => {
-            const finalPopulationDistribution = getFinalPopulationDistribution(
-                this.data.ageGroups,
-                targetPopOu
-            );
+            const finalPopulationDistribution = this.getFinalDistribution(targetPopOu);
 
             const ageGroupsInvalid = this.data.ageGroups.filter(ageGroup => {
                 const value = finalPopulationDistribution[ageGroup];
@@ -112,10 +107,7 @@ export class TargetPopulation {
         const ageGroupAntigensValidations = _.flatMap(
             this.data.targetPopulationList,
             targetPopOu => {
-                const finalPopulationDistribution = getFinalPopulationDistribution(
-                    this.data.ageGroups,
-                    targetPopOu
-                );
+                const finalPopulationDistribution = this.getFinalDistribution(targetPopOu);
 
                 return this.data.antigensDisaggregation.map(antigen => {
                     const sumForAntigenAgeGroups = _(antigen.ageGroups)
@@ -153,10 +145,12 @@ export class TargetPopulation {
         period: string
     ): Promise<TargetPopulation> {
         const ouIds = orgUnitsPathOnly.map(ou => ou.id);
-        const ageGroupsForAllAntigens = _(antigensDisaggregation)
-            .flatMap(({ ageGroups }) => ageGroups)
-            .uniq()
-            .value();
+        const ageGroupsForAllAntigens = sortAgeGroups(
+            _(antigensDisaggregation)
+                .flatMap(({ ageGroups }) => ageGroups)
+                .uniq()
+                .value()
+        );
 
         const { organisationUnits } = await this.db.getMetadata<{
             organisationUnits: OrganisationUnit[];
@@ -165,11 +159,11 @@ export class TargetPopulation {
         });
 
         const totalPopulationsByOrgUnit = await this.getTotalPopulation(organisationUnits, period);
-        const ageDistributionByOrgUnit = await this.getPopulationDistributions(
-            organisationUnits,
-            ageGroupsForAllAntigens,
-            period
-        );
+
+        const {
+            populationDistributionsByOrgUnit,
+            ageDistributionByOrgUnit,
+        } = await this.getPopulationData(organisationUnits, ageGroupsForAllAntigens, period);
 
         const targetPopulationList: TargetPopulationItem[] = organisationUnits.map(orgUnit => {
             const populationTotal = _(totalPopulationsByOrgUnit).get(orgUnit.id);
@@ -177,7 +171,7 @@ export class TargetPopulation {
             return {
                 organisationUnit: orgUnit,
                 populationTotal,
-                populationDistributions: _(ageDistributionByOrgUnit).get(orgUnit.id),
+                populationDistributions: _(populationDistributionsByOrgUnit).get(orgUnit.id),
             };
         });
 
@@ -186,30 +180,23 @@ export class TargetPopulation {
             antigensDisaggregation,
             targetPopulationList,
             ageGroups: ageGroupsForAllAntigens,
+            ageDistributionByOrgUnit,
         });
     }
 
     setTotalPopulation(ouIndex: number, value: number) {
         const newData = _.set(
             this.data,
-            ["targetPopulationList", ouIndex, "populationTotal", "pairValue", "newValue"],
+            ["targetPopulationList", ouIndex, "populationTotal", "value"],
             value
         );
         return new TargetPopulation(this.config, this.db, newData);
     }
 
-    setAgeGroupPopulation(agrGroup: AgeGroupSelector, value: number) {
+    setAgeGroupPopulation(selector: AgeGroupSelector, value: number) {
         const newData = _.set(
             this.data,
-            [
-                "targetPopulationList",
-                agrGroup.ouIndex,
-                "populationDistributions",
-                agrGroup.distributionIdx,
-                "ageDistribution",
-                agrGroup.ageGroup,
-                "newValue",
-            ],
+            ["ageDistributionByOrgUnit", selector.orgUnitId, selector.ageGroup],
             value
         );
         return new TargetPopulation(this.config, this.db, newData);
@@ -227,23 +214,28 @@ export class TargetPopulation {
         return this.data.targetPopulationList;
     }
 
-    public getDataValues(period: string): DataValue[] {
+    public get ageDistributionByOrgUnit(): AgeDistributionByOrgUnit {
+        return this.data.ageDistributionByOrgUnit;
+    }
+
+    public async getDataValues(period: string): Promise<DataValue[]> {
         const { config } = this;
-        const catCombosByCode = _.keyBy(config.categoryCombos, "code");
-        const getCocsByName = (catComboCode: string): { [cocName: string]: string } => {
-            const catCombo = _(catCombosByCode).getOrFail(catComboCode);
-            return _(catCombo.categoryOptionCombos)
-                .keyBy("name")
-                .mapValues("id")
-                .value();
-        };
+        const categoryComboCodes = [
+            config.categoryComboCodeForAgeGroup,
+            config.categoryComboCodeForAntigenDosesAgeGroup,
+        ];
+        const categoryOptionCombos = await this.db.getCocsByCategoryComboCode(categoryComboCodes);
+        const cocIdsByName = _(categoryOptionCombos)
+            .map(coc => [coc.name, coc.id])
+            .fromPairs()
+            .value();
 
         const dataValues = _.flatMap(this.data.targetPopulationList, targetPopulationItem => {
             const totalPopulation = get(
-                getValue(targetPopulationItem.populationTotal.pairValue),
+                targetPopulationItem.populationTotal.value,
                 "No value for total population"
             );
-            const newValue = getNewValue(targetPopulationItem.populationTotal.pairValue);
+            const newValue = targetPopulationItem.populationTotal.value;
             const totalPopulationDataValues = _.isUndefined(newValue)
                 ? []
                 : [
@@ -254,66 +246,48 @@ export class TargetPopulation {
                           value: newValue.toString(),
                       },
                   ];
-            const finalDistribution = getFinalPopulationDistribution(
-                this.data.ageGroups,
-                targetPopulationItem
-            );
+            const finalDistribution = this.getFinalDistribution(targetPopulationItem);
 
-            const antigenAgeGroupCocsByName = getCocsByName(
-                config.categoryComboCodeForAntigenAgeGroup
-            );
             const populationByAgeDataValues = _(finalDistribution)
-                .flatMap((ageGroupPercent_, ageGroup) => {
-                    const ageGroupPercent = get(
-                        ageGroupPercent_,
-                        `Value not found for age group ${ageGroup}`
-                    );
+                .flatMap((ageGroupPer_, ageGroup) => {
+                    const ageGroupPer = get(ageGroupPer_, `Value not found for ${ageGroup}`);
 
                     return _(this.data.antigensDisaggregation)
-                        .map(({ antigen, ageGroups: ageGroupsForAntigen }) => {
-                            const cocName = [antigen.name, ageGroup].join(", ");
-                            if (!_(ageGroupsForAntigen).includes(ageGroup)) {
-                                return null;
-                            } else {
-                                const populationForAgeRange = Math.round(
-                                    (totalPopulation * ageGroupPercent) / 100
-                                );
+                        .filter(antigenInfo => _(antigenInfo.ageGroups).includes(ageGroup))
+                        .flatMap(({ antigen }) =>
+                            antigen.doses.map(dose => {
+                                const cocName = [antigen.name, dose.name, ageGroup].join(", ");
+                                const populationForAgeRange = (totalPopulation * ageGroupPer) / 100;
 
                                 return {
                                     period,
                                     orgUnit: targetPopulationItem.organisationUnit.id,
                                     dataElement: config.population.populationByAgeDataElement.id,
-                                    categoryOptionCombo: _(antigenAgeGroupCocsByName).getOrFail(
-                                        cocName
-                                    ),
-                                    value: populationForAgeRange.toString(),
+                                    categoryOptionCombo: _(cocIdsByName).getOrFail(cocName),
+                                    value: Math.ceil(populationForAgeRange).toString(),
                                 };
-                            }
-                        })
+                            })
+                        )
                         .compact()
                         .value();
                 })
                 .value();
 
-            const ageGroupCocsByName = getCocsByName(config.categoryComboCodeForAgeGroup);
+            const { ageGroups, ageDistributionByOrgUnit } = this.data;
             const ageDistributionDataValues = _.flatMap(
                 targetPopulationItem.populationDistributions,
                 populationDistribution => {
-                    return _(this.data.ageGroups)
+                    return _(ageGroups)
                         .map(ageGroup => {
-                            const pairValue = _(populationDistribution.ageDistribution).getOrFail(
-                                ageGroup
-                            );
-                            const newValue = getNewValue(pairValue);
-                            return newValue
+                            const ouId = populationDistribution.organisationUnit.id;
+                            const value = _(ageDistributionByOrgUnit).getOrFail(ouId)[ageGroup];
+                            return value
                                 ? {
                                       period,
-                                      orgUnit: populationDistribution.organisationUnit.id,
+                                      orgUnit: ouId,
                                       dataElement: config.population.ageDistributionDataElement.id,
-                                      categoryOptionCombo: _(ageGroupCocsByName).getOrFail(
-                                          ageGroup
-                                      ),
-                                      value: newValue.toString(),
+                                      categoryOptionCombo: _(cocIdsByName).getOrFail(ageGroup),
+                                      value: value.toString(),
                                   }
                                 : null;
                         })
@@ -376,26 +350,27 @@ export class TargetPopulation {
         const existing = _.keyBy(this.data.targetPopulationList, tp => tp.organisationUnit.id);
 
         return _.mapValues(organisationUnitsForTotalPopulation, (ou, ouIdForPopulation) => {
-            const strValue = _(rowByOrgUnit).get([ou.id, "value"]);
-            const newValueExisting = !_(existing).has(ouIdForPopulation)
+            const strOldValue = _(rowByOrgUnit).get([ou.id, "value"]);
+            const oldValue = strOldValue ? parseInt(strOldValue) : undefined;
+            const prevValue = !_(existing).has(ouIdForPopulation)
                 ? undefined
-                : existing[ouIdForPopulation].populationTotal.pairValue.newValue;
+                : existing[ouIdForPopulation].populationTotal.value;
             return {
                 organisationUnit: ou,
-                pairValue: {
-                    value: strValue ? parseInt(strValue) : undefined,
-                    newValue: newValueExisting,
-                },
+                value: oldValue || prevValue,
             };
         });
     }
 
-    private async getPopulationDistributions(
+    private async getPopulationData(
         organisationUnits: OrganisationUnit[],
         ageGroupsForAllAntigens: string[],
         period: string
-    ): Promise<{ [ouId: string]: PopulationDistribution[] }> {
-        const organisationUnitsForAgeDistribution: { [ouId: string]: OrganisationUnit[] } = _(
+    ): Promise<{
+        populationDistributionsByOrgUnit: { [orgUnitId: string]: PopulationDistribution[] };
+        ageDistributionByOrgUnit: AgeDistributionByOrgUnit;
+    }> {
+        const orgUnitsForAgeDistribution: { [ouId: string]: OrganisationUnit[] } = _(
             organisationUnits
         )
             .map(orgUnit => {
@@ -421,12 +396,13 @@ export class TargetPopulation {
                 ageGroupCategory.id,
                 "pe:" + period,
                 "ou:" +
-                    _(organisationUnitsForAgeDistribution)
+                    _(orgUnitsForAgeDistribution)
                         .values()
                         .flatten()
                         .map("id")
                         .join(";"),
             ],
+            skipRounding: true,
         });
 
         const rowsByOrgUnit = _(rows)
@@ -441,79 +417,80 @@ export class TargetPopulation {
             .value();
 
         const ageGroupCategoryOptionById = _.keyBy(ageGroupCategory.categoryOptions, "id");
-        const existing = _.keyBy(this.data.targetPopulationList, tp => tp.organisationUnit.id);
 
-        const populationDistributions = _.mapValues(
-            organisationUnitsForAgeDistribution,
-            (ous, mainOrgUnitId) =>
-                ous.map((ou, distributionIdx) => {
-                    const rows = _(rowsByOrgUnit).get(ou.id);
+        const populationDistributionsByOrgUnit = _.mapValues(orgUnitsForAgeDistribution, ous =>
+            ous.map(ou => {
+                const isEditableByLevel = _(levelsConfig.levelsForAgeDistribution)
+                    .keyBy("level")
+                    .mapValues("isEditable");
 
-                    const ageDistribution = _(rows)
-                        .map(row => {
-                            const ageGroupCategoryOptionId = _(row).getOrFail(ageGroupCategory.id);
-                            const categoryOption = _(ageGroupCategoryOptionById).getOrFail(
-                                ageGroupCategoryOptionId
-                            );
-                            return [categoryOption.displayName, parseInt(row.value)];
-                        })
-                        .fromPairs()
-                        .value();
-
-                    const ageDistributionWithAllAgeGroups = _(ageGroupsForAllAntigens)
-                        .map(ageGroup => {
-                            const newValueExisting =
-                                existing[mainOrgUnitId] &&
-                                existing[mainOrgUnitId].populationDistributions[distributionIdx] &&
-                                existing[mainOrgUnitId].populationDistributions[distributionIdx]
-                                    .ageDistribution[ageGroup]
-                                    ? existing[mainOrgUnitId].populationDistributions[
-                                          distributionIdx
-                                      ].ageDistribution[ageGroup].newValue
-                                    : undefined;
-
-                            return [
-                                ageGroup,
-                                {
-                                    value: _(ageDistribution).get(ageGroup),
-                                    newValue: newValueExisting,
-                                },
-                            ];
-                        })
-                        .fromPairs()
-                        .value();
-
-                    const isEditableByLevel = _(levelsConfig.levelsForAgeDistribution)
-                        .keyBy("level")
-                        .mapValues("isEditable");
-
-                    return {
-                        isEditable: isEditableByLevel.getOrFail(ou.level),
-                        organisationUnit: ou,
-                        ageDistribution: ageDistributionWithAllAgeGroups,
-                    };
-                })
+                return {
+                    isEditable: isEditableByLevel.getOrFail(ou.level),
+                    organisationUnit: ou,
+                };
+            })
         );
 
-        return populationDistributions;
-    }
-}
+        const distByOrgUnit = this.data.ageDistributionByOrgUnit;
 
-export function getFinalPopulationDistribution(
-    ageGroups: string[],
-    targetPopOu: TargetPopulationItem
-): { [ageGroup: string]: Maybe<number> } {
-    // TODO: Return AgeDistribution instead
-    return _(ageGroups)
-        .map(ageGroup => [
-            ageGroup,
-            _(targetPopOu.populationDistributions)
-                .map(distribution => getValue(distribution.ageDistribution[ageGroup]))
-                .reject(x => _.isUndefined(x) || _.isNaN(x))
-                .last(),
-        ])
-        .fromPairs()
-        .value();
+        const ageDistributionByOrgUnit = _(orgUnitsForAgeDistribution)
+            .values()
+            .flatten()
+            .uniqBy("id")
+            .map(orgUnit => {
+                const rows = _(rowsByOrgUnit).get(orgUnit.id);
+                const ageDistribution = _(rows)
+                    .map(row => {
+                        const ageGroupCategoryOptionId = _(row).getOrFail(ageGroupCategory.id);
+                        const categoryOption = _(ageGroupCategoryOptionById).getOrFail(
+                            ageGroupCategoryOptionId
+                        );
+                        return [categoryOption.displayName, parseFloat(row.value)];
+                    })
+                    .fromPairs()
+                    .value();
+
+                const ageDistributionWithAllAgeGroups = _(ageGroupsForAllAntigens)
+                    .map(ageGroup => {
+                        const newValueExisting =
+                            distByOrgUnit[orgUnit.id] && distByOrgUnit[orgUnit.id][ageGroup]
+                                ? distByOrgUnit[orgUnit.id][ageGroup]
+                                : undefined;
+                        const oldValue = _(ageDistribution).get(ageGroup);
+                        return [ageGroup, oldValue || newValueExisting];
+                    })
+                    .fromPairs()
+                    .value();
+
+                return [orgUnit.id, ageDistributionWithAllAgeGroups];
+            })
+            .fromPairs()
+            .value();
+
+        return { populationDistributionsByOrgUnit, ageDistributionByOrgUnit };
+    }
+
+    public getFinalDistribution(
+        targetPopOu: TargetPopulationItem
+    ): { [ageGroup: string]: Maybe<number> } {
+        const { ageGroups, ageDistributionByOrgUnit } = this;
+
+        return _(ageGroups)
+            .map(ageGroup => [
+                ageGroup,
+                _(targetPopOu.populationDistributions)
+                    .map(distribution =>
+                        _(ageDistributionByOrgUnit).get([
+                            distribution.organisationUnit.id,
+                            ageGroup,
+                        ])
+                    )
+                    .reject(x => _.isUndefined(x) || _.isNaN(x))
+                    .last(),
+            ])
+            .fromPairs()
+            .value();
+    }
 }
 
 function get<T>(value: Maybe<T>, errorMsg: string): T {
@@ -521,23 +498,5 @@ function get<T>(value: Maybe<T>, errorMsg: string): T {
         throw new Error(errorMsg);
     } else {
         return value;
-    }
-}
-
-function getValue(pairValue: PairValue): Maybe<number> {
-    if (_.isUndefined(pairValue.newValue)) {
-        return pairValue.value;
-    } else {
-        return pairValue.newValue;
-    }
-}
-
-function getNewValue(pairValue: PairValue): Maybe<number> {
-    const { value, newValue } = pairValue;
-
-    if (!_.isUndefined(pairValue.newValue) && value !== newValue) {
-        return newValue;
-    } else {
-        return undefined;
     }
 }

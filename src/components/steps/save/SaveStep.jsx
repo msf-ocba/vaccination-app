@@ -7,10 +7,10 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import { Button, LinearProgress } from "@material-ui/core";
 import { withSnackbar } from "d2-ui-components";
-import ConfirmationDialog from "../../confirmation-dialog/ConfirmationDialog";
+
 import { getFullOrgUnitName } from "../../../models/organisation-units";
-import { getShowValue } from "../target-population/utils";
-import { getFinalPopulationDistribution } from "../../../models/TargetPopulation";
+import { getShowValue } from "../../target-population/utils";
+import ExitWizardButton from "../../wizard/ExitWizardButton";
 
 const styles = _theme => ({
     wrapper: {
@@ -39,26 +39,36 @@ class SaveStep extends React.Component {
     };
 
     async componentDidMount() {
-        const { campaign } = this.props;
+        const { campaign, snackbar } = this.props;
         const { objects: orgUnits } = await campaign.getOrganisationUnitsWithName();
-        const campaignWithTargetPopulation = await campaign.withTargetPopulation();
+        const campaignWithTargetPopulation = await campaign.withTargetPopulation().catch(err => {
+            snackbar.warning(err.message || err);
+            return campaign;
+        });
         this.setState({ orgUnits, campaign: campaignWithTargetPopulation });
     }
 
     save = async () => {
-        const { campaign } = this.state;
-        this.setState({ isSaving: true, errorMessage: "" });
-        const saveResponse = await campaign.save();
-        this.setState({ isSaving: false });
+        const { campaign, isSaving } = this.state;
+        if (isSaving) return;
 
-        if (saveResponse.status) {
-            this.props.snackbar.success(
-                i18n.t("Campaign created: {{name}}", { name: campaign.name })
-            );
-            this.props.history.push("/campaign-configuration");
-        } else {
-            this.setState({ errorMessage: saveResponse.error });
-            this.props.snackbar.error(i18n.t("Error saving campaign"));
+        this.setState({ isSaving: true, errorMessage: "" });
+
+        try {
+            const saveResponse = await campaign.save();
+            this.setState({ isSaving: false });
+
+            if (saveResponse.status) {
+                this.props.snackbar.success(`${i18n.t("Campaign created")} ${campaign.name}`);
+                this.props.history.push("/campaign-configuration");
+            } else {
+                this.setState({ errorMessage: saveResponse.error });
+                this.props.snackbar.error(i18n.t("Error saving campaign"));
+            }
+        } catch (err) {
+            console.error(err);
+            this.props.snackbar.error(err.message || err.toString());
+            this.setState({ isSaving: false });
         }
     };
 
@@ -134,27 +144,36 @@ class SaveStep extends React.Component {
     renderOrgUnit = orgUnit => {
         const { targetPopulation } = this.state.campaign;
         const LiEntry = this.renderLiEntry;
-        const byOrgUnit = _.keyBy(
-            targetPopulation.targetPopulationList,
-            item => item.organisationUnit.id
-        );
-        const targetPopOu = _(byOrgUnit).getOrFail(orgUnit.id);
-        const totalPopulation = getShowValue(targetPopOu.populationTotal.pairValue);
-        const populationDistribution = getFinalPopulationDistribution(
-            targetPopulation.ageGroups,
-            targetPopOu
-        );
-        const ageDistribution = targetPopulation.ageGroups
-            .map(ageGroup => {
-                return [ageGroup, " = ", populationDistribution[ageGroup], "%"].join("");
-            })
-            .join(", ");
+
+        let totalPopulation, ageDistribution;
+        if (targetPopulation) {
+            const byOrgUnit = _.keyBy(
+                targetPopulation.targetPopulationList,
+                item => item.organisationUnit.id
+            );
+            const targetPopOu = _(byOrgUnit).getOrFail(orgUnit.id);
+            const missing = i18n.t("Missing");
+            const populationDistribution = targetPopulation.getFinalDistribution(targetPopOu);
+
+            totalPopulation = getShowValue(targetPopOu.populationTotal.value) || missing;
+            ageDistribution = targetPopulation.ageGroups
+                .map(ag => [ag, " = ", populationDistribution[ag] || missing, " %"].join(""))
+                .join(", ");
+        }
+
+        const unknown = i18n.t("Unknown");
 
         return (
             <LiEntry key={orgUnit.id} label={getFullOrgUnitName(orgUnit)}>
                 <ul>
-                    <LiEntry label={i18n.t("Total population")} value={totalPopulation} />
-                    <LiEntry label={i18n.t("Age distribution (%)")} value={ageDistribution} />
+                    <LiEntry
+                        label={i18n.t("Total population")}
+                        value={totalPopulation || unknown}
+                    />
+                    <LiEntry
+                        label={i18n.t("Age distribution")}
+                        value={ageDistribution || unknown}
+                    />
                 </ul>
             </LiEntry>
         );
@@ -170,14 +189,10 @@ class SaveStep extends React.Component {
 
         return (
             <React.Fragment>
-                <ConfirmationDialog
-                    dialogOpen={dialogOpen}
-                    handleConfirm={this.confirmCancel}
-                    handleCancel={this.dialogCancel}
-                    title={i18n.t("Cancel Campaign Creation?")}
-                    contents={i18n.t(
-                        "You are about to exit the campaign creation wizard. All your changes will be lost. Are you sure?"
-                    )}
+                <ExitWizardButton
+                    isOpen={dialogOpen}
+                    onConfirm={this.props.onCancel}
+                    onCancel={this.dialogCancel}
                 />
                 <div className={classes.wrapper}>
                     <ul>
@@ -187,7 +202,7 @@ class SaveStep extends React.Component {
                             label={i18n.t("Period dates")}
                             value={this.getCampaignPeriodDateString()}
                         />
-
+                        <LiEntry label={"Number of Teams"} value={campaign.teams} />
                         <LiEntry label={i18n.t("Organisation Units")}>
                             {orgUnits && (
                                 <React.Fragment>
@@ -200,7 +215,12 @@ class SaveStep extends React.Component {
                             [{disaggregation.length}]
                             <ul>
                                 {disaggregation.map(({ antigen, dataElements }) => (
-                                    <LiEntry key={antigen.code} label={antigen.name}>
+                                    <LiEntry
+                                        key={antigen.code}
+                                        label={`${antigen.name} (${i18n.t("doses")}: ${
+                                            antigen.doses.length
+                                        })`}
+                                    >
                                         <ul>{this.renderDataElements(dataElements)}</ul>
                                     </LiEntry>
                                 ))}

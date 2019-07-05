@@ -16,14 +16,13 @@ import {
 } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
-import { memoize } from "../../../utils/memoize";
-import { D2 } from "../../../models/d2.types";
-import Campaign from "../../../models/campaign";
-import { Maybe } from "../../../models/db.types";
+import { memoize } from "../../utils/memoize";
+import Campaign from "../../models/campaign";
+import { Maybe } from "../../models/db.types";
 import TotalPopulation from "./TotalPopulation";
-import { createMuiThemeOverrides } from "../../../utils/styles";
+import { createMuiThemeOverrides } from "../../utils/styles";
 import PopulationDistribution from "./PopulationDistribution";
-import { getFullOrgUnitName } from "../../../models/organisation-units";
+import { getFullOrgUnitName } from "../../models/organisation-units";
 
 export interface AgeGroupRow {
     ouIndex: number;
@@ -31,7 +30,6 @@ export interface AgeGroupRow {
 }
 
 interface TargetPopulationProps extends WithStyles<typeof styles> {
-    d2: D2;
     campaign: Campaign;
     onChange: (campaign: Campaign) => void;
 }
@@ -49,11 +47,6 @@ class TargetPopulationComponent extends React.Component<
         editPopulation: undefined,
         editAgeGroupRow: undefined,
     };
-
-    async componentDidMount() {
-        const { campaign, onChange } = this.props;
-        onChange(await campaign.withTargetPopulation());
-    }
 
     onTotalPopulationChange = memoize(
         (ouIndex: number) => (ev: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,18 +66,16 @@ class TargetPopulationComponent extends React.Component<
         this.setState({ editPopulation: editPopulation === ouIndex ? undefined : ouIndex });
     });
 
-    onAgeGroupPopulationChange = memoize(
-        (ouIndex: number) => (distributionIdx: number, ageGroup: string, value: number) => {
-            const { campaign, onChange } = this.props;
-            if (!campaign.targetPopulation) return;
-            const ageGroupSelector = { ouIndex, distributionIdx, ageGroup };
+    onAgeGroupPopulationChange = (orgUnitId: string, ageGroup: string, value: number) => {
+        const { campaign, onChange } = this.props;
+        const ageGroupSelector = { orgUnitId, ageGroup };
+        if (!campaign.targetPopulation) return;
 
-            const campaignUpdated = campaign.setTargetPopulation(
-                campaign.targetPopulation.setAgeGroupPopulation(ageGroupSelector, value)
-            );
-            onChange(campaignUpdated);
-        }
-    );
+        const campaignUpdated = campaign.setTargetPopulation(
+            campaign.targetPopulation.setAgeGroupPopulation(ageGroupSelector, value)
+        );
+        onChange(campaignUpdated);
+    };
 
     onAgeGroupPopulationToggle = memoize((ouIndex: number) => (distributionIdx: number) => {
         const { editAgeGroupRow } = this.state;
@@ -135,9 +126,9 @@ class TargetPopulationComponent extends React.Component<
                                                 ? editAgeGroupRow.distributionIdx
                                                 : undefined
                                         }
-                                        ageGroups={targetPopulation.ageGroups}
+                                        targetPopulation={targetPopulation}
                                         targetPopOu={targetPopOu}
-                                        onChange={this.onAgeGroupPopulationChange(ouIndex)}
+                                        onChange={this.onAgeGroupPopulationChange}
                                         onToggle={this.onAgeGroupPopulationToggle(ouIndex)}
                                     />
                                 </CardContent>

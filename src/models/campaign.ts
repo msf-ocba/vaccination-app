@@ -1,28 +1,29 @@
-import { OrganisationUnit, Maybe } from "./db.types";
-///<reference path="../types/d2.d.ts" />
-import { DataSetCustomForm } from "./DataSetCustomForm";
+import { OrganisationUnit, Maybe, Ref, MetadataResponse } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
 
-import { AntigensDisaggregation } from "./AntigensDisaggregation";
-import { MetadataResponse, DataEntryForm } from "./db.types";
-import { generateUid } from "d2/uid";
-import { DataSet, Response } from "./db.types";
-import { PaginatedObjects, OrganisationUnitPathOnly } from "./db.types";
-import DbD2 from "./db-d2";
-import { getDaysRange } from "../utils/date";
-import { MetadataConfig } from "./config";
-import { AntigenDisaggregationEnabled, getDataElements } from "./AntigensDisaggregation";
+import { PaginatedObjects, OrganisationUnitPathOnly, Response } from "./db.types";
+import DbD2, { ApiResponse, toStatusResponse } from "./db-d2";
+import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
+import { MetadataConfig, getDashboardCode, getByIndex } from "./config";
+import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
+import CampaignDb from "./CampaignDb";
+import { promiseMap } from "../utils/promises";
+import i18n from "../locales";
+import { TeamsMetadata, getTeamsForCampaign, filterTeamsByNames } from "./Teams";
 
 export type TargetPopulationData = TargetPopulationData;
 
 export interface Antigen {
+    id: string;
     name: string;
     code: string;
+    doses: { id: string; name: string }[];
 }
 
 export interface Data {
+    id: Maybe<string>;
     name: string;
     description: string;
     organisationUnits: OrganisationUnitPathOnly[];
@@ -31,30 +32,162 @@ export interface Data {
     antigens: Antigen[];
     antigensDisaggregation: AntigensDisaggregation;
     targetPopulation: Maybe<TargetPopulation>;
+    teams: Maybe<number>;
+    teamsMetadata: TeamsMetadata;
+    dashboardId: Maybe<string>;
 }
 
-function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined) {
+type ValidationErrors = Array<{
+    key: string;
+    namespace?: _.Dictionary<string>;
+}>;
+
+function getError(key: string, namespace: Maybe<Dictionary<string>> = undefined): ValidationErrors {
     return namespace ? [{ key, namespace }] : [{ key }];
+}
+
+interface DataSetWithAttributes {
+    id: string;
+    name: string;
+}
+
+interface DashboardWithResources {
+    id: string;
+    name: string;
+    dashboardItems: {
+        id: string;
+        chart: Ref;
+        map: Ref;
+        reportTable: Ref;
+    };
 }
 
 export default class Campaign {
     public selectableLevels: number[] = [5];
 
-    constructor(private db: DbD2, public config: MetadataConfig, private data: Data) {}
+    validations: _.Dictionary<() => ValidationErrors | Promise<ValidationErrors>> = {
+        name: this.validateName,
+        startDate: this.validateStartDate,
+        endDate: this.validateEndDate,
+        teams: this.validateTeams,
+        organisationUnits: this.validateOrganisationUnits,
+        antigens: this.validateAntigens,
+        targetPopulation: this.validateTargetPopulation,
+        antigensDisaggregation: this.validateAntigensDisaggregation,
+    };
+
+    constructor(public db: DbD2, public config: MetadataConfig, private data: Data) {}
 
     public static create(config: MetadataConfig, db: DbD2): Campaign {
         const antigens: Antigen[] = [];
         const organisationUnits: OrganisationUnit[] = [];
 
         const initialData = {
+            id: undefined,
             name: "",
             description: "",
             organisationUnits: organisationUnits,
             startDate: null,
             endDate: null,
             antigens: antigens,
-            antigensDisaggregation: AntigensDisaggregation.build(config, antigens),
+            antigensDisaggregation: AntigensDisaggregation.build(config, antigens, []),
             targetPopulation: undefined,
+            teams: undefined,
+            teamsMetadata: {
+                elements: [],
+            },
+            dashboardId: undefined,
+        };
+
+        return new Campaign(db, config, initialData);
+    }
+
+    public static async get(
+        config: MetadataConfig,
+        db: DbD2,
+        dataSetId: string
+    ): Promise<Campaign> {
+        const {
+            dataSets: [dataSet],
+            dashboards: [dashboard],
+        } = await db.getMetadata<{
+            dataSets: Array<{
+                id: string;
+                name: string;
+                description: string;
+                organisationUnits: Array<OrganisationUnitPathOnly>;
+                dataInputPeriods: Array<{ period: { id: string } }>;
+                sections: Array<SectionForDisaggregation>;
+            }>;
+            dashboards: Array<{
+                id: string;
+            }>;
+        }>({
+            dataSets: {
+                fields: {
+                    id: true,
+                    name: true,
+                    description: true,
+                    organisationUnits: { id: true, path: true },
+                    dataInputPeriods: { period: { id: true } },
+                    sections: {
+                        id: true,
+                        name: true,
+                        dataSet: { id: true },
+                        dataElements: { id: true },
+                        sortOrder: true,
+                        greyedFields: {
+                            categoryOptionCombo: {
+                                id: true,
+                                categoryOptions: {
+                                    id: true,
+                                    name: true,
+                                    categories: { id: true },
+                                },
+                            },
+                            dataElement: { id: true },
+                        },
+                    },
+                },
+                filters: [`id:eq:${dataSetId}`],
+            },
+            dashboards: {
+                fields: { id: true },
+                filters: [`code:eq:${getDashboardCode(config, dataSetId)}`],
+            },
+        });
+        if (!dataSet) throw new Error(`Dataset id=${dataSetId} not found`);
+
+        const antigensByCode = _.keyBy(config.antigens, "code");
+        const antigens = _(dataSet.sections)
+            .map(section => antigensByCode[section.name])
+            .compact()
+            .value();
+        const periods = dataSet.dataInputPeriods.map(dip => dip.period.id);
+        const [startDate, endDate] = [_.min(periods), _.max(periods)].map(period =>
+            period ? moment(period).toDate() : null
+        );
+
+        const { categoryComboCodeForTeams } = config;
+        const { name, sections } = dataSet;
+        const ouIds = dataSet.organisationUnits.map(ou => ou.id);
+        const teamsCategoyId = getByIndex(config.categories, "code", categoryComboCodeForTeams).id;
+        const teamsMetadata = await getTeamsForCampaign(db, ouIds, teamsCategoyId, name);
+        const antigensDisaggregation = AntigensDisaggregation.build(config, antigens, sections);
+
+        const initialData = {
+            id: dataSet.id,
+            name: dataSet.name,
+            description: dataSet.description,
+            organisationUnits: dataSet.organisationUnits,
+            startDate,
+            endDate,
+            antigens: antigens,
+            antigensDisaggregation,
+            targetPopulation: undefined,
+            teams: _.size(teamsMetadata),
+            teamsMetadata: { elements: teamsMetadata },
+            dashboardId: dashboard ? dashboard.id : undefined,
         };
 
         return new Campaign(db, config, initialData);
@@ -64,40 +197,98 @@ export default class Campaign {
         return new Campaign(this.db, this.config, newData);
     }
 
-    public validate() {
-        const {
-            name,
-            startDate,
-            endDate,
-            antigens,
-            targetPopulation,
-            antigensDisaggregation,
-        } = this.data;
+    static async delete(
+        config: MetadataConfig,
+        db: DbD2,
+        dataSets: DataSetWithAttributes[]
+    ): Promise<Response<{ level: string; message: string }>> {
+        const modelReferencesToDelete = await this.getResources(config, db, dataSets);
 
-        const validation = {
-            name: !name.trim() ? getError("cannot_be_blank", { field: "name" }) : [],
+        // If we try to delete all objects all at once, we get this error from the /metadata endpoint:
+        // "Could not delete due to association with another object: CategoryDimension"
+        // It does work, however, if we delete the objects in this order:
+        // 1) Dashboards, 2) Everything else except Category options 3) Category options (teams),
+        const keys = ["dashboards", "other", "teams"];
+        const referencesGroups = _(modelReferencesToDelete)
+            .groupBy(({ model }) => {
+                if (model === "dashboards") {
+                    return "dashboards";
+                } else if (model === "categoryOptions") {
+                    return "teams";
+                } else {
+                    return "other";
+                }
+            })
+            .toPairs()
+            .sortBy(([key, _group]) => _.indexOf(keys, key))
+            .value();
 
-            startDate: !startDate ? getError("cannot_be_blank", { field: "start date" }) : [],
+        const results: Array<[string, ApiResponse<MetadataResponse>]> = await promiseMap(
+            referencesGroups,
+            async ([key, references]) => {
+                const metadata = _(references)
+                    .groupBy("model")
+                    .mapValues(groups => groups.map(group => ({ id: group.id })))
+                    .value();
+                const response = await db.postMetadata(metadata, { importStrategy: "DELETE" });
+                return [key, toStatusResponse(response)] as [string, ApiResponse<MetadataResponse>];
+            }
+        );
 
-            endDate: !endDate ? getError("cannot_be_blank", { field: "end date" }) : [],
+        const [keysWithErrors, errors] = _(results)
+            .map(([key, result]) => (result.status ? null : [key, result.error]))
+            .compact()
+            .unzip()
+            .value();
 
-            organisationUnits: this.validateOrganisationUnits(),
+        if (_.isEmpty(keysWithErrors)) {
+            return { status: true };
+        } else if (_.isEqual(keysWithErrors, ["teams"])) {
+            return {
+                status: false,
+                error: {
+                    level: "warning",
+                    message: i18n.t(
+                        "Campaign teams (category options) could not be deleted, probably there are associated data values"
+                    ),
+                },
+            };
+        } else {
+            return { status: false, error: { level: "error", message: errors.join("\n") } };
+        }
+    }
 
-            antigens: _(antigens).isEmpty() ? getError("no_antigens_selected") : [],
+    public async validate(
+        validationKeys: Maybe<string[]> = undefined
+    ): Promise<Dictionary<ValidationErrors>> {
+        const obj = _(this.validations)
+            .pickBy((_value, key) => !validationKeys || _(validationKeys).includes(key))
+            .mapValues(fn => (fn ? fn.call(this) : []))
+            .value();
+        const [keys, promises] = _.unzip(_.toPairs(obj));
+        const values = await Promise.all(promises as Promise<ValidationErrors>[]);
+        return _.fromPairs(_.zip(keys, values));
+    }
 
-            targetPopulation: !targetPopulation
-                ? getError("no_target_population_defined")
-                : targetPopulation.validate(),
+    validateStartDate(): ValidationErrors {
+        return !this.data.startDate ? getError("cannot_be_blank", { field: "start date" }) : [];
+    }
 
-            antigensDisaggregation: antigensDisaggregation.validate(),
-        };
+    validateEndDate(): ValidationErrors {
+        return !this.data.endDate ? getError("cannot_be_blank", { field: "end date" }) : [];
+    }
 
-        return validation;
+    validateTeams(): ValidationErrors {
+        const { teams } = this.data;
+        return _.compact([
+            !teams ? getError("cannot_be_blank", { field: "teams" })[0] : null,
+            teams && teams <= 0 ? getError("must_be_bigger_than_zero")[0] : null,
+        ]);
     }
 
     /* Organisation units */
 
-    private validateOrganisationUnits() {
+    private async validateOrganisationUnits() {
         const { organisationUnits } = this.data;
 
         const allOrgUnitsInAcceptedLevels = _(organisationUnits).every(ou =>
@@ -136,6 +327,10 @@ export default class Campaign {
         return this.data.organisationUnits;
     }
 
+    public get id(): Maybe<string> {
+        return this.data.id;
+    }
+
     /* Name */
 
     public setName(name: string): Campaign {
@@ -144,6 +339,35 @@ export default class Campaign {
 
     public get name(): string {
         return this.data.name;
+    }
+
+    public async existsCampaignWithSameName(name: string): Promise<boolean> {
+        const { id } = this.data;
+        const nameLowerCase = name.trim().toLowerCase();
+
+        const { dataSets } = await this.db.getMetadata<{
+            dataSets: Array<{ id: string; name: string }>;
+        }>({
+            dataSets: {
+                fields: { id: true, name: true },
+                filters: [`name:$ilike:${nameLowerCase}`],
+            },
+        });
+
+        return dataSets.some(ds => ds.id !== id && ds.name.toLowerCase() === nameLowerCase);
+    }
+
+    private async validateName(): Promise<ValidationErrors> {
+        const { name } = this.data;
+        const trimmedName = name.trim();
+
+        if (!trimmedName) {
+            return getError("cannot_be_blank", { field: "name" });
+        } else if (await this.existsCampaignWithSameName(trimmedName)) {
+            return getError("name_must_be_unique");
+        } else {
+            return [];
+        }
     }
 
     /* Description */
@@ -197,6 +421,10 @@ export default class Campaign {
         return this.config.antigens;
     }
 
+    validateAntigens(): ValidationErrors {
+        return _(this.data.antigens).isEmpty() ? getError("no_antigens_selected") : [];
+    }
+
     /* Antigens disaggregation */
 
     public get antigensDisaggregation(): AntigensDisaggregation {
@@ -211,7 +439,16 @@ export default class Campaign {
         return this.antigensDisaggregation.getEnabled();
     }
 
+    validateAntigensDisaggregation(): ValidationErrors {
+        return this.data.antigensDisaggregation.validate();
+    }
+
     /* Target population */
+
+    public async saveTargetPopulation(): Promise<Response<string>> {
+        const campaignDb = new CampaignDb(this);
+        return campaignDb.saveTargetPopulation();
+    }
 
     public get targetPopulation(): Maybe<TargetPopulation> {
         return this.data.targetPopulation;
@@ -237,122 +474,107 @@ export default class Campaign {
         });
     }
 
+    validateTargetPopulation(): ValidationErrors {
+        const { targetPopulation } = this.data;
+        return !targetPopulation
+            ? getError("no_target_population_defined")
+            : targetPopulation.validate();
+    }
+
+    /* Dashboard */
+
+    public get dashboardId(): Maybe<string> {
+        return this.data.dashboardId;
+    }
+
+    public async createDashboard(): Promise<Maybe<string>> {
+        return new CampaignDb(this).createDashboard();
+    }
+
+    /* Teams */
+
+    public get teams(): Maybe<number> {
+        return this.data.teams;
+    }
+
+    public setTeams(teams: number): Campaign {
+        return this.update({ ...this.data, teams });
+    }
+
+    public get teamsMetadata(): TeamsMetadata {
+        return this.data.teamsMetadata;
+    }
+
     /* Save */
 
+    isEdit(): boolean {
+        return !!this.id;
+    }
+
     public async save(): Promise<Response<string>> {
-        const dataSetId = generateUid();
-        const metadataConfig = this.config;
-        const { categoryComboCodeForTeams, categoryCodeForTeams } = metadataConfig;
-        const vaccinationAttribute = await this.db.getAttributeIdByCode(
-            metadataConfig.attibuteCodeForApp
-        );
-        const dashboardAttribute = await this.db.getAttributeIdByCode(
-            metadataConfig.attributeCodeForDashboard
-        );
-        const categoryCombos = await this.db.getCategoryCombosByCode([categoryComboCodeForTeams]);
-        const categoryCombosByCode = _(categoryCombos)
-            .keyBy("code")
+        const campaignDb = new CampaignDb(this);
+        return campaignDb.save();
+    }
+
+    public async reload(): Promise<Maybe<Campaign>> {
+        return this.id ? Campaign.get(this.config, this.db, this.id) : undefined;
+    }
+
+    public static async getResources(
+        config: MetadataConfig,
+        db: DbD2,
+        dataSets: DataSetWithAttributes[]
+    ) {
+        if (_.isEmpty(dataSets)) return [];
+
+        const codes = dataSets.map(dataSet => getDashboardCode(config, dataSet.id));
+
+        const { dashboards } = await db.getMetadata<{ dashboards: DashboardWithResources[] }>({
+            dashboards: {
+                fields: {
+                    id: true,
+                    name: true,
+                    dashboardItems: {
+                        id: true,
+                        chart: { id: true },
+                        map: { id: true },
+                        reportTable: { id: true },
+                    },
+                },
+                filters: [`code:in:[${codes.join(",")}]`],
+            },
+        });
+
+        const campaignNames = dataSets.map(d => d.name);
+
+        const { categoryOptions: teams } = await db.api.get("/categoryOptions", {
+            fields: ["id,name,categories[id]"],
+            filter: campaignNames.map(cn => `name:like$:${cn}`),
+            rootJunction: "OR",
+            paging: false,
+        });
+
+        const { categories, categoryComboCodeForTeams } = config;
+        const teamsCategoyId = getByIndex(categories, "code", categoryComboCodeForTeams).id;
+
+        const filteredTeams = filterTeamsByNames(teams, campaignNames, teamsCategoyId);
+
+        const resources: { model: string; id: string }[] = _(dashboards)
+            .flatMap(dashboard => dashboard.dashboardItems)
+            .flatMap(item => [
+                { model: "charts", ref: item.chart },
+                { model: "reportTables", ref: item.reportTable },
+                { model: "maps", ref: item.map },
+            ])
+            .map(({ model, ref }) => (ref ? { model, id: ref.id } : null))
+            .compact()
             .value();
-        const categoryComboTeams = _(categoryCombosByCode).get(categoryComboCodeForTeams);
 
-        if (!this.startDate || !this.endDate) {
-            return { status: false, error: "Campaign Dates not set" };
-        }
-        const startDate = moment(this.startDate).startOf("day");
-        const endDate = moment(this.endDate).endOf("day");
-        const { dashboard, charts, reportTables } = await this.db.createDashboard(
-            this.name,
-            this.organisationUnits,
-            this.antigens,
-            startDate,
-            endDate,
-            categoryCodeForTeams
+        return _.concat(
+            dashboards.map(dashboard => ({ model: "dashboards", id: dashboard.id })),
+            dataSets.map(dataSet => ({ model: "dataSets", id: dataSet.id })),
+            resources,
+            filteredTeams.map((team: Ref) => ({ model: "categoryOptions", id: team.id }))
         );
-
-        const { targetPopulation } = this.data;
-
-        if (!vaccinationAttribute || !dashboardAttribute) {
-            return { status: false, error: "Metadata not found: Attributes" };
-        } else if (!categoryComboTeams) {
-            return {
-                status: false,
-                error: `Metadata not found: categoryCombo.code=${categoryComboCodeForTeams}`,
-            };
-        } else if (!dashboard) {
-            return { status: false, error: "Error creating dashboard" };
-        } else if (!targetPopulation) {
-            return { status: false, error: "There is no target population in campaign" };
-        } else {
-            const disaggregationData = this.getEnabledAntigensDisaggregation();
-            const dataElements = await getDataElements(this.db, disaggregationData);
-
-            const dataSetElements = dataElements.map(dataElement => ({
-                dataSet: { id: dataSetId },
-                dataElement: { id: dataElement.id },
-                categoryCombo: { id: dataElement.categoryCombo.id },
-            }));
-
-            const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
-                openingDate: startDate.toISOString(),
-                closingDate: endDate.toISOString(),
-                period: { id: date.format("YYYYMMDD") },
-            }));
-
-            const customForm = await DataSetCustomForm.build(this);
-            const customFormHtml = customForm.generate();
-            const dataEntryForm: DataEntryForm = {
-                id: generateUid(),
-                name: this.name,
-                htmlCode: customFormHtml,
-                style: "NONE",
-            };
-
-            const dataSet: DataSet = {
-                id: dataSetId,
-                name: this.name,
-                description: this.description,
-                publicAccess: "r-r-----", // Metadata can view-only, Data can view-only
-                periodType: "Daily",
-                categoryCombo: { id: categoryComboTeams.id },
-                dataElementDecoration: true,
-                renderAsTabs: true,
-                organisationUnits: this.organisationUnits.map(ou => ({ id: ou.id })),
-                dataSetElements,
-                openFuturePeriods: 1,
-                timelyDays: 0,
-                expiryDays: 0,
-                formType: "CUSTOM",
-                dataInputPeriods,
-                attributeValues: [
-                    { value: "true", attribute: { id: vaccinationAttribute.id } },
-                    { value: dashboard.id, attribute: { id: dashboardAttribute.id } },
-                ],
-            };
-
-            const period = moment(this.startDate || new Date()).format("YYYYMMDD");
-            const dataValues = targetPopulation.getDataValues(period);
-            const populationResult = await this.db.postDataValues(dataValues);
-
-            if (!populationResult.status) {
-                return {
-                    status: false,
-                    error: JSON.stringify(populationResult.error, null, 2),
-                };
-            } else {
-                const result: MetadataResponse = await this.db.postMetadata({
-                    charts,
-                    reportTables,
-                    dashboards: [dashboard],
-                    dataSets: [dataSet],
-                });
-
-                if (result.status !== "OK") {
-                    return { status: false, error: JSON.stringify(result.typeReports, null, 2) };
-                } else {
-                    await this.db.postForm(dataSetId, dataEntryForm);
-                    return { status: true };
-                }
-            }
-        }
     }
 }

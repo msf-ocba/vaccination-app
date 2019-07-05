@@ -5,19 +5,16 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-04-15T23:07:26.532Z\n"
-"PO-Revision-Date: 2019-04-15T23:07:26.532Z\n"
+"POT-Creation-Date: 2019-07-04T07:22:42.893Z\n"
+"PO-Revision-Date: 2019-07-04T07:22:42.893Z\n"
 
-msgid "Campaign Configuration"
+msgid "Campaigns"
 msgstr ""
 
 msgid "Data Entry"
 msgstr ""
 
 msgid "Dashboard"
-msgstr ""
-
-msgid "Maintenance"
 msgstr ""
 
 msgid "Name"
@@ -56,9 +53,6 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-msgid "Share"
-msgstr ""
-
 msgid "Delete"
 msgstr ""
 
@@ -68,13 +62,104 @@ msgstr ""
 msgid "Go to Dashboard"
 msgstr ""
 
-msgid "Download data"
+msgid "Set Target Population"
+msgstr ""
+
+msgid "Deleting campaign(s). This may take a while, please wait"
+msgstr ""
+
+msgid "Campaign(s) deleted"
+msgstr ""
+
+msgid "Error deleting campaign(s)"
 msgstr ""
 
 msgid "Only my campaigns"
 msgstr ""
 
-msgid "Campaigns"
+msgid ""
+"Are you sure you want to delete those campaign(s) (datasets and "
+"dashboards)? If you proceed, the associated datasets and dashboards will be "
+"removed from this server, but any data already registered will continue in "
+"the system"
+msgstr ""
+
+msgid "Delete campaign(s)"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid ""
+"Click the blue button to create a new campaign or select a previously "
+"created campaign that you may want to access.\n"
+"Click the three dots on the right side of the screen if you wish to perform "
+"any of the following actions -> Set Target Population, Go to Data Entry, Go "
+"To Dashboards, See Details, Edit or Delete."
+msgstr ""
+
+msgid "Create Campaign"
+msgstr ""
+
+msgid "Cannot load campaign"
+msgstr ""
+
+msgid "Target population set"
+msgstr ""
+
+msgid "Error saving target population"
+msgstr ""
+
+msgid "There are unsaved changes, are you sure you want to close the dialog?"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid ""
+"Insert the total population for each health site. Insert the age "
+"distribution (as a percent) at project level. Only specify the age "
+"distribution for health centers where the distribution is different from "
+"the general distribution at project level. This data will be used to "
+"calculate coverage rates for the campaign. The source of data may be {{- "
+"hyperlink}} or you may have access to local estimates based on population "
+"surveys through the Ministry of Health or other stakeholders that would be "
+"more updated or reliable. You may overwrite any existing data in HMIS, but "
+"please note that any changes you make in this step will only be applied "
+"once you run analytics."
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Saving..."
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "General info"
+msgstr ""
+
+msgid ""
+"Choose a name for the campaign and define the period for which data entry "
+"will be enabled"
+msgstr ""
+
+msgid ""
+"Give your campaign a name that will make it easy to recognize in an HMIS "
+"hierarchy. Suggested format is \"RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... "
+"- {CAMPAIGN PERIOD}\". Example -> \"RVC Shabunda - Measles/Cholera - "
+"Jan-Mar 2019\".\n"
+"\n"
+"                    The start and end date should define the period for "
+"which you expect to enter data - i.e .the first and last day of your "
+"campaign. If you are not certain of the end date, enter a date a few weeks "
+"later than the expected date of completion (refer to your microplan). It is "
+"possible to edit the dates at any point."
 msgstr ""
 
 msgid "Organisation Units"
@@ -86,15 +171,9 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Select the organisation units which will implement the campaign. At least "
-"one must be selected. Only organisation units of level 5 (Health site) can "
-"be selected."
-msgstr ""
-
-msgid "General info"
-msgstr ""
-
-msgid "Name your campaign and choose dates for which data entry will be enabled"
+"Select the health facilities or health areas which will implement the "
+"campaign. At least one must be selected. Only organisation units of level 5 "
+"(Health site) can be selected."
 msgstr ""
 
 msgid "Antigen selection"
@@ -122,67 +201,73 @@ msgid ""
 "be un-selected."
 msgstr ""
 
-msgid "Target Population"
-msgstr ""
-
-msgid ""
-"Specify target population, totals and age percentages for the age ranges "
-"required by all selected antigens. The source of those values are the DHIS2 "
-"analytics endpoint. Like-wise, any change you make in this step will only "
-"be applied once you run the analytics."
-msgstr ""
-
-msgid ""
-"Specify target population, totals and age percentages for the age ranges "
-"required by all selected antigens."
-msgstr ""
-
-msgid "Save"
-msgstr ""
-
 msgid ""
 "Setup of your campaign is complete. Click the \"Save\" button to save your "
-"campaign and access tally sheets, data entry or analysis"
+"campaign, then you can set your target population, go to data entry and go "
+"to dashboard"
 msgstr ""
 
 msgid ""
-"Press the button to create the dataset and all the metadata associated with "
-"this vaccination campaign."
+"Please review your vaccination campaign summary. Click the \"Save\" button "
+"to create the data set and all associated metadata for this campaign"
 msgstr ""
 
-msgid "Cancel Campaign Creation?"
-msgstr ""
-
-msgid ""
-"You are about to exit the campaign creation wizard. All your changes will "
-"be lost. Are you sure?"
+msgid "Edit vaccination campaign"
 msgstr ""
 
 msgid "New vaccination campaign"
 msgstr ""
 
-msgid "Cancel"
+msgid "Cannot find dashboard associated with the campaign"
 msgstr ""
 
-msgid "Ok"
+msgid ""
+"It loooks like it's the first time you are accessing the dashboard for this "
+"campaign. Generating dashboard. This may take up to a couple of minutes"
 msgstr ""
 
-msgid "Cannot find dashboard associated to the campaign"
+msgid ""
+"Please click on the grey arrow next to the chart/table title if you want to "
+"modify the layout."
 msgstr ""
 
-msgid "Cannot find dataset associated to the campaign"
+msgid "Cannot find dataset associated with the campaign"
+msgstr ""
+
+msgid ""
+"Select a) organizational unit where vaccination was performed, b) data set, "
+"c) date of vaccination, d) team that performed vaccination\n"
+"\n"
+"Then enter data for the fields shown in the screen."
+msgstr ""
+
+msgid ""
+"Once cells turn into green, all information is saved and you can leave the "
+"Data Entry Section"
+msgstr ""
+
+msgid "Help"
 msgstr ""
 
 msgid "Back"
 msgstr ""
 
+msgid "Disaggregation"
+msgstr ""
+
 msgid "Field cannot be blank"
 msgstr ""
 
-msgid "Error saving campaign"
+msgid "Number of Teams"
 msgstr ""
 
-msgid "Loading..."
+msgid "Number of teams must be positive"
+msgstr ""
+
+msgid "Campaign created"
+msgstr ""
+
+msgid "Error saving campaign"
 msgstr ""
 
 msgid "[None]"
@@ -191,10 +276,16 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
+msgid "Missing"
+msgstr ""
+
+msgid "Unknown"
+msgstr ""
+
 msgid "Total population"
 msgstr ""
 
-msgid "Age distribution (%)"
+msgid "Age distribution"
 msgstr ""
 
 msgid "Period dates"
@@ -203,13 +294,47 @@ msgstr ""
 msgid "Antigens"
 msgstr ""
 
-msgid "Help"
+msgid "doses"
 msgstr ""
 
-msgid "Previous"
+msgid "Cancel"
 msgstr ""
 
-msgid "Next"
+msgid "Population distribution (%)"
+msgstr ""
+
+msgid "Campaign Population Distribution"
+msgstr ""
+
+msgid "Cancel Campaign Creation?"
+msgstr ""
+
+msgid ""
+"You are about to exit the Campaign Creation Wizard. All your changes will "
+"be lost. Are you sure you want to proceed?"
+msgstr ""
+
+msgid "Subtotal"
+msgstr ""
+
+msgid "Total"
+msgstr ""
+
+msgid "Value"
+msgstr ""
+
+msgid "Doses administered"
+msgstr ""
+
+msgid "Quality and safety indicators"
+msgstr ""
+
+msgid "General Q&S"
+msgstr ""
+
+msgid ""
+"Campaign teams (category options) could not be deleted, probably there are "
+"associated data values"
 msgstr ""
 
 msgid "Select at least one organisation unit"
@@ -227,8 +352,26 @@ msgstr ""
 msgid "Select at least one antigen"
 msgstr ""
 
-msgid "You must select at least one option of the category"
+msgid "You must select at least one category option"
 msgstr ""
 
 msgid "No target population defined"
+msgstr ""
+
+msgid ""
+"Org unit {{organisationUnit}} has an invalid total population value -> "
+"{{value}}"
+msgstr ""
+
+msgid ""
+"Org unit {{organisationUnit}} has invalid distribution values for age "
+"ranges -> {{ageGroups}}"
+msgstr ""
+
+msgid ""
+"Org unit {{organisationUnit}} has an invalid total value for antigen "
+"{{antigen}} ({{ageGroups}}) -> {{- value}}"
+msgstr ""
+
+msgid "There already exists a campaign with the same name"
 msgstr ""

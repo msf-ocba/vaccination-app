@@ -1,16 +1,17 @@
-import { DataElement, CategoryCombo } from "./db.types";
-import _, { Dictionary } from "lodash";
+import { DataElement, Maybe, Ref } from "./db.types";
+import _ from "lodash";
 const fp = require("lodash/fp");
 import { AntigenDisaggregation } from "./AntigensDisaggregation";
-import { MetadataConfig } from "./config";
+import { MetadataConfig, getCode } from "./config";
 import { Antigen } from "./campaign";
-import DbD2 from "./db-d2";
 import "../utils/lodash-mixins";
+import DbD2 from "./db-d2";
 
 export interface AntigenDisaggregation {
     name: string;
     code: string;
-
+    id: string;
+    doses: Array<{ id: string; name: string }>;
     dataElements: Array<{
         name: string;
         code: string;
@@ -23,12 +24,31 @@ export interface AntigenDisaggregation {
             code: string;
             optional: boolean;
             selected: boolean;
+            visible: boolean;
 
             options: Array<{
                 indexSelected: number;
                 values: Array<Array<{ name: string; selected: boolean }>>;
             }>;
         }>;
+    }>;
+}
+
+export interface SectionForDisaggregation {
+    name: string;
+    dataElements: Ref[];
+    dataSet: { id: string };
+    sortOrder: number;
+    greyedFields: Array<{
+        categoryOptionCombo: {
+            id: string;
+            categoryOptions: Array<{
+                id: string;
+                name: string;
+                categories: Ref[];
+            }>;
+        };
+        dataElement: Ref;
     }>;
 }
 
@@ -49,10 +69,8 @@ export type AntigenDisaggregationEnabled = Array<{
     }>;
 }>;
 
-export type CustomFormMetadata = {
-    [antigenDataElementCode: string]: {
-        cocIdByName: Dictionary<string>;
-    };
+export type CocMetadata = {
+    cocIdByName: _.Dictionary<string>;
 };
 
 type AntigensDisaggregationData = {
@@ -63,9 +81,31 @@ type AntigensDisaggregationData = {
 export class AntigensDisaggregation {
     constructor(private config: MetadataConfig, public data: AntigensDisaggregationData) {}
 
-    static build(config: MetadataConfig, antigens: Antigen[]): AntigensDisaggregation {
-        const initial = new AntigensDisaggregation(config, { antigens: [], disaggregation: {} });
-        return initial.setAntigens(antigens);
+    static build(
+        config: MetadataConfig,
+        antigens: Antigen[],
+        sections: SectionForDisaggregation[]
+    ): AntigensDisaggregation {
+        const antigensByCode = _.keyBy(config.antigens, "code");
+        const disaggregation = _(sections)
+            .sortBy(section => section.sortOrder)
+            .map(section => {
+                const antigen = antigensByCode[section.name];
+                if (antigen) {
+                    const disaggregationForAntigen = AntigensDisaggregation.buildForAntigen(
+                        config,
+                        antigen.code,
+                        section
+                    );
+                    return [antigen.code, disaggregationForAntigen];
+                } else {
+                    return null;
+                }
+            })
+            .compact()
+            .fromPairs()
+            .value();
+        return new AntigensDisaggregation(config, { antigens, disaggregation });
     }
 
     public setAntigens(antigens: Antigen[]): AntigensDisaggregation {
@@ -73,7 +113,9 @@ export class AntigensDisaggregation {
         const disaggregationUpdated = _(antigens)
             .keyBy("code")
             .mapValues(
-                antigen => disaggregationByCode[antigen.code] || this.buildForAntigen(antigen.code)
+                antigen =>
+                    disaggregationByCode[antigen.code] ||
+                    AntigensDisaggregation.buildForAntigen(this.config, antigen.code, undefined)
             )
             .value();
         const dataUpdated = { antigens, disaggregation: disaggregationUpdated };
@@ -89,7 +131,7 @@ export class AntigensDisaggregation {
         return new AntigensDisaggregation(this.config, dataUpdated);
     }
 
-    public validate(): Array<{ key: string; namespace: object }> {
+    public validate(): Array<{ key: string; namespace: _.Dictionary<string> }> {
         const errors = _(this.getEnabled())
             .flatMap(antigen => antigen.dataElements)
             .flatMap(dataElement => dataElement.categories)
@@ -106,32 +148,91 @@ export class AntigensDisaggregation {
 
     static getCategories(
         config: MetadataConfig,
-        dataElementConfig: MetadataConfig["dataElements"][0],
-        ageGroups: MetadataConfig["antigens"][0]["ageGroups"]
+        dataElementConfig: MetadataConfig["dataElementsDisaggregation"][0],
+        antigenConfig: MetadataConfig["antigens"][0],
+        section: Maybe<SectionForDisaggregation>
     ): AntigenDisaggregationCategoriesData {
+        const categoriesByCode = _.keyBy(config.categories, "code");
+
         return dataElementConfig.categories.map(categoryRef => {
             const optional = categoryRef.optional;
-            const { $categoryOptions, ...categoryAttributes } = _(config.categories)
+            const category = _(categoriesByCode).getOrFail(categoryRef.code);
+            const isDosesCategory = category.code === config.categoryCodeForDoses;
+            const isAntigensCategory = category.code === config.categoryCodeForAntigens;
+            const { $categoryOptions, name: categoryName, ...categoryAttributes } = _(
+                config.categoriesDisaggregation
+            )
                 .keyBy("code")
                 .getOrFail(categoryRef.code);
 
-            let groups;
+            let groups: string[][][];
             if ($categoryOptions.kind === "fromAgeGroups") {
-                groups = ageGroups;
+                groups = antigenConfig.ageGroups;
             } else if ($categoryOptions.kind === "fromAntigens") {
                 groups = config.antigens.map(antigen => [[antigen.name]]);
+            } else if ($categoryOptions.kind === "fromDoses") {
+                groups = antigenConfig.doses.map(dose => [[dose.name]]);
             } else {
                 groups = $categoryOptions.values.map(option => [[option]]);
             }
 
-            const nestedOptions = groups.map(optionGroup => ({
-                indexSelected: 0,
-                values: optionGroup.map(options =>
-                    options.map(optionName => ({ name: optionName, selected: true }))
-                ),
-            }));
+            const categoryOptionsEnabled = _(section ? section.greyedFields : [])
+                .flatMap(greyedField => {
+                    return greyedField.categoryOptionCombo.categoryOptions.filter(
+                        categoryOption => {
+                            return categoryOption.categories.some(
+                                greyedFieldCategory => greyedFieldCategory.id === category.id
+                            );
+                        }
+                    );
+                })
+                .map(categoryOption => categoryOption.name)
+                .value();
 
-            return { ...categoryAttributes, optional, selected: !optional, options: nestedOptions };
+            const wasCategorySelected = !_(categoryOptionsEnabled).isEmpty();
+
+            const options = groups.map(optionGroup => {
+                const index = wasCategorySelected
+                    ? _(optionGroup).findIndex(
+                          options =>
+                              !_(options)
+                                  .intersection(categoryOptionsEnabled)
+                                  .isEmpty()
+                      )
+                    : 0;
+                const indexSelected = index >= 0 ? index : 0;
+
+                return {
+                    indexSelected,
+                    values: optionGroup.map((options, optionGroupIndex) => {
+                        const isOptionGroupSelected =
+                            wasCategorySelected && indexSelected === optionGroupIndex;
+                        return options.map(optionName => ({
+                            name: optionName,
+                            selected: isOptionGroupSelected
+                                ? _(categoryOptionsEnabled).includes(optionName)
+                                : true,
+                        }));
+                    }),
+                };
+            });
+
+            const selected = wasCategorySelected ? true : !optional;
+
+            // Example: _23.6 Displacement Status
+            const cleanCategoryName = categoryName
+                .replace(/^[_\d.\s]+/, "")
+                .replace("RVC", "")
+                .trim();
+
+            return {
+                ...categoryAttributes,
+                name: cleanCategoryName,
+                optional,
+                selected,
+                options,
+                visible: !(isDosesCategory || isAntigensCategory),
+            };
         });
     }
 
@@ -142,9 +243,7 @@ export class AntigensDisaggregation {
             .value();
 
         const enabled = antigenDisaggregations.map(antigenDisaggregation => {
-            const dataElements: AntigenDisaggregationEnabled[0]["dataElements"] = _(
-                antigenDisaggregation.dataElements
-            )
+            const dataElements = _(antigenDisaggregation.dataElements)
                 .filter("selected")
                 .map(dataElement => {
                     const categories = _(dataElement.categories)
@@ -166,6 +265,7 @@ export class AntigensDisaggregation {
                     };
                 })
                 .value();
+
             const ageGroups = _(dataElements)
                 .flatMap(dataElement => dataElement.categories)
                 .filter(category => category.code === this.config.categoryCodeForAgeGroup)
@@ -174,7 +274,12 @@ export class AntigensDisaggregation {
 
             return {
                 ageGroups: ageGroups,
-                antigen: { code: antigenDisaggregation.code, name: antigenDisaggregation.name },
+                antigen: {
+                    code: antigenDisaggregation.code,
+                    name: antigenDisaggregation.name,
+                    id: antigenDisaggregation.id,
+                    doses: antigenDisaggregation.doses,
+                },
                 dataElements,
             };
         });
@@ -182,8 +287,11 @@ export class AntigensDisaggregation {
         return enabled;
     }
 
-    buildForAntigen(antigenCode: string): AntigenDisaggregation {
-        const { config } = this;
+    static buildForAntigen(
+        config: MetadataConfig,
+        antigenCode: string,
+        section: Maybe<SectionForDisaggregation>
+    ): AntigenDisaggregation {
         const antigenConfig = _(config.antigens)
             .keyBy("code")
             .get(antigenCode);
@@ -191,15 +299,20 @@ export class AntigensDisaggregation {
         if (!antigenConfig) throw `No configuration for antigen: ${antigenCode}`;
 
         const dataElementsProcessed = antigenConfig.dataElements.map(dataElementRef => {
-            const dataElementConfig = _(config.dataElements)
+            const dataElementConfig = _(config.dataElementsDisaggregation)
                 .keyBy("code")
                 .getOrFail(dataElementRef.code);
 
             const categoriesDisaggregation = AntigensDisaggregation.getCategories(
                 config,
                 dataElementConfig,
-                antigenConfig.ageGroups
+                antigenConfig,
+                section
             );
+            const selected =
+                !dataElementRef.optional || !section
+                    ? true
+                    : section.dataElements.some(de => de.id === dataElementRef.id);
 
             return {
                 id: dataElementConfig.id,
@@ -207,61 +320,51 @@ export class AntigensDisaggregation {
                 code: dataElementConfig.code,
                 categories: categoriesDisaggregation,
                 optional: dataElementRef.optional,
-                selected: true,
+                selected,
             };
         });
 
         const res = {
+            id: antigenConfig.id,
             name: antigenConfig.name,
             code: antigenConfig.code,
             dataElements: dataElementsProcessed,
+            doses: antigenConfig.doses,
         };
 
         return res;
     }
 
-    public async getCustomFormMetadata(
-        categoryCombos: CategoryCombo[]
-    ): Promise<CustomFormMetadata> {
-        const data = _.flatMap(this.getEnabled(), ({ dataElements, antigen }) => {
-            return dataElements.map(({ code, categories }) => ({
-                antigenCode: antigen.code,
-                dataElementCode: code,
-                categoryComboCode: [
-                    this.config.categoryCodeForAntigens,
-                    ...categories.map(category => category.code),
-                ].join("_"),
-            }));
-        });
+    public async getCocMetadata(db: DbD2): Promise<CocMetadata> {
+        const categoryComboCodes = _(this.getEnabled())
+            .flatMap(disaggregation => disaggregation.dataElements)
+            .filter(dataElement => !_(dataElement.categories).isEmpty())
+            .map(dataElement => getCode(dataElement.categories.map(category => category.code)))
+            .uniq()
+            .value();
 
-        const categoryCombosByCode = _.keyBy(categoryCombos, "code");
-        const customFormMetadata = _(data)
-            .map(({ antigenCode, dataElementCode, categoryComboCode }) => {
-                const categoryCombo = _(categoryCombosByCode).getOrFail(categoryComboCode);
-                const cocIdByName: Dictionary<string> = _(categoryCombo.categoryOptionCombos)
-                    .map(coc => [coc.name, coc.id])
-                    .fromPairs()
-                    .value();
+        const categoryOptionCombos = await db.getCocsByCategoryComboCode(categoryComboCodes);
 
-                return [antigenCode + "-" + dataElementCode, { cocIdByName }];
-            })
+        const categoryOptionCombosIdByName = _(categoryOptionCombos)
+            .map(coc => [coc.name, coc.id])
+            .push(["", this.config.defaults.categoryOptionCombo.id])
             .fromPairs()
             .value();
 
-        return customFormMetadata;
+        return {
+            cocIdByName: categoryOptionCombosIdByName,
+        };
     }
 }
 
-export async function getDataElements(
-    db: DbD2,
+export function getDataElements(
+    config: MetadataConfig,
     disaggregationData: AntigenDisaggregationEnabled
-): Promise<DataElement[]> {
-    const dataElementCodes = _(disaggregationData)
+): DataElement[] {
+    const dataElementsByCode = _(config.dataElements).keyBy("code");
+    return _(disaggregationData)
         .flatMap(dd => dd.dataElements.map(de => de.code))
         .uniq()
+        .map(deCode => dataElementsByCode.getOrFail(deCode))
         .value();
-    const { dataElements } = await db.getMetadata<{ dataElements: DataElement[] }>({
-        dataElements: { filters: [`code:in:[${dataElementCodes.join(",")}]`] },
-    });
-    return dataElements;
 }

@@ -1,9 +1,10 @@
-import { list, getDashboardId } from "../datasets";
+import { list } from "../datasets";
 import { getD2Stub } from "../../utils/testing";
 import metadataConfig from "./config-mock";
 
 const expectedFields = [
     "id",
+    "name",
     "displayName",
     "displayDescription",
     "shortName",
@@ -34,7 +35,7 @@ describe("DataSets", () => {
                     fields: ["id", "attributeValues[value, attribute[code]]"],
                     paging: false,
                     filter: `attributeValues.attribute.code:eq:${
-                        metadataConfig.attibuteCodeForApp
+                        metadataConfig.attributeCodeForApp
                     }`,
                 });
 
@@ -79,12 +80,12 @@ describe("DataSets", () => {
         describe("filters datasets by attribute", () => {
             it("returns only datasets with the CREATED_BY_VACCINATION attribute set", async () => {
                 const testIds = ["id1", "id2", "id3", "id4"];
-                const code = metadataConfig.attibuteCodeForApp;
+                const attribute = metadataConfig.attributes.app;
                 const testDataSets = [
-                    { id: testIds[0], attributeValues: [{ value: "true", attribute: { code } }] },
-                    { id: testIds[1], attributeValues: [{ value: "false", attribute: { code } }] },
-                    { id: testIds[2], attributeValues: [{ value: "true", attribute: { code } }] },
-                    { id: testIds[3], attributeValues: [{ value: "false", attribute: { code } }] },
+                    { id: testIds[0], attributeValues: [{ value: "true", attribute }] },
+                    { id: testIds[1], attributeValues: [{ value: "false", attribute }] },
+                    { id: testIds[2], attributeValues: [{ value: "true", attribute }] },
+                    { id: testIds[3], attributeValues: [{ value: "false", attribute }] },
                 ];
                 const listMock = jest.fn(() =>
                     Promise.resolve({ toArray: () => testDataSets, pager: {} })
@@ -100,27 +101,6 @@ describe("DataSets", () => {
                     filter: [`id:in:[${testIds[0]},${testIds[2]}]`],
                 });
             });
-        });
-    });
-
-    describe("getDashboardId", () => {
-        it("returns ID for related dashboard", () => {
-            const dataSet = {
-                attributeValues: [
-                    { value: "545", attribute: { code: "SOME_CODE" } },
-                    { value: "1234", attribute: { code: "RVC_DASHBOARD_ID" } },
-                ],
-            };
-
-            expect(getDashboardId(dataSet, metadataConfig)).toEqual("1234");
-        });
-
-        it("returns nothing if there is no dashboard related", () => {
-            const dataSet = {
-                attributeValues: [{ value: "1234", attribute: { code: "SOME_OTHER_CODE" } }],
-            };
-
-            expect(getDashboardId(dataSet, metadataConfig)).toBeFalsy();
         });
     });
 });

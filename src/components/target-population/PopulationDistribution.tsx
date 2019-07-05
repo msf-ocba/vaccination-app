@@ -2,39 +2,31 @@ import React from "react";
 import classNames from "classnames";
 import _ from "lodash";
 
+import { createStyles, WithStyles, Theme } from "@material-ui/core";
+import { Table, TableRow, TableHead, TableCell, TableBody } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 
-import { memoize } from "../../../utils/memoize";
-import i18n from "../../../locales";
+import { memoize } from "../../utils/memoize";
+import i18n from "../../locales";
 import EditButton from "./EditButton";
 import { getShowValue } from "./utils";
 import Value from "./Value";
 import {
     TargetPopulationItem,
-    getFinalPopulationDistribution,
     PopulationDistribution,
-} from "../../../models/TargetPopulation";
-
-import {
-    createStyles,
-    WithStyles,
-    Theme,
-    TextField,
-    Table,
-    TableRow,
-    TableHead,
-    TableCell,
-    TableBody,
-} from "@material-ui/core";
-import { OrganisationUnit, OrganisationUnitLevel, Maybe } from "../../../models/db.types";
+    TargetPopulation,
+} from "../../models/TargetPopulation";
+import { OrganisationUnit, OrganisationUnitLevel, Maybe } from "../../models/db.types";
 import OrgUnitName from "./OrgUnitName";
+import "./PopulationDistribution.css";
+import { NumericField } from "../shared/NumericField";
 
 export interface PopulationDistributionProps extends WithStyles<typeof styles> {
     organisationUnitLevels: OrganisationUnitLevel[];
     rowEditing: Maybe<number>;
-    ageGroups: string[];
+    targetPopulation: TargetPopulation;
     targetPopOu: TargetPopulationItem;
-    onChange: (rowIndex: number, ageGroup: string, value: number) => void;
+    onChange: (orgUnitId: string, ageGroup: string, value: number) => void;
     onToggle: (rowIndex: number) => void;
 }
 
@@ -52,14 +44,9 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
         );
     }
 
-    onChange = memoize(
-        (distributionIdx: number, ageGroup: string) => (
-            ev: React.ChangeEvent<HTMLInputElement>
-        ) => {
-            const value = ev.currentTarget.value;
-            this.props.onChange(distributionIdx, ageGroup, parseInt(value));
-        }
-    );
+    onChange = memoize((orgUnitId: string, ageGroup: string) => (value: number) => {
+        this.props.onChange(orgUnitId, ageGroup, value);
+    });
 
     onToggle = memoize((distributionIdx: number) => () => {
         this.props.onToggle(distributionIdx);
@@ -74,30 +61,36 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
     };
 
     renderRow = (props: { distribution: PopulationDistribution; distributionIdx: number }) => {
-        const { classes, rowEditing, ageGroups } = this.props;
+        const { classes, rowEditing, targetPopulation } = this.props;
         const { distribution, distributionIdx } = props;
         const isEditing = rowEditing === distributionIdx;
+        const { ageGroups } = targetPopulation;
+        const orgUnit = distribution.organisationUnit;
+        const ageDistribution = targetPopulation.ageDistributionByOrgUnit[orgUnit.id];
 
         return (
-            <TableRow key={distribution.organisationUnit.id}>
-                {this.renderOrgUnit(distribution.organisationUnit)}
+            <TableRow key={orgUnit.id}>
+                {this.renderOrgUnit(orgUnit)}
 
-                {ageGroups.map((ageGroup, index) => (
-                    <TableCell key={ageGroup}>
-                        {isEditing ? (
-                            <TextField
-                                className={classes.percentageField}
-                                value={getShowValue(distribution.ageDistribution[ageGroup])}
-                                onChange={this.onChange(distributionIdx, ageGroup)}
-                                inputRef={index === 0 ? this.setFirstTextField : undefined}
-                            />
-                        ) : (
-                            <span>
-                                {getShowValue(distribution.ageDistribution[ageGroup]) || "-"}
-                            </span>
-                        )}
-                    </TableCell>
-                ))}
+                {ageGroups.map((ageGroup, index) => {
+                    const value = ageDistribution ? ageDistribution[ageGroup] : undefined;
+
+                    return (
+                        <TableCell key={ageGroup}>
+                            {isEditing ? (
+                                <NumericField
+                                    className={classes.percentageField}
+                                    value={value}
+                                    onChange={this.onChange(orgUnit.id, ageGroup)}
+                                    inputRef={index === 0 ? this.setFirstTextField : undefined}
+                                    maxDecimals={2}
+                                />
+                            ) : (
+                                <span>{getShowValue(ageDistribution[ageGroup]) || "-"}</span>
+                            )}
+                        </TableCell>
+                    );
+                })}
 
                 <TableCell>
                     {distribution.isEditable && (
@@ -108,9 +101,9 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
         );
     };
     public render() {
-        const { classes, ageGroups, targetPopOu } = this.props;
+        const { classes, targetPopulation, targetPopOu } = this.props;
         const Row = this.renderRow;
-        const populationByAge = getFinalPopulationDistribution(ageGroups, targetPopOu);
+        const populationByAge = targetPopulation.getFinalDistribution(targetPopOu);
 
         return (
             <React.Fragment>
@@ -120,7 +113,7 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
                     <TableHead>
                         <TableRow>
                             <TableCell />
-                            {ageGroups.map(ageGroup => (
+                            {targetPopulation.ageGroups.map(ageGroup => (
                                 <TableCell key={ageGroup} className={classes.tableHead}>
                                     {ageGroup}
                                 </TableCell>
@@ -151,7 +144,7 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
                                 {i18n.t("Campaign Population Distribution")}
                             </TableCell>
 
-                            {ageGroups.map(ageGroup => (
+                            {targetPopulation.ageGroups.map(ageGroup => (
                                 <TableCell key={ageGroup}>
                                     <Value value={populationByAge[ageGroup]} />
                                 </TableCell>
@@ -179,7 +172,7 @@ const styles = (_theme: Theme) =>
             backgroundColor: "#EEE",
         },
         percentageField: {
-            width: "2em",
+            width: "3em",
         },
         separatorRow: {
             height: 24,
