@@ -102,6 +102,11 @@ export interface DataElement {
     formName: string;
 }
 
+export interface Indicator {
+    id: string;
+    code: string;
+}
+
 export interface DataElementGroup {
     id: string;
     code: string;

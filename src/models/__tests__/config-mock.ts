@@ -6,6 +6,8 @@ const metadataConfig: MetadataConfig = {
     organisationUnitLevels: [],
     categoryCombos: [],
     categoryOptions: [],
+    legendSets: [],
+    indicators: [],
     defaults: {
         categoryOptionCombo: {
             displayName: "default",

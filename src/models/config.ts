@@ -13,6 +13,7 @@ import {
     CategoryOptionCombo,
     Attribute,
     NamedObject,
+    Indicator,
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
 
@@ -26,6 +27,7 @@ export const baseConfig = {
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
+    legendSetsCode: "RVC_LEGEND_ZERO",
     attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
@@ -76,6 +78,7 @@ export interface MetadataConfig extends BaseConfig {
         id: string;
         categories: { code: string; optional: boolean }[];
     }>;
+    indicators: Indicator[];
     antigens: Array<{
         id: string;
         name: string;
@@ -83,6 +86,9 @@ export interface MetadataConfig extends BaseConfig {
         dataElements: { id: string; code: string; optional: boolean; order: number }[];
         ageGroups: Array<string[][]>;
         doses: Array<{ id: string; name: string }>;
+    }>;
+    legendSets: Array<{
+        id: string;
     }>;
 }
 
@@ -298,8 +304,10 @@ interface RawMetadataConfig {
     categoryOptionGroups: CategoryOptionGroup[];
     dataElementGroups: DataElementGroup[];
     dataElements: DataElement[];
+    indicators: Indicator[];
     organisationUnitLevels: OrganisationUnitLevel[];
     userRoles: NamedObject[];
+    legendSets: Ref[];
 }
 
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
@@ -317,6 +325,8 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         categoryOptionCombos: { filters: ["name:eq:default"] },
         dataElementGroups: modelParams,
         dataElements: modelParams,
+        indicators: { fields: { id: true, code: true }, filters: [codeFilter] },
+        legendSets: { fields: { id: true, code: true }, filters: [codeFilter] },
         organisationUnitLevels: {},
         userRoles: { fields: { id: true, name: true }, filters: [userRolesFilter] },
     };
@@ -349,6 +359,8 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         ),
         population: getPopulationMetadata(metadata.dataElements, metadata.categories),
         userRoles: metadata.userRoles,
+        legendSets: metadata.legendSets,
+        indicators: metadata.indicators,
     };
 
     return metadataConfig;
