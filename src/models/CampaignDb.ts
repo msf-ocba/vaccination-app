@@ -55,7 +55,8 @@ export default class CampaignDb {
 
     public async createDashboard(): Promise<string> {
         if (!this.campaign.id) throw new Error("Cannot create dashboard for unpersisted campaign");
-        const dashboardMetadata = await this.getDashboardMetadata(this.campaign.id);
+        const teamIds = this.campaign.teamsMetadata.elements.map(t => t.id);
+        const dashboardMetadata = await this.getDashboardMetadata(this.campaign.id, teamIds);
         const metadata: PostSaveMetadata = {
             ...dashboardMetadata,
             dataSets: [],
@@ -139,7 +140,8 @@ export default class CampaignDb {
             sections: sections.map(section => ({ id: section.id })),
         };
 
-        const dashboardMetadata = await this.getDashboardMetadata(dataSetId);
+        const teamIds = newTeams.map(t => t.id);
+        const dashboardMetadata = await this.getDashboardMetadata(dataSetId, teamIds);
 
         return this.postSave(
             {
@@ -340,7 +342,10 @@ export default class CampaignDb {
         };
     }
 
-    private async getDashboardMetadata(dataSetId: string): Promise<DashboardMetadata> {
+    private async getDashboardMetadata(
+        dataSetId: string,
+        teamIds: string[]
+    ): Promise<DashboardMetadata> {
         const { campaign } = this;
         const { db, config: metadataConfig } = campaign;
         const dashboardGenerator = Dashboard.build(db);
@@ -352,7 +357,6 @@ export default class CampaignDb {
         const endDate = moment(campaign.endDate).endOf("day");
 
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
-        const teamIds: string[] = campaign.teamsMetadata.elements.map(co => co.id);
 
         return dashboardGenerator.create({
             dashboardId: campaign.dashboardId,
