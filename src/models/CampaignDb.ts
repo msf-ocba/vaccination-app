@@ -30,6 +30,7 @@ interface PostSaveMetadata {
 }
 
 export default class CampaignDb {
+    antigenCategoryId: string;
     ageGroupCategoryId: string;
     teamsCategoryId: string;
     dosesCategoryId: string;
@@ -37,19 +38,25 @@ export default class CampaignDb {
 
     constructor(public campaign: Campaign) {
         const { categories, categoryCombos, categoryCodeForAgeGroup } = campaign.config;
-        const { categoryCodeForTeams, categoryCodeForDoses } = campaign.config;
+        const {
+            categoryCodeForTeams,
+            categoryCodeForDoses,
+            categoryCodeForAntigens,
+        } = campaign.config;
         const { categoryComboCodeForTeams } = campaign.config;
         const categoriesByCode = _(categories).keyBy("code");
 
         this.ageGroupCategoryId = categoriesByCode.getOrFail(categoryCodeForAgeGroup).id;
         this.teamsCategoryId = categoriesByCode.getOrFail(categoryCodeForTeams).id;
         this.dosesCategoryId = categoriesByCode.getOrFail(categoryCodeForDoses).id;
+        this.antigenCategoryId = categoriesByCode.getOrFail(categoryCodeForAntigens).id;
         this.catComboIdForTeams = getByIndex(categoryCombos, "code", categoryComboCodeForTeams).id;
     }
 
     public async createDashboard(): Promise<string> {
         if (!this.campaign.id) throw new Error("Cannot create dashboard for unpersisted campaign");
-        const dashboardMetadata = await this.getDashboardMetadata(this.campaign.id);
+        const teamIds = this.campaign.teamsMetadata.elements.map(t => t.id);
+        const dashboardMetadata = await this.getDashboardMetadata(this.campaign.id, teamIds);
         const metadata: PostSaveMetadata = {
             ...dashboardMetadata,
             dataSets: [],
@@ -133,7 +140,8 @@ export default class CampaignDb {
             sections: sections.map(section => ({ id: section.id })),
         };
 
-        const dashboardMetadata = await this.getDashboardMetadata(dataSetId);
+        const teamIds = newTeams.map(t => t.id);
+        const dashboardMetadata = await this.getDashboardMetadata(dataSetId, teamIds);
 
         return this.postSave(
             {
@@ -334,7 +342,10 @@ export default class CampaignDb {
         };
     }
 
-    private async getDashboardMetadata(dataSetId: string): Promise<DashboardMetadata> {
+    private async getDashboardMetadata(
+        dataSetId: string,
+        teamIds: string[]
+    ): Promise<DashboardMetadata> {
         const { campaign } = this;
         const { db, config: metadataConfig } = campaign;
         const dashboardGenerator = Dashboard.build(db);
@@ -346,7 +357,6 @@ export default class CampaignDb {
         const endDate = moment(campaign.endDate).endOf("day");
 
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
-        const teamIds: string[] = campaign.teamsMetadata.elements.map(co => co.id);
         const sharing = await campaign.getDashboardSharing();
 
         return dashboardGenerator.create({
@@ -357,11 +367,14 @@ export default class CampaignDb {
             startDate,
             endDate,
             antigensDisaggregation,
-            categoryOptions: metadataConfig.categoryOptions,
-            ageGroupCategoryId: this.ageGroupCategoryId,
-            teamsCategoyId: this.teamsCategoryId,
+            allCategoryIds: {
+                ageGroup: this.ageGroupCategoryId,
+                antigen: this.antigenCategoryId,
+                teams: this.teamsCategoryId,
+                doses: this.dosesCategoryId,
+            },
             teamIds,
-            dosesCategoryId: this.dosesCategoryId,
+            metadataConfig,
             dashboardCode: getDashboardCode(metadataConfig, dataSetId),
             sharing,
         });
