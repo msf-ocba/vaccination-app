@@ -318,7 +318,8 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
 
     const namedObjectFields = { id: true, name: true };
     const userRolesFilter = "name:in:[" + userRoleNames.join(",") + "]";
-    const modelParams = { filters: ["code:startsWith:RVC_"] };
+    const codeFilter = "code:startsWith:RVC_";
+    const modelParams = { filters: [codeFilter] };
 
     const metadataParams = {
         attributes: modelParams,
