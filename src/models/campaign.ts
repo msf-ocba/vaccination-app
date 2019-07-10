@@ -482,6 +482,12 @@ export default class Campaign {
             : targetPopulation.validate();
     }
 
+    /* Data set */
+
+    public async getDataSetSharing(): Promise<Sharing> {
+        return new CampaignSharing(this).forDataSet();
+    }
+
     /* Dashboard */
 
     public get dashboardId(): Maybe<string> {
