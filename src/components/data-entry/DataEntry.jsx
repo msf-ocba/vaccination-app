@@ -9,11 +9,13 @@ import PageHeader from "../shared/PageHeader";
 import { getOrganisationUnitsById, getDataInputPeriodsById } from "../../models/datasets";
 import { getDhis2Url } from "../../utils/routes";
 import { LinearProgress } from "@material-ui/core";
+import { withPageVisited } from "../utils/page-visited-app";
 
 class DataEntry extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
+        pageVisited: PropTypes.bool,
     };
 
     state = {
@@ -141,7 +143,8 @@ class DataEntry extends React.Component {
 
     render() {
         const { isDataEntryIdValid } = this.state;
-        const dataEntryUrl = getDhis2Url(this.props.d2, "/dhis-web-dataentry/index.action");
+        const { d2, pageVisited } = this.props;
+        const dataEntryUrl = getDhis2Url(d2, "/dhis-web-dataentry/index.action");
         const help = i18n.t(`Select a) organizational unit where vaccination was performed, b) data set, c) date of vaccination, d) team that performed vaccination
 
 Then enter data for the fields shown in the screen.`);
@@ -155,6 +158,7 @@ Then enter data for the fields shown in the screen.`);
                     title={i18n.t("Data Entry")}
                     help={help}
                     onBackClick={this.backCampaignConfiguration}
+                    pageVisited={pageVisited}
                 />
                 <div style={this.styles.subtitle}>{subtitle}</div>
                 <div>
@@ -182,4 +186,4 @@ function on(document, selector, cb) {
     document.querySelectorAll(selector).forEach(cb);
 }
 
-export default withSnackbar(DataEntry);
+export default withSnackbar(withPageVisited(DataEntry, "data-entry"));

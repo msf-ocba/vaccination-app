@@ -16,6 +16,7 @@ import AntigenSelectionStep from "../steps/antigen-selection/AntigenSelectionSte
 import DisaggregationStep from "../steps/disaggregation/DisaggregationStep";
 import { memoize } from "../../utils/memoize";
 import ExitWizardButton from "../wizard/ExitWizardButton";
+import { getVisitedAndUpdate } from "../utils/page-visited";
 
 class CampaignWizard extends React.Component {
     static propTypes = {
@@ -32,6 +33,7 @@ class CampaignWizard extends React.Component {
         this.state = {
             campaign: null,
             dialogOpen: false,
+            pagesVisited: {},
         };
     }
 
@@ -138,13 +140,29 @@ class CampaignWizard extends React.Component {
         return await getValidationMessages(this.state.campaign, currentStep.validationKeys);
     };
 
+    onStepChange = async stepKey => {
+        const { d2 } = this.props;
+        const { pagesVisited } = this.state;
+        const currentStep = _.keyBy(this.getStepsBaseInfo(), "key")[stepKey];
+
+        if (currentStep && pagesVisited[stepKey] === undefined) {
+            const key = `wizard-${currentStep.key}`;
+            const visited = await getVisitedAndUpdate(d2, "vaccination-app", key);
+            this.setState({ pagesVisited: { ...pagesVisited, [stepKey]: visited } });
+        } else {
+            this.setState({ pagesVisited: { ...pagesVisited, [stepKey]: true } });
+        }
+    };
+
     render() {
         const { d2, location } = this.props;
-        const { campaign, dialogOpen } = this.state;
+        const { campaign, dialogOpen, pagesVisited } = this.state;
         window.campaign = campaign;
 
         const steps = this.getStepsBaseInfo().map(step => ({
             ...step,
+            helpDialogIsInitialOpen:
+                pagesVisited[step.key] === undefined ? undefined : !pagesVisited[step.key],
             props: {
                 d2,
                 campaign,
@@ -179,6 +197,7 @@ class CampaignWizard extends React.Component {
                         initialStepKey={initialStepKey}
                         useSnackFeedback={true}
                         onStepChangeRequest={this.onStepChangeRequest}
+                        onStepChange={this.onStepChange}
                         lastClickableStepIndex={lastClickableStepIndex}
                     />
                 ) : (

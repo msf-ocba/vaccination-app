@@ -9,12 +9,14 @@ import { getDatasetById } from "../../models/datasets";
 import { getDhis2Url } from "../../utils/routes";
 import Campaign from "../../models/campaign";
 import { LinearProgress } from "@material-ui/core";
+import { withPageVisited } from "../utils/page-visited-app";
 
 class Dashboard extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
         db: PropTypes.object.isRequired,
+        pageVisited: PropTypes.bool,
     };
 
     state = {
@@ -141,6 +143,7 @@ class Dashboard extends React.Component {
 
     render() {
         const { iFrameSrc, isGenerating } = this.state;
+        const { pageVisited } = this.props;
         const help = i18n.t(
             "Please click on the grey arrow next to the chart/table title if you want to modify the layout."
         );
@@ -151,6 +154,7 @@ class Dashboard extends React.Component {
                     title={i18n.t("Dashboard")}
                     onBackClick={this.backCampaignConfiguration}
                     help={help}
+                    pageVisited={pageVisited}
                 />
                 <div>
                     {iFrameSrc ? (
@@ -173,4 +177,4 @@ const styles = {
     iframe: { width: "100%", height: 1000 },
 };
 
-export default withLoading(withSnackbar(Dashboard));
+export default withLoading(withSnackbar(withPageVisited(Dashboard, "dashboard")));
