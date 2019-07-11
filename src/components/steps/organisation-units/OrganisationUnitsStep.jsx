@@ -8,6 +8,7 @@ import { TextField } from "@dhis2/d2-ui-core";
 import { Validators } from "@dhis2/d2-ui-forms";
 
 import "./OrganisationUnitsStep.css";
+import { getCurrentUserDataViewOrganisationUnits } from "../../../utils/dhis2";
 
 /*
     HACK: Use css to hide all selector boxes in tree except for those of level 6.
@@ -22,11 +23,19 @@ class OrganisationUnitsStep extends React.Component {
         onChange: PropTypes.func.isRequired,
     };
 
+    listParams = { maxLevel: 5 };
+
     controls = {
         filterByLevel: false,
         filterByGroup: false,
         selectAll: false,
     };
+
+    constructor(props) {
+        super(props);
+        const orgUnitIds = getCurrentUserDataViewOrganisationUnits(this.props.d2);
+        this.rootIds = _(orgUnitIds).isEmpty() ? undefined : orgUnitIds;
+    }
 
     setOrgUnits = orgUnitsPaths => {
         const orgUnits = orgUnitsPaths.map(path => ({
@@ -94,6 +103,8 @@ class OrganisationUnitsStep extends React.Component {
                     selected={campaign.organisationUnits.map(ou => ou.path)}
                     levels={campaign.selectableLevels}
                     controls={this.controls}
+                    rootIds={this.rootIds}
+                    listParams={this.listParams}
                 />
             </React.Fragment>
         );

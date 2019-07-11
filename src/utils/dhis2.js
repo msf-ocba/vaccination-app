@@ -1,12 +1,21 @@
-export function getCurrentUserRoles(d2) {
-    const userRolesSymbol = Object.getOwnPropertySymbols(d2.currentUser).find(
-        symbol => symbol.toString() === "Symbol(userRoles)"
+function getCurrentUserSymbol(d2, symbolName, defaultValue) {
+    const { currentUser } = d2;
+    const symbol = Object.getOwnPropertySymbols(currentUser).find(
+        symbol => symbol.toString() === `Symbol(${symbolName})`
     );
 
-    if (!userRolesSymbol || !d2.currentUser[userRolesSymbol]) {
-        console.error("Cannot get current user roles");
-        return [];
+    if (!symbol || !currentUser[symbol]) {
+        console.error(`Cannot get symbol for current user: ${symbolName}`);
+        return defaultValue;
     } else {
-        return d2.currentUser[userRolesSymbol];
+        return currentUser[symbol];
     }
+}
+
+export function getCurrentUserRoles(d2) {
+    return getCurrentUserSymbol(d2, "userRoles", []);
+}
+
+export function getCurrentUserDataViewOrganisationUnits(d2) {
+    return getCurrentUserSymbol(d2, "dataViewOrganisationUnits", []);
 }
