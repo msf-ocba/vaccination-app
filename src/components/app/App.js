@@ -16,6 +16,7 @@ import Share from "../share/Share";
 import DbD2 from "../../models/db-d2";
 import { getMetadataConfig } from "../../models/config";
 import { hasCurrentUserRoles } from "../../utils/permissions";
+import { isTestEnv } from "../../utils/dhis2";
 
 const generateClassName = createGenerateClassName({
     dangerouslyUseGlobalCSS: false,
@@ -60,7 +61,7 @@ class App extends Component {
         const { d2, appConfig } = this.props;
         const { config, db } = this.state;
         const showShareButton = _(appConfig).get("appearance.showShareButton") || false;
-        const showHeader = !process.env.REACT_APP_CYPRESS;
+        const showHeader = !isTestEnv();
 
         return (
             <React.Fragment>

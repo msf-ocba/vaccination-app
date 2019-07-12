@@ -10,3 +10,7 @@ export function getCurrentUserRoles(d2) {
         return d2.currentUser[userRolesSymbol];
     }
 }
+
+export function isTestEnv() {
+    return !!process.env.REACT_APP_CYPRESS;
+}
