@@ -5,8 +5,6 @@ import { D2 } from "../../models/d2.types";
 import { DataStore } from "../../models/DataStore";
 import { Maybe } from "../../models/db.types";
 
-const pageVisitedStore = Store.create();
-
 type SetComplement<A, A1 extends A> = A extends A1 ? never : A;
 type Subtract<T extends T1, T1 extends object> = Pick<T, SetComplement<keyof T, keyof T1>>;
 
@@ -47,24 +45,27 @@ export function withPageVisited<T extends PageVisitedProps>(
     };
 }
 
+const cache = Store.create();
+
 export async function getVisitedAndUpdate(
     d2: D2,
     storeNamespace: string,
     pageKey: string
 ): Promise<boolean> {
-    const state = pageVisitedStore.getState() || {};
-    const storeKey = "page-" + pageKey;
-    const fullKey = storeNamespace + "-" + storeKey;
+    const state = cache.getState() || {};
+    const storeKey = "pages-visited";
+    const fullKey = storeNamespace + "-" + pageKey;
     if (state[fullKey]) {
         return true;
     } else {
         const { baseUrl } = d2.Api.getApi();
         const dataStore = new DataStore(baseUrl, "user", storeNamespace);
-        const { visited } = (await dataStore.get(storeKey)) || { visited: false };
+        const pagesVisited = (await dataStore.get<_.Dictionary<boolean>>(storeKey)) || {};
+        const visited = !!pagesVisited[pageKey];
         if (!visited) {
-            dataStore.set(storeKey, { visited: true });
+            dataStore.set(storeKey, { ...pagesVisited, [pageKey]: true });
         }
-        pageVisitedStore.setState({ ...state, [fullKey]: true });
+        cache.setState({ ...state, [fullKey]: true });
         return visited;
     }
 }

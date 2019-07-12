@@ -143,15 +143,8 @@ class CampaignWizard extends React.Component {
     onStepChange = async stepKey => {
         const { d2 } = this.props;
         const { pagesVisited } = this.state;
-        const currentStep = _.keyBy(this.getStepsBaseInfo(), "key")[stepKey];
-
-        if (currentStep && pagesVisited[stepKey] === undefined) {
-            const key = `wizard-${currentStep.key}`;
-            const visited = await getVisitedAndUpdate(d2, "vaccination-app", key);
-            this.setState({ pagesVisited: { ...pagesVisited, [stepKey]: visited } });
-        } else {
-            this.setState({ pagesVisited: { ...pagesVisited, [stepKey]: true } });
-        }
+        const visited = await getVisitedAndUpdate(d2, "vaccination-app", "wizard-" + stepKey);
+        this.setState({ pagesVisited: { ...pagesVisited, [stepKey]: visited } });
     };
 
     render() {
