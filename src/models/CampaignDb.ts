@@ -357,6 +357,7 @@ export default class CampaignDb {
         const endDate = moment(campaign.endDate).endOf("day");
 
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
+        const sharing = await campaign.getDashboardSharing();
 
         return dashboardGenerator.create({
             dashboardId: campaign.dashboardId,
@@ -375,6 +376,7 @@ export default class CampaignDb {
             teamIds,
             metadataConfig,
             dashboardCode: getDashboardCode(metadataConfig, dataSetId),
+            sharing,
         });
     }
 }
