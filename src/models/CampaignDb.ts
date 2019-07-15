@@ -118,12 +118,12 @@ export default class CampaignDb {
         const metadataCoc = await campaign.antigensDisaggregation.getCocMetadata(db);
         const dataEntryForm = await this.getDataEntryForm(existingDataSet, metadataCoc);
         const sections = await this.getSections(db, dataSetId, existingDataSet, metadataCoc);
+        const sharing = await campaign.getDataSetSharing();
 
         const dataSet: DataSet = {
             id: dataSetId,
             name: campaign.name,
             description: campaign.description,
-            publicAccess: "rwrw----", // Open until sharing implemented
             periodType: "Daily",
             categoryCombo: { id: this.catComboIdForTeams },
             dataElementDecoration: true,
@@ -138,6 +138,7 @@ export default class CampaignDb {
             attributeValues: [{ value: "true", attribute: { id: attributeForApp.id } }],
             dataEntryForm: { id: dataEntryForm.id },
             sections: sections.map(section => ({ id: section.id })),
+            ...sharing,
         };
 
         const teamIds = newTeams.map(t => t.id);
@@ -357,6 +358,7 @@ export default class CampaignDb {
         const endDate = moment(campaign.endDate).endOf("day");
 
         const antigensDisaggregation = campaign.getEnabledAntigensDisaggregation();
+        const sharing = await campaign.getDashboardSharing();
 
         return dashboardGenerator.create({
             dashboardId: campaign.dashboardId,
@@ -375,6 +377,7 @@ export default class CampaignDb {
             teamIds,
             metadataConfig,
             dashboardCode: getDashboardCode(metadataConfig, dataSetId),
+            sharing,
         });
     }
 }
