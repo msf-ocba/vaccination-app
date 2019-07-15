@@ -38,12 +38,7 @@ export const dashboardItemsConfig = {
     },
     globalTables: {
         globalQsIndicators: {
-            elements: [
-                "RVC_ADS_WASTAGE",
-                "RVC_DILUTION_SYRINGES_RATIO",
-                "RVC_SAFETY_BOXES",
-                "RVC_CAMPAIGN_NEEDLES_RATIO",
-            ],
+            elements: ["RVC_ADS_WASTAGE", "RVC_SAFETY_BOXES"],
             rows: ["ou"],
             filterDataBy: ["pe"],
             disaggregatedBy: [],
