@@ -96,7 +96,7 @@ export default class CampaignSharing {
             {
                 type: "usersByOrgUnits",
                 level: 4,
-                userRoles: ["Population data entry"],
+                userRoles: ["Medical Focal Point", "Field User", "Online Data Entry"],
                 permission: { metadata: "edit" },
             },
             {
