@@ -83,56 +83,94 @@ const accessValues: { [Key in Permission]: string } = {
     edit: "rw",
 };
 
+interface SharingDefinition {
+    publicPermission: ObjectPermission;
+    filters: SharingFilter[];
+}
+
 export default class CampaignSharing {
     db: DbD2;
 
-    sharings: { dashboard: SharingFilter[] } = {
-        dashboard: [
-            {
-                type: "userGroups",
-                userGroups: ["Vaccination Referents", "HMIS Officers"],
-                permission: { metadata: "edit" },
-            },
-            {
-                type: "usersByOrgUnits",
-                level: 4,
-                userRoles: ["Medical Focal Point", "Field User", "Online Data Entry"],
-                permission: { metadata: "edit" },
-            },
-            {
-                type: "usersByOrgUnits",
-                level: 3,
-                userRoles: ["MedCo"],
-                permission: { metadata: "edit" },
-            },
-            {
-                type: "usersByOrgUnitsInGroupSet",
-                level: 3,
-                organisationUnitGroupSetName: "8. Operational Cells",
-                userRoles: ["TesaCo"],
-                permission: { metadata: "edit" },
-            },
-        ],
+    sharings: { dataSet: SharingDefinition; dashboard: SharingDefinition } = {
+        dataSet: {
+            publicPermission: { metadata: "edit", data: "view" },
+            filters: [
+                {
+                    type: "userGroups",
+                    userGroups: [
+                        "_DATASET_Field Training",
+                        "_DATASET_Field User",
+                        "_DATASET_HMIS Officer",
+                        "_DATASET_HQ Analyst",
+                        "_DATASET_MedCo",
+                        "_DATASET_Medical Focal Point",
+                        "_DATASET_Online Data Entry",
+                        "_DATASET_Super HMIS Officer",
+                        "_DATASET_Superuser",
+                        "_DATASET_TesaCo",
+                        "_DATASET_Training user",
+                    ],
+                    permission: { metadata: "view", data: "edit" },
+                },
+            ],
+        },
+        dashboard: {
+            publicPermission: { metadata: "none" },
+            filters: [
+                {
+                    type: "userGroups",
+                    userGroups: ["Vaccination Referents", "HMIS Officers"],
+                    permission: { metadata: "edit" },
+                },
+                {
+                    type: "usersByOrgUnits",
+                    level: 4,
+                    userRoles: ["Medical Focal Point", "Field User", "Online Data Entry"],
+                    permission: { metadata: "edit" },
+                },
+                {
+                    type: "usersByOrgUnits",
+                    level: 3,
+                    userRoles: ["MedCo"],
+                    permission: { metadata: "edit" },
+                },
+                {
+                    type: "usersByOrgUnitsInGroupSet",
+                    level: 3,
+                    organisationUnitGroupSetName: "8. Operational Cells",
+                    userRoles: ["TesaCo"],
+                    permission: { metadata: "edit" },
+                },
+            ],
+        },
     };
 
     constructor(private campaign: Campaign) {
         this.db = this.campaign.db;
     }
 
+    public async forDataSet(): Promise<Sharing> {
+        return this.getSharing(this.sharings.dataSet);
+    }
+
     public async forDashboard(): Promise<Sharing> {
-        const userAccessesList = await promiseMap(this.sharings.dashboard, sharing => {
-            switch (sharing.type) {
+        return this.getSharing(this.sharings.dashboard);
+    }
+
+    private async getSharing(sharingDefinition: SharingDefinition): Promise<Sharing> {
+        const userAccessesList = await promiseMap(sharingDefinition.filters, filter => {
+            switch (filter.type) {
                 case "userGroups":
-                    return this.getUserGroupAccesses(sharing);
+                    return this.getUserGroupAccesses(filter);
                 case "usersByOrgUnits":
-                    return this.getUserByOrgUnits(sharing);
+                    return this.getUsersByOrgUnitsAccesses(filter);
                 case "usersByOrgUnitsInGroupSet":
-                    return this.getUserByOrgUnitsInGroupSet(sharing);
+                    return this.getUsersByOrgUnitsInGroupSetAccesses(filter);
             }
         });
 
         return {
-            publicAccess: getAccessValue({ metadata: "none" }),
+            publicAccess: getAccessValue(sharingDefinition.publicPermission),
             externalAccess: false,
             userAccesses: getAccesses(userAccessesList, "userAccesses"),
             userGroupAccesses: getAccesses(userAccessesList, "userGroupAccesses"),
@@ -147,33 +185,33 @@ export default class CampaignSharing {
     }
 
     private async getUserGroupAccesses(
-        sharing: UserGroupsSharingFilter
+        filter: UserGroupsSharingFilter
     ): Promise<UserAndGroupAccesses> {
         const { userGroups } = await this.db.getMetadata<{ userGroups: UserGroup[] }>({
             userGroups: {
                 fields: userGroupFields,
-                filters: [`name:in:[${sharing.userGroups.join(",")}]`],
+                filters: [`name:in:[${filter.userGroups.join(",")}]`],
             },
         });
 
-        if (userGroups.length !== sharing.userGroups.length)
+        if (userGroups.length !== filter.userGroups.length)
             console.error("Missing user groups for sharing");
 
         const userGroupAccesses = _(userGroups)
             .map(userGroup => ({
                 id: userGroup.id,
                 displayName: userGroup.name,
-                access: getAccessValue(sharing.permission),
+                access: getAccessValue(filter.permission),
             }))
             .value();
 
         return { userGroupAccesses };
     }
 
-    private async getUserByOrgUnits(
-        sharing: UsersByOrgUnitsSharingFilter
+    private async getUsersByOrgUnitsAccesses(
+        filter: UsersByOrgUnitsSharingFilter
     ): Promise<UserAndGroupAccesses> {
-        const orgUnitsIds = this.getOrgUnitIdsForLevel(sharing.level);
+        const orgUnitsIds = this.getOrgUnitIdsForLevel(filter.level);
 
         const { users: usersWithCampaignOrgUnits } = await this.db.getMetadata<{ users: User[] }>({
             users: {
@@ -182,21 +220,21 @@ export default class CampaignSharing {
             },
         });
 
-        const userAccesses = getUserAccessesFilteredByRoles(usersWithCampaignOrgUnits, sharing);
+        const userAccesses = getUserAccessesFilteredByRoles(usersWithCampaignOrgUnits, filter);
 
         return { userAccesses };
     }
 
-    private async getUserByOrgUnitsInGroupSet(
-        sharing: UsersByOrgUnitsInGroupSetSharingFilter
+    private async getUsersByOrgUnitsInGroupSetAccesses(
+        filter: UsersByOrgUnitsInGroupSetSharingFilter
     ): Promise<UserAndGroupAccesses> {
-        const orgUnitIds = this.getOrgUnitIdsForLevel(sharing.level);
+        const orgUnitIds = this.getOrgUnitIdsForLevel(filter.level);
 
         const { organisationUnitGroupSets } = await this.db.getMetadata<{
             organisationUnitGroupSets: OrganisationUnitGroupSet[];
         }>({
             organisationUnitGroupSets: {
-                filters: [`name:eq:${sharing.organisationUnitGroupSetName}`],
+                filters: [`name:eq:${filter.organisationUnitGroupSetName}`],
             },
         });
 
@@ -204,7 +242,7 @@ export default class CampaignSharing {
         const ouGroups = ouGroupSet ? ouGroupSet.organisationUnitGroups : [];
 
         if (!ouGroupSet)
-            console.error(`Missing orgUnitGroupSet: ${sharing.organisationUnitGroupSetName}`);
+            console.error(`Missing orgUnitGroupSet: ${filter.organisationUnitGroupSetName}`);
 
         const orgUnitGroupsMatching = ouGroups.filter(
             ouGroup =>
@@ -222,7 +260,7 @@ export default class CampaignSharing {
         });
 
         const usersInGroups = _.flatMap(userGroups, userGroup => userGroup.users);
-        const userAccesses = getUserAccessesFilteredByRoles(usersInGroups, sharing);
+        const userAccesses = getUserAccessesFilteredByRoles(usersInGroups, filter);
 
         return { userAccesses };
     }

@@ -178,11 +178,10 @@ export interface Section {
     }>;
 }
 
-export interface DataSet {
+export interface DataSet extends Sharing {
     id: string;
     name: string;
     description: string;
-    publicAccess: string;
     periodType: string;
     categoryCombo: Ref;
     dataElementDecoration: boolean;
