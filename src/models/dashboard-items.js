@@ -22,7 +22,7 @@ export const dashboardItemsConfig = {
             rows: ["ou"],
             filterDataBy: ["pe"],
             area: false,
-            title: period => `Coverage by Site ${period}`,
+            title: period => `Coverage by Site ${period} (do not edit this table)`,
             appendCode: "coverageBySiteChart",
         },
         coverageByArea: {
@@ -32,7 +32,7 @@ export const dashboardItemsConfig = {
             rows: ["ou"],
             filterDataBy: ["pe"],
             area: true,
-            title: period => `Coverage by Area ${period}`,
+            title: period => `Coverage by Area ${period} (do not edit this table)`,
             appendCode: "coverageByAreaChart",
         },
     },
