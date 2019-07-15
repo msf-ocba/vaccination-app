@@ -6,7 +6,7 @@ import {
     itemsMetadataConstructor,
     buildDashboardItems,
 } from "./dashboard-items";
-import { Ref, OrganisationUnitPathOnly, OrganisationUnitWithName } from "./db.types";
+import { Ref, OrganisationUnitPathOnly, OrganisationUnitWithName, Sharing } from "./db.types";
 import { Antigen } from "./campaign";
 import { Moment } from "moment";
 import { getDaysRange } from "../utils/date";
@@ -153,6 +153,7 @@ export class Dashboard {
         teamIds,
         metadataConfig,
         dashboardCode,
+        sharing,
         allCategoryIds,
     }: {
         dashboardId?: string;
@@ -164,6 +165,7 @@ export class Dashboard {
         antigensDisaggregation: AntigenDisaggregationEnabled;
         teamIds: string[];
         dashboardCode: string;
+        sharing: Sharing;
         allCategoryIds: { ageGroup: string; doses: string; antigen: string; teams: string };
         metadataConfig: MetadataConfig;
     }): Promise<DashboardMetadata> {
@@ -194,6 +196,7 @@ export class Dashboard {
             name: `${datasetName}_DASHBOARD`,
             code: dashboardCode,
             dashboardItems: items,
+            ...sharing,
         };
 
         return { dashboards: [dashboard], charts, reportTables };
