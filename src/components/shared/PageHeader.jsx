@@ -9,7 +9,7 @@ import HelpButton from "../help-button/HelpButton";
 
 const iconStyle = { paddingTop: 10, marginBottom: 5 };
 
-function PageHeader({ variant, title, onBackClick, help }) {
+function PageHeader({ variant, title, onBackClick, help, pageVisited }) {
     return (
         <div>
             <IconButton
@@ -23,7 +23,13 @@ function PageHeader({ variant, title, onBackClick, help }) {
 
             <Typography variant={variant} style={{ display: "inline-block", fontWeight: 300 }}>
                 {title}
-                {help && <HelpButton title={`${title} - ${i18n.t("Help")}`} contents={help} />}
+                {help && (
+                    <HelpButton
+                        title={`${title} - ${i18n.t("Help")}`}
+                        contents={help}
+                        pageVisited={pageVisited}
+                    />
+                )}
             </Typography>
         </div>
     );
@@ -34,6 +40,7 @@ PageHeader.propTypes = {
     title: PropTypes.string.isRequired,
     onBackClick: PropTypes.func.isRequired,
     help: PropTypes.string,
+    pageVisited: PropTypes.bool,
 };
 
 PageHeader.defaultProps = {

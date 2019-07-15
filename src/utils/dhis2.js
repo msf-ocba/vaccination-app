@@ -19,3 +19,7 @@ export function getCurrentUserRoles(d2) {
 export function getCurrentUserDataViewOrganisationUnits(d2) {
     return getCurrentUserSymbol(d2, "dataViewOrganisationUnits", []);
 }
+
+export function isTestEnv() {
+    return !!process.env.REACT_APP_CYPRESS;
+}

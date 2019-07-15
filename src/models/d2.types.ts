@@ -18,4 +18,5 @@ export interface D2Api {
     get<T>(url: string, data: Dictionary<any>): Promise<T>;
     post(url: string, data: Dictionary<any>): Promise<Dictionary<any>>;
     delete(url: string): Promise<DeleteResponse>;
+    baseUrl: string;
 }

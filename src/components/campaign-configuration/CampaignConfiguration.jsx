@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { ConfirmationDialog, ObjectsTable, withSnackbar, withLoading } from "d2-ui-components";
 import _ from "lodash";
-
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import PageHeader from "../shared/PageHeader";
@@ -12,6 +11,7 @@ import { formatDateShort } from "../../utils/date";
 import Campaign from "../../models/campaign";
 import TargetPopulationDialog from "./TargetPopulationDialog";
 import { hasCurrentUserRoles } from "../../utils/permissions";
+import { withPageVisited } from "../utils/page-visited-app";
 import "./CampaignConfiguration.css";
 
 class CampaignConfiguration extends React.Component {
@@ -21,6 +21,7 @@ class CampaignConfiguration extends React.Component {
         config: PropTypes.object.isRequired,
         snackbar: PropTypes.object.isRequired,
         loading: PropTypes.object.isRequired,
+        pageVisited: PropTypes.bool,
     };
 
     constructor(props) {
@@ -237,7 +238,7 @@ class CampaignConfiguration extends React.Component {
     };
 
     render() {
-        const { d2, db, config } = this.props;
+        const { d2, db, config, pageVisited } = this.props;
         const { dataSetsToDelete, targetPopulationDataSet, objectsTableKey } = this.state;
         const DeleteConfirmationDialog = this.renderDeleteConfirmationDialog;
         const help = i18n.t(
@@ -247,7 +248,12 @@ Click the three dots on the right side of the screen if you wish to perform any 
 
         return (
             <React.Fragment>
-                <PageHeader title={i18n.t("Campaigns")} help={help} onBackClick={this.backHome} />
+                <PageHeader
+                    title={i18n.t("Campaigns")}
+                    help={help}
+                    onBackClick={this.backHome}
+                    pageVisited={pageVisited}
+                />
 
                 <div style={styles.objectsTableContainer}>
                     <ObjectsTable
@@ -287,4 +293,4 @@ const styles = {
     objectsTableContainer: { marginTop: -10 },
 };
 
-export default withLoading(withSnackbar(CampaignConfiguration));
+export default withLoading(withSnackbar(withPageVisited(CampaignConfiguration, "config")));
