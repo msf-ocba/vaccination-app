@@ -54,7 +54,7 @@ msgid "Edit"
 msgstr "Modifier"
 
 msgid "Delete"
-msgstr "Partager"
+msgstr "Effacer"
 
 msgid "Go to Data Entry"
 msgstr "Aller à la saisie de données"
