@@ -9,7 +9,6 @@ import { Button, LinearProgress } from "@material-ui/core";
 import { withSnackbar } from "d2-ui-components";
 
 import { getFullOrgUnitName } from "../../../models/organisation-units";
-import { getShowValue } from "../../target-population/utils";
 import ExitWizardButton from "../../wizard/ExitWizardButton";
 
 const styles = _theme => ({
@@ -39,17 +38,14 @@ class SaveStep extends React.Component {
     };
 
     async componentDidMount() {
-        const { campaign, snackbar } = this.props;
+        const { campaign } = this.props;
         const { objects: orgUnits } = await campaign.getOrganisationUnitsWithName();
-        const campaignWithTargetPopulation = await campaign.withTargetPopulation().catch(err => {
-            snackbar.warning(err.message || err);
-            return campaign;
-        });
-        this.setState({ orgUnits, campaign: campaignWithTargetPopulation });
+        this.setState({ orgUnits });
     }
 
     save = async () => {
-        const { campaign, isSaving } = this.state;
+        const { campaign } = this.props;
+        const { isSaving } = this.state;
         if (isSaving) return;
 
         this.setState({ isSaving: true, errorMessage: "" });
@@ -119,7 +115,7 @@ class SaveStep extends React.Component {
     };
 
     getCampaignPeriodDateString = () => {
-        const { campaign } = this.state;
+        const { campaign } = this.props;
         const { startDate, endDate } = campaign;
 
         if (startDate && endDate) {
@@ -142,47 +138,14 @@ class SaveStep extends React.Component {
     }
 
     renderOrgUnit = orgUnit => {
-        const { targetPopulation } = this.state.campaign;
         const LiEntry = this.renderLiEntry;
 
-        let totalPopulation, ageDistribution;
-        if (targetPopulation) {
-            const byOrgUnit = _.keyBy(
-                targetPopulation.targetPopulationList,
-                item => item.organisationUnit.id
-            );
-            const targetPopOu = _(byOrgUnit).getOrFail(orgUnit.id);
-            const missing = i18n.t("Missing");
-            const populationDistribution = targetPopulation.getFinalDistribution(targetPopOu);
-
-            totalPopulation = getShowValue(targetPopOu.populationTotal.value) || missing;
-            ageDistribution = targetPopulation.ageGroups
-                .map(ag => [ag, " = ", populationDistribution[ag] || missing, " %"].join(""))
-                .join(", ");
-        }
-
-        const unknown = i18n.t("Unknown");
-
-        return (
-            <LiEntry key={orgUnit.id} label={getFullOrgUnitName(orgUnit)}>
-                <ul>
-                    <LiEntry
-                        label={i18n.t("Total population")}
-                        value={totalPopulation || unknown}
-                    />
-                    <LiEntry
-                        label={i18n.t("Age distribution")}
-                        value={ageDistribution || unknown}
-                    />
-                </ul>
-            </LiEntry>
-        );
+        return <LiEntry key={orgUnit.id} label={getFullOrgUnitName(orgUnit)} />;
     };
 
     render() {
-        const { classes } = this.props;
-        const { campaign, orgUnits, errorMessage, isSaving, dialogOpen } = this.state;
-        if (!campaign) return null;
+        const { classes, campaign } = this.props;
+        const { orgUnits, errorMessage, isSaving, dialogOpen } = this.state;
 
         const LiEntry = this.renderLiEntry;
         const disaggregation = campaign.getEnabledAntigensDisaggregation();

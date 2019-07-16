@@ -311,8 +311,12 @@ interface RawMetadataConfig {
 }
 
 export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
-    const { manager, feedback, targetPopulation } = baseConfig.userRoleNames;
-    const userRoleNames = _.concat(manager, feedback, targetPopulation);
+    const userRoleNames = _(baseConfig.userRoleNames as _.Dictionary<string[]>)
+        .values()
+        .flatten()
+        .value();
+
+    const namedObjectFields = { id: true, name: true };
     const userRolesFilter = "name:in:[" + userRoleNames.join(",") + "]";
     const codeFilter = "code:startsWith:RVC_";
     const modelParams = { filters: [codeFilter] };
@@ -328,7 +332,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         indicators: { fields: { id: true, code: true }, filters: [codeFilter] },
         legendSets: { fields: { id: true, code: true }, filters: [codeFilter] },
         organisationUnitLevels: {},
-        userRoles: { fields: { id: true, name: true }, filters: [userRolesFilter] },
+        userRoles: { fields: namedObjectFields, filters: [userRolesFilter] },
     };
 
     const metadata = await db.getMetadata<RawMetadataConfig>(metadataParams);

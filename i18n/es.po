@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-07-04T07:22:42.893Z\n"
+"POT-Creation-Date: 2019-07-16T08:46:57.652Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -99,11 +99,12 @@ msgid ""
 "any of the following actions -> Set Target Population, Go to Data Entry, Go "
 "To Dashboards, See Details, Edit or Delete."
 msgstr ""
-"Haga clic en el botón azul para crear una nueva campaña o seleccione una campaña "
-"creada anteriormente a la que desee acceder.\n"
-"Haga clic en los tres puntos al lado derecho de la pantalla si desea realizar alguna "
-"de las siguientes acciones -> Establecer población objetivo, Ir a Entrada de datos, "
-"Ir a Tableros de mandos, Ver detalles, Editar o Eliminar.""
+"Haga clic en el botón azul para crear una nueva campaña o seleccione una "
+"campaña creada anteriormente a la que desee acceder.\n"
+"Haga clic en los tres puntos al lado derecho de la pantalla si desea "
+"realizar alguna de las siguientes acciones -> Establecer población objetivo, "
+"Ir a Entrada de datos, Ir a Tableros de mandos, Ver detalles, Editar o "
+"Eliminar."
 
 msgid "Create Campaign"
 msgstr "Crear Campaña"
@@ -314,6 +315,9 @@ msgstr "Desagregación"
 msgid "Field cannot be blank"
 msgstr "El campo no puede estar vacío"
 
+msgid "This user has no Data output and analytic organisation units assigned"
+msgstr "Este usuario no tiene unidades organizativas de datos y análisis asignadas"
+
 msgid "Number of Teams"
 msgstr "Número de equipos"
 
@@ -332,18 +336,6 @@ msgstr "[Vacío]"
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr "[{{total}}] {{names}} y {{othersCount}} otros"
 
-msgid "Missing"
-msgstr "Vacío"
-
-msgid "Unknown"
-msgstr "Desconocido"
-
-msgid "Total population"
-msgstr "Población total"
-
-msgid "Age distribution"
-msgstr "Distribución por edad (%)"
-
 msgid "Period dates"
 msgstr "Periodo"
 
@@ -361,6 +353,12 @@ msgstr "Distribución por edad (%)"
 
 msgid "Campaign Population Distribution"
 msgstr "Distribución de población"
+
+msgid "Total population"
+msgstr "Población total"
+
+msgid "Missing"
+msgstr "Vacío"
 
 msgid "Cancel Campaign Creation?"
 msgstr "¿Cancelar la creación de campaña?"

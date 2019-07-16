@@ -4,10 +4,12 @@ import { DialogButton } from "d2-ui-components";
 import "./HelpButton.css";
 
 import i18n from "../../locales";
+import { Maybe } from "../../models/db.types";
 
 export interface HelpProps {
     title: string;
     contents: string;
+    pageVisited: Maybe<boolean>;
 }
 
 function Button({ onClick }: { onClick: () => void }) {
@@ -22,8 +24,16 @@ function Button({ onClick }: { onClick: () => void }) {
 
 class HelpButton extends React.Component<HelpProps> {
     public render() {
-        const { title, contents } = this.props;
-        return <DialogButton buttonComponent={Button} title={title} contents={contents} />;
+        const { title, contents, pageVisited } = this.props;
+
+        return (
+            <DialogButton
+                buttonComponent={Button}
+                title={title}
+                contents={contents}
+                initialIsOpen={pageVisited === undefined ? undefined : !pageVisited}
+            />
+        );
     }
 }
 

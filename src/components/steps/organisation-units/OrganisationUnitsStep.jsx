@@ -2,12 +2,13 @@ import React from "react";
 import PropTypes from "prop-types";
 import _ from "lodash";
 import i18n from "@dhis2/d2-i18n";
-import { OrgUnitsSelector } from "d2-ui-components";
+import { OrgUnitsSelector, withSnackbar } from "d2-ui-components";
 import { FormBuilder } from "@dhis2/d2-ui-forms";
 import { TextField } from "@dhis2/d2-ui-core";
 import { Validators } from "@dhis2/d2-ui-forms";
 
 import "./OrganisationUnitsStep.css";
+import { getCurrentUserDataViewOrganisationUnits } from "../../../utils/dhis2";
 
 /*
     HACK: Use css to hide all selector boxes in tree except for those of level 6.
@@ -20,13 +21,30 @@ class OrganisationUnitsStep extends React.Component {
         d2: PropTypes.object.isRequired,
         campaign: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
+        snackbar: PropTypes.object.isRequired,
     };
+
+    listParams = { maxLevel: 5 };
 
     controls = {
         filterByLevel: false,
         filterByGroup: false,
         selectAll: false,
     };
+
+    constructor(props) {
+        super(props);
+        const orgUnitIds = getCurrentUserDataViewOrganisationUnits(this.props.d2);
+        this.rootIds = orgUnitIds;
+    }
+
+    componentDidMount() {
+        if (_(this.rootIds).isEmpty()) {
+            this.props.snackbar.error(
+                i18n.t("This user has no Data output and analytic organisation units assigned")
+            );
+        }
+    }
 
     setOrgUnits = orgUnitsPaths => {
         const orgUnits = orgUnitsPaths.map(path => ({
@@ -94,6 +112,8 @@ class OrganisationUnitsStep extends React.Component {
                     selected={campaign.organisationUnits.map(ou => ou.path)}
                     levels={campaign.selectableLevels}
                     controls={this.controls}
+                    rootIds={this.rootIds}
+                    listParams={this.listParams}
                 />
             </React.Fragment>
         );
@@ -104,4 +124,4 @@ const styles = {
     formBuilder: { marginBottom: 20 },
 };
 
-export default OrganisationUnitsStep;
+export default withSnackbar(OrganisationUnitsStep);
