@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-07-11T11:20:40.971Z\n"
-"PO-Revision-Date: 2019-07-11T11:20:40.971Z\n"
+"POT-Creation-Date: 2019-07-16T08:46:57.652Z\n"
+"PO-Revision-Date: 2019-07-16T08:46:57.652Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -258,6 +258,9 @@ msgstr ""
 msgid "Field cannot be blank"
 msgstr ""
 
+msgid "This user has no Data output and analytic organisation units assigned"
+msgstr ""
+
 msgid "Number of Teams"
 msgstr ""
 
@@ -276,18 +279,6 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
-msgid "Missing"
-msgstr ""
-
-msgid "Unknown"
-msgstr ""
-
-msgid "Total population"
-msgstr ""
-
-msgid "Age distribution"
-msgstr ""
-
 msgid "Period dates"
 msgstr ""
 
@@ -304,6 +295,12 @@ msgid "Population distribution (%)"
 msgstr ""
 
 msgid "Campaign Population Distribution"
+msgstr ""
+
+msgid "Total population"
+msgstr ""
+
+msgid "Missing"
 msgstr ""
 
 msgid "Cancel Campaign Creation?"
