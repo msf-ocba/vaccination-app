@@ -1,4 +1,4 @@
-import { OrganisationUnit, Maybe, Ref, MetadataResponse } from "./db.types";
+import { OrganisationUnit, Maybe, Ref, MetadataResponse, Sharing } from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
 
@@ -12,6 +12,7 @@ import CampaignDb from "./CampaignDb";
 import { promiseMap } from "../utils/promises";
 import i18n from "../locales";
 import { TeamsMetadata, getTeamsForCampaign, filterTeamsByNames } from "./Teams";
+import CampaignSharing from "./CampaignSharing";
 
 export type TargetPopulationData = TargetPopulationData;
 
@@ -481,6 +482,12 @@ export default class Campaign {
             : targetPopulation.validate();
     }
 
+    /* Data set */
+
+    public async getDataSetSharing(): Promise<Sharing> {
+        return new CampaignSharing(this).forDataSet();
+    }
+
     /* Dashboard */
 
     public get dashboardId(): Maybe<string> {
@@ -489,6 +496,10 @@ export default class Campaign {
 
     public async createDashboard(): Promise<Maybe<string>> {
         return new CampaignDb(this).createDashboard();
+    }
+
+    public async getDashboardSharing(): Promise<Sharing> {
+        return new CampaignSharing(this).forDashboard();
     }
 
     /* Teams */
