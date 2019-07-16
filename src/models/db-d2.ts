@@ -194,12 +194,31 @@ export const metadataFields: MetadataFields = {
             level: true,
         },
     },
+    organisationUnitGroupSets: {
+        id: true,
+        name: true,
+        organisationUnitGroups: {
+            name: true,
+            organisationUnits: {
+                id: true,
+            },
+        },
+    },
     organisationUnitLevels: {
         id: true,
         displayName: true,
         level: true,
     },
     sections: { id: true },
+    users: {
+        id: true,
+        name: true,
+    },
+    userGroups: {
+        id: true,
+        name: true,
+        users: { id: true },
+    },
     userRoles: {
         id: true,
         name: true,
