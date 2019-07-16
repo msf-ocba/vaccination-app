@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-07-16T08:42:08.553Z\n"
-"PO-Revision-Date: 2019-07-16T08:42:08.553Z\n"
+"POT-Creation-Date: 2019-07-16T08:46:57.652Z\n"
+"PO-Revision-Date: 2019-07-16T08:46:57.652Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -256,6 +256,9 @@ msgid "Disaggregation"
 msgstr ""
 
 msgid "Field cannot be blank"
+msgstr ""
+
+msgid "This user has no Data output and analytic organisation units assigned"
 msgstr ""
 
 msgid "Number of Teams"

@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import _ from "lodash";
 import i18n from "@dhis2/d2-i18n";
-import { OrgUnitsSelector } from "d2-ui-components";
+import { OrgUnitsSelector, withSnackbar } from "d2-ui-components";
 import { FormBuilder } from "@dhis2/d2-ui-forms";
 import { TextField } from "@dhis2/d2-ui-core";
 import { Validators } from "@dhis2/d2-ui-forms";
@@ -21,6 +21,7 @@ class OrganisationUnitsStep extends React.Component {
         d2: PropTypes.object.isRequired,
         campaign: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
+        snackbar: PropTypes.object.isRequired,
     };
 
     listParams = { maxLevel: 5 };
@@ -34,7 +35,15 @@ class OrganisationUnitsStep extends React.Component {
     constructor(props) {
         super(props);
         const orgUnitIds = getCurrentUserDataViewOrganisationUnits(this.props.d2);
-        this.rootIds = _(orgUnitIds).isEmpty() ? undefined : orgUnitIds;
+        this.rootIds = orgUnitIds;
+    }
+
+    componentDidMount() {
+        if (_(this.rootIds).isEmpty()) {
+            this.props.snackbar.error(
+                i18n.t("This user has no Data output and analytic organisation units assigned")
+            );
+        }
     }
 
     setOrgUnits = orgUnitsPaths => {
@@ -115,4 +124,4 @@ const styles = {
     formBuilder: { marginBottom: 20 },
 };
 
-export default OrganisationUnitsStep;
+export default withSnackbar(OrganisationUnitsStep);
