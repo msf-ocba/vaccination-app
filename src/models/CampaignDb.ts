@@ -327,7 +327,7 @@ export default class CampaignDb {
         cocMetadata: CocMetadata
     ): Promise<DataEntryForm> {
         const { campaign } = this;
-        const customForm = new DataSetCustomForm(campaign, cocMetadata);
+        const customForm = await DataSetCustomForm.build(campaign, cocMetadata);
         const customFormHtml = customForm.generate();
         const formId =
             (existingDataSet &&

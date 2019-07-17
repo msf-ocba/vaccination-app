@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { generateUid } from "d2/uid";
 import moment from "moment";
+import i18n from "@dhis2/d2-i18n";
 
 export const dashboardItemsConfig = {
     metadataToFetch: {
@@ -22,7 +23,7 @@ export const dashboardItemsConfig = {
             rows: ["ou"],
             filterDataBy: ["pe"],
             area: false,
-            title: period => `Coverage by Site ${period} (do not edit this chart)`,
+            title: ns => i18n.t("Coverage by Site {{- period}} (do not edit this chart)", ns),
             appendCode: "coverageBySiteChart",
         },
         coverageByArea: {
@@ -32,7 +33,7 @@ export const dashboardItemsConfig = {
             rows: ["ou"],
             filterDataBy: ["pe"],
             area: true,
-            title: period => `Coverage by Area ${period} (do not edit this chart)`,
+            title: ns => i18n.t("Coverage by Area {{- period}} (do not edit this chart)", ns),
             appendCode: "coverageByAreaChart",
         },
     },
@@ -43,7 +44,7 @@ export const dashboardItemsConfig = {
             filterDataBy: ["pe"],
             disaggregatedBy: [],
             area: true,
-            title: "Global QS Indicators",
+            title: ns => i18n.t("Global QS Indicators", ns),
             appendCode: "globalQsTable",
         },
         aefiAEB: {
@@ -52,7 +53,7 @@ export const dashboardItemsConfig = {
             filterDataBy: ["ou"],
             disaggregatedBy: [],
             area: false,
-            title: "AEFI and AEB indicators",
+            title: ns => i18n.t("AEFI and AEB indicators", ns),
             appendCode: "adverseEvents",
             legendCode: "RVC_LEGEND_ZERO",
         },
@@ -64,7 +65,7 @@ export const dashboardItemsConfig = {
             filterDataBy: ["pe"],
             disaggregatedBy: ["ageGroup", "doses"],
             area: true,
-            title: "Campaign Coverage by area (do not edit this table)",
+            title: ns => i18n.t("Campaign Coverage by area (do not edit this table)", ns),
             appendCode: "coverageByArea",
             showRowSubTotals: false,
         },
@@ -74,7 +75,7 @@ export const dashboardItemsConfig = {
             filterDataBy: ["ou"],
             disaggregatedBy: [],
             area: false,
-            title: "QS Indicators",
+            title: ns => i18n.t("QS Indicators", ns),
             appendCode: "qsIndicatorsTable",
         },
         vaccinesPerArea: {
@@ -83,7 +84,7 @@ export const dashboardItemsConfig = {
             filterDataBy: ["pe"],
             disaggregatedBy: [],
             area: true,
-            title: "Vaccines Per Area",
+            title: ns => i18n.t("Vaccines Per Area", ns),
             appendCode: "vaccinesPerArea",
         },
         vaccinesPerDateTeam: {
@@ -92,7 +93,7 @@ export const dashboardItemsConfig = {
             filterDataBy: ["ou"],
             disaggregatedBy: [],
             area: false,
-            title: "Vaccines Per Team",
+            title: ns => i18n.t("Vaccines Per Team", ns),
             appendCode: "vaccinesPerDateTeam",
         },
     },
@@ -103,7 +104,7 @@ export const dashboardItemsConfig = {
             filterDataBy: ["ou"],
             disaggregatedBy: ["ageGroup", "doses"],
             area: false,
-            title: "Campaign Coverage by day (do not edit this table)",
+            title: ns => i18n.t("Campaign Coverage by day (do not edit this table)", ns),
             appendCode: "coverageByPeriod",
             showRowSubTotals: false,
         },
@@ -111,7 +112,7 @@ export const dashboardItemsConfig = {
 };
 
 export function buildDashboardItemsCode(datasetName, orgUnitName, antigenName, appendCode) {
-    return [datasetName, orgUnitName, antigenName, appendCode].join("_");
+    return [datasetName, orgUnitName, antigenName, appendCode].join(" - ");
 }
 
 function getDisaggregations(itemConfigs, disaggregationMetadata, antigen) {
@@ -363,6 +364,17 @@ function getDimensions(disaggregations, antigen, antigenCategory) {
         .value();
 }
 
+function getTitleWithTranslations(fn, baseNamespace) {
+    const locales = Object.keys(i18n.store.data);
+    const title = fn(baseNamespace);
+    const translations = locales.map(locale => ({
+        property: "SHORT_NAME",
+        locale,
+        value: fn({ ...baseNamespace, lng: locale }),
+    }));
+    return { title, translations };
+}
+
 const chartConstructor = ({
     id,
     datasetName,
@@ -388,8 +400,6 @@ const chartConstructor = ({
     const periodForTitle = `${moment(periodItems[0].id).format("DD/MM/YYYY")} - ${moment(
         _.last(periodItems).id
     ).format("DD/MM/YYYY")}`;
-
-    const chartTitle = title(periodForTitle);
 
     const columns = _.isEmpty(disaggregations) ? allColumns : allColumns.filter(c => c.id !== "dx");
 
@@ -428,7 +438,7 @@ const chartConstructor = ({
         sortOrder: 0,
         favorite: false,
         topLimit: 0,
-        title: chartTitle,
+        ...getTitleWithTranslations(title, { period: periodForTitle }),
         hideEmptyRowItems: "AFTER_LAST",
         aggregationType: "DEFAULT",
         userOrganisationUnitGrandChildren: false,
@@ -497,7 +507,6 @@ const chartConstructor = ({
         },
         dataElementGroupSetDimensions: [],
         attributeDimensions: [],
-        translations: [],
         filterDimensions,
         interpretations: [],
         itemOrganisationUnitGroups: [],
@@ -599,7 +608,7 @@ const tableConstructor = ({
             appendCode
         ),
         hideSubtitle: true,
-        title,
+        ...getTitleWithTranslations(title, {}),
         externalAccess: false,
         legendDisplayStrategy: "FIXED",
         colSubTotals: false,
@@ -668,7 +677,6 @@ const tableConstructor = ({
         },
         dataElementGroupSetDimensions: [],
         attributeDimensions: [],
-        translations: [],
         filterDimensions: _.compact([...filterDataBy, antigen ? antigenCategory : null]),
         interpretations: [],
         itemOrganisationUnitGroups: [],
