@@ -111,8 +111,8 @@ export const dashboardItemsConfig = {
     },
 };
 
-export function buildDashboardItemsCode(datasetName, orgUnitName, antigenName, _appendCode) {
-    return [datasetName, orgUnitName, antigenName].join(" - ");
+export function buildDashboardItemsCode(datasetName, orgUnitName, antigenName, appendCode) {
+    return [datasetName, orgUnitName, antigenName, appendCode].join(" - ");
 }
 
 function getDisaggregations(itemConfigs, disaggregationMetadata, antigen) {
