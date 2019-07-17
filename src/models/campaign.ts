@@ -143,6 +143,7 @@ export default class Campaign {
                                 categoryOptions: {
                                     id: true,
                                     name: true,
+                                    displayName: true,
                                     categories: { id: true },
                                 },
                             },

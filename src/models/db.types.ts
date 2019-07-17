@@ -91,6 +91,7 @@ export interface Category {
 export interface CategoryOption {
     id: string;
     code: string;
+    name: string;
     displayName: string;
 }
 
@@ -317,6 +318,7 @@ export interface ModelFields {
 }
 
 export type ModelName =
+    | "global"
     | "attributeValues"
     | "attributes"
     | "attributes"

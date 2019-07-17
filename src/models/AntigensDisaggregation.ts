@@ -45,6 +45,7 @@ export interface SectionForDisaggregation {
             categoryOptions: Array<{
                 id: string;
                 name: string;
+                displayName: string;
                 categories: Ref[];
             }>;
         };
@@ -186,7 +187,8 @@ export class AntigensDisaggregation {
                         }
                     );
                 })
-                .map(categoryOption => categoryOption.name)
+                .map(categoryOption => categoryOption.displayName)
+                .uniq()
                 .value();
 
             const wasCategorySelected = !_(categoryOptionsEnabled).isEmpty();
@@ -343,10 +345,23 @@ export class AntigensDisaggregation {
             .uniq()
             .value();
 
+        const categoryOptionsDisplayNameByName = _(this.config.categoryOptions)
+            .map(co => [co.name, co.displayName])
+            .fromPairs()
+            .value();
+
         const categoryOptionCombos = await db.getCocsByCategoryComboCode(categoryComboCodes);
 
+        /* Category option combos have the untranslated category Option names separated by commas */
+        const getTranslatedCocName: (cocName: string) => string = cocName => {
+            return cocName
+                .split(", ")
+                .map(coName => _(categoryOptionsDisplayNameByName).getOrFail(coName))
+                .join(", ");
+        };
+
         const categoryOptionCombosIdByName = _(categoryOptionCombos)
-            .map(coc => [coc.name, coc.id])
+            .map(coc => [getTranslatedCocName(coc.name), coc.id])
             .push(["", this.config.defaults.categoryOptionCombo.id])
             .fromPairs()
             .value();
