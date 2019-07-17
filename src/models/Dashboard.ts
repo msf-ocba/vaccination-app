@@ -193,7 +193,7 @@ export class Dashboard {
 
         const dashboard = {
             id: dashboardId || generateUid(),
-            name: `${datasetName}_DASHBOARD`,
+            name: `${datasetName}`,
             code: dashboardCode,
             dashboardItems: items,
             ...sharing,
