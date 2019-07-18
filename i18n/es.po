@@ -317,7 +317,7 @@ msgstr "El campo no puede estar vacío"
 
 msgid "This user has no Data output and analytic organisation units assigned"
 msgstr ""
-"Este usuario no tiene unidades organizativas de datos y análisis asignadas"
+"Este usuario no tiene unidades organizativas configuradas en la sección de resultados y análisis"
 
 msgid "Number of Teams"
 msgstr "Número de equipos"
@@ -397,22 +397,22 @@ msgstr ""
 "probablemente hay datos asociados"
 
 msgid "Coverage by Site {{- period}} (do not edit this chart)"
-msgstr "Cobertura por ubicación {{- period}} (no edite esta gráfica)"
+msgstr "Cobertura Vacunal por Centro Salud {{- period}} (no edite esta gráfica)"
 
 msgid "Coverage by Area {{- period}} (do not edit this chart)"
-msgstr "Cobertura por área {{- period}} (no edite esta gráfica)"
+msgstr "Cobertura Vacunal por área de Salud {{- period}} (no edite esta gráfica)"
 
 msgid "Global QS Indicators"
-msgstr "Indicadores globales"
+msgstr "Indicadores globales de Calidad y Seguridad"
 
 msgid "AEFI and AEB indicators"
-msgstr "Indicatores AEFI and AEB"
+msgstr "Exposición Accidental a Sangre y Efecto Adverso Posterior a la Vacunación"
 
 msgid "Campaign Coverage by area (do not edit this table)"
-msgstr "Cobertura por área (no edite esta tabla)"
+msgstr "Cobertura Vacunal por Área de Salud (no edite esta tabla)"
 
 msgid "QS Indicators"
-msgstr "Indicadores de calidad y seguridad"
+msgstr "Indicadores de Calidad y Seguridad"
 
 msgid "Vaccines Per Area"
 msgstr "Vacunación por área"
@@ -421,7 +421,7 @@ msgid "Vaccines Per Team"
 msgstr "Vacunación por equipo"
 
 msgid "Campaign Coverage by day (do not edit this table)"
-msgstr "Cobertura por día (no edite esta tabla)"
+msgstr "Cobertura Vacunal por día (no edite esta tabla)"
 
 msgid "Select at least one organisation unit"
 msgstr "Seleccione al menos una unidad organizativa"
