@@ -404,7 +404,7 @@ msgid "Coverage by Site {{- period}} (do not edit this chart)"
 msgstr "Couverture pour Site {{- period}} (ne modifiez pas ce graphique)"
 
 msgid "Coverage by Area {{- period}} (do not edit this chart)"
-msgstr "Coverage by zone {{- period}} (ne modifiez pas ce graphique)"
+msgstr "Couverture par zone {{- period}} (ne modifiez pas ce graphique)"
 
 msgid "Global QS Indicators"
 msgstr "Indicateurs globaux de qualité et de sécurité"
