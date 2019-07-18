@@ -39,6 +39,10 @@ function getDbFields(modelFields: ModelFields): string[] {
         .value();
 }
 
+function addPrefix(modelName: string, key: string): string {
+    return modelName === "global" ? key : `${modelName}:${key}`;
+}
+
 function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
     return _(metadataParams)
         .flatMap((params, modelName) => {
@@ -47,12 +51,12 @@ function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
             } else {
                 const fields = params.fields || metadataFields[modelName as ModelName];
                 return [
-                    [modelName + ":fields", getDbFields(fields).join(",")],
+                    [addPrefix(modelName, "fields"), getDbFields(fields).join(",")],
                     // NOTE: Only the first filter is actually passed. d2.Api does support arrays for
                     // the generic param 'filter=', but not for metadata-specific 'MODEL:filter='.
                     ..._(params.filters || [])
                         .take(1)
-                        .map(filter => [modelName + ":filter", filter])
+                        .map(filter => [addPrefix(modelName, "filter"), filter])
                         .value(),
                 ];
             }
@@ -86,6 +90,9 @@ export interface AnalyticsResponse {
 const ref = { id: true };
 
 export const metadataFields: MetadataFields = {
+    global: {
+        id: true,
+    },
     attributeValues: {
         value: true,
         attribute: { id: true, code: true },
@@ -102,11 +109,7 @@ export const metadataFields: MetadataFields = {
         code: true,
         dataDimensionType: true,
         dataDimension: true,
-        categoryOptions: {
-            id: true,
-            code: true,
-            displayName: true,
-        },
+        categoryOptions: metadataFields => metadataFields.categoryOptions,
     },
     categoryCombos: {
         id: true,
@@ -122,6 +125,7 @@ export const metadataFields: MetadataFields = {
     },
     categoryOptions: {
         id: true,
+        name: true,
         displayName: true,
         code: true,
     },
@@ -242,11 +246,8 @@ export default class DbD2 {
     public async getMetadata<T>(params: MetadataGetParams): Promise<T> {
         const options = { translate: true, ...toDbParams(params) };
         const metadata = await this.api.get("/metadata", options);
-        const metadataWithEmptyRecords = _(params)
-            .keys()
-            .map(key => [key, metadata[key] || []])
-            .fromPairs()
-            .value();
+        const emptyRecords = _.mapValues(params, () => []);
+        const metadataWithEmptyRecords = { ...emptyRecords, ...metadata };
         return metadataWithEmptyRecords as T;
     }
 

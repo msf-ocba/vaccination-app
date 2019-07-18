@@ -14,6 +14,13 @@ type Category = DataElement["categories"][0];
 
 type Maybe<T> = T | undefined;
 
+interface ObjectWithTranslation {
+    id: string;
+    name: string;
+    displayName: string;
+    translations: Array<{ property: string; locale: string; value: string }>;
+}
+
 function h(tagName: string, attributes: object = {}, children: string | string[] = []) {
     const attrs = Object.keys(attributes).length === 0 ? undefined : attributes;
     const args = typeof children === "string" ? [children] : _.compact(children);
@@ -42,7 +49,7 @@ function inputTd(dataElementId: string, cocId: string): string {
 function totalTh(categoryOptionGroups: string[][], isSplit: boolean): string {
     return h(
         "th",
-        { rowspan: categoryOptionGroups.length, class: "data-header" },
+        { rowspan: categoryOptionGroups.length, class: "data-header", "data-translate": true },
         h("span", { align: "center" }, isSplit ? i18n.t("Subtotal") : i18n.t("Total"))
     );
 }
@@ -57,13 +64,26 @@ function totalTd(dataElementId: string, cocIds: string[]): string {
     );
 }
 
+type Translations = { [text: string]: { [locale: string]: string } };
+
 export class DataSetCustomForm {
     config: MetadataConfig;
     dataElementCodeDosesRegexp = /DOSES/;
     generalIndicatorsTabId = "GENERAL_QS";
 
-    constructor(public campaign: Campaign, private metadata: CocMetadata) {
+    constructor(
+        public campaign: Campaign,
+        private metadata: CocMetadata,
+        private disaggregations: Disaggregations,
+        private translations: Translations
+    ) {
         this.config = campaign.config;
+    }
+
+    static async build(campaign: Campaign, metadata: CocMetadata): Promise<DataSetCustomForm> {
+        const disaggregations = campaign.getEnabledAntigensDisaggregation();
+        const translations = await DataSetCustomForm.createTranslations(campaign, disaggregations);
+        return new DataSetCustomForm(campaign, metadata, disaggregations, translations);
     }
 
     renderHeaderForGroup(categoryOptionGroups: string[][], isSubTotal: boolean): Children {
@@ -75,7 +95,11 @@ export class DataSetCustomForm {
         if (total === 0) {
             return [
                 h("td", { class: "header-first-column" }, "&nbsp;"),
-                h("th", { colspan: "1", scope: "col", class: "data-header" }, i18n.t("Value")),
+                h(
+                    "th",
+                    { colspan: "1", scope: "col", class: "data-header", "data-translate": true },
+                    i18n.t("Value")
+                ),
             ];
         }
 
@@ -95,7 +119,12 @@ export class DataSetCustomForm {
                     categoryOptions.map(categoryOptionName =>
                         h(
                             "th",
-                            { colspan: newCount, scope: "col", class: "data-header" },
+                            {
+                                colspan: newCount,
+                                scope: "col",
+                                class: "data-header",
+                                "data-translate": true,
+                            },
                             h("span", { align: "center" }, categoryOptionName)
                         )
                     ),
@@ -157,11 +186,12 @@ export class DataSetCustomForm {
             const renderTotalCell = cocIds.length > 1;
 
             return h("tr", { class: trClass }, [
-                h(
-                    "td",
-                    { class: "data-element" },
-                    _.compact([dataElement.name, showDoseName ? doseName : null]).join(" - ")
-                ),
+                h("td", { class: "data-element", "data-translate": true }, [
+                    h("span", { "data-translate": true }, dataElement.name),
+                    showDoseName
+                        ? h("span", {}, " - ") + h("span", { "data-translate": true }, doseName)
+                        : null,
+                ]),
                 ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
                 renderTotalCell ? totalTd(dataElementId, cocIds) : null,
             ]);
@@ -276,7 +306,7 @@ export class DataSetCustomForm {
                     h("td", { class: "header-first-column" }),
                     h(
                         "th",
-                        { class: "data-header" },
+                        { class: "data-header", "data-translate": true },
                         h("span", { align: "center" }, i18n.t("Total"))
                     ),
                 ]),
@@ -314,7 +344,7 @@ export class DataSetCustomForm {
             { title: i18n.t("Quality and safety indicators"), dataElements: qualityDataElements },
         ];
 
-        return this.renderTab(antigen.code, groups, { antigen: disaggregation.antigen });
+        return this.renderTab(antigen.id, groups, { antigen: disaggregation.antigen });
     }
 
     private renderTab(
@@ -334,7 +364,7 @@ export class DataSetCustomForm {
                 {},
                 _.flatMap(groups, ({ title, dataElements }) => [
                     h("div", { class: "dataelement-group" }, [
-                        title ? h("div", { class: "title" }, title) : null,
+                        title ? h("div", { class: "title", "data-translate": true }, title) : null,
                         h(
                             "div",
                             { class: "formSection sectionContainer" },
@@ -380,7 +410,7 @@ export class DataSetCustomForm {
         const generalDataElements = this.getGeneralDataElements(disaggregations);
 
         const tabs = _.compact([
-            ...disaggregations.map(({ antigen }) => ({ name: antigen.name, id: antigen.code })),
+            ...disaggregations.map(({ antigen }) => ({ name: antigen.name, id: antigen.id })),
             !_(generalDataElements).isEmpty()
                 ? { name: i18n.t("General Q&S"), id: this.generalIndicatorsTabId }
                 : null,
@@ -408,6 +438,7 @@ export class DataSetCustomForm {
                             role: "presentation",
                             tabindex: "-1",
                             class: "ui-tabs-anchor",
+                            "data-translate": true,
                         },
                         tab.name
                     )
@@ -416,18 +447,93 @@ export class DataSetCustomForm {
         );
     }
 
-    generate(): string {
-        const disaggregations = this.campaign.getEnabledAntigensDisaggregation();
+    static async createTranslations(
+        campaign: Campaign,
+        disaggregations: Disaggregations
+    ): Promise<Translations> {
+        const i18nTranslations = [
+            "Subtotal",
+            "Total",
+            "Value",
+            "Doses administered",
+            "Quality and safety indicators",
+            "General Q&S",
+        ];
 
+        const locales = Object.keys(i18n.store.data);
+        const i18nTranslations_ = _(i18nTranslations)
+            .map(text => [
+                i18n.t(text),
+                _(locales)
+                    .map(locale => [locale, i18n.t(i18n.t(text, { lng: "en" }), { lng: locale })])
+                    .fromPairs()
+                    .value(),
+            ])
+            .fromPairs()
+            .value();
+
+        const categoryOptionsIdByName = _.keyBy(campaign.config.categoryOptions, "displayName");
+        const ids = [
+            ..._(disaggregations)
+                .flatMap(dis => dis.dataElements)
+                .map("id")
+                .value(),
+            ..._(disaggregations)
+                .flatMap(dis => dis.dataElements)
+                .flatMap(dataElement => dataElement.categories)
+                .flatMap(category => category.categoryOptions)
+                .map(co => _(categoryOptionsIdByName).get(co).id)
+                .uniq()
+                .value(),
+        ];
+
+        const { categoryOptions, dataElements } = await campaign.db.getMetadata<{
+            categoryOptions: ObjectWithTranslation[];
+            dataElements: ObjectWithTranslation[];
+        }>({
+            global: {
+                fields: { id: true, name: true, displayName: true, translations: true },
+                filters: [`id:in:[${ids.join(",")}]`],
+            },
+        });
+
+        const metadataTranslations = _(categoryOptions)
+            .concat(dataElements)
+            .map(object => [
+                object.displayName,
+                _(locales)
+                    .map(locale => [
+                        locale,
+                        _(object.translations)
+                            .filter(translation => translation.property === "NAME")
+                            .keyBy("locale")
+                            .get([locale, "value"]) || object.name,
+                    ])
+                    .fromPairs()
+                    .value(),
+            ])
+            .fromPairs()
+            .value();
+
+        return { ...i18nTranslations_, ...metadataTranslations };
+    }
+
+    generate(): string {
         return h(
             "div",
             { id: "tabs", class: "ui-tabs ui-corner-all ui-widget ui-widget-content" },
             [
-                this.renderTabs(disaggregations),
-                ...disaggregations.map(disaggregation => this.renderAntigenTab(disaggregation)),
-                this.renderGeneralIndicatorsTab(disaggregations),
+                this.renderTabs(this.disaggregations),
+                ...this.disaggregations.map(disaggregation =>
+                    this.renderAntigenTab(disaggregation)
+                ),
+                this.renderGeneralIndicatorsTab(this.disaggregations),
                 h("style", {}, css),
-                h("script", {}, script),
+                h(
+                    "script",
+                    {},
+                    `var translations = ${JSON.stringify(this.translations, null, 2)};` + script
+                ),
             ]
         );
     }
@@ -519,9 +625,27 @@ const script = `
             .focusout(ev => setClass(ev, "focus", false));
     };
 
+    var translate = function() {
+        const userSettings = dhis2.de.storageManager.getUserSettings();
+        const currentLocale = userSettings ? userSettings.keyDbLocale : null;
+
+        if (!currentLocale) return;
+
+        $("*[data-translate='']").get().forEach(el_ => {
+            const el = $(el_)
+            const text = el.text();
+            const translation = translations[text];
+            if (translation) {
+                const text2 = translation[currentLocale] || translation["en"] || text;
+                el.text(text2);
+            }
+        });
+    };
+
     var applyChangesToForm = function() {
         highlightDataElementRows();
         processWideTables();
+        translate();
         $("#tabs").tabs();
         // Set full width to data elements columns after table width has been calculated
         $(".header-first-column").addClass("full-width");

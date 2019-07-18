@@ -46,6 +46,7 @@ class CampaignWizard extends React.Component {
                 : Campaign.create(config, db);
             this.setState({ campaign });
         } catch (err) {
+            console.error(err);
             this.props.snackbar.error(i18n.t("Cannot load campaign") + `: ${err.message || err}`);
             this.props.history.push("/campaign-configuration");
         }
