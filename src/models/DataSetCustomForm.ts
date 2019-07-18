@@ -483,6 +483,7 @@ export class DataSetCustomForm {
                 .flatMap(dataElement => dataElement.categories)
                 .flatMap(category => category.categoryOptions)
                 .map(co => _(categoryOptionsIdByName).get(co).id)
+                .uniq()
                 .value(),
         ];
 
