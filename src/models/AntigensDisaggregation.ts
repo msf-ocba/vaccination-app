@@ -350,7 +350,13 @@ export class AntigensDisaggregation {
             .fromPairs()
             .value();
 
-        const categoryOptionCombos = await db.getCocsByCategoryComboCode(categoryComboCodes);
+        // Add age groups required by target population data values
+        const allCategoryComboCodes = [
+            ...categoryComboCodes,
+            this.config.categoryCodeForAgeGroup,
+            this.config.categoryComboCodeForAntigenDosesAgeGroup,
+        ];
+        const categoryOptionCombos = await db.getCocsByCategoryComboCode(allCategoryComboCodes);
 
         /* Category option combos have the untranslated category Option names separated by commas */
         const getTranslatedCocName: (cocName: string) => string = cocName => {

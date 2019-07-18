@@ -11,6 +11,7 @@ import {
 } from "./db.types";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { sortAgeGroups } from "../utils/age-groups";
+import Campaign from "./campaign";
 
 const levelsConfig = {
     levelForPopulation: 5,
@@ -55,15 +56,17 @@ export interface AgeGroupSelector {
 }
 
 export class TargetPopulation {
-    constructor(
-        private config: MetadataConfig,
-        private db: DbD2,
-        public data: TargetPopulationData
-    ) {}
+    private config: MetadataConfig;
+    private db: DbD2;
 
-    static build(config: MetadataConfig, db: DbD2): TargetPopulation {
-        return new TargetPopulation(config, db, {
-            organisationUnitLevels: config.organisationUnitLevels,
+    constructor(public campaign: Campaign, public data: TargetPopulationData) {
+        this.db = campaign.db;
+        this.config = campaign.config;
+    }
+
+    static build(campaign: Campaign): TargetPopulation {
+        return new TargetPopulation(campaign, {
+            organisationUnitLevels: campaign.config.organisationUnitLevels,
             targetPopulationList: [],
             antigensDisaggregation: [],
             ageGroups: [],
@@ -146,6 +149,7 @@ export class TargetPopulation {
     ): Promise<TargetPopulation> {
         const ouIds = orgUnitsPathOnly.map(ou => ou.id);
         const ageGroupsForAllAntigens = sortAgeGroups(
+            this.config,
             _(antigensDisaggregation)
                 .flatMap(({ ageGroups }) => ageGroups)
                 .uniq()
@@ -175,7 +179,7 @@ export class TargetPopulation {
             };
         });
 
-        return new TargetPopulation(this.config, this.db, {
+        return new TargetPopulation(this.campaign, {
             ...this.data,
             antigensDisaggregation,
             targetPopulationList,
@@ -190,7 +194,7 @@ export class TargetPopulation {
             ["targetPopulationList", ouIndex, "populationTotal", "value"],
             value
         );
-        return new TargetPopulation(this.config, this.db, newData);
+        return new TargetPopulation(this.campaign, newData);
     }
 
     setAgeGroupPopulation(selector: AgeGroupSelector, value: number) {
@@ -199,7 +203,7 @@ export class TargetPopulation {
             ["ageDistributionByOrgUnit", selector.orgUnitId, selector.ageGroup],
             value
         );
-        return new TargetPopulation(this.config, this.db, newData);
+        return new TargetPopulation(this.campaign, newData);
     }
 
     public get ageGroups() {
@@ -220,15 +224,7 @@ export class TargetPopulation {
 
     public async getDataValues(period: string): Promise<DataValue[]> {
         const { config } = this;
-        const categoryComboCodes = [
-            config.categoryComboCodeForAgeGroup,
-            config.categoryComboCodeForAntigenDosesAgeGroup,
-        ];
-        const categoryOptionCombos = await this.db.getCocsByCategoryComboCode(categoryComboCodes);
-        const cocIdsByName = _(categoryOptionCombos)
-            .map(coc => [coc.name, coc.id])
-            .fromPairs()
-            .value();
+        const { cocIdByName } = await this.campaign.antigensDisaggregation.getCocMetadata(this.db);
 
         const dataValues = _.flatMap(this.data.targetPopulationList, targetPopulationItem => {
             const totalPopulation = get(
@@ -263,7 +259,7 @@ export class TargetPopulation {
                                     period,
                                     orgUnit: targetPopulationItem.organisationUnit.id,
                                     dataElement: config.population.populationByAgeDataElement.id,
-                                    categoryOptionCombo: _(cocIdsByName).getOrFail(cocName),
+                                    categoryOptionCombo: _(cocIdByName).getOrFail(cocName),
                                     value: Math.ceil(populationForAgeRange).toString(),
                                 };
                             })
@@ -286,7 +282,7 @@ export class TargetPopulation {
                                       period,
                                       orgUnit: ouId,
                                       dataElement: config.population.ageDistributionDataElement.id,
-                                      categoryOptionCombo: _(cocIdsByName).getOrFail(ageGroup),
+                                      categoryOptionCombo: _(cocIdByName).getOrFail(ageGroup),
                                       value: value.toString(),
                                   }
                                 : null;

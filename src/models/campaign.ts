@@ -461,8 +461,7 @@ export default class Campaign {
     }
 
     public async withTargetPopulation(): Promise<Campaign> {
-        const targetPopulation =
-            this.data.targetPopulation || TargetPopulation.build(this.config, this.db);
+        const targetPopulation = this.data.targetPopulation || TargetPopulation.build(this);
 
         const targetPopulationForCampaign = await targetPopulation.update(
             this.organisationUnits,

@@ -221,12 +221,17 @@ function getAntigens(
             .getOrFail(getCode([categoryOption.code, "AGE_GROUP"]))
             .categoryOptions.map(co => co.displayName);
 
-        const ageGroups = sortAgeGroups(mainAgeGroups).map(mainAgeGroup => {
+        const { categoryComboCodeForAgeGroup } = baseConfig;
+        const sortConfig = { categoryComboCodeForAgeGroup, categories };
+
+        const ageGroups = sortAgeGroups(sortConfig, mainAgeGroups).map(mainAgeGroup => {
             const codePrefix = getCode([categoryOption.code, "AGE_GROUP", mainAgeGroup]);
             const disaggregatedAgeGroups = _(categoryOptionGroups)
                 .filter(cog => cog.code.startsWith(codePrefix))
                 .sortBy(cog => cog.code)
-                .map(cog => sortAgeGroups(cog.categoryOptions.map(co => co.displayName)))
+                .map(cog =>
+                    sortAgeGroups(sortConfig, cog.categoryOptions.map(co => co.displayName))
+                )
                 .value();
             return [[mainAgeGroup], ...disaggregatedAgeGroups];
         });
