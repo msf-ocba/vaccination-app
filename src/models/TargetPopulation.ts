@@ -146,6 +146,7 @@ export class TargetPopulation {
     ): Promise<TargetPopulation> {
         const ouIds = orgUnitsPathOnly.map(ou => ou.id);
         const ageGroupsForAllAntigens = sortAgeGroups(
+            this.config,
             _(antigensDisaggregation)
                 .flatMap(({ ageGroups }) => ageGroups)
                 .uniq()
