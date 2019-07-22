@@ -51,7 +51,7 @@ export type SharingFilter =
 interface User {
     id: string;
     displayName: string;
-    userCredentials: {
+    userCredentials?: {
         userRoles: Array<{
             id: string;
             name: string;
@@ -290,7 +290,7 @@ function getUserAccessesFilteredByRoles(
     sharing: { userRoles: string[]; permission: ObjectPermission }
 ) {
     const userMatchesSomeUserRole = (user: User) =>
-        !_(user.userCredentials.userRoles)
+        !_(user.userCredentials ? user.userCredentials.userRoles : [])
             .map(userRole => userRole.name)
             .intersection(sharing.userRoles)
             .isEmpty();
