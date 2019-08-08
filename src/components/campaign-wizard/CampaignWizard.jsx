@@ -34,6 +34,7 @@ class CampaignWizard extends React.Component {
             campaign: null,
             dialogOpen: false,
             pagesVisited: {},
+            isCampaignUpdated: false,
         };
     }
 
@@ -124,11 +125,16 @@ class CampaignWizard extends React.Component {
     }
 
     cancelSave = () => {
-        this.setState({ dialogOpen: true });
+        const { isCampaignUpdated } = this.state;
+
+        if (isCampaignUpdated) {
+            this.setState({ dialogOpen: true });
+        } else {
+            this.goToConfiguration();
+        }
     };
 
-    handleConfirm = () => {
-        this.setState({ dialogOpen: false });
+    goToConfiguration = () => {
         this.props.history.push("/campaign-configuration");
     };
 
@@ -138,7 +144,8 @@ class CampaignWizard extends React.Component {
 
     onChange = memoize(step => async campaign => {
         const errors = await getValidationMessages(campaign, step.validationKeysLive || []);
-        this.setState({ campaign });
+        this.setState({ campaign, isCampaignUpdated: true });
+
         if (!_(errors).isEmpty()) {
             this.props.snackbar.error(errors.join("\n"));
         }
@@ -173,7 +180,7 @@ class CampaignWizard extends React.Component {
                 d2,
                 campaign,
                 onChange: this.onChange(step),
-                onCancel: this.handleConfirm,
+                onCancel: this.goToConfiguration,
             },
         }));
 
@@ -190,7 +197,7 @@ class CampaignWizard extends React.Component {
             <React.Fragment>
                 <ExitWizardButton
                     isOpen={dialogOpen}
-                    onConfirm={this.handleConfirm}
+                    onConfirm={this.goToConfiguration}
                     onCancel={this.handleDialogCancel}
                 />
                 <PageHeader
