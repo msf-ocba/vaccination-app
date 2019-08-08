@@ -488,6 +488,21 @@ export default class Campaign {
         return new CampaignSharing(this).forDataSet();
     }
 
+    public async hasDataValues(): Promise<boolean> {
+        if (!this.id) {
+            return false;
+        } else {
+            const dataValues = await this.db.getDataValues({
+                dataSet: [this.id],
+                orgUnit: this.organisationUnits.map(ou => ou.id),
+                lastUpdated: "1970",
+                limit: 1,
+                includeDeleted: true,
+            });
+            return _(dataValues).isNotEmpty();
+        }
+    }
+
     /* Dashboard */
 
     public get dashboardId(): Maybe<string> {
