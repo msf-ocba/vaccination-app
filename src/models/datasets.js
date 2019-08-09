@@ -10,8 +10,6 @@ const defaultListFields = [
     "created",
     "lastUpdated",
     "publicAccess",
-    "userAccesses",
-    "userGroupAccesses",
     "user",
     "dataInputPeriods~paging=(1;1)",
     "href",
