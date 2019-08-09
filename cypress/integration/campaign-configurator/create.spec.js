@@ -85,13 +85,11 @@ describe("Campaigns - Create", () => {
         cy.contains("Organisation Units");
         cy.contains("MSF -> OCBA -> ETHIOPIA -> ETHIOPIA, MERT -> Cholera Intervention Addis 2016");
 
-        cy.route("POST", "/api/metadata").as("metadataRequest");
         cy.get("[data-wizard-contents] button")
             .contains("Save")
             .click();
 
-        cy.wait("@metadataRequest");
-        cy.contains("Campaign created");
+        cy.contains("Campaign created", { timeout: 60000 });
     });
 });
 
@@ -149,7 +147,7 @@ function deleteAllTestResources() {
         const dataSet = dataSets[0];
         cy.request({
             method: "GET",
-            url: getApiUrl(`/dashboards?filter=code:eq:RVC_CAMPAIGN_${dataSet.id}`),
+            url: getApiUrl(`/dashboards?filter=code:eq:RVC_CAMPAIGN_${dataSet.id}&fields=:owner`),
             failOnStatusCode: false,
         }).then(({ body: { dashboards: [dashboard] } }) => {
             cy.request({
