@@ -519,6 +519,12 @@ export class DataSetCustomForm {
     }
 
     generate(): string {
+        const options = {
+            translations: this.translations,
+            dataElements: _.fromPairs(this.config.dataElements.map(de => [de.id, de.code])),
+        };
+        const toJSON = (obj: any) => JSON.stringify(obj, null, 2);
+
         return h(
             "div",
             { id: "tabs", class: "ui-tabs ui-corner-all ui-widget ui-widget-content" },
@@ -529,11 +535,7 @@ export class DataSetCustomForm {
                 ),
                 this.renderGeneralIndicatorsTab(this.disaggregations),
                 h("style", {}, css),
-                h(
-                    "script",
-                    {},
-                    `var translations = ${JSON.stringify(this.translations, null, 2)};` + script
-                ),
+                h("script", {}, [script, `init(${toJSON(options)})`].join("\n")),
             ]
         );
     }
@@ -625,7 +627,8 @@ const script = `
             .focusout(ev => setClass(ev, "focus", false));
     };
 
-    var translate = function() {
+    var translate = function(options) {
+        const translations = options.translations;
         const userSettings = dhis2.de.storageManager.getUserSettings();
         const currentLocale = userSettings ? userSettings.keyDbLocale : null;
 
@@ -642,20 +645,31 @@ const script = `
         });
     };
 
-    var applyChangesToForm = function() {
+    var applyChangesToForm = function(options) {
         highlightDataElementRows();
         processWideTables();
-        translate();
+        translate(options);
         $("#tabs").tabs();
         // Set full width to data elements columns after table width has been calculated
         $(".header-first-column").addClass("full-width");
     };
 
-    var init = function() {
-        $(document).on("dhis2.de.event.formLoaded", applyChangesToForm);
-    }
+    var runValidations = function(options, ev, dataSetId, dataValue) {
+        if (dataValue.de && options.dataElements[dataValue.de] === "RVC_AEFI") {
+            // dhis2.de.validate(completeUncomplete, ignoreValidationSuccess, successCallback)
+            dhis2.de.validate(false, true);
+        }
 
-    init();
+    };
+
+    /* Options:
+            translations: Dictionary<string, Dictionary<Locale, string>>
+            dataElements: Dictionary<Id, Code>
+    */
+    var init = function(options) {
+        $(document).on("dhis2.de.event.formLoaded", applyChangesToForm.bind(null, options));
+        $(document).on("dhis2.de.event.dataValueSaved", runValidations.bind(null, options));
+    }
 `;
 
 const css = `
