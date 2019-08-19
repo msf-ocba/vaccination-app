@@ -5,6 +5,7 @@ module.exports = {
     transformIgnorePatterns: [],
     modulePaths: ["src"],
     moduleNameMapper: {
+        "raw-loader!": "<rootDir>/config/fileMock.js",
         "\\.(css|scss)$": "<rootDir>/config/styleMock.js",
         "\\.(jpg|jpeg|png|svg)$": "<rootDir>/config/fileMock.js",
     },
