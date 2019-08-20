@@ -6,7 +6,7 @@ import _ from "lodash";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import PageHeader from "../shared/PageHeader";
-import { list } from "../../models/datasets";
+import { list, getPeriodDatesFromDataSet } from "../../models/datasets";
 import { formatDateShort } from "../../utils/date";
 import Campaign from "../../models/campaign";
 import TargetPopulationDialog from "./TargetPopulationDialog";
@@ -165,23 +165,18 @@ class CampaignConfiguration extends React.Component {
     };
 
     getDateValue = (dateType, dataSet) => {
-        const dataInputPeriods = dataSet.dataInputPeriods;
-        let dateValue;
+        const periodDates = getPeriodDatesFromDataSet(dataSet);
+        if (!periodDates) return;
+
         switch (dateType) {
             case "startDate":
-                if (!_(dataInputPeriods).isEmpty()) {
-                    dateValue = formatDateShort(dataInputPeriods[0].openingDate);
-                }
-                break;
+                return formatDateShort(periodDates.startDate);
             case "endDate":
-                if (!_(dataInputPeriods).isEmpty()) {
-                    dateValue = formatDateShort(dataInputPeriods[0].closingDate);
-                }
-                break;
+                return formatDateShort(periodDates.endDate);
             default:
                 console.error(`Date type not supported: ${dateType}`);
+                return undefined;
         }
-        return dateValue;
     };
 
     onCreate = () => {
