@@ -59,8 +59,11 @@ export class Teams {
         const teamDifference = teams - _.size(oldTeams);
 
         //Update periodDates and OU references for previous teams
-        const orderedOldTemas = _.orderBy(oldTeams, "name", "asc");
-        const allTeams = orderedOldTemas.map((ot, i) => ({
+        const orderedOldTeams = _.orderBy(oldTeams, team => {
+            const match = team.name.match(/\d+/);
+            return match ? parseInt(match[0]) : 0;
+        });
+        const allTeams = orderedOldTeams.map((ot, i) => ({
             ...ot,
             name: `Team ${i + 1} - ${name}`,
             startDate,
@@ -83,7 +86,6 @@ export class Teams {
             ];
         } else if (teamDifference < 0) {
             return _(allTeams)
-                .sortBy("name")
                 .take(teams)
                 .value();
         } else {
@@ -197,7 +199,7 @@ export function filterTeamsByNames(
 ): CategoryOptionTeam[] {
     if (_.isEmpty(teams)) return [];
 
-    const matchers = campaignNames.map(name => new RegExp(`^Team \\d - ${name}$`));
+    const matchers = campaignNames.map(name => new RegExp(`^Team \\d+ - ${name}$`));
 
     const filteredTeams = teams.filter(
         (co: { categories: Array<{ id: string }>; name: string }) => {
