@@ -16,6 +16,7 @@ const fields = [
     "access",
     "attributeValues[value, attribute[code]]",
     "dataInputPeriods~paging=(1;1)",
+    "organisationUnits[id]",
     "href",
 ];
 
@@ -37,7 +38,10 @@ export async function list(config, d2, filters, pagination) {
     ]);
     const listOptions = { fields, filter, page, pageSize, order };
     const collection = await d2.models.dataSets.list(cleanOptions(listOptions));
-    return { pager: collection.pager, objects: collection.toArray() };
+    const objects = collection
+        .toArray()
+        .map(dataSet => ({ ...dataSet, organisationUnits: dataSet.organisationUnits.toArray() }));
+    return { pager: collection.pager, objects };
 }
 
 async function getByAttribute(config, d2) {

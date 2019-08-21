@@ -261,6 +261,17 @@ export interface TypeReport {
     objectReports: ObjectReport[];
 }
 
+export interface MessageDestination {
+    users?: Ref[];
+    userGroups?: Ref[];
+    organisationUnits?: Ref[];
+}
+
+export interface Message extends MessageDestination {
+    subject: string;
+    text?: string;
+}
+
 export interface MetadataResponse {
     importParams: ImportParams;
     status: "OK" | "ERROR";

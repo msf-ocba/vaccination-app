@@ -18,6 +18,7 @@ const expectedFields = [
     "access",
     "attributeValues[value, attribute[code]]",
     "dataInputPeriods~paging=(1;1)",
+    "organisationUnits[id]",
     "href",
 ];
 
@@ -81,11 +82,28 @@ describe("DataSets", () => {
             it("returns only datasets with the CREATED_BY_VACCINATION attribute set", async () => {
                 const testIds = ["id1", "id2", "id3", "id4"];
                 const attribute = metadataConfig.attributes.app;
+                const orgUnits = { organisationUnits: { toArray: () => [] } };
                 const testDataSets = [
-                    { id: testIds[0], attributeValues: [{ value: "true", attribute }] },
-                    { id: testIds[1], attributeValues: [{ value: "false", attribute }] },
-                    { id: testIds[2], attributeValues: [{ value: "true", attribute }] },
-                    { id: testIds[3], attributeValues: [{ value: "false", attribute }] },
+                    {
+                        id: testIds[0],
+                        attributeValues: [{ value: "true", attribute }],
+                        ...orgUnits,
+                    },
+                    {
+                        id: testIds[1],
+                        attributeValues: [{ value: "false", attribute }],
+                        ...orgUnits,
+                    },
+                    {
+                        id: testIds[2],
+                        attributeValues: [{ value: "true", attribute }],
+                        ...orgUnits,
+                    },
+                    {
+                        id: testIds[3],
+                        attributeValues: [{ value: "false", attribute }],
+                        ...orgUnits,
+                    },
                 ];
                 const listMock = jest.fn(() =>
                     Promise.resolve({ toArray: () => testDataSets, pager: {} })

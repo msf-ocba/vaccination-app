@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-08-07T12:58:51.517Z\n"
-"PO-Revision-Date: 2019-08-07T12:58:51.517Z\n"
+"POT-Creation-Date: 2019-08-21T09:13:06.224Z\n"
+"PO-Revision-Date: 2019-08-21T09:13:06.224Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -314,6 +314,21 @@ msgstr ""
 msgid ""
 "You are about to exit the Campaign Creation Wizard. All your changes will "
 "be lost. Are you sure you want to proceed?"
+msgstr ""
+
+msgid "update"
+msgstr ""
+
+msgid "delete"
+msgstr ""
+
+msgid "[RVC] User {{userName}} modified a campaign with data ({{action}})"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Action"
 msgstr ""
 
 msgid "Subtotal"
