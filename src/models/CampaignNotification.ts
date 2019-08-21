@@ -7,7 +7,7 @@ interface DataSetWithName {
     name: string;
 }
 
-type CampaignUpdateAction = "update" | "delete";
+type Action = "update" | "delete";
 
 export class CampaignNotification {
     destinations = {
@@ -20,12 +20,12 @@ export class CampaignNotification {
 
     public async sendOnUpdateOrDelete(
         dataSets: DataSetWithName[],
-        actionKey: CampaignUpdateAction
+        action: Action
     ): Promise<boolean> {
         if (_.isEmpty(dataSets)) return false;
 
         const { db } = this;
-        const action = actionKey === "update" ? i18n.t("update") : i18n.t("delete");
+        const actionName = action === "update" ? i18n.t("update") : i18n.t("delete");
         const userName = db.d2.currentUser.displayName;
         const campaignNames = dataSets.map(ds => ds.name);
         const userGroupNames = this.destinations.editDeleteCampaignWithData.userGroups;
@@ -42,11 +42,11 @@ export class CampaignNotification {
         await db.sendMessage({
             subject: i18n.t("[RVC] User {{userName}} modified a campaign with data ({{action}})", {
                 userName,
-                action,
+                action: actionName,
             }),
             text: [
                 i18n.t("User") + ": " + userName,
-                i18n.t("Action") + ": " + action,
+                i18n.t("Action") + ": " + actionName,
                 i18n.t("Campaigns") +
                     ": " +
                     (campaignNames.length == 1

@@ -201,12 +201,12 @@ export default class Campaign {
         return new Campaign(this.db, this.config, newData);
     }
 
-    public async notifyOnUpdateOrDeleteIfData(actionKey: "update" | "delete"): Promise<boolean> {
+    public async notifyOnUpdateIfData(): Promise<boolean> {
         const { db } = this;
 
         if (this.isEdit() && (await this.hasDataValues())) {
             const notification = new CampaignNotification(db);
-            return notification.sendOnUpdateOrDelete([this.getDataSet()], actionKey);
+            return notification.sendOnUpdateOrDelete([this.getDataSet()], "update");
         } else {
             return false;
         }
@@ -578,7 +578,7 @@ export default class Campaign {
     public async save(): Promise<Response<string>> {
         const campaignDb = new CampaignDb(this);
         const saveResponse = await campaignDb.save();
-        this.notifyOnUpdateOrDeleteIfData("update");
+        this.notifyOnUpdateIfData();
         return saveResponse;
     }
 
