@@ -59,8 +59,10 @@ export class Teams {
         const teamDifference = teams - _.size(oldTeams);
 
         //Update periodDates and OU references for previous teams
-        const allTeams = oldTeams.map(ot => ({
+        const orderedOldTemas = _.orderBy(oldTeams, "name", "asc");
+        const allTeams = orderedOldTemas.map((ot, i) => ({
             ...ot,
+            name: `Team ${i + 1} - ${name}`,
             startDate,
             endDate,
             organisationUnits,
@@ -153,7 +155,6 @@ export class Teams {
         });
 
         const allTeams = [...filteredPreviousTeams, ..._.compact(filteredNewTeams)];
-
         const teamsCategoryUpdated = { ...categories[0], categoryOptions: allTeams };
 
         const teamsResponse: ApiResponse<MetadataResponse> = await db.postMetadata({
