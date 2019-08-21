@@ -8,7 +8,7 @@ import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
 import { Maybe, MetadataResponse, DataEntryForm, Section } from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
-import { getDaysRange } from "../utils/date";
+import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements, CocMetadata } from "./AntigensDisaggregation";
 import { Dashboard, DashboardMetadata } from "./Dashboard";
 import { Teams, CategoryOptionTeam } from "./Teams";
@@ -108,8 +108,12 @@ export default class CampaignDb {
             categoryCombo: { id: dataElement.categoryCombo.id },
         }));
 
+        const closingDate = endDate.clone().add(metadataConfig.expirationDays, "days");
+
         const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
             period: { id: date.format("YYYYMMDD") },
+            openingDate: toISOStringNoTZ(startDate),
+            closingDate: toISOStringNoTZ(closingDate),
         }));
 
         const existingDataSet = await this.getExistingDataSet();
@@ -130,7 +134,7 @@ export default class CampaignDb {
             dataSetElements,
             openFuturePeriods: 1,
             timelyDays: 0,
-            expiryDays: 8,
+            expiryDays: 0,
             formType: "CUSTOM",
             dataInputPeriods,
             attributeValues: [{ value: "true", attribute: { id: attributeForApp.id } }],
