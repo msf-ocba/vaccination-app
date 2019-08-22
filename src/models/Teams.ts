@@ -61,11 +61,11 @@ export class Teams {
         //Update periodDates and OU references for previous teams
         const orderedOldTeams = _.orderBy(oldTeams, team => {
             const match = team.name.match(/\d+/);
-            return match ? parseInt(match[0]) : 0;
+            return match ? parseInt(match[0]) : teams;
         });
         const allTeams = orderedOldTeams.map((ot, i) => ({
             ...ot,
-            name: `Team ${i + 1} - ${name}`,
+            name: getTeamName(name, i + 1, teams),
             startDate,
             endDate,
             organisationUnits,
@@ -103,7 +103,7 @@ export class Teams {
         nameOffset: number = 0
     ): CategoryOptionTeam[] {
         const teamsData: CategoryOptionTeam[] = _.range(1, teams + 1).map(i => {
-            const name = `Team ${nameOffset + i} - ${campaignName}`;
+            const name = getTeamName(campaignName, nameOffset + i, teams);
             const id = generateUid();
             const categoryOption = {
                 id,
@@ -212,4 +212,16 @@ export function filterTeamsByNames(
     );
 
     return filteredTeams;
+}
+
+function leftZeroPad(num: number, size: number): string {
+    const numString = num.toString();
+    const padSize = Math.max(size - numString.length, 0);
+    return "0".repeat(padSize) + numString;
+}
+
+function getTeamName(campaignName: string, teamNumber: number, teamsCount: number): string {
+    const padSize = teamsCount.toString().length;
+    const paddedTeamNumber = leftZeroPad(teamNumber, padSize);
+    return `Team ${paddedTeamNumber} - ${campaignName}`;
 }
