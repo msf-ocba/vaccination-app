@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-07-17T10:59:03.202Z\n"
-"PO-Revision-Date: 2019-07-17T10:59:03.202Z\n"
+"POT-Creation-Date: 2019-08-22T13:01:28.610Z\n"
+"PO-Revision-Date: 2019-08-22T13:01:28.610Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -346,9 +346,6 @@ msgstr ""
 msgid "AEFI and AEB indicators"
 msgstr ""
 
-msgid "Campaign Coverage by area (do not edit this table)"
-msgstr ""
-
 msgid "QS Indicators"
 msgstr ""
 
@@ -359,6 +356,9 @@ msgid "Vaccines Per Team"
 msgstr ""
 
 msgid "Campaign Coverage by day (do not edit this table)"
+msgstr ""
+
+msgid "Campaign Coverage by area (do not edit this table)"
 msgstr ""
 
 msgid "Select at least one organisation unit"

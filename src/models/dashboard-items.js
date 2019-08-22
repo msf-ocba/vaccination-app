@@ -59,16 +59,6 @@ export const dashboardItemsConfig = {
         },
     },
     tablesByAntigen: {
-        coverageByAreaTable: {
-            elements: ["RVC_DOSES_ADMINISTERED", "RVC_CAMPAIGN_COVERAGE"],
-            rows: ["ou"],
-            filterDataBy: ["pe"],
-            disaggregatedBy: ["ageGroup", "doses"],
-            area: true,
-            title: ns => i18n.t("Campaign Coverage by area (do not edit this table)", ns),
-            appendCode: "coverageByArea",
-            showRowSubTotals: false,
-        },
         qsPerAntigen: {
             elements: ["RVC_DILUTION_SYRINGES_RATIO", "RVC_CAMPAIGN_NEEDLES_RATIO"],
             rows: ["pe", "team"],
@@ -109,10 +99,30 @@ export const dashboardItemsConfig = {
             showRowSubTotals: false,
         },
     },
+    tablesByAntigenAndDose: {
+        coverageByAreaTable: {
+            elements: ["RVC_DOSES_ADMINISTERED", "RVC_CAMPAIGN_COVERAGE"],
+            rows: ["ou"],
+            filterDataBy: ["pe"],
+            disaggregatedBy: ["ageGroup"],
+            area: true,
+            title: ns => i18n.t("Campaign Coverage by area (do not edit this table)", ns),
+            appendCode: "coverageByArea",
+            showRowSubTotals: false,
+        },
+    },
 };
 
-export function buildDashboardItemsCode(datasetName, orgUnitName, antigenName, appendCode) {
-    return [datasetName, orgUnitName, antigenName, appendCode].join(" - ");
+export function buildDashboardItemsCode(
+    datasetName,
+    orgUnitName,
+    antigenName,
+    appendCode,
+    dose = null
+) {
+    return dose
+        ? [datasetName, orgUnitName, antigenName, dose.name, appendCode].join(" - ")
+        : [datasetName, orgUnitName, antigenName, appendCode].join(" - ");
 }
 
 function getDisaggregations(itemConfigs, disaggregationMetadata, antigen) {
@@ -173,6 +183,7 @@ function getTables({
     itemsMetadata,
     disaggregationMetadata,
     legendsMetadata,
+    doseMetadata,
 }) {
     return _(tables)
         .map((c, key) => {
@@ -197,6 +208,7 @@ function getTables({
                 ...itemsMetadata,
                 disaggregations: getDisaggregations(c, disaggregationMetadata, antigen),
                 showRowSubTotals: c.showRowSubTotals,
+                dose: doseMetadata,
             });
         })
         .value();
@@ -222,6 +234,7 @@ export function buildDashboardItems(
         globalTables: globalTablesMetadata,
         tablesByAntigen: tablesByAntigenMetadata,
         tablesByAntigenAndSite: tablesByAntigenAndSiteMetadata,
+        tablesByAntigenAndDose: tablesByAntigenAndDoseMetadata,
         chartsByAntigen: chartsByAntigenMetadata,
     } = dashboardItemsConfig;
 
@@ -256,6 +269,32 @@ export function buildDashboardItems(
         .flatten()
         .value();
 
+    const tablesByAntigenAndDose = _(antigensMeta)
+        .flatMap(antigen => {
+            const doses = disaggregationMetadata.doses(antigen);
+            if (!doses) return null;
+            const dosesCategoryId = doses.categoryId;
+            const dosesForTables = doses.elements.map(d => ({
+                categoryId: dosesCategoryId,
+                doseId: d.id,
+                name: d.name,
+            }));
+            return dosesForTables.map(dft =>
+                getTables({
+                    tables: tablesByAntigenAndDoseMetadata,
+                    antigen,
+                    elements,
+                    organisationUnits: organisationUnitsMetadata,
+                    itemsMetadata,
+                    disaggregationMetadata,
+                    legendsMetadata,
+                    doseMetadata: dft,
+                })
+            );
+        })
+        .flatten()
+        .value();
+
     const globalTables = getTables({
         tables: globalTablesMetadata,
         antigen: null,
@@ -266,7 +305,12 @@ export function buildDashboardItems(
         legendsMetadata,
     });
 
-    const reportTables = _.concat(globalTables, tablesByAntigen, tablesByAntigenAndSite);
+    const reportTables = _.concat(
+        globalTables,
+        tablesByAntigen,
+        tablesByAntigenAndSite,
+        tablesByAntigenAndDose
+    );
 
     const chartsByAntigen = _(antigensMeta)
         .flatMap(antigen =>
@@ -304,10 +348,17 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
         globalTables,
         tablesByAntigen,
         tablesByAntigenAndSite,
+        tablesByAntigenAndDose,
         chartsByAntigen,
     } = dashboardItemsConfig;
 
-    const allTables = { ...globalTables, ...tablesByAntigen, ...tablesByAntigenAndSite };
+    const allTables = {
+        ...globalTables,
+        ...tablesByAntigen,
+        ...tablesByAntigenAndSite,
+        ...tablesByAntigenAndDose,
+    };
+
     const tableElements = _(allTables)
         .map((item, key) => [key, dataMapper(elementsMetadata, item.elements)])
         .fromPairs()
@@ -547,6 +598,7 @@ const tableConstructor = ({
     legendId,
     teamRowRawDimension = null,
     showRowSubTotals = true,
+    dose = null,
 }) => {
     const { columns, columnDimensions, categoryDimensions } = getDimensions(
         disaggregations,
@@ -554,7 +606,7 @@ const tableConstructor = ({
         antigenCategory
     );
 
-    const categoryDimensionsWithRows = teamRowRawDimension
+    const categoryDimensionsWithTeams = teamRowRawDimension
         ? [
               ...categoryDimensions,
               {
@@ -563,6 +615,20 @@ const tableConstructor = ({
               },
           ]
         : categoryDimensions;
+
+    const categoryDimensionsComplete = dose
+        ? [
+              ...categoryDimensionsWithTeams,
+              {
+                  category: { id: dose.categoryId },
+                  categoryOptions: [
+                      {
+                          id: dose.doseId,
+                      },
+                  ],
+              },
+          ]
+        : categoryDimensionsWithTeams;
 
     let organisationUnitElements;
     const organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
@@ -579,9 +645,22 @@ const tableConstructor = ({
 
     const subName = antigen ? antigen.name : "Global";
 
+    const filters = filterDataBy.map(f => ({ id: f }));
+    const allFilters = _.compact([
+        ...filters,
+        dose ? { id: dose.categoryId } : null,
+        antigen ? { id: antigenCategory } : null,
+    ]);
+
     return {
         id,
-        name: buildDashboardItemsCode(datasetName, organisationUnitNames, subName, appendCode),
+        name: buildDashboardItemsCode(
+            datasetName,
+            organisationUnitNames,
+            subName,
+            appendCode,
+            dose
+        ),
         numberType: "VALUE",
         userOrganisationUnitChildren: false,
         legendDisplayStyle: "FILL",
@@ -605,7 +684,8 @@ const tableConstructor = ({
             datasetName,
             organisationUnitNames,
             subName,
-            appendCode
+            appendCode,
+            dose
         ),
         hideSubtitle: true,
         ...getTitleWithTranslations(title, {}),
@@ -677,7 +757,11 @@ const tableConstructor = ({
         },
         dataElementGroupSetDimensions: [],
         attributeDimensions: [],
-        filterDimensions: _.compact([...filterDataBy, antigen ? antigenCategory : null]),
+        filterDimensions: _.compact([
+            ...filterDataBy,
+            antigen ? antigenCategory : null,
+            dose ? dose.categoryId : null,
+        ]),
         interpretations: [],
         itemOrganisationUnitGroups: [],
         userGroupAccesses: [],
@@ -695,8 +779,8 @@ const tableConstructor = ({
         dataElementDimensions: [],
         periods: periodItems,
         organisationUnits: organisationUnitElements,
-        categoryDimensions: categoryDimensionsWithRows,
-        filters: filterDataBy.map(f => ({ id: f })),
+        categoryDimensions: categoryDimensionsComplete,
+        filters: allFilters,
         rows: rows.map(r => ({ id: r })),
         rowDimensions: rows,
     };
