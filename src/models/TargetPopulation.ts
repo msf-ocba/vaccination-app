@@ -1,4 +1,5 @@
 import _ from "lodash";
+const fp = require("lodash/fp");
 
 import DbD2 from "./db-d2";
 import { MetadataConfig } from "./config";
@@ -14,11 +15,12 @@ import { sortAgeGroups } from "../utils/age-groups";
 import Campaign from "./campaign";
 
 const levelsConfig = {
+    areaLevel: 4,
     levelForPopulation: 5,
     levelsForAgeDistribution: [{ level: 4, isEditable: true }, { level: 5, isEditable: true }],
 };
 
-export type TargetPopulationList = Array<TargetPopulationItem>;
+export type TargetPopulationList = { [id: string]: TargetPopulationItem };
 
 export type AgeDistributionByOrgUnit = { [orgUnitId: string]: AgeDistribution };
 
@@ -46,12 +48,13 @@ export type PopulationDistribution = {
 
 export interface TargetPopulationItem {
     organisationUnit: OrganisationUnit;
+    organisationUnitArea: OrganisationUnit;
     populationTotal: PopulationTotal;
     populationDistributions: PopulationDistribution[];
 }
 
 export interface AgeGroupSelector {
-    orgUnitId: string;
+    orgUnitIds: string[];
     ageGroup: string;
 }
 
@@ -67,15 +70,19 @@ export class TargetPopulation {
     static build(campaign: Campaign): TargetPopulation {
         return new TargetPopulation(campaign, {
             organisationUnitLevels: campaign.config.organisationUnitLevels,
-            targetPopulationList: [],
+            targetPopulationList: {},
             antigensDisaggregation: [],
             ageGroups: [],
             ageDistributionByOrgUnit: {},
         });
     }
 
+    get antigensDisaggregation() {
+        return this.data.antigensDisaggregation;
+    }
+
     public validate(): Array<{ key: string; namespace: _.Dictionary<string> }> {
-        const totalPopulationValidations = this.data.targetPopulationList.map(targetPopOu => {
+        const totalPopulationValidations = _.map(this.data.targetPopulationList, targetPopOu => {
             const value = targetPopOu.populationTotal.value;
             return _.isUndefined(value) || _.isNaN(value) || value <= 0
                 ? {
@@ -88,7 +95,7 @@ export class TargetPopulation {
                 : null;
         });
 
-        const ageGroupPopulationValidations = this.data.targetPopulationList.map(targetPopOu => {
+        const ageGroupPopulationValidations = _.map(this.data.targetPopulationList, targetPopOu => {
             const finalPopulationDistribution = this.getFinalDistribution(targetPopOu);
 
             const ageGroupsInvalid = this.data.ageGroups.filter(ageGroup => {
@@ -169,15 +176,22 @@ export class TargetPopulation {
             ageDistributionByOrgUnit,
         } = await this.getPopulationData(organisationUnits, ageGroupsForAllAntigens, period);
 
-        const targetPopulationList: TargetPopulationItem[] = organisationUnits.map(orgUnit => {
-            const populationTotal = _(totalPopulationsByOrgUnit).get(orgUnit.id);
+        const targetPopulationList: TargetPopulationList = _.fromPairs(
+            organisationUnits.map(orgUnit => {
+                const populationTotal = _(totalPopulationsByOrgUnit).get(orgUnit.id);
+                const organisationUnitArea = _(orgUnit.ancestors || [])
+                    .keyBy(ou => ou.level)
+                    .getOrFail(levelsConfig.areaLevel);
 
-            return {
-                organisationUnit: orgUnit,
-                populationTotal,
-                populationDistributions: _(populationDistributionsByOrgUnit).get(orgUnit.id),
-            };
-        });
+                const item = {
+                    organisationUnit: orgUnit,
+                    organisationUnitArea,
+                    populationTotal,
+                    populationDistributions: _(populationDistributionsByOrgUnit).get(orgUnit.id),
+                };
+                return [orgUnit.id, item];
+            })
+        );
 
         return new TargetPopulation(this.campaign, {
             ...this.data,
@@ -188,20 +202,25 @@ export class TargetPopulation {
         });
     }
 
-    setTotalPopulation(ouIndex: number, value: number) {
+    setTotalPopulation(ouId: string, value: number) {
         const newData = _.set(
             this.data,
-            ["targetPopulationList", ouIndex, "populationTotal", "value"],
+            ["targetPopulationList", ouId, "populationTotal", "value"],
             value
         );
         return new TargetPopulation(this.campaign, newData);
     }
 
     setAgeGroupPopulation(selector: AgeGroupSelector, value: number) {
-        const newData = _.set(
-            this.data,
-            ["ageDistributionByOrgUnit", selector.orgUnitId, selector.ageGroup],
-            value
+        const newData = _.reduce(
+            selector.orgUnitIds,
+            (currentData, orgUnitId) =>
+                fp.set(
+                    ["ageDistributionByOrgUnit", orgUnitId, selector.ageGroup],
+                    value,
+                    currentData
+                ),
+            this.data
         );
         return new TargetPopulation(this.campaign, newData);
     }
@@ -495,4 +514,15 @@ function get<T>(value: Maybe<T>, errorMsg: string): T {
     } else {
         return value;
     }
+}
+
+export function groupTargetPopulationByArea(
+    targetPopulation: TargetPopulation
+): Array<{ area: OrganisationUnit; items: TargetPopulationItem[] }> {
+    return _(targetPopulation.targetPopulationList)
+        .groupBy(targetPopulation => targetPopulation.organisationUnitArea.id)
+        .values()
+        .map(items => ({ area: items[0].organisationUnitArea, items }))
+        .sortBy(({ area }) => area.displayName)
+        .value();
 }

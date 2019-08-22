@@ -10,7 +10,6 @@ import { memoize } from "../../utils/memoize";
 import i18n from "../../locales";
 import EditButton from "./EditButton";
 import { getShowValue } from "./utils";
-import Value from "./Value";
 import {
     TargetPopulationItem,
     PopulationDistribution,
@@ -20,14 +19,16 @@ import { OrganisationUnit, OrganisationUnitLevel, Maybe } from "../../models/db.
 import OrgUnitName from "./OrgUnitName";
 import "./PopulationDistribution.css";
 import { NumericField } from "../shared/NumericField";
+import { Antigen } from "../../models/campaign";
 
 export interface PopulationDistributionProps extends WithStyles<typeof styles> {
     organisationUnitLevels: OrganisationUnitLevel[];
-    rowEditing: Maybe<number>;
+    antigenEditing: Maybe<string>;
     targetPopulation: TargetPopulation;
-    targetPopOu: TargetPopulationItem;
-    onChange: (orgUnitId: string, ageGroup: string, value: number) => void;
-    onToggle: (rowIndex: number) => void;
+    populationItem: TargetPopulationItem;
+    orgUnitLevel: number;
+    onChange: (ageGroup: string, value: number) => void;
+    onToggle: (antigenId: string) => void;
 }
 
 class PopulationDistributionComponent extends React.Component<PopulationDistributionProps> {
@@ -44,12 +45,12 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
         );
     }
 
-    onChange = memoize((orgUnitId: string, ageGroup: string) => (value: number) => {
-        this.props.onChange(orgUnitId, ageGroup, value);
+    onChange = memoize((ageGroup: string) => (value: number) => {
+        this.props.onChange(ageGroup, value);
     });
 
-    onToggle = memoize((distributionIdx: number) => () => {
-        this.props.onToggle(distributionIdx);
+    onToggle = memoize((antigenId: string) => () => {
+        this.props.onToggle(antigenId);
     });
 
     setFirstTextField = (input: HTMLElement) => {
@@ -60,11 +61,15 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
         }
     };
 
-    renderRow = (props: { distribution: PopulationDistribution; distributionIdx: number }) => {
-        const { classes, rowEditing, targetPopulation } = this.props;
-        const { distribution, distributionIdx } = props;
-        const isEditing = rowEditing === distributionIdx;
-        const { ageGroups } = targetPopulation;
+    renderRow = (props: {
+        antigen: Antigen;
+        distribution: PopulationDistribution;
+        ageGroups: string[];
+    }) => {
+        const { classes, antigenEditing, targetPopulation } = this.props;
+        const { antigen, distribution, ageGroups } = props;
+        const isEditing = antigenEditing === antigen.id;
+
         const orgUnit = distribution.organisationUnit;
         const ageDistribution = targetPopulation.ageDistributionByOrgUnit[orgUnit.id];
 
@@ -81,7 +86,7 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
                                 <NumericField
                                     className={classes.percentageField}
                                     value={value}
-                                    onChange={this.onChange(orgUnit.id, ageGroup)}
+                                    onChange={this.onChange(ageGroup)}
                                     inputRef={index === 0 ? this.setFirstTextField : undefined}
                                     maxDecimals={2}
                                 />
@@ -94,66 +99,59 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
 
                 <TableCell>
                     {distribution.isEditable && (
-                        <EditButton onClick={this.onToggle(distributionIdx)} active={isEditing} />
+                        <EditButton onClick={this.onToggle(antigen.id)} active={isEditing} />
                     )}
                 </TableCell>
             </TableRow>
         );
     };
-    public render() {
-        const { classes, targetPopulation, targetPopOu } = this.props;
-        const Row = this.renderRow;
-        const populationByAge = targetPopulation.getFinalDistribution(targetPopOu);
 
-        return (
-            <React.Fragment>
-                <div className={classes.sectionTitle}>{i18n.t("Population distribution (%)")}</div>
+    public render() {
+        const { classes, targetPopulation, populationItem, orgUnitLevel } = this.props;
+        const Row = this.renderRow;
+        const populationDistribution = populationItem.populationDistributions.find(
+            distribution => distribution.organisationUnit.level === orgUnitLevel
+        );
+        if (!populationDistribution) return null;
+
+        return targetPopulation.antigensDisaggregation.map(({ antigen, ageGroups }) => (
+            <div key={antigen.id}>
+                <div className={classes.antigenTitleWrapper}>
+                    <span className={classes.antigenTitleContent}>{antigen.name}</span>
+                </div>
 
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell />
-                            {targetPopulation.ageGroups.map(ageGroup => (
+                            <TableCell className={classes.orgUnitColumn}>
+                                {i18n.t("Population distribution (%)")}
+                            </TableCell>
+
+                            {ageGroups.map(ageGroup => (
                                 <TableCell key={ageGroup} className={classes.tableHead}>
                                     {ageGroup}
                                 </TableCell>
                             ))}
-                            <TableCell>{/* Actions */}</TableCell>
+                            <TableCell className={classes.tableActions}>{/* Actions */}</TableCell>
+                            <TableCell>{/* Right padding */}</TableCell>
                         </TableRow>
                     </TableHead>
 
                     <TableBody>
-                        {targetPopOu.populationDistributions.map(
-                            (distribution, distributionIdx) => (
-                                <Row
-                                    key={distributionIdx}
-                                    distribution={distribution}
-                                    distributionIdx={distributionIdx}
-                                />
-                            )
-                        )}
+                        <Row
+                            antigen={antigen}
+                            key={antigen.id}
+                            distribution={populationDistribution}
+                            ageGroups={ageGroups}
+                        />
 
                         <TableRow className={classes.separatorRow}>
                             <TableCell />
                         </TableRow>
-
-                        <TableRow className={classes.summaryRow}>
-                            <TableCell
-                                className={classNames(classes.tableOrgUnit, classes.tableHead)}
-                            >
-                                {i18n.t("Campaign Population Distribution")}
-                            </TableCell>
-
-                            {targetPopulation.ageGroups.map(ageGroup => (
-                                <TableCell key={ageGroup}>
-                                    <Value value={populationByAge[ageGroup]} />
-                                </TableCell>
-                            ))}
-                        </TableRow>
                     </TableBody>
                 </Table>
-            </React.Fragment>
-        );
+            </div>
+        ));
     }
 }
 
@@ -167,6 +165,10 @@ const styles = (_theme: Theme) =>
         },
         tableHead: {
             backgroundColor: "#E5E5E5",
+            width: "8em",
+        },
+        tableActions: {
+            width: "8em",
         },
         summaryRow: {
             backgroundColor: "#EEE",
@@ -176,6 +178,20 @@ const styles = (_theme: Theme) =>
         },
         separatorRow: {
             height: 24,
+        },
+        antigenTitleWrapper: {
+            textAlign: "center",
+            margin: 15,
+        },
+        antigenTitleContent: {
+            color: "#619de7",
+            padding: 10,
+            backgroundColor: "#E5E5E5",
+            fontSize: "1.2em",
+            fontWeight: "bold",
+        },
+        orgUnitColumn: {
+            width: "20vw",
         },
     });
 

@@ -13,7 +13,7 @@ import { OrganisationUnitLevel } from "../../models/db.types";
 export interface TotalPopulationProps extends WithStyles<typeof styles> {
     organisationUnitLevels: OrganisationUnitLevel[];
     isEditing: boolean;
-    targetPopOu: TargetPopulationItem;
+    populationItem: TargetPopulationItem;
     onChange: () => void;
     onToggle: () => void;
 }
@@ -33,10 +33,10 @@ class TotalPopulation extends React.Component<TotalPopulationProps> {
             isEditing,
             onChange,
             onToggle,
-            targetPopOu,
+            populationItem,
             organisationUnitLevels,
         } = this.props;
-        const { organisationUnit } = targetPopOu.populationTotal;
+        const { organisationUnit } = populationItem.populationTotal;
 
         return (
             <React.Fragment>
@@ -51,13 +51,13 @@ class TotalPopulation extends React.Component<TotalPopulationProps> {
                     {isEditing ? (
                         <TextField
                             className={classes.populationField}
-                            value={getShowValue(targetPopOu.populationTotal.value)}
+                            value={getShowValue(populationItem.populationTotal.value)}
                             onChange={onChange}
                             inputRef={this.setFocusTextField}
                         />
                     ) : (
                         <Value
-                            value={getShowValue(targetPopOu.populationTotal.value)}
+                            value={getShowValue(populationItem.populationTotal.value)}
                             className={classes.value}
                         />
                     )}

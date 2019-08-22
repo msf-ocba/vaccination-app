@@ -18,15 +18,17 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 import { memoize } from "../../utils/memoize";
 import Campaign from "../../models/campaign";
-import { Maybe } from "../../models/db.types";
+import { Maybe, OrganisationUnit } from "../../models/db.types";
 import TotalPopulation from "./TotalPopulation";
 import { createMuiThemeOverrides } from "../../utils/styles";
 import PopulationDistribution from "./PopulationDistribution";
 import { getFullOrgUnitName } from "../../models/organisation-units";
+import { groupTargetPopulationByArea } from "../../models/TargetPopulation";
+import i18n from "../../locales";
 
 export interface AgeGroupRow {
-    ouIndex: number;
-    distributionIdx: number;
+    ouId: string;
+    antigenId: string;
 }
 
 interface TargetPopulationProps extends WithStyles<typeof styles> {
@@ -35,7 +37,7 @@ interface TargetPopulationProps extends WithStyles<typeof styles> {
 }
 
 interface TargetPopulationState {
-    editPopulation: Maybe<number>;
+    editPopulation: Maybe<string>;
     editAgeGroupRow: Maybe<AgeGroupRow>;
 }
 
@@ -49,90 +51,122 @@ class TargetPopulationComponent extends React.Component<
     };
 
     onTotalPopulationChange = memoize(
-        (ouIndex: number) => (ev: React.ChangeEvent<HTMLInputElement>) => {
+        (ouId: string) => (ev: React.ChangeEvent<HTMLInputElement>) => {
             const { campaign, onChange } = this.props;
             if (!campaign.targetPopulation) return;
 
             const value = ev.currentTarget.value;
             const campaignUpdated = campaign.setTargetPopulation(
-                campaign.targetPopulation.setTotalPopulation(ouIndex, parseInt(value))
+                campaign.targetPopulation.setTotalPopulation(ouId, parseInt(value))
             );
             onChange(campaignUpdated);
         }
     );
 
-    onTotalPopulationToggle = memoize((ouIndex: number) => () => {
+    onTotalPopulationToggle = memoize((ouId: string) => () => {
         const { editPopulation } = this.state;
-        this.setState({ editPopulation: editPopulation === ouIndex ? undefined : ouIndex });
+        this.setState({ editPopulation: editPopulation === ouId ? undefined : ouId });
     });
 
-    onAgeGroupPopulationChange = (orgUnitId: string, ageGroup: string, value: number) => {
-        const { campaign, onChange } = this.props;
-        const ageGroupSelector = { orgUnitId, ageGroup };
-        if (!campaign.targetPopulation) return;
+    onAgeGroupPopulationChange = memoize(
+        (orgUnits: OrganisationUnit[]) => (ageGroup: string, value: number) => {
+            const { campaign, onChange } = this.props;
+            const ageGroupSelector = { orgUnitIds: orgUnits.map(ou => ou.id), ageGroup };
+            if (!campaign.targetPopulation) return;
 
-        const campaignUpdated = campaign.setTargetPopulation(
-            campaign.targetPopulation.setAgeGroupPopulation(ageGroupSelector, value)
-        );
-        onChange(campaignUpdated);
-    };
+            const campaignUpdated = campaign.setTargetPopulation(
+                campaign.targetPopulation.setAgeGroupPopulation(ageGroupSelector, value)
+            );
+            onChange(campaignUpdated);
+        }
+    );
 
-    onAgeGroupPopulationToggle = memoize((ouIndex: number) => (distributionIdx: number) => {
+    onAgeGroupPopulationToggle = memoize((ouId: string) => (antigenId: string) => {
         const { editAgeGroupRow } = this.state;
-        const ageGroupRow = { ouIndex, distributionIdx };
+        const ageGroupRow = { ouId, antigenId };
         this.setState({
             editAgeGroupRow: _.isEqual(editAgeGroupRow, ageGroupRow) ? undefined : ageGroupRow,
         });
     });
 
+    getAntigenEditing(ouId: string): string | undefined {
+        const { editAgeGroupRow } = this.state;
+        return editAgeGroupRow && editAgeGroupRow.ouId == ouId
+            ? editAgeGroupRow.antigenId
+            : undefined;
+    }
+
     render() {
         const { classes, campaign } = this.props;
-        const { editPopulation, editAgeGroupRow } = this.state;
+        const { editPopulation } = this.state;
         const { targetPopulation } = campaign;
 
         if (!targetPopulation) return null;
 
         const { organisationUnitLevels } = targetPopulation;
+        const targetPopulationByArea = groupTargetPopulationByArea(targetPopulation);
 
         return (
             <MuiThemeProvider theme={muiTheme}>
-                {targetPopulation.targetPopulationList.map((targetPopOu, ouIndex) => (
-                    <ExpansionPanel key={targetPopOu.organisationUnit.id} defaultExpanded={true}>
+                {_.map(targetPopulationByArea, ({ area, items }) => (
+                    <ExpansionPanel key={area.id} defaultExpanded={true}>
                         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                             <Typography className={classes.expansionPanelHeading}>
-                                {getFullOrgUnitName(targetPopOu.organisationUnit)}
+                                {i18n.t("Health Area")}: {getFullOrgUnitName(area)}
                             </Typography>
                         </ExpansionPanelSummary>
 
                         <ExpansionPanelDetails className={classes.panelDetails}>
-                            <Card className={classes.card} test-total-population={ouIndex}>
-                                <CardContent>
-                                    <TotalPopulation
-                                        organisationUnitLevels={organisationUnitLevels}
-                                        isEditing={editPopulation === ouIndex}
-                                        targetPopOu={targetPopOu}
-                                        onChange={this.onTotalPopulationChange(ouIndex)}
-                                        onToggle={this.onTotalPopulationToggle(ouIndex)}
-                                    />
-                                </CardContent>
-                            </Card>
+                            <PopulationDistribution
+                                organisationUnitLevels={organisationUnitLevels}
+                                orgUnitLevel={area.level}
+                                antigenEditing={this.getAntigenEditing(area.id)}
+                                targetPopulation={targetPopulation}
+                                populationItem={items[0]}
+                                onChange={this.onAgeGroupPopulationChange([
+                                    area,
+                                    ...items.map(item => item.organisationUnit),
+                                ])}
+                                onToggle={this.onAgeGroupPopulationToggle(area.id)}
+                            />
 
-                            <Card className={classes.card} test-population-distribution={ouIndex}>
-                                <CardContent>
-                                    <PopulationDistribution
-                                        organisationUnitLevels={organisationUnitLevels}
-                                        rowEditing={
-                                            editAgeGroupRow && editAgeGroupRow.ouIndex == ouIndex
-                                                ? editAgeGroupRow.distributionIdx
-                                                : undefined
-                                        }
-                                        targetPopulation={targetPopulation}
-                                        targetPopOu={targetPopOu}
-                                        onChange={this.onAgeGroupPopulationChange}
-                                        onToggle={this.onAgeGroupPopulationToggle(ouIndex)}
-                                    />
-                                </CardContent>
-                            </Card>
+                            <h2>{i18n.t("Health Sites")}</h2>
+
+                            {items
+                                .map(item => ({ ouId: item.organisationUnit.id, item }))
+                                .map(({ ouId, item }) => (
+                                    <div key={ouId}>
+                                        <h3>{getFullOrgUnitName(item.organisationUnit)}</h3>
+
+                                        <Card className={classes.card}>
+                                            <CardContent>
+                                                <TotalPopulation
+                                                    organisationUnitLevels={organisationUnitLevels}
+                                                    isEditing={editPopulation === ouId}
+                                                    populationItem={item}
+                                                    onChange={this.onTotalPopulationChange(ouId)}
+                                                    onToggle={this.onTotalPopulationToggle(ouId)}
+                                                />
+                                            </CardContent>
+                                        </Card>
+
+                                        <Card className={classes.card}>
+                                            <CardContent>
+                                                <PopulationDistribution
+                                                    organisationUnitLevels={organisationUnitLevels}
+                                                    orgUnitLevel={item.organisationUnit.level}
+                                                    antigenEditing={this.getAntigenEditing(ouId)}
+                                                    targetPopulation={targetPopulation}
+                                                    populationItem={item}
+                                                    onChange={this.onAgeGroupPopulationChange([
+                                                        item.organisationUnit,
+                                                    ])}
+                                                    onToggle={this.onAgeGroupPopulationToggle(ouId)}
+                                                />
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                ))}
                         </ExpansionPanelDetails>
                     </ExpansionPanel>
                 ))}
