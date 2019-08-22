@@ -321,9 +321,9 @@ export function buildDashboardItems(
 
     const reportTables = _.concat(
         globalTables,
+        tablesByAntigenAndDose,
         tablesByAntigen,
-        tablesByAntigenAndSite,
-        tablesByAntigenAndDose
+        tablesByAntigenAndSite
     );
 
     const chartsByAntigen = _(antigensMeta)
