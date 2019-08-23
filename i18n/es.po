@@ -412,13 +412,11 @@ msgid "AEFI and AEB indicators"
 msgstr ""
 "Exposición Accidental a Sangre y Efecto Adverso Posterior a la Vacunación"
 
-#, fuzzy
 msgid "Campaign Coverage by area and dose (do not edit this table)"
-msgstr "Cobertura Vacunal por Área de Salud (no edite esta tabla)"
+msgstr "Cobertura Vacunal por Área de Salud y Dosis (no edite esta tabla)"
 
-#, fuzzy
 msgid "Cumulative Campaign Coverage by area (do not edit this table)"
-msgstr "Cobertura Vacunal por Área de Salud (no edite esta tabla)"
+msgstr "Cobertura Vacunal Acumulada por Área de Salud (no edite esta tabla)"
 
 msgid "QS Indicators"
 msgstr "Indicadores de Calidad y Seguridad"
