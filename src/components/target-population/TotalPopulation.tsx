@@ -14,7 +14,7 @@ export interface TotalPopulationProps extends WithStyles<typeof styles> {
     organisationUnitLevels: OrganisationUnitLevel[];
     isEditing: boolean;
     populationItem: TargetPopulationItem;
-    onChange: () => void;
+    onChange: (value: number) => void;
     onToggle: () => void;
 }
 
@@ -27,15 +27,13 @@ class TotalPopulation extends React.Component<TotalPopulationProps> {
         }
     };
 
+    onChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(ev.currentTarget.value);
+        this.props.onChange(value);
+    };
+
     public render() {
-        const {
-            classes,
-            isEditing,
-            onChange,
-            onToggle,
-            populationItem,
-            organisationUnitLevels,
-        } = this.props;
+        const { classes, isEditing, onToggle, populationItem, organisationUnitLevels } = this.props;
         const { organisationUnit } = populationItem.populationTotal;
 
         return (
@@ -52,7 +50,7 @@ class TotalPopulation extends React.Component<TotalPopulationProps> {
                         <TextField
                             className={classes.populationField}
                             value={getShowValue(populationItem.populationTotal.value)}
-                            onChange={onChange}
+                            onChange={this.onChange}
                             inputRef={this.setFocusTextField}
                         />
                     ) : (

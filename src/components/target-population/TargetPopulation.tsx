@@ -50,18 +50,15 @@ class TargetPopulationComponent extends React.Component<
         editAgeGroupRow: undefined,
     };
 
-    onTotalPopulationChange = memoize(
-        (ouId: string) => (ev: React.ChangeEvent<HTMLInputElement>) => {
-            const { campaign, onChange } = this.props;
-            if (!campaign.targetPopulation) return;
+    onTotalPopulationChange = memoize((ouId: string) => (value: number) => {
+        const { campaign, onChange } = this.props;
+        if (!campaign.targetPopulation) return;
 
-            const value = ev.currentTarget.value;
-            const campaignUpdated = campaign.setTargetPopulation(
-                campaign.targetPopulation.setTotalPopulation(ouId, parseInt(value))
-            );
-            onChange(campaignUpdated);
-        }
-    );
+        const campaignUpdated = campaign.setTargetPopulation(
+            campaign.targetPopulation.setTotalPopulation(ouId, value)
+        );
+        onChange(campaignUpdated);
+    });
 
     onTotalPopulationToggle = memoize((ouId: string) => () => {
         const { editPopulation } = this.state;
@@ -109,10 +106,10 @@ class TargetPopulationComponent extends React.Component<
         return (
             <MuiThemeProvider theme={muiTheme}>
                 {_.map(targetPopulationByArea, ({ area, items }) => (
-                    <ExpansionPanel key={area.id} defaultExpanded={true}>
+                    <ExpansionPanel key={area.id} defaultExpanded={true} className={classes.wrap}>
                         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                             <Typography className={classes.expansionPanelHeading}>
-                                {i18n.t("Health Area")}: {getFullOrgUnitName(area)}
+                                {i18n.t("Health Area")}: {getFullOrgUnitName(area)} [{items.length}]
                             </Typography>
                         </ExpansionPanelSummary>
 
@@ -130,13 +127,13 @@ class TargetPopulationComponent extends React.Component<
                                 onToggle={this.onAgeGroupPopulationToggle(area.id)}
                             />
 
-                            <h2>{i18n.t("Health Sites")}</h2>
+                            <h3>{i18n.t("Health Sites")}</h3>
 
                             {items
                                 .map(item => ({ ouId: item.organisationUnit.id, item }))
                                 .map(({ ouId, item }) => (
                                     <div key={ouId}>
-                                        <h3>{getFullOrgUnitName(item.organisationUnit)}</h3>
+                                        <h4>{getFullOrgUnitName(item.organisationUnit)}</h4>
 
                                         <Card className={classes.card}>
                                             <CardContent>
@@ -202,6 +199,7 @@ const styles = (theme: Theme) =>
         panelDetails: {
             display: "block",
         },
+        wrap: { margin: "16px 0" },
     });
 
 const muiTheme = createMuiThemeOverrides({
