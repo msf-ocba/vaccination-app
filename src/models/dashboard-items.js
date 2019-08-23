@@ -286,7 +286,16 @@ export function buildDashboardItems(
     const tablesByAntigenAndDose = _(antigensMeta)
         .flatMap(antigen => {
             const doses = disaggregationMetadata.doses(antigen);
-            if (!doses) return null;
+            if (!doses)
+                return getTables({
+                    tables: tablesByAntigenAndDoseMetadata,
+                    antigen,
+                    elements,
+                    organisationUnits: organisationUnitsMetadata,
+                    itemsMetadata,
+                    disaggregationMetadata,
+                    legendsMetadata,
+                });
             const dosesCategoryId = doses.categoryId;
             const dosesForTables = doses.elements.map(d => ({
                 categoryId: dosesCategoryId,
