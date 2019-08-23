@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-07-17T10:59:03.202Z\n"
-"PO-Revision-Date: 2019-07-17T10:59:03.202Z\n"
+"POT-Creation-Date: 2019-08-23T08:02:46.441Z\n"
+"PO-Revision-Date: 2019-08-23T08:02:46.441Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -294,7 +294,10 @@ msgstr ""
 msgid "Population distribution (%)"
 msgstr ""
 
-msgid "Campaign Population Distribution"
+msgid "Health Area"
+msgstr ""
+
+msgid "Health Sites"
 msgstr ""
 
 msgid "Total population"
