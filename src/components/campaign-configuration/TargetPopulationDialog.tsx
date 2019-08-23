@@ -147,7 +147,13 @@ class TargetPopulationDialog extends React.Component<Props, State> {
 
         return (
             <React.Fragment>
-                <Dialog fullWidth={true} maxWidth={"xl"} open={true} onClose={this.requestClose}>
+                <Dialog
+                    disableBackdropClick={true}
+                    fullWidth={true}
+                    maxWidth={"xl"}
+                    open={true}
+                    onClose={this.requestClose}
+                >
                     <DialogTitle>
                         {title}
                         {!isReady && <LinearProgress style={this.styles.progress} />}
