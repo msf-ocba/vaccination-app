@@ -79,7 +79,7 @@ export const dashboardItemsConfig = {
             disaggregatedBy: ["doses"],
             area: true,
             title: ns =>
-                i18n.t("Cummulative Campaign Coverage by area (do not edit this table)", ns),
+                i18n.t("Cumulative Campaign Coverage by area (do not edit this table)", ns),
             appendCode: "coverageByAreaTotal",
             showRowSubTotals: true,
             showColumnSubTotals: true,
@@ -133,9 +133,13 @@ export function buildDashboardItemsCode(
     appendCode,
     dose = null
 ) {
-    return dose
-        ? [datasetName, orgUnitName, antigenName, dose.name, appendCode].join(" - ")
-        : [datasetName, orgUnitName, antigenName, appendCode].join(" - ");
+    return _.compact([
+        datasetName,
+        orgUnitName,
+        antigenName,
+        dose ? dose.name : null,
+        appendCode,
+    ]).join(" - ");
 }
 
 function getDisaggregations(itemConfigs, disaggregationMetadata, antigen) {
@@ -302,7 +306,7 @@ export function buildDashboardItems(
                 doseId: d.id,
                 name: d.name,
             }));
-            return dosesForTables.map(dft =>
+            return _.flatMap(dosesForTables, dft =>
                 getTables({
                     tables: tablesByAntigenAndDoseMetadata,
                     antigen,
@@ -315,7 +319,6 @@ export function buildDashboardItems(
                 })
             );
         })
-        .flatten()
         .value();
 
     const globalTables = getTables({
