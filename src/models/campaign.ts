@@ -534,10 +534,21 @@ export default class Campaign {
                 dataSet: [dataSet.id],
                 orgUnit: dataSet.organisationUnits.map(ou => ou.id),
                 lastUpdated: "1970",
-                limit: 1,
                 includeDeleted: true,
             });
-            return _(dataValues).isNotEmpty();
+
+            // Returned data values are not specific to this dataset, filter now programmatically by team
+            const teamsCocs = new Set(
+                _.flatMap(this.teamsMetadata.elements, team =>
+                    team.categoryOptionCombos.map(coc => coc.id)
+                )
+            );
+
+            return dataValues.some(
+                dataValue =>
+                    !!dataValue.attributeOptionCombo &&
+                    teamsCocs.has(dataValue.attributeOptionCombo)
+            );
         }
     }
 
