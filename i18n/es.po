@@ -74,9 +74,6 @@ msgstr "Campaña(s) eliminadas"
 msgid "Error deleting campaign(s)"
 msgstr "Se produjo un error al borrar la(s) campaña(s)"
 
-msgid "Only my campaigns"
-msgstr "Solo mis campañas"
-
 msgid ""
 "Are you sure you want to delete those campaign(s) (datasets and dashboards)? "
 "If you proceed, the associated datasets and dashboards will be removed from "
@@ -480,3 +477,6 @@ msgstr ""
 
 msgid "There already exists a campaign with the same name"
 msgstr "Ya existe una campaña con el mismo nombre"
+
+#~ msgid "Only my campaigns"
+#~ msgstr "Solo mis campañas"
