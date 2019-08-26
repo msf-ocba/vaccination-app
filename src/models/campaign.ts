@@ -488,6 +488,32 @@ export default class Campaign {
         return new CampaignSharing(this).forDataSet();
     }
 
+    public async hasDataValues(): Promise<boolean> {
+        if (!this.id) {
+            return false;
+        } else {
+            const dataValues = await this.db.getDataValues({
+                dataSet: [this.id],
+                orgUnit: this.organisationUnits.map(ou => ou.id),
+                lastUpdated: "1970",
+                includeDeleted: true,
+            });
+
+            // Returned data values are not specific to this dataset, filter now programmatically by team
+            const teamsCocs = new Set(
+                _.flatMap(this.teamsMetadata.elements, team =>
+                    team.categoryOptionCombos.map(coc => coc.id)
+                )
+            );
+
+            return dataValues.some(
+                dataValue =>
+                    !!dataValue.attributeOptionCombo &&
+                    teamsCocs.has(dataValue.attributeOptionCombo)
+            );
+        }
+    }
+
     /* Dashboard */
 
     public get dashboardId(): Maybe<string> {

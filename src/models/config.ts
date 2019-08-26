@@ -30,6 +30,7 @@ export const baseConfig = {
     categoryCodeForTeams: "RVC_TEAM",
     legendSetsCode: "RVC_LEGEND_ZERO",
     attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
+    attributeNameForHideInTallySheet: "hideInTallySheet",
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
@@ -47,6 +48,7 @@ export interface MetadataConfig extends BaseConfig {
     userRoles: NamedObject[];
     attributes: {
         app: Attribute;
+        hideInTallySheet: Attribute;
     };
     organisationUnitLevels: OrganisationUnitLevel[];
     categories: Category[];
@@ -288,9 +290,12 @@ function getPopulationMetadata(
 }
 
 function getAttributes(attributes: Attribute[]) {
-    const attributesByCode = _(attributes).keyBy("code");
+    const attributesByCode = _(attributes).keyBy(attribute => attribute.code);
+    const attributesByName = _(attributes).keyBy(attribute => attribute.displayName);
+
     return {
         app: attributesByCode.getOrFail(baseConfig.attributeCodeForApp),
+        hideInTallySheet: attributesByName.getOrFail(baseConfig.attributeNameForHideInTallySheet),
     };
 }
 
@@ -328,7 +333,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
     const modelParams = { filters: [codeFilter] };
 
     const metadataParams = {
-        attributes: modelParams,
+        attributes: {},
         categories: modelParams,
         categoryCombos: modelParams,
         categoryOptionGroups: modelParams,

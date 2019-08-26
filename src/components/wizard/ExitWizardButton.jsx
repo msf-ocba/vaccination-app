@@ -24,6 +24,7 @@ class ExitWizardButton extends React.Component {
                     "You are about to exit the Campaign Creation Wizard. All your changes will be lost. Are you sure you want to proceed?"
                 )}
                 saveText={i18n.t("Yes")}
+                cancelText={i18n.t("No")}
             />
         );
     }
