@@ -262,6 +262,4 @@ Click the three dots on the right side of the screen if you wish to perform any 
     }
 }
 
-const styles = {};
-
 export default withLoading(withSnackbar(withPageVisited(CampaignConfiguration, "config")));
