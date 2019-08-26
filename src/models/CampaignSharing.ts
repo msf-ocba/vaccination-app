@@ -31,7 +31,7 @@ interface UserGroupsSharingFilter {
 interface UsersByOrgUnitsSharingFilter {
     type: "usersByOrgUnits";
     level: number;
-    userRoles: string[];
+    userRolesGroups: Array<string[]>;
     permission: ObjectPermission;
 }
 
@@ -39,7 +39,7 @@ interface UsersByOrgUnitsInGroupSetSharingFilter {
     type: "usersByOrgUnitsInGroupSet";
     level: number;
     organisationUnitGroupSetName: string;
-    userRoles: string[];
+    userRolesGroups: Array<string[]>;
     permission: ObjectPermission;
 }
 
@@ -125,20 +125,23 @@ export default class CampaignSharing {
                 {
                     type: "usersByOrgUnits",
                     level: 4,
-                    userRoles: ["Medical Focal Point", "Field User", "Online Data Entry"],
+                    userRolesGroups: [
+                        ["RVC App"],
+                        ["Medical Focal Point", "Field User", "Online Data Entry"],
+                    ],
                     permission: { metadata: "edit" },
                 },
                 {
                     type: "usersByOrgUnits",
                     level: 3,
-                    userRoles: ["MedCo"],
+                    userRolesGroups: [["MedCo"]],
                     permission: { metadata: "edit" },
                 },
                 {
                     type: "usersByOrgUnitsInGroupSet",
                     level: 3,
                     organisationUnitGroupSetName: "8. Operational Cells",
-                    userRoles: ["TesaCo"],
+                    userRolesGroups: [["TesaCo"]],
                     permission: { metadata: "edit" },
                 },
             ],
@@ -287,13 +290,15 @@ function getAccesses<K extends keyof UserAndGroupAccesses>(
 
 function getUserAccessesFilteredByRoles(
     users: User[],
-    sharing: { userRoles: string[]; permission: ObjectPermission }
+    sharing: { userRolesGroups: Array<string[]>; permission: ObjectPermission }
 ) {
-    const userMatchesSomeUserRole = (user: User) =>
-        !_(user.userCredentials ? user.userCredentials.userRoles : [])
-            .map(userRole => userRole.name)
-            .intersection(sharing.userRoles)
-            .isEmpty();
+    const userMatchesSomeUserRole = (user: User) => {
+        const userRoles = user.userCredentials ? user.userCredentials.userRoles : [];
+        const userRoleNames = userRoles.map(userRole => userRole.name);
+        return sharing.userRolesGroups.every(
+            userRoleGroup => _.intersection(userRoleNames, userRoleGroup).length > 0
+        );
+    };
 
     const userAccesses = _(users)
         .filter(userMatchesSomeUserRole)
