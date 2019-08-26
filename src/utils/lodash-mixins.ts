@@ -7,6 +7,8 @@ declare module "lodash" {
             path: TKey | [TKey]
         ): TObject[TKey];
         cartesianProduct<T>(arr: T[][]): T[][];
+
+        isNotEmpty(value?: any): boolean;
     }
 
     interface LoDashImplicitWrapper<TValue> {
@@ -14,6 +16,8 @@ declare module "lodash" {
             this: LoDashImplicitWrapper<TObject | null | undefined>,
             path: TKey | [TKey]
         ): TObject[TKey];
+
+        isNotEmpty(): boolean;
     }
 }
 
@@ -47,11 +51,10 @@ function getOrFail(obj: any, key: string | number): any {
     }
 }
 
+function isNotEmpty(obj: any): boolean {
+    return !_.isEmpty(obj);
+}
+
 _.mixin({ cartesianProduct });
 
-_.mixin(
-    {
-        getOrFail,
-    },
-    { chain: false }
-);
+_.mixin({ getOrFail, isNotEmpty }, { chain: false });
