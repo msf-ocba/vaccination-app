@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-07-17T10:53:32.880Z\n"
+"POT-Creation-Date: 2019-08-07T10:15:09.877Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -321,7 +321,8 @@ msgstr "Le champ ne peut pas être vide"
 
 msgid "This user has no Data output and analytic organisation units assigned"
 msgstr ""
-"Cet utilisateur n'a pas d'unité d'organisation de configuré dans l´option de resultat et d´analyse"
+"Cet utilisateur n'a pas d'unité d'organisation de configuré dans l´option de "
+"resultat et d´analyse"
 
 msgid "Number of Teams"
 msgstr "Nombre d'équipes"
@@ -341,14 +342,17 @@ msgstr "[None]"
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr "[{{total}}] {{names}} et {{othersCount}} autre (s)"
 
+msgid "doses"
+msgstr "doses"
+
+msgid "age groups"
+msgstr "groupes d'âge"
+
 msgid "Period dates"
 msgstr "Période"
 
 msgid "Antigens"
 msgstr "Antigènes"
-
-msgid "doses"
-msgstr "doses"
 
 msgid "Cancel"
 msgstr "Annuler"
@@ -404,7 +408,9 @@ msgid "Coverage by Site {{- period}} (do not edit this chart)"
 msgstr "Couverture Vaccinale par Site de Santé (ne modifiez pas ce graphique)"
 
 msgid "Coverage by Area {{- period}} (do not edit this chart)"
-msgstr "Couverture Vaccinale par Zone de Santé {{- period}} (ne modifiez pas ce graphique)"
+msgstr ""
+"Couverture Vaccinale par Zone de Santé {{- period}} (ne modifiez pas ce "
+"graphique)"
 
 msgid "Global QS Indicators"
 msgstr "Indicateurs globaux de Qualité et de Sécurité"
