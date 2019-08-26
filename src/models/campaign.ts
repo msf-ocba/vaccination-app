@@ -220,7 +220,7 @@ export default class Campaign {
         const modelReferencesToDelete = await this.getResources(config, db, dataSets);
         const dataSetsWithDataValues = _.compact(
             await promiseMap(dataSets, dataSet => {
-                return Campaign.hasDataValues(db, dataSet).then(hasDataValues =>
+                return Campaign.hasDataValues(db, config, dataSet).then(hasDataValues =>
                     hasDataValues ? dataSet : null
                 );
             })
@@ -523,13 +523,22 @@ export default class Campaign {
     }
 
     public async hasDataValues(): Promise<boolean> {
-        return Campaign.hasDataValues(this.db, this.getDataSet());
+        return Campaign.hasDataValues(this.db, this.config, this.getDataSet());
     }
 
-    static async hasDataValues(db: DbD2, dataSet: DataSetWithOrgUnits): Promise<boolean> {
+    static async hasDataValues(
+        db: DbD2,
+        config: MetadataConfig,
+        dataSet: DataSetWithOrgUnits
+    ): Promise<boolean> {
         if (!dataSet.id) {
             return false;
         } else {
+            const { categories, categoryComboCodeForTeams } = config;
+            const orgUnitIds = dataSet.organisationUnits.map(ou => ou.id);
+            const teamsCategoryId = getByIndex(categories, "code", categoryComboCodeForTeams).id;
+            const teams = await getTeamsForCampaign(db, orgUnitIds, teamsCategoryId, dataSet.name);
+
             const dataValues = await db.getDataValues({
                 dataSet: [dataSet.id],
                 orgUnit: dataSet.organisationUnits.map(ou => ou.id),
@@ -537,11 +546,10 @@ export default class Campaign {
                 includeDeleted: true,
             });
 
-            // Returned data values are not specific to this dataset, filter now programmatically by team
+            // Returned data values are not really specific for this dataset, so let's
+            // apply an extra filter by team.
             const teamsCocs = new Set(
-                _.flatMap(this.teamsMetadata.elements, team =>
-                    team.categoryOptionCombos.map(coc => coc.id)
-                )
+                _.flatMap(teams, team => team.categoryOptionCombos.map(coc => coc.id))
             );
 
             return dataValues.some(
