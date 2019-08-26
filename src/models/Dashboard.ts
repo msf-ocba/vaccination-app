@@ -182,7 +182,8 @@ export class Dashboard {
             datasetName,
             startDate,
             endDate,
-            dashboardItemsMetadata
+            dashboardItemsMetadata,
+            sharing
         );
 
         const keys: Array<keyof allDashboardElements> = ["items", "charts", "reportTables"];
@@ -206,7 +207,8 @@ export class Dashboard {
         datasetName: String,
         startDate: Moment,
         endDate: Moment,
-        dashboardItemsMetadata: Dictionary<any>
+        dashboardItemsMetadata: Dictionary<any>,
+        sharing: Sharing
     ): allDashboardElements {
         const { organisationUnitsWithName, legendMetadata } = dashboardItemsMetadata;
         const organisationUnitsMetadata = organisationUnitsWithName.map(
@@ -260,10 +262,17 @@ export class Dashboard {
 
         const dashboardData = {
             items: [...dashboardCharts, ...dashboardTables],
-            charts,
-            reportTables,
+            charts: addSharing(sharing, charts),
+            reportTables: addSharing(sharing, reportTables),
         };
 
         return dashboardData;
     }
+}
+
+function addSharing(sharing: Sharing, objects: object[]): object[] {
+    return objects.map(object => ({
+        ...object,
+        ...sharing,
+    }));
 }
