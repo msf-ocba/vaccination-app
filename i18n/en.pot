@@ -74,9 +74,6 @@ msgstr ""
 msgid "Error deleting campaign(s)"
 msgstr ""
 
-msgid "Only my campaigns"
-msgstr ""
-
 msgid ""
 "Are you sure you want to delete those campaign(s) (datasets and "
 "dashboards)? If you proceed, the associated datasets and dashboards will be "
@@ -212,6 +209,11 @@ msgid ""
 "to create the data set and all associated metadata for this campaign"
 msgstr ""
 
+msgid ""
+"This campaign has data values. Editing a campaign with data values can "
+"create several problems, please contact the administrator."
+msgstr ""
+
 msgid "Edit vaccination campaign"
 msgstr ""
 
@@ -279,13 +281,16 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
+msgid "doses"
+msgstr ""
+
+msgid "age groups"
+msgstr ""
+
 msgid "Period dates"
 msgstr ""
 
 msgid "Antigens"
-msgstr ""
-
-msgid "doses"
 msgstr ""
 
 msgid "Cancel"

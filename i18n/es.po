@@ -74,9 +74,6 @@ msgstr "Campaña(s) eliminadas"
 msgid "Error deleting campaign(s)"
 msgstr "Se produjo un error al borrar la(s) campaña(s)"
 
-msgid "Only my campaigns"
-msgstr "Solo mis campañas"
-
 msgid ""
 "Are you sure you want to delete those campaign(s) (datasets and dashboards)? "
 "If you proceed, the associated datasets and dashboards will be removed from "
@@ -259,6 +256,11 @@ msgstr ""
 "campaña de vacunación es correcta.Pulse el botón \"Guardar\" para crear el "
 "dataset y todos los metadatos asociados con esta campaña de vacunación"
 
+msgid ""
+"This campaign has data values. Editing a campaign with data values can "
+"create several problems, please contact the administrator."
+msgstr ""
+
 msgid "Edit vaccination campaign"
 msgstr "Editar campaña"
 
@@ -338,14 +340,17 @@ msgstr "[Vacío]"
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr "[{{total}}] {{names}} y {{othersCount}} otros"
 
+msgid "doses"
+msgstr "dosis"
+
+msgid "age groups"
+msgstr "grupos de edad"
+
 msgid "Period dates"
 msgstr "Periodo"
 
 msgid "Antigens"
 msgstr "Antígenos"
-
-msgid "doses"
-msgstr "dosis"
 
 msgid "Cancel"
 msgstr "Cancelar"
@@ -475,3 +480,6 @@ msgstr ""
 
 msgid "There already exists a campaign with the same name"
 msgstr "Ya existe una campaña con el mismo nombre"
+
+#~ msgid "Only my campaigns"
+#~ msgstr "Solo mis campañas"

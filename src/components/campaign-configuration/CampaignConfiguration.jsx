@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { ConfirmationDialog, ObjectsTable, withSnackbar, withLoading } from "d2-ui-components";
 import _ from "lodash";
-import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import PageHeader from "../shared/PageHeader";
 import { list } from "../../models/datasets";
@@ -31,9 +30,7 @@ class CampaignConfiguration extends React.Component {
             dataSetsToDelete: null,
             targetPopulationDataSet: null,
             objectsTableKey: new Date(),
-            filters: {
-                showOnlyUserCampaigns: true,
-            },
+            filters: {},
         };
     }
 
@@ -121,6 +118,7 @@ class CampaignConfiguration extends React.Component {
     actions = _(this._actions)
         .keyBy("name")
         .at(["target-population", "data-entry", "dashboard", "details", "edit", "delete"])
+        .compact()
         .value();
 
     openTargetPopulation = dataSet => {
@@ -188,26 +186,6 @@ class CampaignConfiguration extends React.Component {
         this.props.history.push("/campaign-configuration/new");
     };
 
-    toggleShowOnlyUserCampaigns = ev => {
-        const newFilters = { showOnlyUserCampaigns: ev.target.checked };
-        this.setState(state => ({ filters: { ...state.filters, ...newFilters } }));
-    };
-
-    renderCustomFilters = () => {
-        const { showOnlyUserCampaigns } = this.state.filters;
-
-        return (
-            <Checkbox
-                style={styles.checkbox}
-                checked={showOnlyUserCampaigns}
-                data-test="only-my-campaigns"
-                label={i18n.t("Only my campaigns")}
-                onCheck={this.toggleShowOnlyUserCampaigns}
-                iconStyle={styles.checkboxIcon}
-            />
-        );
-    };
-
     list = (...listArgs) => {
         const { config } = this.props;
         return list(config, ...listArgs);
@@ -255,23 +233,20 @@ Click the three dots on the right side of the screen if you wish to perform any 
                     pageVisited={pageVisited}
                 />
 
-                <div style={styles.objectsTableContainer}>
-                    <ObjectsTable
-                        key={objectsTableKey}
-                        model={d2.models.dataSet}
-                        columns={this.columns}
-                        d2={d2}
-                        detailsFields={this.detailsFields}
-                        pageSize={20}
-                        initialSorting={this.initialSorting}
-                        actions={this.actions}
-                        onButtonClick={this.isCurrentUserManager ? this.onCreate : null}
-                        list={this.list}
-                        buttonLabel={i18n.t("Create Campaign")}
-                        customFiltersComponent={this.renderCustomFilters}
-                        customFilters={this.state.filters}
-                    />
-                </div>
+                <ObjectsTable
+                    key={objectsTableKey}
+                    model={d2.models.dataSet}
+                    columns={this.columns}
+                    d2={d2}
+                    detailsFields={this.detailsFields}
+                    pageSize={20}
+                    initialSorting={this.initialSorting}
+                    actions={this.actions}
+                    onButtonClick={this.isCurrentUserManager ? this.onCreate : null}
+                    list={this.list}
+                    buttonLabel={i18n.t("Create Campaign")}
+                    customFilters={this.state.filters}
+                />
 
                 {dataSetsToDelete && <DeleteConfirmationDialog dataSets={dataSetsToDelete} />}
                 {targetPopulationDataSet && (
@@ -286,11 +261,5 @@ Click the three dots on the right side of the screen if you wish to perform any 
         );
     }
 }
-
-const styles = {
-    checkbox: { float: "left", width: "25%", paddingTop: 18, marginLeft: 30 },
-    checkboxIcon: { marginRight: 8 },
-    objectsTableContainer: { marginTop: -10 },
-};
 
 export default withLoading(withSnackbar(withPageVisited(CampaignConfiguration, "config")));
