@@ -343,14 +343,17 @@ msgstr "[Vacío]"
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr "[{{total}}] {{names}} y {{othersCount}} otros"
 
+msgid "doses"
+msgstr "dosis"
+
+msgid "age groups"
+msgstr "grupos de edad"
+
 msgid "Period dates"
 msgstr "Periodo"
 
 msgid "Antigens"
 msgstr "Antígenos"
-
-msgid "doses"
-msgstr "dosis"
 
 msgid "Cancel"
 msgstr "Cancelar"

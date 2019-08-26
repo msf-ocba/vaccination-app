@@ -284,13 +284,16 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
+msgid "doses"
+msgstr ""
+
+msgid "age groups"
+msgstr ""
+
 msgid "Period dates"
 msgstr ""
 
 msgid "Antigens"
-msgstr ""
-
-msgid "doses"
 msgstr ""
 
 msgid "Cancel"
