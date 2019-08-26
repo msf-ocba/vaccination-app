@@ -23,6 +23,12 @@ const metadataConfig: MetadataConfig = {
             displayName: "Created by app",
             valueType: "BOOLEAN",
         },
+        hideInTallySheet: {
+            id: "2",
+            code: "",
+            displayName: "hideInTallySheet",
+            valueType: "BOOLEAN",
+        },
     },
     categories: [],
     categoriesDisaggregation: [
