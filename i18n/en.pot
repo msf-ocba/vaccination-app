@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-08-09T11:42:16.869Z\n"
-"PO-Revision-Date: 2019-08-09T11:42:16.869Z\n"
+"POT-Creation-Date: 2019-08-07T12:58:51.517Z\n"
+"PO-Revision-Date: 2019-08-07T12:58:51.517Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -209,6 +209,11 @@ msgid ""
 "to create the data set and all associated metadata for this campaign"
 msgstr ""
 
+msgid ""
+"This campaign has data values. Editing a campaign with data values can "
+"create several problems, please contact the administrator."
+msgstr ""
+
 msgid "Edit vaccination campaign"
 msgstr ""
 
@@ -276,13 +281,16 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
+msgid "doses"
+msgstr ""
+
+msgid "age groups"
+msgstr ""
+
 msgid "Period dates"
 msgstr ""
 
 msgid "Antigens"
-msgstr ""
-
-msgid "doses"
 msgstr ""
 
 msgid "Cancel"

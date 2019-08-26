@@ -118,6 +118,7 @@ class CampaignConfiguration extends React.Component {
     actions = _(this._actions)
         .keyBy("name")
         .at(["target-population", "data-entry", "dashboard", "details", "edit", "delete"])
+        .compact()
         .value();
 
     openTargetPopulation = dataSet => {
@@ -232,22 +233,20 @@ Click the three dots on the right side of the screen if you wish to perform any 
                     pageVisited={pageVisited}
                 />
 
-                <div style={styles.objectsTableContainer}>
-                    <ObjectsTable
-                        key={objectsTableKey}
-                        model={d2.models.dataSet}
-                        columns={this.columns}
-                        d2={d2}
-                        detailsFields={this.detailsFields}
-                        pageSize={20}
-                        initialSorting={this.initialSorting}
-                        actions={this.actions}
-                        onButtonClick={this.isCurrentUserManager ? this.onCreate : null}
-                        list={this.list}
-                        buttonLabel={i18n.t("Create Campaign")}
-                        customFilters={this.state.filters}
-                    />
-                </div>
+                <ObjectsTable
+                    key={objectsTableKey}
+                    model={d2.models.dataSet}
+                    columns={this.columns}
+                    d2={d2}
+                    detailsFields={this.detailsFields}
+                    pageSize={20}
+                    initialSorting={this.initialSorting}
+                    actions={this.actions}
+                    onButtonClick={this.isCurrentUserManager ? this.onCreate : null}
+                    list={this.list}
+                    buttonLabel={i18n.t("Create Campaign")}
+                    customFilters={this.state.filters}
+                />
 
                 {dataSetsToDelete && <DeleteConfirmationDialog dataSets={dataSetsToDelete} />}
                 {targetPopulationDataSet && (
@@ -263,8 +262,6 @@ Click the three dots on the right side of the screen if you wish to perform any 
     }
 }
 
-const styles = {
-    objectsTableContainer: { marginTop: -10 },
-};
+const styles = {};
 
 export default withLoading(withSnackbar(withPageVisited(CampaignConfiguration, "config")));

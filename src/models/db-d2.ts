@@ -87,6 +87,16 @@ export interface AnalyticsResponse {
     height: number;
 }
 
+// https://docs.dhis2.org/2.30/en/developer/html/dhis2_developer_manual_full.html#webapi_reading_data_values
+export interface GetDataValuesParams {
+    dataSet: string[];
+    period?: string[];
+    orgUnit: string[];
+    includeDeleted?: boolean;
+    lastUpdated?: string;
+    limit?: number;
+}
+
 const ref = { id: true };
 
 export const metadataFields: MetadataFields = {
@@ -428,6 +438,13 @@ export default class DbD2 {
 
     public getAnalytics(request: AnalyticsRequest): Promise<AnalyticsResponse> {
         return this.api.get("/analytics", request) as Promise<AnalyticsResponse>;
+    }
+
+    public async getDataValues(params: GetDataValuesParams): Promise<DataValue[]> {
+        const response = (await this.api.get("/dataValueSets", params)) as {
+            dataValues?: DataValue[];
+        };
+        return response.dataValues || [];
     }
 }
 
