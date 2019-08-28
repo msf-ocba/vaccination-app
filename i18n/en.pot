@@ -74,9 +74,6 @@ msgstr ""
 msgid "Error deleting campaign(s)"
 msgstr ""
 
-msgid "Only my campaigns"
-msgstr ""
-
 msgid ""
 "Are you sure you want to delete those campaign(s) (datasets and "
 "dashboards)? If you proceed, the associated datasets and dashboards will be "

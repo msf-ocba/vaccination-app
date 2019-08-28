@@ -3,10 +3,9 @@ import PropTypes from "prop-types";
 import i18n from "@dhis2/d2-i18n";
 import { ConfirmationDialog, ObjectsTable, withSnackbar, withLoading } from "d2-ui-components";
 import _ from "lodash";
-import Checkbox from "material-ui/Checkbox/Checkbox";
 
 import PageHeader from "../shared/PageHeader";
-import { list } from "../../models/datasets";
+import { list, getPeriodDatesFromDataSet } from "../../models/datasets";
 import { formatDateShort } from "../../utils/date";
 import Campaign from "../../models/campaign";
 import TargetPopulationDialog from "./TargetPopulationDialog";
@@ -31,9 +30,7 @@ class CampaignConfiguration extends React.Component {
             dataSetsToDelete: null,
             targetPopulationDataSet: null,
             objectsTableKey: new Date(),
-            filters: {
-                showOnlyUserCampaigns: true,
-            },
+            filters: {},
         };
     }
 
@@ -166,47 +163,22 @@ class CampaignConfiguration extends React.Component {
     };
 
     getDateValue = (dateType, dataSet) => {
-        const dataInputPeriods = dataSet.dataInputPeriods;
-        let dateValue;
+        const periodDates = getPeriodDatesFromDataSet(dataSet);
+        if (!periodDates) return;
+
         switch (dateType) {
             case "startDate":
-                if (!_(dataInputPeriods).isEmpty()) {
-                    dateValue = formatDateShort(dataInputPeriods[0].openingDate);
-                }
-                break;
+                return formatDateShort(periodDates.startDate);
             case "endDate":
-                if (!_(dataInputPeriods).isEmpty()) {
-                    dateValue = formatDateShort(dataInputPeriods[0].closingDate);
-                }
-                break;
+                return formatDateShort(periodDates.endDate);
             default:
                 console.error(`Date type not supported: ${dateType}`);
+                return undefined;
         }
-        return dateValue;
     };
 
     onCreate = () => {
         this.props.history.push("/campaign-configuration/new");
-    };
-
-    toggleShowOnlyUserCampaigns = ev => {
-        const newFilters = { showOnlyUserCampaigns: ev.target.checked };
-        this.setState(state => ({ filters: { ...state.filters, ...newFilters } }));
-    };
-
-    renderCustomFilters = () => {
-        const { showOnlyUserCampaigns } = this.state.filters;
-
-        return (
-            <Checkbox
-                style={styles.checkbox}
-                checked={showOnlyUserCampaigns}
-                data-test="only-my-campaigns"
-                label={i18n.t("Only my campaigns")}
-                onCheck={this.toggleShowOnlyUserCampaigns}
-                iconStyle={styles.checkboxIcon}
-            />
-        );
     };
 
     list = (...listArgs) => {
@@ -263,12 +235,11 @@ Click the three dots on the right side of the screen if you wish to perform any 
                     d2={d2}
                     detailsFields={this.detailsFields}
                     pageSize={20}
-                    /*initialSorting={this.initialSorting}*/
+                    initialSorting={this.initialSorting}
                     actions={this.actions}
                     onButtonClick={this.isCurrentUserManager ? this.onCreate : null}
                     list={this.list}
                     buttonLabel={i18n.t("Create Campaign")}
-                    customFiltersComponent={this.renderCustomFilters}
                     customFilters={this.state.filters}
                 />
 
@@ -285,10 +256,5 @@ Click the three dots on the right side of the screen if you wish to perform any 
         );
     }
 }
-
-const styles = {
-    checkbox: { float: "left", width: "25%", paddingTop: 18, marginLeft: 30 },
-    checkboxIcon: { marginRight: 8 },
-};
 
 export default withLoading(withSnackbar(withPageVisited(CampaignConfiguration, "config")));

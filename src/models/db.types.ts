@@ -213,8 +213,8 @@ export interface DataEntryForm {
 }
 
 export interface DataInputPeriod {
-    openingDate: string;
-    closingDate: string;
+    openingDate?: string;
+    closingDate?: string;
     period: { id: string };
 }
 
