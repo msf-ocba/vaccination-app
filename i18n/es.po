@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-07-17T10:53:32.880Z\n"
+"POT-Creation-Date: 2019-08-21T09:13:06.224Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -73,9 +73,6 @@ msgstr "Campaña(s) eliminadas"
 
 msgid "Error deleting campaign(s)"
 msgstr "Se produjo un error al borrar la(s) campaña(s)"
-
-msgid "Only my campaigns"
-msgstr "Solo mis campañas"
 
 msgid ""
 "Are you sure you want to delete those campaign(s) (datasets and dashboards)? "
@@ -259,6 +256,13 @@ msgstr ""
 "campaña de vacunación es correcta.Pulse el botón \"Guardar\" para crear el "
 "dataset y todos los metadatos asociados con esta campaña de vacunación"
 
+msgid ""
+"This campaign has data values. Editing a campaign with data values can "
+"create several problems, please contact the administrator."
+msgstr ""
+"Esta campaña tiene datos. Editar una campaña con datos puede "
+"generar problemas, por favor contacte con su administrator."
+
 msgid "Edit vaccination campaign"
 msgstr "Editar campaña"
 
@@ -317,7 +321,8 @@ msgstr "El campo no puede estar vacío"
 
 msgid "This user has no Data output and analytic organisation units assigned"
 msgstr ""
-"Este usuario no tiene unidades organizativas configuradas en la sección de resultados y análisis"
+"Este usuario no tiene unidades organizativas configuradas en la sección de "
+"resultados y análisis"
 
 msgid "Number of Teams"
 msgstr "Número de equipos"
@@ -337,14 +342,17 @@ msgstr "[Vacío]"
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr "[{{total}}] {{names}} y {{othersCount}} otros"
 
+msgid "doses"
+msgstr "dosis"
+
+msgid "age groups"
+msgstr "grupos de edad"
+
 msgid "Period dates"
 msgstr "Periodo"
 
 msgid "Antigens"
 msgstr "Antígenos"
-
-msgid "doses"
-msgstr "dosis"
 
 msgid "Cancel"
 msgstr "Cancelar"
@@ -370,6 +378,21 @@ msgid ""
 msgstr ""
 "¿Esta seguro que quiere salir del Creador de Campañas? Todos sus cambios se "
 "perderán"
+
+msgid "update"
+msgstr "edición"
+
+msgid "delete"
+msgstr "eliminación"
+
+msgid "[RVC] User {{userName}} modified a campaign with data ({{action}})"
+msgstr "[RVC] El usuario {{userName}} modificó una campaña con datos ({{action}})"
+
+msgid "User"
+msgstr "Usuario"
+
+msgid "Action"
+msgstr "Acción"
 
 msgid "Subtotal"
 msgstr "Subtotal"
@@ -397,16 +420,19 @@ msgstr ""
 "probablemente hay datos asociados"
 
 msgid "Coverage by Site {{- period}} (do not edit this chart)"
-msgstr "Cobertura Vacunal por Centro Salud {{- period}} (no edite esta gráfica)"
+msgstr ""
+"Cobertura Vacunal por Centro Salud {{- period}} (no edite esta gráfica)"
 
 msgid "Coverage by Area {{- period}} (do not edit this chart)"
-msgstr "Cobertura Vacunal por área de Salud {{- period}} (no edite esta gráfica)"
+msgstr ""
+"Cobertura Vacunal por área de Salud {{- period}} (no edite esta gráfica)"
 
 msgid "Global QS Indicators"
 msgstr "Indicadores globales de Calidad y Seguridad"
 
 msgid "AEFI and AEB indicators"
-msgstr "Exposición Accidental a Sangre y Efecto Adverso Posterior a la Vacunación"
+msgstr ""
+"Exposición Accidental a Sangre y Efecto Adverso Posterior a la Vacunación"
 
 msgid "Campaign Coverage by area (do not edit this table)"
 msgstr "Cobertura Vacunal por Área de Salud (no edite esta tabla)"
@@ -468,3 +494,6 @@ msgstr ""
 
 msgid "There already exists a campaign with the same name"
 msgstr "Ya existe una campaña con el mismo nombre"
+
+#~ msgid "Only my campaigns"
+#~ msgstr "Solo mis campañas"

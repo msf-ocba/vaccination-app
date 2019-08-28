@@ -4,6 +4,9 @@ export interface D2 {
     Api: {
         getApi(): D2Api;
     };
+    currentUser: {
+        displayName: string;
+    };
 }
 
 export type DeleteResponse = {

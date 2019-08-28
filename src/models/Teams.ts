@@ -17,6 +17,7 @@ export interface CategoryOptionTeam {
     dimensionItemType: "CATEGORY_OPTION";
     categories: Ref[];
     organisationUnits: Ref[];
+    categoryOptionCombos: Ref[];
 }
 
 export interface TeamsMetadata {
@@ -123,6 +124,7 @@ export class Teams {
                 organisationUnits: organisationUnits.map(ou => ({
                     id: ou.id,
                 })),
+                categoryOptionCombos: [],
             };
             return categoryOption;
         });
@@ -185,7 +187,7 @@ export async function getTeamsForCampaign(
     campaignName: string
 ): Promise<CategoryOptionTeam[]> {
     const { categoryOptions } = await db.api.get("/metadata", {
-        "categoryOptions:fields": ":owner,categories[id],name",
+        "categoryOptions:fields": ":owner,categories[id],name,categoryOptionCombos[id]",
         "categoryOptions:filter": `organisationUnits.id:in:[${organisationUnitIds}]`,
     });
 
