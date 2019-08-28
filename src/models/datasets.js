@@ -70,11 +70,11 @@ export async function list(config, d2, filters, pagination) {
 }
 
 function isDataSetCreatedByApp(dataSet, config) {
-    return dataSet.attributeValues.every(
-        attributeValue =>
-            attributeValue.attribute.code !== config.attributeCodeForApp ||
-            attributeValue.value === "true"
-    );
+    const attributeValueForApp = _(dataSet.attributeValues || [])
+        .keyBy(attributeValue => (attributeValue.attribute ? attributeValue.attribute.code : null))
+        .get(config.attributeCodeForApp);
+
+    return attributeValueForApp && attributeValueForApp.value === "true";
 }
 
 function isDataSetInUserOrgUnits(d2, dataSet) {
