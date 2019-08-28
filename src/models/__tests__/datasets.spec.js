@@ -4,6 +4,7 @@ import metadataConfig from "./config-mock";
 
 const expectedFields = [
     "id",
+    "name",
     "displayName",
     "displayDescription",
     "created",
