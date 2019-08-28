@@ -60,8 +60,13 @@ export class Teams {
         const teamDifference = teams - _.size(oldTeams);
 
         //Update periodDates and OU references for previous teams
-        const allTeams = oldTeams.map(ot => ({
+        const orderedOldTeams = _.orderBy(oldTeams, team => {
+            const match = team.name.match(/\d+/);
+            return match ? parseInt(match[0]) : teams;
+        });
+        const allTeams = orderedOldTeams.map((ot, i) => ({
             ...ot,
+            name: getTeamName(name, i + 1, teams),
             startDate,
             endDate,
             organisationUnits,
@@ -82,7 +87,6 @@ export class Teams {
             ];
         } else if (teamDifference < 0) {
             return _(allTeams)
-                .sortBy("name")
                 .take(teams)
                 .value();
         } else {
@@ -100,7 +104,7 @@ export class Teams {
         nameOffset: number = 0
     ): CategoryOptionTeam[] {
         const teamsData: CategoryOptionTeam[] = _.range(1, teams + 1).map(i => {
-            const name = `Team ${nameOffset + i} - ${campaignName}`;
+            const name = getTeamName(campaignName, nameOffset + i, teams);
             const id = generateUid();
             const categoryOption = {
                 id,
@@ -155,7 +159,6 @@ export class Teams {
         });
 
         const allTeams = [...filteredPreviousTeams, ..._.compact(filteredNewTeams)];
-
         const teamsCategoryUpdated = { ...categories[0], categoryOptions: allTeams };
 
         const teamsResponse: ApiResponse<MetadataResponse> = await db.postMetadata({
@@ -198,7 +201,7 @@ export function filterTeamsByNames(
 ): CategoryOptionTeam[] {
     if (_.isEmpty(teams)) return [];
 
-    const matchers = campaignNames.map(name => new RegExp(`^Team \\d - ${name}$`));
+    const matchers = campaignNames.map(name => new RegExp(`^Team \\d+ - ${name}$`));
 
     const filteredTeams = teams.filter(
         (co: { categories: Array<{ id: string }>; name: string }) => {
@@ -211,4 +214,15 @@ export function filterTeamsByNames(
     );
 
     return filteredTeams;
+}
+
+function leftZeroPad(num: number, size: number): string {
+    const numString = num.toString();
+    const padSize = Math.max(size - numString.length, 0);
+    return "0".repeat(padSize) + numString;
+}
+
+function getTeamName(campaignName: string, teamNumber: number, teamsCount: number): string {
+    const paddedTeamNumber = leftZeroPad(teamNumber, 3);
+    return `Team ${paddedTeamNumber} - ${campaignName}`;
 }

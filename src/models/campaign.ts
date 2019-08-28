@@ -311,6 +311,7 @@ export default class Campaign {
         return _.compact([
             !teams ? getError("cannot_be_blank", { field: "teams" })[0] : null,
             teams && teams <= 0 ? getError("must_be_bigger_than_zero")[0] : null,
+            teams && teams > 999 ? getError("must_be_smaller_than", { value: "1000" })[0] : null,
         ]);
     }
 
