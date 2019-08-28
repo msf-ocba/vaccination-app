@@ -430,7 +430,7 @@ msgid "QS Indicators"
 msgstr "Indicateurs de Qualité et de Sécurité"
 
 msgid "Vaccines Per Area"
-msgstr "Vaccins par région"
+msgstr "Vaccins par Zone de Santé"
 
 msgid "Vaccines Per Team"
 msgstr "Vaccination par équipe"
