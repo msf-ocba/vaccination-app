@@ -15,7 +15,7 @@ import {
     PopulationDistribution,
     TargetPopulation,
 } from "../../models/TargetPopulation";
-import { OrganisationUnit, OrganisationUnitLevel, Maybe } from "../../models/db.types";
+import { OrganisationUnitLevel, Maybe } from "../../models/db.types";
 import OrgUnitName from "./OrgUnitName";
 import "./PopulationDistribution.css";
 import { NumericField } from "../shared/NumericField";
@@ -32,19 +32,6 @@ export interface PopulationDistributionProps extends WithStyles<typeof styles> {
 }
 
 class PopulationDistributionComponent extends React.Component<PopulationDistributionProps> {
-    renderOrgUnit(organisationUnit: OrganisationUnit) {
-        const { classes, organisationUnitLevels } = this.props;
-
-        return (
-            <TableCell className={classNames(classes.tableOrgUnit, classes.tableHead)}>
-                <OrgUnitName
-                    organisationUnit={organisationUnit}
-                    organisationUnitLevels={organisationUnitLevels}
-                />
-            </TableCell>
-        );
-    }
-
     onChange = memoize((ageGroup: string) => (value: number) => {
         this.props.onChange(ageGroup, value);
     });
@@ -66,7 +53,7 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
         distribution: PopulationDistribution;
         ageGroups: string[];
     }) => {
-        const { classes, antigenEditing, targetPopulation } = this.props;
+        const { classes, antigenEditing, targetPopulation, organisationUnitLevels } = this.props;
         const { antigen, distribution, ageGroups } = props;
         const isEditing = antigenEditing === antigen.id;
 
@@ -75,7 +62,14 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
 
         return (
             <TableRow key={orgUnit.id}>
-                {this.renderOrgUnit(orgUnit)}
+                <TableCell className={classNames(classes.tableOrgUnit, classes.tableHead)}>
+                    <div className={classes.rowTitle}>{i18n.t("Population distribution (%)")}</div>
+
+                    <OrgUnitName
+                        organisationUnit={orgUnit}
+                        organisationUnitLevels={organisationUnitLevels}
+                    />
+                </TableCell>
 
                 {ageGroups.map((ageGroup, index) => {
                     const value = ageDistribution ? ageDistribution[ageGroup] : undefined;
@@ -123,9 +117,7 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell className={classes.orgUnitColumn}>
-                                {i18n.t("Population distribution (%)")}
-                            </TableCell>
+                            <TableCell className={classes.orgUnitColumn} />
 
                             {ageGroups.map(ageGroup => (
                                 <TableCell key={ageGroup} className={classes.tableHead}>
@@ -192,6 +184,9 @@ const styles = (_theme: Theme) =>
         },
         orgUnitColumn: {
             width: "20vw",
+        },
+        rowTitle: {
+            marginBottom: 5,
         },
     });
 
