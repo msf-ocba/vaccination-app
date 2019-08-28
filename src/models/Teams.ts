@@ -223,7 +223,6 @@ function leftZeroPad(num: number, size: number): string {
 }
 
 function getTeamName(campaignName: string, teamNumber: number, teamsCount: number): string {
-    const padSize = teamsCount.toString().length;
-    const paddedTeamNumber = leftZeroPad(teamNumber, padSize);
+    const paddedTeamNumber = leftZeroPad(teamNumber, 3);
     return `Team ${paddedTeamNumber} - ${campaignName}`;
 }
