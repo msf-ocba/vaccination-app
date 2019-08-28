@@ -18,6 +18,7 @@ import {
 import { sortAgeGroups } from "../utils/age-groups";
 
 export const baseConfig = {
+    expirationDays: 8,
     categoryCodeForAntigens: "RVC_ANTIGEN",
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
     categoryCodeForDoses: "RVC_DOSE",

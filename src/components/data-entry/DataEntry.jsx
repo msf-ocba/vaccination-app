@@ -6,7 +6,7 @@ import ReactDOM from "react-dom";
 import moment from "moment";
 
 import PageHeader from "../shared/PageHeader";
-import { getOrganisationUnitsById, getDataInputPeriodsById } from "../../models/datasets";
+import { getOrganisationUnitsById, getPeriodDatesFromDataSetId } from "../../models/datasets";
 import { getDhis2Url } from "../../utils/routes";
 import { LinearProgress } from "@material-ui/core";
 import { withPageVisited } from "../utils/page-visited-app";
@@ -95,7 +95,7 @@ class DataEntry extends React.Component {
             iframe.contentWindow.dataSetSelected();
 
             // Remove non-valid periods
-            const dataInputPeriods = await getDataInputPeriodsById(dataSetId, d2);
+            const periodDates = await getPeriodDatesFromDataSetId(dataSetId, d2);
             const removeNonValidPeriods = () => {
                 const selectedDataSetId = iframeDocument.querySelector("#selectedDataSetId")
                     .selectedOptions[0].value;
@@ -106,9 +106,10 @@ class DataEntry extends React.Component {
                         const optionFormat = moment(option.value);
                         if (
                             optionFormat.isValid() &&
+                            periodDates &&
                             !optionFormat.isBetween(
-                                dataInputPeriods.openingDate,
-                                dataInputPeriods.closingDate,
+                                periodDates.startDate,
+                                periodDates.endDate,
                                 null,
                                 "[]"
                             )
