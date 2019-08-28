@@ -10,8 +10,8 @@ const expectedFields = [
     "lastUpdated",
     "publicAccess",
     "user",
-    "dataInputPeriods~paging=(1;1)",
     "href",
+    "dataInputPeriods[period[id]]",
     "attributeValues[value, attribute[code]]",
     "organisationUnits[id,path]",
 ];

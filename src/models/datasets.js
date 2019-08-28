@@ -1,4 +1,5 @@
 import _ from "lodash";
+import moment from "moment";
 import { getCurrentUserDataViewOrganisationUnits } from "../utils/dhis2";
 
 const requiredFields = ["attributeValues[value, attribute[code]]", "organisationUnits[id,path]"];
@@ -11,8 +12,8 @@ const defaultListFields = [
     "lastUpdated",
     "publicAccess",
     "user",
-    "dataInputPeriods~paging=(1;1)",
     "href",
+    "dataInputPeriods[period[id]]",
 ];
 
 /* Return object with pager and array of datasets.
@@ -89,11 +90,24 @@ export async function getOrganisationUnitsById(id, d2) {
     return _(organisationUnits).isEmpty() ? undefined : organisationUnits[0].id;
 }
 
-export async function getDataInputPeriodsById(id, d2) {
+export async function getPeriodDatesFromDataSetId(id, d2) {
     const fields = "dataInputPeriods";
     const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
+    return dataSet ? getPeriodDatesFromDataSet(dataSet) : null;
+}
+
+export function getPeriodDatesFromDataSet(dataSet) {
     const dataInputPeriods = dataSet.dataInputPeriods;
-    return _(dataInputPeriods).isEmpty() ? undefined : dataInputPeriods[0];
+
+    if (_(dataInputPeriods).isEmpty()) {
+        return null;
+    } else {
+        const periodIdToDate = periodId => moment(periodId, "YYYYMMDD");
+        const periods = dataInputPeriods.map(dip => dip.period.id);
+        const startDate = periodIdToDate(_.min(periods));
+        const endDate = periodIdToDate(_.max(periods));
+        return { startDate, endDate };
+    }
 }
 
 export async function getDatasetById(id, d2) {
