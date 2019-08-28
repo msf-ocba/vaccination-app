@@ -6,6 +6,7 @@ const requiredFields = ["attributeValues[value, attribute[code]]", "organisation
 
 const defaultListFields = [
     "id",
+    "name",
     "displayName",
     "displayDescription",
     "created",
