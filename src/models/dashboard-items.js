@@ -315,7 +315,7 @@ export function buildDashboardItems(
                     itemsMetadata,
                     disaggregationMetadata,
                     legendsMetadata,
-                    doseMetadata: dft,
+                    doseMetadata: dosesForTables.length > 1 ? dft : null,
                 })
             );
         })
