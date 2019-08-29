@@ -68,7 +68,6 @@ class DataEntry extends React.Component {
         iframeDocument.querySelector("#moduleHeader").remove();
 
         on(iframeDocument, "#currentSelection", el => el.remove());
-        on(iframeDocument, "#validationButton", el => el.remove());
         on(iframeDocument, "#completenessDiv #validateButton", el => el.remove());
         on(iframeDocument, "#completenessDiv .separator", el => el.remove());
 
