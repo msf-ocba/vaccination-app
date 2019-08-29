@@ -439,8 +439,11 @@ msgstr "Indicateurs globaux de Qualité et de Sécurité"
 msgid "AEFI and AEB indicators"
 msgstr "MAPI et AES"
 
-msgid "Campaign Coverage by area (do not edit this table)"
-msgstr "Couverture Vaccinale par Zone de Santé (ne modifiez pas ce tableau)"
+msgid "Campaign Coverage by area and dose (do not edit this table)"
+msgstr "Couverture Vaccinale par Zone de Santé et Dose (ne modifiez pas ce tableau)"
+
+msgid "Cumulative Campaign Coverage by area (do not edit this table)"
+msgstr "Couverture Vaccinale Cumulatif par Zone de Santé (ne modifiez pas ce tableau)"
 
 msgid "QS Indicators"
 msgstr "Indicateurs de Qualité et de Sécurité"

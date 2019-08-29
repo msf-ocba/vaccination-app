@@ -366,7 +366,10 @@ msgstr ""
 msgid "AEFI and AEB indicators"
 msgstr ""
 
-msgid "Campaign Coverage by area (do not edit this table)"
+msgid "Campaign Coverage by area and dose (do not edit this table)"
+msgstr ""
+
+msgid "Cumulative Campaign Coverage by area (do not edit this table)"
 msgstr ""
 
 msgid "QS Indicators"
