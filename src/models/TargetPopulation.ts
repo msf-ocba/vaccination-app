@@ -260,7 +260,7 @@ export class TargetPopulation {
                                     orgUnit: targetPopulationItem.organisationUnit.id,
                                     dataElement: config.population.populationByAgeDataElement.id,
                                     categoryOptionCombo: _(cocIdByName).getOrFail(cocName),
-                                    value: Math.ceil(populationForAgeRange).toString(),
+                                    value: populationForAgeRange.toFixed(2),
                                 };
                             })
                         )

@@ -34,6 +34,8 @@ const translations = {
             namespace
         ),
     must_be_bigger_than_zero: () => i18n.t("Number of teams must be positive"),
+    must_be_smaller_than: namespace =>
+        i18n.t("Number of teams must smaller than {{value}}", namespace),
     name_must_be_unique: () => i18n.t("There already exists a campaign with the same name"),
 };
 

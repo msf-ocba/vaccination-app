@@ -19,6 +19,7 @@ import {
     DataValue,
     MetadataOptions,
     NamedObject,
+    Message,
 } from "./db.types";
 import _ from "lodash";
 import "../utils/lodash-mixins";
@@ -85,6 +86,16 @@ export interface AnalyticsResponse {
     rows: Array<string[]>;
     width: number;
     height: number;
+}
+
+// https://docs.dhis2.org/2.30/en/developer/html/dhis2_developer_manual_full.html#webapi_reading_data_values
+export interface GetDataValuesParams {
+    dataSet: string[];
+    period?: string[];
+    orgUnit: string[];
+    includeDeleted?: boolean;
+    lastUpdated?: string;
+    limit?: number;
 }
 
 const ref = { id: true };
@@ -332,6 +343,10 @@ export default class DbD2 {
         return true;
     }
 
+    public async sendMessage(message: Message): Promise<void> {
+        this.api.post("/messageConversations", message);
+    }
+
     public async postDataValues(dataValues: DataValue[]): Promise<Response<object>> {
         const dataValueRequests: DataValueRequest[] = _(dataValues)
             .groupBy(dv => {
@@ -428,6 +443,13 @@ export default class DbD2 {
 
     public getAnalytics(request: AnalyticsRequest): Promise<AnalyticsResponse> {
         return this.api.get("/analytics", request) as Promise<AnalyticsResponse>;
+    }
+
+    public async getDataValues(params: GetDataValuesParams): Promise<DataValue[]> {
+        const response = (await this.api.get("/dataValueSets", params)) as {
+            dataValues?: DataValue[];
+        };
+        return response.dataValues || [];
     }
 }
 

@@ -78,7 +78,6 @@ export default class CampaignDb {
         const { campaign } = this;
         const { db, config: metadataConfig, teamsMetadata } = campaign;
         const dataSetId = campaign.id || generateUid();
-        const { app: attributeForApp } = metadataConfig.attributes;
 
         if (!campaign.startDate || !campaign.endDate) {
             return { status: false, error: "Campaign Dates not set" };
@@ -108,10 +107,12 @@ export default class CampaignDb {
             categoryCombo: { id: dataElement.categoryCombo.id },
         }));
 
+        const closingDate = endDate.clone().add(metadataConfig.expirationDays, "days");
+
         const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
-            openingDate: toISOStringNoTZ(startDate),
-            closingDate: toISOStringNoTZ(endDate),
             period: { id: date.format("YYYYMMDD") },
+            openingDate: toISOStringNoTZ(startDate),
+            closingDate: toISOStringNoTZ(closingDate),
         }));
 
         const existingDataSet = await this.getExistingDataSet();
@@ -135,7 +136,10 @@ export default class CampaignDb {
             expiryDays: 0,
             formType: "CUSTOM",
             dataInputPeriods,
-            attributeValues: [{ value: "true", attribute: { id: attributeForApp.id } }],
+            attributeValues: [
+                { value: "true", attribute: { id: metadataConfig.attributes.app.id } },
+                { value: "true", attribute: { id: metadataConfig.attributes.hideInTallySheet.id } },
+            ],
             dataEntryForm: { id: dataEntryForm.id },
             sections: sections.map(section => ({ id: section.id })),
             ...sharing,

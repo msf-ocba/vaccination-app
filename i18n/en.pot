@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-08-23T12:30:41.811Z\n"
-"PO-Revision-Date: 2019-08-23T12:30:41.811Z\n"
+"POT-Creation-Date: 2019-08-28T12:22:48.026Z\n"
+"PO-Revision-Date: 2019-08-28T12:22:48.026Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -72,9 +72,6 @@ msgid "Campaign(s) deleted"
 msgstr ""
 
 msgid "Error deleting campaign(s)"
-msgstr ""
-
-msgid "Only my campaigns"
 msgstr ""
 
 msgid ""
@@ -212,6 +209,11 @@ msgid ""
 "to create the data set and all associated metadata for this campaign"
 msgstr ""
 
+msgid ""
+"This campaign has data values. Editing a campaign with data values can "
+"create several problems, please contact the administrator."
+msgstr ""
+
 msgid "Edit vaccination campaign"
 msgstr ""
 
@@ -279,13 +281,16 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
+msgid "doses"
+msgstr ""
+
+msgid "age groups"
+msgstr ""
+
 msgid "Period dates"
 msgstr ""
 
 msgid "Antigens"
-msgstr ""
-
-msgid "doses"
 msgstr ""
 
 msgid "Cancel"
@@ -309,6 +314,21 @@ msgstr ""
 msgid ""
 "You are about to exit the Campaign Creation Wizard. All your changes will "
 "be lost. Are you sure you want to proceed?"
+msgstr ""
+
+msgid "update"
+msgstr ""
+
+msgid "delete"
+msgstr ""
+
+msgid "[RVC] User {{userName}} modified a campaign with data ({{action}})"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Action"
 msgstr ""
 
 msgid "Subtotal"
@@ -398,6 +418,9 @@ msgstr ""
 msgid ""
 "Org unit {{organisationUnit}} has an invalid total value for antigen "
 "{{antigen}} ({{ageGroups}}) -> {{- value}}"
+msgstr ""
+
+msgid "Number of teams must smaller than {{value}}"
 msgstr ""
 
 msgid "There already exists a campaign with the same name"
