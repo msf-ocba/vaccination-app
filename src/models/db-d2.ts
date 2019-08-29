@@ -19,6 +19,7 @@ import {
     DataValue,
     MetadataOptions,
     NamedObject,
+    Message,
 } from "./db.types";
 import _ from "lodash";
 import "../utils/lodash-mixins";
@@ -340,6 +341,10 @@ export default class DbD2 {
     public async postForm(dataSetId: string, dataEntryForm: DataEntryForm): Promise<boolean> {
         await this.api.post(["dataSets", dataSetId, "form"].join("/"), dataEntryForm);
         return true;
+    }
+
+    public async sendMessage(message: Message): Promise<void> {
+        this.api.post("/messageConversations", message);
     }
 
     public async postDataValues(dataValues: DataValue[]): Promise<Response<object>> {

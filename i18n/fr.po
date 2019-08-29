@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-08-07T12:58:51.517Z\n"
+"POT-Creation-Date: 2019-08-28T12:22:48.026Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -263,6 +263,8 @@ msgid ""
 "This campaign has data values. Editing a campaign with data values can "
 "create several problems, please contact the administrator."
 msgstr ""
+"Cette campagne a des valeurs de données. L'édition d'une campagne avec des "
+"valeurs peut créer plusieurs problèmes, veuillez contacter l'administrateur."
 
 msgid "Edit vaccination campaign"
 msgstr "Modifier la campagne "
@@ -381,6 +383,23 @@ msgstr ""
 "Vous êtes sur le point de quitter l'assistant de création de campagne. "
 "Toutes vos modifications seront perdues. Êtes-vous sûr de vouloir continuer?"
 
+msgid "update"
+msgstr "mise à jour"
+
+msgid "delete"
+msgstr "effacement"
+
+msgid "[RVC] User {{userName}} modified a campaign with data ({{action}})"
+msgstr ""
+"[RVC] Utilisateur {{userName}} a modifié une campagne avec des données "
+"({{action}})"
+
+msgid "User"
+msgstr "Utilisateur"
+
+msgid "Action"
+msgstr "Action"
+
 msgid "Subtotal"
 msgstr "Subtotal"
 
@@ -480,8 +499,8 @@ msgstr ""
 "L'unité d´organisation {{unité d´organisation}} a une valeur totale non "
 "valide pour l'antigène {{antigen}} ({{ageGroups}}) -> {{- value}}"
 
+msgid "Number of teams must smaller than {{value}}"
+msgstr "Le nombre d'équipes doit être inférieur à {{value}}"
+
 msgid "There already exists a campaign with the same name"
 msgstr "Il existe déjà une campagne du même nom"
-
-#~ msgid "Only my campaigns"
-#~ msgstr "Seulement mes campagnes"
