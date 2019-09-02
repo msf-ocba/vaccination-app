@@ -26,6 +26,7 @@ export const baseConfig = {
     categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_AGE_GROUP",
     categoryComboCodeForAntigenDosesAgeGroup: "RVC_ANTIGEN_DOSE_AGE_GROUP",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
+    dataElementGroupCodeForPopulation: "RVC_POPULATION",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
     legendSetsCode: "RVC_LEGEND_ZERO",
@@ -69,6 +70,7 @@ export interface MetadataConfig extends BaseConfig {
     categoryOptions: CategoryOption[];
     categoryCombos: CategoryCombo[];
     population: {
+        dataElementGroup: DataElementGroup;
         totalPopulationDataElement: DataElement;
         ageDistributionDataElement: DataElement;
         populationByAgeDataElement: DataElement;
@@ -264,6 +266,7 @@ function getAntigens(
 
 function getPopulationMetadata(
     dataElements: DataElement[],
+    dataElementGroups: DataElementGroup[],
     categories: Category[]
 ): MetadataConfig["population"] {
     const codes = [
@@ -281,11 +284,17 @@ function getPopulationMetadata(
     const ageGroupCategory = _(categories)
         .keyBy("code")
         .getOrFail(baseConfig.categoryCodeForAgeGroup);
+
+    const populationGroup = _(dataElementGroups)
+        .keyBy("code")
+        .getOrFail(baseConfig.dataElementGroupCodeForPopulation);
+
     return {
         totalPopulationDataElement,
         ageDistributionDataElement,
         populationByAgeDataElement,
         ageGroupCategory,
+        dataElementGroup: populationGroup,
     };
 }
 
@@ -372,7 +381,11 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
             metadata.categories,
             metadata.categoryOptionGroups
         ),
-        population: getPopulationMetadata(metadata.dataElements, metadata.categories),
+        population: getPopulationMetadata(
+            metadata.dataElements,
+            metadata.dataElementGroups,
+            metadata.categories
+        ),
         userRoles: metadata.userRoles,
         legendSets: metadata.legendSets,
         indicators: metadata.indicators,

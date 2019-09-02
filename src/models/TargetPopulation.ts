@@ -1,5 +1,6 @@
 import _ from "lodash";
 const fp = require("lodash/fp");
+import moment from "moment";
 
 import DbD2 from "./db-d2";
 import { MetadataConfig } from "./config";
@@ -8,6 +9,9 @@ import { OrganisationUnit, OrganisationUnitPathOnly, OrganisationUnitLevel } fro
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import { sortAgeGroups } from "../utils/age-groups";
 import Campaign from "./campaign";
+import { getDaysRange } from "../utils/date";
+
+const dailyPeriodFormat = "YYYYMMDD";
 
 const levelsConfig = {
     areaLevel: 4,
@@ -232,9 +236,34 @@ export class TargetPopulation {
         return this.data.ageDistributionByOrgUnit;
     }
 
-    public async getDataValues(period: string): Promise<DataValue[]> {
-        const { config } = this;
+    public async areDataValuesUpTodate(): Promise<boolean> {
+        const { config, campaign } = this;
+        if (!campaign.id) return false;
+
+        // getDataValues() will only succeed if all required fields are present
+        const expectedDataValues = await this.getDataValues().catch(_err => [] as DataValue[]);
+
+        const actualDataValues = await this.db.getDataValues({
+            dataElementGroup: [config.population.dataElementGroup.id],
+            orgUnit: campaign.organisationUnits.map(ou => ou.id),
+            startDate: campaign.startDate || undefined,
+            endDate: campaign.endDate || undefined,
+        });
+
+        return _(expectedDataValues)
+            .differenceWith(actualDataValues, (e, a) => _.isEqual(e, _.pick(a, _.keys(e))))
+            .isEmpty();
+    }
+
+    public async getDataValues(): Promise<DataValue[]> {
+        const { config, campaign } = this;
+        const { antigensDisaggregation } = this.data;
         const { cocIdByName } = await this.campaign.antigensDisaggregation.getCocMetadata(this.db);
+        const startPeriod = moment(campaign.startDate || new Date()).format(dailyPeriodFormat);
+        const daysRange = getDaysRange(
+            moment(campaign.startDate || undefined),
+            moment(campaign.endDate || undefined)
+        );
 
         const dataValues = _.flatMap(this.data.populationItems, targetPopulationItem => {
             const totalPopulation = get(
@@ -246,38 +275,55 @@ export class TargetPopulation {
                 ? []
                 : [
                       {
-                          period,
+                          period: startPeriod,
                           orgUnit: targetPopulationItem.populationTotal.organisationUnit.id,
                           dataElement: config.population.totalPopulationDataElement.id,
                           value: newValue.toString(),
                       },
                   ];
+
             const finalDistribution = this.getFinalDistribution(targetPopulationItem);
 
-            const populationByAgeDataValues = _(finalDistribution)
-                .flatMap((ageGroupPer_, ageGroup) => {
-                    const ageGroupPer = get(ageGroupPer_, `Value not found for ${ageGroup}`);
+            const populationByAgeDataValues = _.flatMap(config.antigens, antigen => {
+                const ageGroupsForAntigen = _(antigen.ageGroups)
+                    .flatten()
+                    .flatten()
+                    .uniq()
+                    .value();
+                const antigenDisaggregation = antigensDisaggregation.find(
+                    disaggregation => disaggregation.antigen.id == antigen.id
+                );
+                return _.flatMap(ageGroupsForAntigen, ageGroup => {
+                    return _.flatMap(antigen.doses, dose => {
+                        const cocName = [antigen.name, dose.name, ageGroup].join(", ");
 
-                    return _(this.data.antigensDisaggregation)
-                        .filter(antigenInfo => _(antigenInfo.ageGroups).includes(ageGroup))
-                        .flatMap(({ antigen }) =>
-                            antigen.doses.map(dose => {
-                                const cocName = [antigen.name, dose.name, ageGroup].join(", ");
-                                const populationForAgeRange = (totalPopulation * ageGroupPer) / 100;
+                        const ageGroupInPopulation =
+                            antigenDisaggregation &&
+                            _(antigenDisaggregation.ageGroups).includes(ageGroup);
 
-                                return {
-                                    period,
-                                    orgUnit: targetPopulationItem.organisationUnit.id,
-                                    dataElement: config.population.populationByAgeDataElement.id,
-                                    categoryOptionCombo: _(cocIdByName).getOrFail(cocName),
-                                    value: populationForAgeRange.toFixed(2),
-                                };
-                            })
-                        )
-                        .compact()
-                        .value();
-                })
-                .value();
+                        let populationForAgeRange: number;
+                        if (ageGroupInPopulation) {
+                            const percentageForAgeRange = get(
+                                _(finalDistribution).getOrFail(ageGroup),
+                                `Value for age range not found: ${ageGroup}`
+                            );
+                            populationForAgeRange = (totalPopulation * percentageForAgeRange) / 100;
+                        } else {
+                            populationForAgeRange = 0;
+                        }
+
+                        return daysRange.map(day => {
+                            return {
+                                period: day.format(dailyPeriodFormat),
+                                orgUnit: targetPopulationItem.organisationUnit.id,
+                                dataElement: config.population.populationByAgeDataElement.id,
+                                categoryOptionCombo: _(cocIdByName).getOrFail(cocName),
+                                value: populationForAgeRange.toFixed(2),
+                            };
+                        });
+                    });
+                });
+            });
 
             const { ageGroups, ageDistributionByOrgUnit } = this.data;
             const ageDistributionDataValues = _.flatMap(
@@ -289,7 +335,7 @@ export class TargetPopulation {
                             const value = _(ageDistributionByOrgUnit).getOrFail(ouId)[ageGroup];
                             return value
                                 ? {
-                                      period,
+                                      period: startPeriod,
                                       orgUnit: ouId,
                                       dataElement: config.population.ageDistributionDataElement.id,
                                       categoryOptionCombo: _(cocIdByName).getOrFail(ageGroup),
