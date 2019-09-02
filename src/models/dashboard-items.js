@@ -67,8 +67,9 @@ export const dashboardItemsConfig = {
             area: true,
             title: ns => i18n.t("Campaign Coverage by area and dose (do not edit this table)", ns),
             appendCode: "coverageByAreaTable",
+            showColumnTotals: false,
             showRowSubTotals: true,
-            showColumnSubTotals: true,
+            showColumnSubTotals: false,
         },
     },
     tablesByAntigen: {
@@ -81,8 +82,9 @@ export const dashboardItemsConfig = {
             title: ns =>
                 i18n.t("Cumulative Campaign Coverage by area (do not edit this table)", ns),
             appendCode: "coverageByAreaTotal",
-            showRowSubTotals: true,
-            showColumnSubTotals: true,
+            showRowSubTotals: false,
+            showColumnSubTotals: false,
+            showColumnTotals: false,
         },
         qsPerAntigen: {
             elements: ["RVC_DILUTION_SYRINGES_RATIO", "RVC_CAMPAIGN_NEEDLES_RATIO"],
@@ -122,6 +124,8 @@ export const dashboardItemsConfig = {
             title: ns => i18n.t("Campaign Coverage by day (do not edit this table)", ns),
             appendCode: "coverageByPeriod",
             showRowSubTotals: false,
+            showColumnTotals: false,
+            showColumnTotals: false,
         },
     },
 };
@@ -226,6 +230,7 @@ function getTables({
                 disaggregations: getDisaggregations(c, disaggregationMetadata, antigen),
                 showRowSubTotals: c.showRowSubTotals,
                 showColumnSubTotals: !!c.showColumnSubTotals,
+                showColumnTotals: !!c.showColumnTotals,
                 dose: doseMetadata,
             });
         })
@@ -624,6 +629,7 @@ const tableConstructor = ({
     legendId,
     teamRowRawDimension = null,
     showRowSubTotals = true,
+    showColumnTotals = true,
     showColumnSubTotals = false,
     dose = null,
 }) => {
@@ -699,7 +705,7 @@ const tableConstructor = ({
         rowSubTotals: showRowSubTotals && !_.isEmpty(disaggregations),
         displayDensity: "NORMAL",
         completedOnly: false,
-        colTotals: true,
+        colTotals: showColumnTotals,
         showDimensionLabels: true,
         sortOrder: 0,
         fontSize: "NORMAL",
