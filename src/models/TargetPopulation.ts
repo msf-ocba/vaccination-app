@@ -240,8 +240,13 @@ export class TargetPopulation {
         const { config, campaign } = this;
         if (!campaign.id) return false;
 
-        // getDataValues() will only succeed if all required fields are present
-        const expectedDataValues = await this.getDataValues().catch(_err => [] as DataValue[]);
+        const isPopulationByAge = (dataValue: DataValue) =>
+            dataValue.dataElement === config.population.populationByAgeDataElement.id;
+
+        // getDataValues() will only succeed if all required fields are present, fallback to empty
+        const expectedDataValues = await this.getDataValues()
+            .catch(_err => [] as DataValue[])
+            .then(dataValues => dataValues.filter(isPopulationByAge));
 
         const actualDataValues = await this.db.getDataValues({
             dataElementGroup: [config.population.dataElementGroup.id],
@@ -355,7 +360,7 @@ export class TargetPopulation {
             );
         });
 
-        return dataValues;
+        return _.uniqWith(dataValues, _.isEqual);
     }
 
     private async getTotalPopulation(
