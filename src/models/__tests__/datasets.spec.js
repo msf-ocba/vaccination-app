@@ -4,14 +4,15 @@ import metadataConfig from "./config-mock";
 
 const expectedFields = [
     "id",
+    "name",
     "displayName",
     "displayDescription",
     "created",
     "lastUpdated",
     "publicAccess",
     "user",
-    "dataInputPeriods~paging=(1;1)",
     "href",
+    "dataInputPeriods[period[id]]",
     "attributeValues[value, attribute[code]]",
     "organisationUnits[id,path]",
 ];

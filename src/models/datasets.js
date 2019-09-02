@@ -1,18 +1,20 @@
 import _ from "lodash";
+import moment from "moment";
 import { getCurrentUserDataViewOrganisationUnits } from "../utils/dhis2";
 
 const requiredFields = ["attributeValues[value, attribute[code]]", "organisationUnits[id,path]"];
 
 const defaultListFields = [
     "id",
+    "name",
     "displayName",
     "displayDescription",
     "created",
     "lastUpdated",
     "publicAccess",
     "user",
-    "dataInputPeriods~paging=(1;1)",
     "href",
+    "dataInputPeriods[period[id]]",
 ];
 
 /* Return object with pager and array of datasets.
@@ -46,35 +48,40 @@ export async function list(config, d2, filters, pagination) {
 
     const dataSetsBase = await d2.models.dataSets
         .list(_.pickBy(listOptions, x => _.isNumber(x) || !_.isEmpty(x)))
-        .then(c => c.toArray());
+        .then(collection =>
+            collection.toArray().map(dataSet => ({
+                ...dataSet,
+                organisationUnits: dataSet.organisationUnits.toArray(),
+            }))
+        );
 
-    const dataSetsFilterd = dataSetsBase.filter(
+    const dataSetsFiltered = dataSetsBase.filter(
         dataSet => isDataSetCreatedByApp(dataSet, config) && isDataSetInUserOrgUnits(d2, dataSet)
     );
 
-    const dataSetsPaginated = _(dataSetsFilterd)
+    const dataSetsPaginated = _(dataSetsFiltered)
         .drop(pageSize * (page - 1))
         .take(pageSize)
         .value();
 
     return {
-        pager: { page, total: dataSetsFilterd.length },
+        pager: { page, total: dataSetsFiltered.length },
         objects: dataSetsPaginated,
     };
 }
 
 function isDataSetCreatedByApp(dataSet, config) {
-    return dataSet.attributeValues.every(
-        attributeValue =>
-            attributeValue.attribute.code !== config.attributeCodeForApp ||
-            attributeValue.value === "true"
-    );
+    const attributeValueForApp = _(dataSet.attributeValues || [])
+        .keyBy(attributeValue => (attributeValue.attribute ? attributeValue.attribute.code : null))
+        .get(config.attributeCodeForApp);
+
+    return attributeValueForApp && attributeValueForApp.value === "true";
 }
 
 function isDataSetInUserOrgUnits(d2, dataSet) {
     const userOrgUnits = getCurrentUserDataViewOrganisationUnits(d2);
 
-    return dataSet.organisationUnits.toArray().every(dataSetOrgUnit =>
+    return dataSet.organisationUnits.every(dataSetOrgUnit =>
         _(dataSetOrgUnit.path.split("/"))
             .intersection(userOrgUnits)
             .isNotEmpty()
@@ -89,11 +96,24 @@ export async function getOrganisationUnitsById(id, d2) {
     return _(organisationUnits).isEmpty() ? undefined : organisationUnits[0].id;
 }
 
-export async function getDataInputPeriodsById(id, d2) {
+export async function getPeriodDatesFromDataSetId(id, d2) {
     const fields = "dataInputPeriods";
     const dataSet = await d2.models.dataSets.get(id, { fields }).catch(() => undefined);
+    return dataSet ? getPeriodDatesFromDataSet(dataSet) : null;
+}
+
+export function getPeriodDatesFromDataSet(dataSet) {
     const dataInputPeriods = dataSet.dataInputPeriods;
-    return _(dataInputPeriods).isEmpty() ? undefined : dataInputPeriods[0];
+
+    if (_(dataInputPeriods).isEmpty()) {
+        return null;
+    } else {
+        const periodIdToDate = periodId => moment(periodId, "YYYYMMDD");
+        const periods = dataInputPeriods.map(dip => dip.period.id);
+        const startDate = periodIdToDate(_.min(periods));
+        const endDate = periodIdToDate(_.max(periods));
+        return { startDate, endDate };
+    }
 }
 
 export async function getDatasetById(id, d2) {

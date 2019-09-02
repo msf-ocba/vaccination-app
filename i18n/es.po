@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-08-23T08:02:46.441Z\n"
+"POT-Creation-Date: 2019-08-28T12:22:48.026Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -260,6 +260,8 @@ msgid ""
 "This campaign has data values. Editing a campaign with data values can "
 "create several problems, please contact the administrator."
 msgstr ""
+"Esta campaña tiene datos. Editar una campaña con datos puede generar "
+"problemas, por favor contacte con su administrator."
 
 msgid "Edit vaccination campaign"
 msgstr "Editar campaña"
@@ -380,6 +382,22 @@ msgstr ""
 "¿Esta seguro que quiere salir del Creador de Campañas? Todos sus cambios se "
 "perderán"
 
+msgid "update"
+msgstr "edición"
+
+msgid "delete"
+msgstr "eliminación"
+
+msgid "[RVC] User {{userName}} modified a campaign with data ({{action}})"
+msgstr ""
+"[RVC] El usuario {{userName}} modificó una campaña con datos ({{action}})"
+
+msgid "User"
+msgstr "Usuario"
+
+msgid "Action"
+msgstr "Acción"
+
 msgid "Subtotal"
 msgstr "Subtotal"
 
@@ -420,8 +438,11 @@ msgid "AEFI and AEB indicators"
 msgstr ""
 "Exposición Accidental a Sangre y Efecto Adverso Posterior a la Vacunación"
 
-msgid "Campaign Coverage by area (do not edit this table)"
-msgstr "Cobertura Vacunal por Área de Salud (no edite esta tabla)"
+msgid "Campaign Coverage by area and dose (do not edit this table)"
+msgstr "Cobertura Vacunal por Área de Salud y Dosis (no edite esta tabla)"
+
+msgid "Cumulative Campaign Coverage by area (do not edit this table)"
+msgstr "Cobertura Vacunal Acumulada por Área de Salud (no edite esta tabla)"
 
 msgid "QS Indicators"
 msgstr "Indicadores de Calidad y Seguridad"
@@ -478,8 +499,8 @@ msgstr ""
 "La unidad organizativa {{organisationUnit}} tiene un valor total inválido "
 "para el antigeno {{antigen}} ({{ageGroups}}) -> {{- value}}"
 
+msgid "Number of teams must smaller than {{value}}"
+msgstr "El número de equipos debe ser menor que {{value}}"
+
 msgid "There already exists a campaign with the same name"
 msgstr "Ya existe una campaña con el mismo nombre"
-
-#~ msgid "Only my campaigns"
-#~ msgstr "Solo mis campañas"

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-08-23T08:02:46.441Z\n"
-"PO-Revision-Date: 2019-08-23T08:02:46.441Z\n"
+"POT-Creation-Date: 2019-08-28T12:22:48.026Z\n"
+"PO-Revision-Date: 2019-08-28T12:22:48.026Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -319,6 +319,21 @@ msgid ""
 "be lost. Are you sure you want to proceed?"
 msgstr ""
 
+msgid "update"
+msgstr ""
+
+msgid "delete"
+msgstr ""
+
+msgid "[RVC] User {{userName}} modified a campaign with data ({{action}})"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
 msgid "Subtotal"
 msgstr ""
 
@@ -354,7 +369,10 @@ msgstr ""
 msgid "AEFI and AEB indicators"
 msgstr ""
 
-msgid "Campaign Coverage by area (do not edit this table)"
+msgid "Campaign Coverage by area and dose (do not edit this table)"
+msgstr ""
+
+msgid "Cumulative Campaign Coverage by area (do not edit this table)"
 msgstr ""
 
 msgid "QS Indicators"
@@ -403,6 +421,9 @@ msgstr ""
 msgid ""
 "Org unit {{organisationUnit}} has an invalid total value for antigen "
 "{{antigen}} ({{ageGroups}}) -> {{- value}}"
+msgstr ""
+
+msgid "Number of teams must smaller than {{value}}"
 msgstr ""
 
 msgid "There already exists a campaign with the same name"

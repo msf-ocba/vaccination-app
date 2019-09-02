@@ -107,10 +107,12 @@ export default class CampaignDb {
             categoryCombo: { id: dataElement.categoryCombo.id },
         }));
 
+        const closingDate = endDate.clone().add(metadataConfig.expirationDays, "days");
+
         const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
-            openingDate: toISOStringNoTZ(startDate),
-            closingDate: toISOStringNoTZ(endDate),
             period: { id: date.format("YYYYMMDD") },
+            openingDate: toISOStringNoTZ(startDate),
+            closingDate: toISOStringNoTZ(closingDate),
         }));
 
         const existingDataSet = await this.getExistingDataSet();

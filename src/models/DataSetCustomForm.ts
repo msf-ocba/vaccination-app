@@ -7,6 +7,9 @@ import { AntigenDisaggregationEnabled, CocMetadata } from "./AntigensDisaggregat
 import i18n from "../locales";
 import "../utils/lodash-mixins";
 
+const contentScript = require("!raw-loader!./custom-form-resources/content-script.js").default;
+const cssContents = require("!raw-loader!./custom-form-resources/form.css").default;
+
 type Children = string[];
 type Disaggregations = AntigenDisaggregationEnabled;
 type DataElement = Disaggregations[0]["dataElements"][0];
@@ -519,6 +522,14 @@ export class DataSetCustomForm {
     }
 
     generate(): string {
+        const options = {
+            translations: this.translations,
+            dataElements: _.fromPairs(this.config.dataElements.map(de => [de.id, de.code])),
+        };
+        const toJSON = (obj: any) => JSON.stringify(obj, null, 2);
+        // Remove the empty export (it's required by the linter, but does not work on a browser)
+        const contentScriptClean = contentScript.replace("export {}", "");
+
         return h(
             "div",
             { id: "tabs", class: "ui-tabs ui-corner-all ui-widget ui-widget-content" },
@@ -528,301 +539,9 @@ export class DataSetCustomForm {
                     this.renderAntigenTab(disaggregation)
                 ),
                 this.renderGeneralIndicatorsTab(this.disaggregations),
-                h("style", {}, css),
-                h(
-                    "script",
-                    {},
-                    `var translations = ${JSON.stringify(this.translations, null, 2)};` + script
-                ),
+                h("style", {}, cssContents),
+                h("script", {}, [contentScriptClean, `init(${toJSON(options)})`].join("\n")),
             ]
         );
     }
 }
-
-const script = `
-    var getRealDimensions = function($el_, parent) {
-        var $el = $($el_.get(0));
-
-        if ($el.length == 0) {
-            return {width: 0, height: 0};
-        } else {
-            var $clone = $el.clone()
-                .show()
-                .css('visibility','hidden')
-                .appendTo(parent);
-            var dimensions = {
-                width: $clone.outerWidth(),
-                height: $clone.outerHeight(),
-            };
-            $clone.remove();
-            return dimensions;
-        }
-    }
-
-    var processWideTables = function() {
-        $("#contentDiv").show();
-        const contentWidth = $(".ui-tabs-panel").width();
-        console.log("Content box width:", contentWidth);
-
-        $(".tableGroupWrapper")
-            .get()
-            .forEach(tableGroupWrapper => {
-                const tableGroups = $(tableGroupWrapper)
-                    .find(".tableGroup")
-                    .get();
-
-                if (tableGroups.length <= 1) return;
-
-                /* Show contents temporally so we can get actual rendered width of tables */
-
-                const groups = _.chain(tableGroups)
-                    .map(tableGroup => ({
-                        element: tableGroup,
-                        width: getRealDimensions($(tableGroup).find("table"), $("#contentDiv")).width,
-                    }))
-                    .sortBy(group => group.width)
-                    .reverse()
-                    .value();
-
-                console.log("Tables width: " +
-                    groups.map((group, idx) => "idx=" + idx + " width=" + group.width).join(" - "));
-
-                const groupToShow = groups.find(group => group.width <= contentWidth) || groups[0];
-
-                tableGroups.forEach(tableGroup => {
-                    if (tableGroup !== groupToShow.element) {
-                        $(tableGroup).remove();
-                    }
-                });
-            });
-        $("#contentDiv").hide();
-    };
-
-    var highlightDataElementRows = function() {
-        var setClass = function(ev, className, isActive) {
-            var tr = $(ev.currentTarget);
-            var de_class = (tr.attr("class") || "")
-                .split(" ")
-                .filter(cl => cl.startsWith("de-"))[0];
-            if (de_class) {
-                var deId = de_class.split("-")[1];
-                var el = $(".de-" + deId);
-                el.toggleClass(className, isActive);
-                if (tr.hasClass("secondary")) {
-                    var opacity = isActive ? 1 : 0;
-                    tr.find(".data-element")
-                        .clearQueue()
-                        .delay(500)
-                        .animate({ opacity: opacity }, 100);
-                }
-            }
-        };
-
-        $("tr.derow")
-            .mouseover(ev => setClass(ev, "hover", true))
-            .mouseout(ev => setClass(ev, "hover", false))
-            .focusin(ev => setClass(ev, "focus", true))
-            .focusout(ev => setClass(ev, "focus", false));
-    };
-
-    var translate = function() {
-        const userSettings = dhis2.de.storageManager.getUserSettings();
-        const currentLocale = userSettings ? userSettings.keyDbLocale : null;
-
-        if (!currentLocale) return;
-
-        $("*[data-translate='']").get().forEach(el_ => {
-            const el = $(el_)
-            const text = el.text();
-            const translation = translations[text];
-            if (translation) {
-                const text2 = translation[currentLocale] || translation["en"] || text;
-                el.text(text2);
-            }
-        });
-    };
-
-    var applyChangesToForm = function() {
-        highlightDataElementRows();
-        processWideTables();
-        translate();
-        $("#tabs").tabs();
-        // Set full width to data elements columns after table width has been calculated
-        $(".header-first-column").addClass("full-width");
-    };
-
-    var init = function() {
-        $(document).on("dhis2.de.event.formLoaded", applyChangesToForm);
-    }
-
-    init();
-`;
-
-const css = `
-    .formSection  {
-        border: 1px solid #cacaca;
-        border-radius: 3px;
-        margin: 0;
-        padding: 1px 4px 1px 4px ;
-    }
-
-    .formSection h3 {
-        color: #000;
-        font-size: 16px;
-        text-align: left;
-        font-weight: bold;
-        padding: 0;
-    }
-
-    .formSection td {
-        text-align: center;
-        min-width: 75px;
-        padding: 1;
-    }
-
-    .formSection th {
-        font-weight: normal;
-        font-size: 14px;
-        text-align: center;
-        white-space: normal !important;
-        max-width: 75px;
-        background-color: #eaf7fb;
-        max-width: 200px;
-    }
-
-    .entryfield, .total-cell, .indicator {
-        max-width: 75px;
-    }
-
-    .entryarea {
-        max-width: 300px;
-    }
-
-    #contentDiv input.entryfield {
-        width: 70px;
-        height: 18px;
-        padding: 2px;
-    }
-
-    #contentDiv input.dataelementtotal {
-        width: 70px;
-        height: 16px;
-        padding: 2px;
-    }
-
-    #contentDiv input.indicator {
-        width: 70px;
-        height: 18px;
-        padding: 2px;
-    }
-
-    #contentDiv tr {
-        border-color: transparent;
-        transition: background-color 500ms linear;
-    }
-
-    #contentDiv tr.derow {
-        background-color: #FFF;
-    }
-
-    #contentDiv tr.hover, #contentDiv tr:hover {
-        background-color: #e5e5e5;
-    }
-
-    #contentDiv tr.focus {
-        background-color: #e5f5e5;
-    }
-
-    #contentDiv th {
-        border-style: hidden !important;
-    }
-
-    #contentDiv td {
-        padding: 2px !important;
-        height: 16px;
-        text-align: center;
-        border-style: none !important;
-    }
-
-    #contentDiv td.data-element {
-        text-align: left;
-        white-space: normal;
-        max-width: 33%;
-    }
-
-    #contentDiv tr.secondary td.data-element {
-        font-style: italic;
-        opacity: 0;
-    }
-
-    #contentDiv .header-first-column {
-        background-color: #e0e0e0;
-        text-align: left;
-        border-bottom-style: hidden;
-        border-left-style: hidden;
-        border-top-style: hidden;
-        white-space: nowrap;
-        background-color: #fff;
-        padding: 2px !important;
-    }
-
-    #contentDiv .header-first-column.full-width {
-        width: 100%;
-    }
-
-    #contentDiv th.data-header {
-        text-align: center;
-        border-bottom: 1px solid #ddd !important;
-        background-color: #eaf7fb;
-        white-space: nowrap;
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-        padding-left: 5px;
-        padding-right: 5px;
-        word-wrap: break-word;
-    }
-
-    #contentDiv .panel-default > .panel-heading {
-        background-color: #3c3c3c !important;
-        border-color: #3c3c3c;
-        padding: 7px;
-        margin-bottom: 5px;
-        cursor: pointer;
-    }
-
-    .ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited {
-        color: #053e21;
-    }
-
-    .ui-widget-header {
-        background: none;
-        background-color: #2f3867;
-    }
-
-    #contentDiv .dataValuesTable {
-        margin-bottom: 0px !important;
-        margin-top: 5px;
-    }
-
-    .page th {
-        text-align: left;
-        color: #39547d;
-        padding: 3px 0 3px 1px;
-        font-size: 13px;
-        font-weight: bold;
-        border-collapse: collapse;
-        border-bottom: 1px solid #cad5e5;
-        min-height: 28px;
-    }
-
-    .dataelement-group {
-        margin-bottom: 20px
-    }
-
-    .dataelement-group .title {
-        color: #544;
-        font-size: 1.2em;
-        font-weight: bold;
-        margin: 5px 0px 5px 0px;
-    }
-`;
