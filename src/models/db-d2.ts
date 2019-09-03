@@ -450,12 +450,16 @@ export default class DbD2 {
     }
 
     public async getDataValues(params: GetDataValuesParams): Promise<DataValue[]> {
-        const parseDate = (date: Date | undefined) =>
-            date ? moment(date).toISOString() : undefined;
+        const parseDate = (date: Date | undefined, daysOffset: number = 0) =>
+            date
+                ? moment(date)
+                      .add(daysOffset, "days")
+                      .format("YYYY-MM-DD")
+                : undefined;
         const apiParams = {
             ...params,
             startDate: parseDate(params.startDate),
-            endDate: parseDate(params.endDate),
+            endDate: parseDate(params.endDate, 1),
         };
         const apiParamsClean = _.omitBy(apiParams, _.isNil);
         const response = (await this.api.get("/dataValueSets", apiParamsClean)) as {
