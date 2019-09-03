@@ -230,7 +230,7 @@ function getTables({
                 disaggregations: getDisaggregations(c, disaggregationMetadata, antigen),
                 showRowSubTotals: c.showRowSubTotals,
                 showColumnSubTotals: !!c.showColumnSubTotals,
-                showColumnTotals: !!c.showColumnTotals,
+                showColumnTotals: _.isUndefined(c.showColumnTotals) ? true : c.showColumnTotals,
                 dose: doseMetadata,
             });
         })
