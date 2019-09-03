@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-09-02T11:43:57.305Z\n"
-"PO-Revision-Date: 2019-09-02T11:43:57.305Z\n"
+"POT-Creation-Date: 2019-09-03T09:45:16.872Z\n"
+"PO-Revision-Date: 2019-09-03T09:45:16.872Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -387,6 +387,9 @@ msgid "Vaccines Per Area"
 msgstr ""
 
 msgid "Vaccines Per Team"
+msgstr ""
+
+msgid "Campaign Coverage by age range and dose (do not edit this table)"
 msgstr ""
 
 msgid "Campaign Coverage by day (do not edit this table)"

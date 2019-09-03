@@ -113,6 +113,18 @@ export const dashboardItemsConfig = {
             title: ns => i18n.t("Vaccines Per Team", ns),
             appendCode: "vaccinesPerDateTeam",
         },
+        coverageByCampaignAgeRangeAndDose: {
+            elements: ["RVC_DOSES_ADMINISTERED", "RVC_CAMPAIGN_COVERAGE"],
+            rows: [],
+            filterDataBy: ["pe", "ou"],
+            disaggregatedBy: ["ageGroup", "doses"],
+            area: false,
+            title: ns =>
+                i18n.t("Campaign Coverage by age range and dose (do not edit this table)", ns),
+            appendCode: "coverageByCampaignAgeRangeAndDose",
+            showRowSubTotals: false,
+            showColumnTotals: false,
+        },
     },
     tablesByAntigenAndSite: {
         coverageByPeriod: {
@@ -124,7 +136,6 @@ export const dashboardItemsConfig = {
             title: ns => i18n.t("Campaign Coverage by day (do not edit this table)", ns),
             appendCode: "coverageByPeriod",
             showRowSubTotals: false,
-            showColumnTotals: false,
             showColumnTotals: false,
         },
     },
