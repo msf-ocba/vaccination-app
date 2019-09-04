@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-08-28T12:22:48.026Z\n"
-"PO-Revision-Date: 2019-08-28T12:22:48.026Z\n"
+"POT-Creation-Date: 2019-09-03T09:45:16.872Z\n"
+"PO-Revision-Date: 2019-09-03T09:45:16.872Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -124,6 +124,11 @@ msgid ""
 "more updated or reliable. You may overwrite any existing data in HMIS, but "
 "please note that any changes you make in this step will only be applied "
 "once you run analytics."
+msgstr ""
+
+msgid ""
+"This is the last available population data. Modify it for your campaign and "
+"remember to press button SAVE"
 msgstr ""
 
 msgid "Loading..."
@@ -299,7 +304,10 @@ msgstr ""
 msgid "Population distribution (%)"
 msgstr ""
 
-msgid "Campaign Population Distribution"
+msgid "Health Area"
+msgstr ""
+
+msgid "Health Sites"
 msgstr ""
 
 msgid "Total population"
@@ -379,6 +387,9 @@ msgid "Vaccines Per Area"
 msgstr ""
 
 msgid "Vaccines Per Team"
+msgstr ""
+
+msgid "Campaign Coverage by age range and dose (do not edit this table)"
 msgstr ""
 
 msgid "Campaign Coverage by day (do not edit this table)"

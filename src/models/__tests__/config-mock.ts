@@ -115,6 +115,12 @@ const metadataConfig: MetadataConfig = {
             dataDimensionType: "DISAGGREGATION",
             dataDimension: true,
         },
+        dataElementGroup: {
+            code: "RVC_POPULATION",
+            id: "mqamM2sRSrR",
+            displayName: "RVC - Population",
+            dataElements: [],
+        },
     },
     dataElements: [
         {

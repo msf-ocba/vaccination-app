@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-08-28T12:22:48.026Z\n"
+"POT-Creation-Date: 2019-09-03T09:45:16.872Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -143,6 +143,13 @@ msgstr ""
 "actor local que proporcione informacion mas fiable y actualizada. Puede "
 "sobre-escribir cualquier informacion existente en HMIS aunque recuerde que "
 "estos cambios no estaran disponibles hasta que se ejecuten las analíticas."
+
+msgid ""
+"This is the last available population data. Modify it for your campaign and "
+"remember to press button SAVE"
+msgstr ""
+"Esta es la última información de población disponible. Modífiquela para su "
+"campaña y recuerde presionar el botón GUARDAR"
 
 msgid "Loading..."
 msgstr "Cargando..."
@@ -360,8 +367,11 @@ msgstr "Cancelar"
 msgid "Population distribution (%)"
 msgstr "Distribución por edad (%)"
 
-msgid "Campaign Population Distribution"
-msgstr "Distribución de población"
+msgid "Health Area"
+msgstr "Área de salud"
+
+msgid "Health Sites"
+msgstr "Centros de salud"
 
 msgid "Total population"
 msgstr "Población total"
@@ -449,6 +459,9 @@ msgstr "Vacunación por área"
 
 msgid "Vaccines Per Team"
 msgstr "Vacunación por equipo"
+
+msgid "Campaign Coverage by age range and dose (do not edit this table)"
+msgstr "Cobertura Vacunal por rango de edad y dosis (no edite esta tabla)"
 
 msgid "Campaign Coverage by day (do not edit this table)"
 msgstr "Cobertura Vacunal por día (no edite esta tabla)"

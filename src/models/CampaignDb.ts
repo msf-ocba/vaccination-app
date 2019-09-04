@@ -167,8 +167,7 @@ export default class CampaignDb {
         if (!targetPopulation) {
             return { status: false, error: "There is no target population in campaign" };
         } else {
-            const period = moment(campaign.startDate || new Date()).format("YYYYMMDD");
-            const dataValues = await targetPopulation.getDataValues(period);
+            const dataValues = await targetPopulation.getDataValues();
             const populationResult = await campaign.db.postDataValues(dataValues);
 
             if (!populationResult.status) {

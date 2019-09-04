@@ -67,8 +67,9 @@ export const dashboardItemsConfig = {
             area: true,
             title: ns => i18n.t("Campaign Coverage by area and dose (do not edit this table)", ns),
             appendCode: "coverageByAreaTable",
+            showColumnTotals: false,
             showRowSubTotals: true,
-            showColumnSubTotals: true,
+            showColumnSubTotals: false,
         },
     },
     tablesByAntigen: {
@@ -81,8 +82,9 @@ export const dashboardItemsConfig = {
             title: ns =>
                 i18n.t("Cumulative Campaign Coverage by area (do not edit this table)", ns),
             appendCode: "coverageByAreaTotal",
-            showRowSubTotals: true,
-            showColumnSubTotals: true,
+            showRowSubTotals: false,
+            showColumnSubTotals: false,
+            showColumnTotals: false,
         },
         qsPerAntigen: {
             elements: ["RVC_DILUTION_SYRINGES_RATIO", "RVC_CAMPAIGN_NEEDLES_RATIO"],
@@ -111,6 +113,18 @@ export const dashboardItemsConfig = {
             title: ns => i18n.t("Vaccines Per Team", ns),
             appendCode: "vaccinesPerDateTeam",
         },
+        coverageByCampaignAgeRangeAndDose: {
+            elements: ["RVC_DOSES_ADMINISTERED", "RVC_CAMPAIGN_COVERAGE"],
+            rows: [],
+            filterDataBy: ["pe", "ou"],
+            disaggregatedBy: ["ageGroup", "doses"],
+            area: false,
+            title: ns =>
+                i18n.t("Campaign Coverage by age range and dose (do not edit this table)", ns),
+            appendCode: "coverageByCampaignAgeRangeAndDose",
+            showRowSubTotals: false,
+            showColumnTotals: false,
+        },
     },
     tablesByAntigenAndSite: {
         coverageByPeriod: {
@@ -122,6 +136,7 @@ export const dashboardItemsConfig = {
             title: ns => i18n.t("Campaign Coverage by day (do not edit this table)", ns),
             appendCode: "coverageByPeriod",
             showRowSubTotals: false,
+            showColumnTotals: false,
         },
     },
 };
@@ -226,6 +241,7 @@ function getTables({
                 disaggregations: getDisaggregations(c, disaggregationMetadata, antigen),
                 showRowSubTotals: c.showRowSubTotals,
                 showColumnSubTotals: !!c.showColumnSubTotals,
+                showColumnTotals: _.isUndefined(c.showColumnTotals) ? true : c.showColumnTotals,
                 dose: doseMetadata,
             });
         })
@@ -624,6 +640,7 @@ const tableConstructor = ({
     legendId,
     teamRowRawDimension = null,
     showRowSubTotals = true,
+    showColumnTotals = true,
     showColumnSubTotals = false,
     dose = null,
 }) => {
@@ -693,13 +710,13 @@ const tableConstructor = ({
         legendDisplayStyle: "FILL",
         hideEmptyColumns: false,
         subscribed: false,
-        hideEmptyRows: true,
+        hideEmptyRows: false,
         parentGraphMap: {},
         userOrganisationUnit: false,
         rowSubTotals: showRowSubTotals && !_.isEmpty(disaggregations),
         displayDensity: "NORMAL",
         completedOnly: false,
-        colTotals: true,
+        colTotals: showColumnTotals,
         showDimensionLabels: true,
         sortOrder: 0,
         fontSize: "NORMAL",
