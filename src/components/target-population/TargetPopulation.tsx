@@ -109,7 +109,9 @@ class TargetPopulationComponent extends React.Component<
                     <ExpansionPanel key={area.id} defaultExpanded={true} className={classes.wrap}>
                         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                             <Typography className={classes.expansionPanelHeading}>
-                                {i18n.t("Health Area")}: {getFullOrgUnitName(area)} [{items.length}]
+                                {i18n.t("Health Area")}
+                                <br />
+                                {getFullOrgUnitName(area)} [{items.length}]
                             </Typography>
                         </ExpansionPanelSummary>
 
@@ -194,7 +196,7 @@ const styles = (theme: Theme) =>
             flexBasis: "100%",
             flexShrink: 0,
             fontSize: "1.15em",
-            fontWeight: 500,
+            fontWeight: "bold",
         },
         panelDetails: {
             display: "block",
