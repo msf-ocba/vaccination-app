@@ -244,9 +244,7 @@ export class TargetPopulation {
             dataValue.dataElement === config.population.populationByAgeDataElement.id;
 
         // getDataValues() will only succeed if all required fields are present, fallback to empty
-        const expectedDataValues = await this.getDataValues()
-            .catch(_err => [] as DataValue[])
-            .then(dataValues => dataValues.filter(isPopulationByAge));
+        const expectedDataValues = await this.getDataValues().catch(_err => [] as DataValue[]);
 
         const actualDataValues = await this.db.getDataValues({
             dataElementGroup: [config.population.dataElementGroup.id],
@@ -255,9 +253,17 @@ export class TargetPopulation {
             endDate: campaign.endDate || undefined,
         });
 
-        return _(expectedDataValues)
-            .differenceWith(actualDataValues, (e, a) => _.isEqual(e, _.pick(a, _.keys(e))))
-            .isEmpty();
+        const filterAndSortDataValues = (dataValues: DataValue[]) =>
+            _(dataValues)
+                .filter(isPopulationByAge)
+                .map(dv => [dv.period, dv.orgUnit, dv.categoryOptionCombo, dv.value].join("-"))
+                .sortBy()
+                .value();
+
+        const expected = filterAndSortDataValues(expectedDataValues);
+        const actual = filterAndSortDataValues(actualDataValues);
+
+        return _.isEqual(expected, actual);
     }
 
     public async getDataValues(): Promise<DataValue[]> {
@@ -265,12 +271,14 @@ export class TargetPopulation {
         const { antigensDisaggregation } = this.data;
         const { cocIdByName } = await this.campaign.antigensDisaggregation.getCocMetadata(this.db);
         const startPeriod = moment(campaign.startDate || new Date()).format(dailyPeriodFormat);
-        const daysRange = getDaysRange(
+        const periods = getDaysRange(
             moment(campaign.startDate || undefined),
             moment(campaign.endDate || undefined)
-        );
+        ).map(day => day.format(dailyPeriodFormat));
+        const populationByAgeDataElementId = config.population.populationByAgeDataElement.id;
 
         const dataValues = _.flatMap(this.data.populationItems, targetPopulationItem => {
+            const orgUnitId = targetPopulationItem.organisationUnit.id;
             const totalPopulation = get(
                 targetPopulationItem.populationTotal.value,
                 "No value for total population"
@@ -317,11 +325,11 @@ export class TargetPopulation {
                             populationForAgeRange = 0;
                         }
 
-                        return daysRange.map(day => {
+                        return periods.map(period => {
                             return {
-                                period: day.format(dailyPeriodFormat),
-                                orgUnit: targetPopulationItem.organisationUnit.id,
-                                dataElement: config.population.populationByAgeDataElement.id,
+                                period: period,
+                                orgUnit: orgUnitId,
+                                dataElement: populationByAgeDataElementId,
                                 categoryOptionCombo: _(cocIdByName).getOrFail(cocName),
                                 value: populationForAgeRange.toFixed(2),
                             };
@@ -360,7 +368,7 @@ export class TargetPopulation {
             );
         });
 
-        return _.uniqWith(dataValues, _.isEqual);
+        return dataValues;
     }
 
     private async getTotalPopulation(
