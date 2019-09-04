@@ -710,7 +710,7 @@ const tableConstructor = ({
         legendDisplayStyle: "FILL",
         hideEmptyColumns: false,
         subscribed: false,
-        hideEmptyRows: true,
+        hideEmptyRows: false,
         parentGraphMap: {},
         userOrganisationUnit: false,
         rowSubTotals: showRowSubTotals && !_.isEmpty(disaggregations),
