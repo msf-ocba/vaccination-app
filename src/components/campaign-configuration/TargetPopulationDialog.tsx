@@ -2,6 +2,7 @@ import React from "react";
 import Linkify from "react-linkify";
 import _ from "lodash";
 import { withSnackbar, ConfirmationDialog } from "d2-ui-components";
+import { withStyles } from "@material-ui/core/styles";
 import {
     LinearProgress,
     Dialog,
@@ -9,6 +10,9 @@ import {
     DialogContent,
     DialogActions,
     Button,
+    createStyles,
+    WithStyles,
+    Theme,
 } from "@material-ui/core";
 
 import i18n from "../../locales";
@@ -19,8 +23,8 @@ import Campaign from "../../models/campaign";
 import { MetadataConfig } from "../../models/config";
 import { getValidationMessages } from "../../utils/validations";
 
-interface Props {
-    dataSet: { id: string; displayName: string };
+interface Props extends WithStyles<typeof styles> {
+    dataSet: { id: string };
     config: MetadataConfig;
     onClose: () => void;
     db: DbD2;
@@ -32,6 +36,7 @@ interface State {
     isSaving: boolean;
     changed: boolean;
     confirmClose: boolean;
+    areValuesUpdated: boolean;
 }
 
 class TargetPopulationDialog extends React.Component<Props, State> {
@@ -40,6 +45,7 @@ class TargetPopulationDialog extends React.Component<Props, State> {
         isSaving: false,
         changed: false,
         confirmClose: false,
+        areValuesUpdated: false,
     };
 
     styles = {
@@ -52,7 +58,11 @@ class TargetPopulationDialog extends React.Component<Props, State> {
         try {
             const campaign = await Campaign.get(config, db, dataSet.id);
             const campaignWithTargetPopulation = await campaign.withTargetPopulation();
-            this.setState({ campaign: campaignWithTargetPopulation });
+            const { targetPopulation } = campaignWithTargetPopulation;
+            const areValuesUpdated = targetPopulation
+                ? await targetPopulation.areDataValuesUpTodate()
+                : false;
+            this.setState({ campaign: campaignWithTargetPopulation, areValuesUpdated });
         } catch (err) {
             snackbar.error(i18n.t("Cannot load campaign") + ": " + (err.message || err));
             onClose();
@@ -132,22 +142,33 @@ class TargetPopulationDialog extends React.Component<Props, State> {
     };
 
     public render() {
-        const { dataSet } = this.props;
-        const { campaign, isSaving, confirmClose } = this.state;
+        const { classes } = this.props;
+        const { campaign, isSaving, confirmClose, areValuesUpdated } = this.state;
         const ConfirmationCloseDialog = this.confirmationCloseDialog;
 
         const isReady = campaign && !isSaving;
-        const title = [i18n.t("Set Target Population"), dataSet.displayName].join(" - ");
+        const title = i18n.t("Set Target Population") + ": " + (campaign ? campaign.name : "...");
         const description = i18n.t(
             `Insert the total population for each health site. Insert the age distribution (as a percent) at project level. Only specify the age distribution for health centers where the distribution is different from the general distribution at project level. This data will be used to calculate coverage rates for the campaign. The source of data may be {{- hyperlink}} or you may have access to local estimates based on population surveys through the Ministry of Health or other stakeholders that would be more updated or reliable. You may overwrite any existing data in HMIS, but please note that any changes you make in this step will only be applied once you run analytics.`,
             {
                 hyperlink: "https://hmisocba.msf.es/external-static/Denominators_Tool_OCBA.xlsm",
             }
         );
+        const warning = !areValuesUpdated
+            ? i18n.t(
+                  "This is the last available population data. Modify it for your campaign and remember to press button SAVE"
+              )
+            : null;
 
         return (
             <React.Fragment>
-                <Dialog fullWidth={true} maxWidth={"xl"} open={true} onClose={this.requestClose}>
+                <Dialog
+                    disableBackdropClick={true}
+                    fullWidth={true}
+                    maxWidth={"xl"}
+                    open={true}
+                    onClose={this.requestClose}
+                >
                     <DialogTitle>
                         {title}
                         {!isReady && <LinearProgress style={this.styles.progress} />}
@@ -156,6 +177,7 @@ class TargetPopulationDialog extends React.Component<Props, State> {
                     <DialogContent>
                         {campaign ? (
                             <React.Fragment>
+                                {warning && <div className={classes.warning}>{warning}</div>}
                                 <Linkify>{description}</Linkify>
                                 <TargetPopulation campaign={campaign} onChange={this.onChange} />
                             </React.Fragment>
@@ -180,5 +202,17 @@ class TargetPopulationDialog extends React.Component<Props, State> {
         );
     }
 }
+const styles = (_theme: Theme) =>
+    createStyles({
+        warning: {
+            marginBottom: 15,
+            marginLeft: 3,
+            fontSize: "1.1em",
+            color: "#F00",
+            textAlign: "center",
+            backgroundColor: "#EEE",
+            padding: 20,
+        },
+    });
 
-export default withSnackbar(TargetPopulationDialog);
+export default withSnackbar(withStyles(styles)(TargetPopulationDialog));

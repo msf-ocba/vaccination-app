@@ -18,6 +18,7 @@ import {
 import { sortAgeGroups } from "../utils/age-groups";
 
 export const baseConfig = {
+    expirationDays: 8,
     categoryCodeForAntigens: "RVC_ANTIGEN",
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
     categoryCodeForDoses: "RVC_DOSE",
@@ -25,10 +26,12 @@ export const baseConfig = {
     categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_AGE_GROUP",
     categoryComboCodeForAntigenDosesAgeGroup: "RVC_ANTIGEN_DOSE_AGE_GROUP",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
+    dataElementGroupCodeForPopulation: "RVC_POPULATION",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
     legendSetsCode: "RVC_LEGEND_ZERO",
     attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
+    attributeNameForHideInTallySheet: "hideInTallySheet",
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
@@ -46,6 +49,7 @@ export interface MetadataConfig extends BaseConfig {
     userRoles: NamedObject[];
     attributes: {
         app: Attribute;
+        hideInTallySheet: Attribute;
     };
     organisationUnitLevels: OrganisationUnitLevel[];
     categories: Category[];
@@ -66,6 +70,7 @@ export interface MetadataConfig extends BaseConfig {
     categoryOptions: CategoryOption[];
     categoryCombos: CategoryCombo[];
     population: {
+        dataElementGroup: DataElementGroup;
         totalPopulationDataElement: DataElement;
         ageDistributionDataElement: DataElement;
         populationByAgeDataElement: DataElement;
@@ -261,6 +266,7 @@ function getAntigens(
 
 function getPopulationMetadata(
     dataElements: DataElement[],
+    dataElementGroups: DataElementGroup[],
     categories: Category[]
 ): MetadataConfig["population"] {
     const codes = [
@@ -278,18 +284,27 @@ function getPopulationMetadata(
     const ageGroupCategory = _(categories)
         .keyBy("code")
         .getOrFail(baseConfig.categoryCodeForAgeGroup);
+
+    const populationGroup = _(dataElementGroups)
+        .keyBy("code")
+        .getOrFail(baseConfig.dataElementGroupCodeForPopulation);
+
     return {
         totalPopulationDataElement,
         ageDistributionDataElement,
         populationByAgeDataElement,
         ageGroupCategory,
+        dataElementGroup: populationGroup,
     };
 }
 
 function getAttributes(attributes: Attribute[]) {
-    const attributesByCode = _(attributes).keyBy("code");
+    const attributesByCode = _(attributes).keyBy(attribute => attribute.code);
+    const attributesByName = _(attributes).keyBy(attribute => attribute.displayName);
+
     return {
         app: attributesByCode.getOrFail(baseConfig.attributeCodeForApp),
+        hideInTallySheet: attributesByName.getOrFail(baseConfig.attributeNameForHideInTallySheet),
     };
 }
 
@@ -327,7 +342,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
     const modelParams = { filters: [codeFilter] };
 
     const metadataParams = {
-        attributes: modelParams,
+        attributes: {},
         categories: modelParams,
         categoryCombos: modelParams,
         categoryOptionGroups: modelParams,
@@ -366,7 +381,11 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
             metadata.categories,
             metadata.categoryOptionGroups
         ),
-        population: getPopulationMetadata(metadata.dataElements, metadata.categories),
+        population: getPopulationMetadata(
+            metadata.dataElements,
+            metadata.dataElementGroups,
+            metadata.categories
+        ),
         userRoles: metadata.userRoles,
         legendSets: metadata.legendSets,
         indicators: metadata.indicators,

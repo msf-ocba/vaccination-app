@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-07-17T10:59:03.202Z\n"
-"PO-Revision-Date: 2019-07-17T10:59:03.202Z\n"
+"POT-Creation-Date: 2019-09-03T09:45:16.872Z\n"
+"PO-Revision-Date: 2019-09-03T09:45:16.872Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -74,9 +74,6 @@ msgstr ""
 msgid "Error deleting campaign(s)"
 msgstr ""
 
-msgid "Only my campaigns"
-msgstr ""
-
 msgid ""
 "Are you sure you want to delete those campaign(s) (datasets and "
 "dashboards)? If you proceed, the associated datasets and dashboards will be "
@@ -127,6 +124,11 @@ msgid ""
 "more updated or reliable. You may overwrite any existing data in HMIS, but "
 "please note that any changes you make in this step will only be applied "
 "once you run analytics."
+msgstr ""
+
+msgid ""
+"This is the last available population data. Modify it for your campaign and "
+"remember to press button SAVE"
 msgstr ""
 
 msgid "Loading..."
@@ -212,6 +214,11 @@ msgid ""
 "to create the data set and all associated metadata for this campaign"
 msgstr ""
 
+msgid ""
+"This campaign has data values. Editing a campaign with data values can "
+"create several problems, please contact the administrator."
+msgstr ""
+
 msgid "Edit vaccination campaign"
 msgstr ""
 
@@ -279,13 +286,16 @@ msgstr ""
 msgid "[{{total}}] {{names}} and {{othersCount}} other(s)"
 msgstr ""
 
+msgid "doses"
+msgstr ""
+
+msgid "age groups"
+msgstr ""
+
 msgid "Period dates"
 msgstr ""
 
 msgid "Antigens"
-msgstr ""
-
-msgid "doses"
 msgstr ""
 
 msgid "Cancel"
@@ -294,7 +304,10 @@ msgstr ""
 msgid "Population distribution (%)"
 msgstr ""
 
-msgid "Campaign Population Distribution"
+msgid "Health Area"
+msgstr ""
+
+msgid "Health Sites"
 msgstr ""
 
 msgid "Total population"
@@ -309,6 +322,21 @@ msgstr ""
 msgid ""
 "You are about to exit the Campaign Creation Wizard. All your changes will "
 "be lost. Are you sure you want to proceed?"
+msgstr ""
+
+msgid "update"
+msgstr ""
+
+msgid "delete"
+msgstr ""
+
+msgid "[RVC] User {{userName}} modified a campaign with data ({{action}})"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Action"
 msgstr ""
 
 msgid "Subtotal"
@@ -346,7 +374,10 @@ msgstr ""
 msgid "AEFI and AEB indicators"
 msgstr ""
 
-msgid "Campaign Coverage by area (do not edit this table)"
+msgid "Campaign Coverage by area and dose (do not edit this table)"
+msgstr ""
+
+msgid "Cumulative Campaign Coverage by area (do not edit this table)"
 msgstr ""
 
 msgid "QS Indicators"
@@ -356,6 +387,9 @@ msgid "Vaccines Per Area"
 msgstr ""
 
 msgid "Vaccines Per Team"
+msgstr ""
+
+msgid "Campaign Coverage by age range and dose (do not edit this table)"
 msgstr ""
 
 msgid "Campaign Coverage by day (do not edit this table)"
@@ -395,6 +429,9 @@ msgstr ""
 msgid ""
 "Org unit {{organisationUnit}} has an invalid total value for antigen "
 "{{antigen}} ({{ageGroups}}) -> {{- value}}"
+msgstr ""
+
+msgid "Number of teams must smaller than {{value}}"
 msgstr ""
 
 msgid "There already exists a campaign with the same name"

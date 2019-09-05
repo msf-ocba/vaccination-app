@@ -213,8 +213,8 @@ export interface DataEntryForm {
 }
 
 export interface DataInputPeriod {
-    openingDate: string;
-    closingDate: string;
+    openingDate?: string;
+    closingDate?: string;
     period: { id: string };
 }
 
@@ -259,6 +259,17 @@ export interface TypeReport {
     klass: string;
     stats: Stats;
     objectReports: ObjectReport[];
+}
+
+export interface MessageDestination {
+    users?: Ref[];
+    userGroups?: Ref[];
+    organisationUnits?: Ref[];
+}
+
+export interface Message extends MessageDestination {
+    subject: string;
+    text?: string;
 }
 
 export interface MetadataResponse {

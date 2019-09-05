@@ -143,6 +143,17 @@ class SaveStep extends React.Component {
         return <LiEntry key={orgUnit.id} label={getFullOrgUnitName(orgUnit)} />;
     };
 
+    renderAntigenInfo(antigen, ageGroups) {
+        return [
+            antigen.name + " ",
+            "(",
+            `${i18n.t("doses")}: ${antigen.doses.length}`,
+            ", ",
+            `${i18n.t("age groups")}: ${ageGroups.join(", ")}`,
+            ")",
+        ].join("");
+    }
+
     render() {
         const { classes, campaign } = this.props;
         const { orgUnits, errorMessage, isSaving, dialogOpen } = this.state;
@@ -177,12 +188,10 @@ class SaveStep extends React.Component {
                         <LiEntry label={i18n.t("Antigens")}>
                             [{disaggregation.length}]
                             <ul>
-                                {disaggregation.map(({ antigen, dataElements }) => (
+                                {disaggregation.map(({ antigen, dataElements, ageGroups }) => (
                                     <LiEntry
                                         key={antigen.code}
-                                        label={`${antigen.name} (${i18n.t("doses")}: ${
-                                            antigen.doses.length
-                                        })`}
+                                        label={this.renderAntigenInfo(antigen, ageGroups)}
                                     >
                                         <ul>{this.renderDataElements(dataElements)}</ul>
                                     </LiEntry>

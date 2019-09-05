@@ -13,8 +13,8 @@ import { OrganisationUnitLevel } from "../../models/db.types";
 export interface TotalPopulationProps extends WithStyles<typeof styles> {
     organisationUnitLevels: OrganisationUnitLevel[];
     isEditing: boolean;
-    targetPopOu: TargetPopulationItem;
-    onChange: () => void;
+    populationItem: TargetPopulationItem;
+    onChange: (value: number) => void;
     onToggle: () => void;
 }
 
@@ -27,16 +27,14 @@ class TotalPopulation extends React.Component<TotalPopulationProps> {
         }
     };
 
+    onChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(ev.currentTarget.value);
+        this.props.onChange(value);
+    };
+
     public render() {
-        const {
-            classes,
-            isEditing,
-            onChange,
-            onToggle,
-            targetPopOu,
-            organisationUnitLevels,
-        } = this.props;
-        const { organisationUnit } = targetPopOu.populationTotal;
+        const { classes, isEditing, onToggle, populationItem, organisationUnitLevels } = this.props;
+        const { organisationUnit } = populationItem.populationTotal;
 
         return (
             <React.Fragment>
@@ -51,13 +49,13 @@ class TotalPopulation extends React.Component<TotalPopulationProps> {
                     {isEditing ? (
                         <TextField
                             className={classes.populationField}
-                            value={getShowValue(targetPopOu.populationTotal.value)}
-                            onChange={onChange}
+                            value={getShowValue(populationItem.populationTotal.value)}
+                            onChange={this.onChange}
                             inputRef={this.setFocusTextField}
                         />
                     ) : (
                         <Value
-                            value={getShowValue(targetPopOu.populationTotal.value)}
+                            value={getShowValue(populationItem.populationTotal.value)}
                             className={classes.value}
                         />
                     )}

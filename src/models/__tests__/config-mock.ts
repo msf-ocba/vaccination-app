@@ -23,6 +23,12 @@ const metadataConfig: MetadataConfig = {
             displayName: "Created by app",
             valueType: "BOOLEAN",
         },
+        hideInTallySheet: {
+            id: "2",
+            code: "",
+            displayName: "hideInTallySheet",
+            valueType: "BOOLEAN",
+        },
     },
     categories: [],
     categoriesDisaggregation: [
@@ -108,6 +114,12 @@ const metadataConfig: MetadataConfig = {
             categoryOptions: [],
             dataDimensionType: "DISAGGREGATION",
             dataDimension: true,
+        },
+        dataElementGroup: {
+            code: "RVC_POPULATION",
+            id: "mqamM2sRSrR",
+            displayName: "RVC - Population",
+            dataElements: [],
         },
     },
     dataElements: [

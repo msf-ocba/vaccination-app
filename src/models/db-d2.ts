@@ -1,5 +1,7 @@
+import moment from "moment";
+import _ from "lodash";
+
 import { AnalyticsResponse } from "./db-d2";
-import { Dictionary } from "lodash";
 import { D2, D2Api, DeleteResponse } from "./d2.types";
 import {
     OrganisationUnit,
@@ -19,8 +21,8 @@ import {
     DataValue,
     MetadataOptions,
     NamedObject,
+    Message,
 } from "./db.types";
-import _ from "lodash";
 import "../utils/lodash-mixins";
 import { promiseMap } from "../utils/promises";
 
@@ -43,7 +45,7 @@ function addPrefix(modelName: string, key: string): string {
     return modelName === "global" ? key : `${modelName}:${key}`;
 }
 
-function toDbParams(metadataParams: MetadataGetParams): Dictionary<string> {
+function toDbParams(metadataParams: MetadataGetParams): _.Dictionary<string> {
     return _(metadataParams)
         .flatMap((params, modelName) => {
             if (!params) {
@@ -85,6 +87,19 @@ export interface AnalyticsResponse {
     rows: Array<string[]>;
     width: number;
     height: number;
+}
+
+// https://docs.dhis2.org/2.30/en/developer/html/dhis2_developer_manual_full.html#webapi_reading_data_values
+export interface GetDataValuesParams {
+    dataSet?: string[];
+    dataElementGroup?: string[];
+    orgUnit: string[];
+    period?: string[];
+    includeDeleted?: boolean;
+    lastUpdated?: string;
+    limit?: number;
+    startDate?: Date;
+    endDate?: Date;
 }
 
 const ref = { id: true };
@@ -332,6 +347,10 @@ export default class DbD2 {
         return true;
     }
 
+    public async sendMessage(message: Message): Promise<void> {
+        this.api.post("/messageConversations", message);
+    }
+
     public async postDataValues(dataValues: DataValue[]): Promise<Response<object>> {
         const dataValueRequests: DataValueRequest[] = _(dataValues)
             .groupBy(dv => {
@@ -428,6 +447,26 @@ export default class DbD2 {
 
     public getAnalytics(request: AnalyticsRequest): Promise<AnalyticsResponse> {
         return this.api.get("/analytics", request) as Promise<AnalyticsResponse>;
+    }
+
+    public async getDataValues(params: GetDataValuesParams): Promise<DataValue[]> {
+        const parseDate = (date: Date | undefined, daysOffset: number = 0) =>
+            date
+                ? moment(date)
+                      .add(daysOffset, "days")
+                      .format("YYYY-MM-DD")
+                : undefined;
+        const apiParams = {
+            ...params,
+            startDate: parseDate(params.startDate),
+            endDate: parseDate(params.endDate, 1),
+        };
+        const apiParamsClean = _.omitBy(apiParams, _.isNil);
+        const response = (await this.api.get("/dataValueSets", apiParamsClean)) as {
+            dataValues?: DataValue[];
+        };
+
+        return response.dataValues || [];
     }
 }
 

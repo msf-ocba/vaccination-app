@@ -29,10 +29,6 @@ describe("Campaigns - List page", () => {
         });
     });
 
-    it("should have the filter only my campaign set by default", () => {
-        cy.get("[data-test='only-my-campaigns']").should("be.checked");
-    });
-
     it("shows list of user campaigns", () => {
         cy.get(".data-table__rows > :nth-child(3) > :nth-child(4) span").should("not.be.empty");
     });
@@ -58,8 +54,6 @@ describe("Campaigns - List page", () => {
     });
 
     it("shows list of user dataset sorted alphabetically", () => {
-        cy.get("[data-test='only-my-campaigns']").uncheck();
-
         cy.get(".data-table__rows > :nth-child(1) > :nth-child(2) span").then(text1 => {
             cy.get(".data-table__rows > :nth-child(2) > :nth-child(2) span").then(text2 => {
                 assert.isTrue(text1.text() < text2.text());
@@ -82,8 +76,6 @@ describe("Campaigns - List page", () => {
     });
 
     it("can filter datasets by name (case insensitive)", () => {
-        cy.get("[data-test='only-my-campaigns']").uncheck();
-
         cy.get("[data-test='search']")
             .clear()
             .type("cypress");
