@@ -67,6 +67,7 @@ interface DashboardWithResources {
 
 export default class Campaign {
     public selectableLevels: number[] = [5];
+    private maxNameLength = 140;
 
     validations: _.Dictionary<() => ValidationErrors | Promise<ValidationErrors>> = {
         name: this.validateName,
@@ -387,11 +388,14 @@ export default class Campaign {
     }
 
     private async validateName(): Promise<ValidationErrors> {
+        const { maxNameLength } = this;
         const { name } = this.data;
         const trimmedName = name.trim();
 
         if (!trimmedName) {
-            return getError("cannot_be_blank", { field: "name" });
+            return getError("cannot_be_blank", { field: i18n.t("Name") });
+        } else if (trimmedName.length > maxNameLength) {
+            return getError("too_long", { field: i18n.t("Name"), n: maxNameLength.toString() });
         } else if (await this.existsCampaignWithSameName(trimmedName)) {
             return getError("name_must_be_unique");
         } else {

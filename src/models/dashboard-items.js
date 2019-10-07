@@ -141,6 +141,10 @@ export const dashboardItemsConfig = {
     },
 };
 
+function clipString(s, maxLength, { ellipsis = " ..." } = {}) {
+    return s.length > maxLength ? s.slice(0, maxLength - ellipsis.length) + ellipsis : s;
+}
+
 export function buildDashboardItemsCode(
     datasetName,
     orgUnitName,
@@ -148,13 +152,15 @@ export function buildDashboardItemsCode(
     appendCode,
     dose = null
 ) {
-    return _.compact([
-        datasetName,
-        orgUnitName,
-        antigenName,
-        dose ? dose.name : null,
-        appendCode,
-    ]).join(" - ");
+    const maxFieldLength = 230;
+    const joiner = " - ";
+    const doseName = dose ? dose.name : null;
+    const suffix = _.compact([antigenName, doseName, appendCode]).join(joiner);
+    // Apply clipping first to org units and finally to the full string
+    const maxOrgUnitName = maxFieldLength - suffix.length - datasetName.length - 2 * joiner.length;
+    const orgUnit = clipString(orgUnitName || "", maxOrgUnitName);
+    const code = _.compact([datasetName, orgUnit, suffix]).join(joiner);
+    return code.slice(0, maxFieldLength);
 }
 
 function getDisaggregations(itemConfigs, disaggregationMetadata, antigen) {
