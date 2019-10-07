@@ -108,7 +108,7 @@ class Dashboard extends React.Component {
     async getDashboardURL(dataSetId, config, d2) {
         const { snackbar, loading, db } = this.props;
         const dataSet = dataSetId ? await getDatasetById(dataSetId, d2) : null;
-        const msg = i18n.t("Cannot find dashboard associated with the campaign");
+        const msg = i18n.t("No dashboards associated with this campaign");
 
         if (!dataSetId) {
             return getDhis2Url(d2, `/dhis-web-dashboard/#/`);

@@ -75,8 +75,9 @@ class CampaignWizard extends React.Component {
                     `Choose a name for the campaign and define the period for which data entry will be enabled`
                 ),
                 help: i18n.t(
-                    `Give your campaign a name that will make it easy to recognize in an HMIS hierarchy. Suggested format is "RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... - {CAMPAIGN PERIOD}". Example -> "RVC Shabunda - Measles/Cholera - Jan-Mar 2019".\n
-                    The start and end date should define the period for which you expect to enter data - i.e .the first and last day of your campaign. If you are not certain of the end date, enter a date a few weeks later than the expected date of completion (refer to your microplan). It is possible to edit the dates at any point.`
+                    `Give your campaign a name that makes it easy to recognize it in HMIS. The suggested format is "RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... - {CAMPAIGN PERIOD}". Example -> "RVC Shabunda - Measles/Cholera - Jan-Mar 2019".  The maximum length of the campaign name is 140 characters.
+
+                    The start and end date should define the period for which you expect to enter data - i.e .the first and last day of your campaign. If you are not certain of the end date, enter a date a few weeks later than the expected date of completion (refer to your microplan). It is possible to edit the dates at any point in time.`
                 ),
             },
             {
@@ -85,7 +86,7 @@ class CampaignWizard extends React.Component {
                 component: OrganisationUnitsStep,
                 validationKeys: ["organisationUnits", "teams"],
                 description: i18n.t(
-                    `Select the health facilities or health area where the campaign will be implemented`
+                    `Select the health facilities or vaccination areas which will implement the campaign. At least one must be selected.`
                 ),
                 help: i18n.t(
                     `Select the health facilities or health areas which will implement the campaign. At least one must be selected. Only organisation units of level 5 (Health site) can be selected.`
@@ -105,9 +106,9 @@ class CampaignWizard extends React.Component {
                 component: DisaggregationStep,
                 validationKeys: ["antigensDisaggregation"],
                 validationKeysLive: ["antigensDisaggregation"],
-                description: i18n.t(`Select indicators and categories for each antigen`),
-                help: i18n.t(`Select the indicators and breakdowns that you wish to monitor for each antigen in your campaign.\n
-                Standard age groups for each antigen appear by default. In some cases, you may click on an age group to select subdivisions if that information is important for your campaign. Compulsory indicators may not be un-selected.`),
+                description: i18n.t(
+                    `Select the indicators and breakdowns that you wish to monitor for each antigen in your campaign.\n\n                Standard age groups for each antigen appear by default. In some cases, you may click on an age group to select subdivisions if that information is important for your campaign. Compulsory indicators may not be un-selected.`
+                ),
             },
             {
                 key: "save",
