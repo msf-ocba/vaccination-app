@@ -18,7 +18,7 @@ describe("Campaign", () => {
                     name: [
                         {
                             key: "cannot_be_blank",
-                            namespace: { field: "name" },
+                            namespace: { field: "Name" },
                         },
                     ],
                 })
