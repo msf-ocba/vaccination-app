@@ -81,7 +81,7 @@ msgid ""
 msgstr ""
 "¿Esta seguro de que quiere borrar esta(s) campaña(s) (datasets y tableros)? "
 "Si continúa, los dataset asociados y los tableros se borrarán del servidor, "
-"pero los datos que ya estuvieran registrados permancerán en el sistema"
+"pero los datos que ya estuvieran registrados permanecerán en el sistema"
 
 msgid "Delete campaign(s)"
 msgstr "Eliminar campaña(s)"
