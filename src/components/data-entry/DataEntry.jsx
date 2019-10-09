@@ -43,7 +43,7 @@ class DataEntry extends React.Component {
                 );
             });
         } else {
-            this.props.snackbar.error(i18n.t("Cannot find dataset associated with the campaign"));
+            this.props.snackbar.error(i18n.t("No datasets associated with this campaign"));
         }
     }
 
@@ -145,11 +145,12 @@ class DataEntry extends React.Component {
         const { isDataEntryIdValid } = this.state;
         const { d2, pageVisited } = this.props;
         const dataEntryUrl = getDhis2Url(d2, "/dhis-web-dataentry/index.action");
-        const help = i18n.t(`Select a) organizational unit where vaccination was performed, b) data set, c) date of vaccination, d) team that performed vaccination
+        const help = i18n.t(`Select a) site where vaccination was performed, b) Reactive vaccination data set available at site level c) date of vaccination d) team that performed vaccination.
 
-Then enter data for the fields shown in the screen.`);
+        Then enter data for the fields shown in the screen.`);
         const subtitle = i18n.t(
-            `Once cells turn into green, all information is saved and you can leave the Data Entry Section`
+            `Please make sure all information is provided and there are no blank fields. Blank fields will be interpreted as missing information, as opposed to 0.
+Once cells turn into green, all information is saved and you can leave the Data Entry Section`
         );
 
         return (
