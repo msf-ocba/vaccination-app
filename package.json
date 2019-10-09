@@ -1,7 +1,7 @@
 {
     "name": "vaccination-app",
     "description": "DHIS2 MSF Reactive Vaccination App",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "license": "GPL-3.0",
     "author": "EyeSeeTea team",
     "homepage": ".",
@@ -28,7 +28,7 @@
         "classnames": "^2.2.6",
         "d2": "^31",
         "d2-manifest": "^1.0.0",
-        "d2-ui-components": "0.0.25",
+        "d2-ui-components": "0.0.27",
         "enzyme": "^3.7.0",
         "enzyme-adapter-react-16": "^1.6.0",
         "enzyme-to-json": "^3.3.4",
