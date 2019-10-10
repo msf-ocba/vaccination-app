@@ -9,6 +9,7 @@ const translations = {
     cannot_be_blank: namespace => i18n.t("Field {{field}} cannot be blank", namespace),
     cannot_be_blank_if_other_set: namespace =>
         i18n.t("Field {{field}} cannot be blank if field {{other}} is set", namespace),
+    too_long: namespace => i18n.t("Field {{field}} cannot longer than {{n}} chars", namespace),
 
     no_antigens_selected: () => i18n.t("Select at least one antigen"),
 

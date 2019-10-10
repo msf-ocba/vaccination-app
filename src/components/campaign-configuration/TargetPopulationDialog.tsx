@@ -149,7 +149,14 @@ class TargetPopulationDialog extends React.Component<Props, State> {
         const isReady = campaign && !isSaving;
         const title = i18n.t("Set Target Population") + ": " + (campaign ? campaign.name : "...");
         const description = i18n.t(
-            `Insert the total population for each health site. Insert the age distribution (as a percent) at project level. Only specify the age distribution for health centers where the distribution is different from the general distribution at project level. This data will be used to calculate coverage rates for the campaign. The source of data may be {{- hyperlink}} or you may have access to local estimates based on population surveys through the Ministry of Health or other stakeholders that would be more updated or reliable. You may overwrite any existing data in HMIS, but please note that any changes you make in this step will only be applied once you run analytics.`,
+            `Insert the age distribution for your project(s).
+            Insert the target population for each of the sites.
+            Age distribution at project level will be used for all sites within that project.
+            Age distribution can be modified for any of the sites if needed.
+
+            If you leave this page and return to it again you might find that information is not updated yet. Do not worry, information was not lost, updated information will appear within a few minutes.
+
+            The source of data may be {{- hyperlink}} or you may have access to local estimates (i.e. Ministry of Health)`,
             {
                 hyperlink: "https://hmisocba.msf.es/external-static/Denominators_Tool_OCBA.xlsm",
             }
