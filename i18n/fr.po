@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-10-07T12:33:19.862Z\n"
+"POT-Creation-Date: 2019-10-07T15:11:15.076Z\n"
 "PO-Revision-Date: 2018-11-15T11:18:10.896Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -491,6 +491,9 @@ msgstr "Le champ {{field}} ne peut pas être vide"
 msgid "Field {{field}} cannot be blank if field {{other}} is set"
 msgstr ""
 "Le champ {{field}} ne peut pas être vide si le champ {{other}} est défini"
+
+msgid "Field {{field}} cannot longer than {{n}} chars"
+msgstr "Le champ {{champ}}} ne peut pas dépasser {{n}} caractères"
 
 msgid "Select at least one antigen"
 msgstr "Sélectionnez au moins un antigène"
