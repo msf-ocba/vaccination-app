@@ -1,7 +1,6 @@
 import { DataElement, Maybe, Ref } from "./db.types";
 import _ from "lodash";
 const fp = require("lodash/fp");
-import { AntigenDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig, getCode } from "./config";
 import { Antigen } from "./campaign";
 import "../utils/lodash-mixins";
