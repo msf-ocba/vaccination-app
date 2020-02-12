@@ -357,23 +357,19 @@ export class AntigensDisaggregation {
         ];
         const categoryOptionCombos = await db.getCocsByCategoryComboCode(allCategoryComboCodes);
 
-        /* Category option combos have the untranslated category Option names separated by commas */
-        const getTranslatedCocName: (cocName: string) => string = cocName => {
-            return cocName
-                .split(", ")
+        const getTranslatedCocName: (coNames: string[]) => string = coNames => {
+            return coNames
                 .map(coName => _(categoryOptionsDisplayNameByName).getOrFail(coName))
                 .join(", ");
         };
 
         const categoryOptionCombosIdByName = _(categoryOptionCombos)
-            .map(coc => [getTranslatedCocName(coc.name), coc.id])
+            .map(coc => [getTranslatedCocName(coc.categoryOptionNames), coc.id])
             .push(["", this.config.defaults.categoryOptionCombo.id])
             .fromPairs()
             .value();
 
-        return {
-            cocIdByName: categoryOptionCombosIdByName,
-        };
+        return { cocIdByName: categoryOptionCombosIdByName };
     }
 }
 
