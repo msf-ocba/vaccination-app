@@ -32,9 +32,7 @@ describe("Campaigns - Create", () => {
         cy.contains("Next").click();
 
         // Organisation Units Step
-        cy.contains(
-            "Select the health facilities or health area where the campaign will be implemented"
-        );
+        cy.contains("Select the health facilities");
 
         cy.get("[data-field='teams']").type(1);
 
