@@ -20,7 +20,7 @@ describe("Campaigns - Create", () => {
         // General Info step
         waitForStepChange("General info");
         cy.contains("Next").click();
-        cy.contains("Field name cannot be blank");
+        cy.contains("Field Name cannot be blank");
 
         cy.get("[data-field='name']").type("Test_vaccination_campaign_cypress");
         cy.contains("Start Date").click({ force: true });
@@ -32,9 +32,7 @@ describe("Campaigns - Create", () => {
         cy.contains("Next").click();
 
         // Organisation Units Step
-        cy.contains(
-            "Select the health facilities or health area where the campaign will be implemented"
-        );
+        cy.contains("Select the health facilities");
 
         cy.get("[data-field='teams']").type(1);
 
