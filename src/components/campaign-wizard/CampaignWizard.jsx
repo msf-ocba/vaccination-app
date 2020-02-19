@@ -6,7 +6,7 @@ import _ from "lodash";
 import { withSnackbar, Wizard } from "d2-ui-components";
 import { LinearProgress } from "@material-ui/core";
 
-import Campaign from "models/campaign";
+import Campaign from "../../models/campaign";
 import PageHeader from "../shared/PageHeader";
 import OrganisationUnitsStep from "../steps/organisation-units/OrganisationUnitsStep";
 import SaveStep from "../steps/save/SaveStep";
