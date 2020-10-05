@@ -40,8 +40,9 @@ export async function list(config, d2, filters, pagination) {
 
     const filter = _.compact([
         search ? `displayName:ilike:${search}` : null,
-        // Preliminar filter for attribute createdByApp (cannot check the value here)
-        `attributeValues.attribute.code:eq:${config.attributeCodeForApp}`,
+        // Preliminar filters (presence of attribute createdByApp and categoryCombo=TEAMS)
+        `attributeValues.attribute.id:eq:${config.attributes.app.id}`,
+        `categoryCombo.code:eq:${config.categoryCodeForTeams}`,
     ]);
     const fields = (forcedFields || defaultListFields).concat(requiredFields).join(",");
     const listOptions = { fields, filter, pageSize: 1000, order };
