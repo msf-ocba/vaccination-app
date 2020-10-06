@@ -1,7 +1,6 @@
 import moment from "moment";
 import _ from "lodash";
 
-import { AnalyticsResponse } from "./db-d2";
 import { D2, D2Api, DeleteResponse } from "./d2.types";
 import {
     OrganisationUnit,

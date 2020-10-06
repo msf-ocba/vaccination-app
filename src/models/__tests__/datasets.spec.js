@@ -17,7 +17,7 @@ const expectedFields = [
     "organisationUnits[id,path]",
 ];
 
-const createdByAppFilter = "attributeValues.attribute.code:eq:RVC_CREATED_BY_VACCINATION_APP";
+const createdByAppFilters = ["attributeValues.attribute.id:eq:1", "categoryCombo.code:eq:RVC_TEAM"];
 const emptyCollection = { pager: { page: 1, total: 0 }, toArray: () => [] };
 const listMock = jest.fn(() => Promise.resolve(emptyCollection));
 
@@ -31,7 +31,7 @@ describe("DataSets", () => {
                 expect(d2.models.dataSets.list).toHaveBeenCalledWith({
                     fields: expectedFields.join(","),
                     pageSize: 1000,
-                    filter: [createdByAppFilter],
+                    filter: createdByAppFilters,
                 });
             });
         });
@@ -55,7 +55,7 @@ describe("DataSets", () => {
                 expect(d2.models.dataSets.list).toHaveBeenCalledWith({
                     fields: expectedFields.join(","),
                     pageSize: 1000,
-                    filter: ["displayName:ilike:abc", createdByAppFilter],
+                    filter: ["displayName:ilike:abc", ...createdByAppFilters],
                     order: "displayName:idesc",
                 });
             });

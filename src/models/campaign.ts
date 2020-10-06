@@ -7,7 +7,10 @@ import DbD2, { ApiResponse, toStatusResponse } from "./db-d2";
 import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
 import { MetadataConfig, getDashboardCode, getByIndex } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
-import { TargetPopulation, TargetPopulationData } from "./TargetPopulation";
+import {
+    TargetPopulation,
+    TargetPopulationData as TargetPopulationData_,
+} from "./TargetPopulation";
 import CampaignDb from "./CampaignDb";
 import { promiseMap } from "../utils/promises";
 import i18n from "../locales";
@@ -15,7 +18,7 @@ import { TeamsMetadata, getTeamsForCampaign, filterTeamsByNames } from "./Teams"
 import CampaignSharing from "./CampaignSharing";
 import { CampaignNotification } from "./CampaignNotification";
 
-export type TargetPopulationData = TargetPopulationData;
+export type TargetPopulationData = TargetPopulationData_;
 
 export interface Antigen {
     id: string;
