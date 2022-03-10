@@ -193,6 +193,7 @@ export interface DataSet extends Sharing {
     timelyDays: number;
     expiryDays: number;
     sections: Ref[];
+    //COMENTAR
     dataInputPeriods: DataInputPeriod[];
     attributeValues: AttributeValue[];
     formType: "DEFAULT" | "CUSTOM";

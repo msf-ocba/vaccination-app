@@ -83,7 +83,7 @@ export interface MetadataConfig extends BaseConfig {
         id: string;
         categories: { code: string; optional: boolean }[];
     }>;
-    indicators: Indicator[];
+    indicators: Indicator[];    
     antigens: Array<{
         id: string;
         name: string;
