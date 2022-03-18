@@ -150,9 +150,7 @@ export class TargetPopulation {
         antigensDisaggregation: AntigenDisaggregationEnabled,
         period: string
     ): Promise<TargetPopulation> {
-        var ouIds = _.flatMap(orgUnitsPathOnly, ou => ou.path.split("/"));
-        ouIds=_.uniq(ouIds);
-      // console.log(ouIds);
+        const ouIds = _.uniq(_.flatMap(orgUnitsPathOnly, ou => ou.path.split("/")));
         const ageGroupsForAllAntigens = sortAgeGroups(
             this.config,
             _(antigensDisaggregation)

@@ -45,7 +45,7 @@ export const dashboardItemsConfig = {
             disaggregatedBy: [],
             area: true,
             title: ns => i18n.t("Global QS Indicators {{- period}}", ns),
-            appendCode: "Global quality indicators",//globalQsTable
+            appendCode: "Global quality indicators", //globalQsTable
         },
         aefiAEB: {
             elements: ["RVC_AEB", "RVC_AEFI"],
@@ -65,8 +65,11 @@ export const dashboardItemsConfig = {
             filterDataBy: ["pe"],
             disaggregatedBy: ["ageGroup"],
             area: true,
-            title: ns => i18n.t("Campaign Coverage by area and dose {{- period}} (do not edit this table)", ns),
-            
+            title: ns =>
+                i18n.t(
+                    "Campaign Coverage by area and dose {{- period}} (do not edit this table)",
+                    ns
+                ),
             appendCode: "Coverage by area and dose", //coverageByAreaTable
             showColumnTotals: false,
             showRowSubTotals: true,
@@ -278,23 +281,15 @@ export function buildDashboardItems(
         tablesByAntigenAndDose: tablesByAntigenAndDoseMetadata,
         chartsByAntigen: chartsByAntigenMetadata,
     } = dashboardItemsConfig;
-    
-//console.log("METAData");
-//var tablesByAntigenMetadata_bk=JSON.parse(JSON.stringify(tablesByAntigenMetadata));
-var qsPerAntigen2= tablesByAntigenMetadata["qsPerAntigen"];
-  //  console.log(tablesByAntigenMetadata);
-    const tablesByAntigen = _(antigensMeta)
-        .flatMap(antigen =>{
-      
-          tablesByAntigenMetadata["qsPerAntigen"]= qsPerAntigen2;
-            if (antigenNoDiluted(antigen)) { 
-               // console.log("Delete table");
-                delete tablesByAntigenMetadata["qsPerAntigen"]
-            }
-            
-          // console.log("METAData2");
 
-           console.log(tablesByAntigenMetadata);
+    var qsPerAntigen2 = tablesByAntigenMetadata["qsPerAntigen"];
+    const tablesByAntigen = _(antigensMeta)
+        .flatMap(antigen => {
+            tablesByAntigenMetadata["qsPerAntigen"] = qsPerAntigen2;
+            if (antigenNoDiluted(antigen)) {
+                delete tablesByAntigenMetadata["qsPerAntigen"];
+            }
+
             return getTables({
                 tables: tablesByAntigenMetadata,
                 antigen,
@@ -303,7 +298,7 @@ var qsPerAntigen2= tablesByAntigenMetadata["qsPerAntigen"];
                 itemsMetadata,
                 disaggregationMetadata,
                 legendsMetadata,
-            })
+            });
         })
         .value();
 
@@ -442,14 +437,15 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
 }
 
 function antigenNoDiluted(antigen) {
-
-    if (antigen.code==='RVC_ANTIGEN_ROTAVIRUS' || 
-        antigen.code==='RVC_ANTIGEN_PCV' || 
-        antigen.code==='RVC_ANTIGEN_PERTPENTA' ||
-        antigen.code==='RVC_ANTIGEN_CHOLERA' ||
-        antigen.code==='RVC_ANTIGEN_POLIO_ORAL'
-        ) 
-     { return true} 
+    if (
+        antigen.code === "RVC_ANTIGEN_ROTAVIRUS" ||
+        antigen.code === "RVC_ANTIGEN_PCV" ||
+        antigen.code === "RVC_ANTIGEN_PERTPENTA" ||
+        antigen.code === "RVC_ANTIGEN_CHOLERA" ||
+        antigen.code === "RVC_ANTIGEN_POLIO_ORAL"
+    ) {
+        return true;
+    }
 }
 function getDimensions(disaggregations, antigen, antigenCategory) {
     const antigenCategoryDimension = antigen
@@ -537,12 +533,11 @@ const chartConstructor = ({
 
     let organisationUnitElements;
     let organisationUnitNames;
-    //const organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
 
-
-    if (organisationUnits.length >1) {organisationUnitNames="" }
-    else { 
-     organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
+    if (organisationUnits.length > 1) {
+        organisationUnitNames = "";
+    } else {
+        organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
     }
     if (area) {
         const organisationUnitParents = organisationUnits.map(ou => ou.parents[ou.id].split("/"));
@@ -674,7 +669,7 @@ const tableConstructor = ({
     filterDataBy,
     area,
     title,
-  //  legendId,
+    //  legendId,
     teamRowRawDimension = null,
     showRowSubTotals = true,
     showColumnTotals = true,
@@ -689,7 +684,7 @@ const tableConstructor = ({
     const periodForTitle = `${moment(periodItems[0].id).format("DD/MM/YYYY")} - ${moment(
         _.last(periodItems).id
     ).format("DD/MM/YYYY")}`;
-    
+
     const categoryDimensionsWithTeams = teamRowRawDimension
         ? [
               ...categoryDimensions,
@@ -716,9 +711,10 @@ const tableConstructor = ({
 
     let organisationUnitElements;
     let organisationUnitNames;
-    if (organisationUnits.length >1) {organisationUnitNames="" }
-    else { 
-     organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
+    if (organisationUnits.length > 1) {
+        organisationUnitNames = "";
+    } else {
+        organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
     }
     // Converts selected OrganisationUnits into their parents (Sites => Areas)
     if (area) {
@@ -731,13 +727,6 @@ const tableConstructor = ({
     }
 
     const subName = antigen ? antigen.name : "Global";
-/*
-if (antigen) {
-    if (antigen.name==="Rotavirus" && appendCode==="qsIndicatorsTable" ) {console.log("ORAL");
-return {}
-    }
-}
-*/
     const filters = filterDataBy.map(f => ({ id: f }));
     const allFilters = _.compact([
         ...filters,
