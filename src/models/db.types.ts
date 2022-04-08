@@ -1,4 +1,3 @@
-import { Metadata } from "./db.types";
 import { Dictionary } from "lodash";
 export type Maybe<T> = T | undefined;
 
