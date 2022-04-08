@@ -35,7 +35,8 @@ export class DataStore {
         try {
             const response = await axios.get(this.getPath(key), { withCredentials: true });
             return response.data;
-        } catch (error) {
+        } catch (err0) {
+            const error = err0 as any;
             if (error.response && error.response.status === 404) {
                 return undefined;
             } else {
@@ -48,7 +49,8 @@ export class DataStore {
         try {
             const response = await axios.get(this.getPath(key), { withCredentials: true });
             return response.data;
-        } catch (error) {
+        } catch (err0) {
+            const error = err0 as any;
             if (error.response && error.response.status === 404) {
                 await axios.post(this.getPath(key), defaultValue, { withCredentials: true });
                 return defaultValue;
@@ -82,7 +84,8 @@ export class DataStore {
     async set(key: string, value: any): Promise<void> {
         try {
             await axios.put(this.getPath(key), value, { withCredentials: true });
-        } catch (error) {
+        } catch (err0) {
+            const error = err0 as any;
             if (error.response && error.response.status === 404) {
                 await axios.post(this.getPath(key), value, { withCredentials: true });
             } else {
@@ -94,7 +97,8 @@ export class DataStore {
     async delete(key: string): Promise<void> {
         try {
             await axios.delete(this.getPath(key), { withCredentials: true });
-        } catch (error) {
+        } catch (err0) {
+            const error = err0 as any;
             if (!error.response || error.response.status !== 404) {
                 throw error;
             }
