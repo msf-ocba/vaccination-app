@@ -358,7 +358,8 @@ export default class DbD2 {
                 metadata
             )) as MetadataResponse;
             return { status: true, value: response };
-        } catch (err) {
+        } catch (err0) {
+            const err = err0 as any;
             return { status: false, error: err.message || err.toString() };
         }
     }

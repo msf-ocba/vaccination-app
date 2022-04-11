@@ -63,7 +63,8 @@ class TargetPopulationDialog extends React.Component<Props, State> {
                 ? await targetPopulation.areDataValuesUpTodate()
                 : false;
             this.setState({ campaign: campaignWithTargetPopulation, areValuesUpdated });
-        } catch (err) {
+        } catch (err0) {
+            const err = err0 as any;
             snackbar.error(i18n.t("Cannot load campaign") + ": " + (err.message || err));
             onClose();
         }
@@ -94,7 +95,8 @@ class TargetPopulationDialog extends React.Component<Props, State> {
                 this.setState({ isSaving: false });
                 snackbar.error(i18n.t("Error saving target population"));
             }
-        } catch (err) {
+        } catch (err0) {
+            const err = err0 as any;
             console.error(err);
             snackbar.error(err.message || err.toString());
             this.setState({ isSaving: false });
