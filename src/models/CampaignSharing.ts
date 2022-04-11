@@ -140,7 +140,7 @@ export default class CampaignSharing {
                 {
                     type: "usersByOrgUnitsInGroupSet",
                     level: 3,
-                    organisationUnitGroupSetName: "8. Operational Cells",
+                    organisationUnitGroupSetName: "4. Operational Cells",
                     userRoles: [["TesaCo"]],
                     permission: { metadata: "edit" },
                 },
