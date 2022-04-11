@@ -106,16 +106,20 @@ export default class CampaignDb {
             dataElement: { id: dataElement.id },
             categoryCombo: { id: dataElement.categoryCombo.id },
         }));
-//Comentar
-        const closingDate = endDate.clone().add(metadataConfig.expirationDays, "days");
+        /* Problem: When syncing data from field servers to HQ, data cannot usually be imported
+           because the current time is after the closing date of the data input periods. 
+
+           Workaround: Remove the closing date.
+        */
+
+        //const closingDate = endDate.clone().add(metadataConfig.expirationDays, "days");
 
         const dataInputPeriods = getDaysRange(startDate, endDate).map(date => ({
             period: { id: date.format("YYYYMMDD") },
             openingDate: toISOStringNoTZ(startDate),
-            closingDate: toISOStringNoTZ(closingDate),
+            //closingDate: toISOStringNoTZ(closingDate),
         }));
-      
-//Comentar
+
         const existingDataSet = await this.getExistingDataSet();
         const metadataCoc = await campaign.antigensDisaggregation.getCocMetadata(db);
         const dataEntryForm = await this.getDataEntryForm(existingDataSet, metadataCoc);

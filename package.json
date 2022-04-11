@@ -1,7 +1,7 @@
 {
     "name": "vaccination-app",
     "description": "DHIS2 MSF Reactive Vaccination App",
-    "version": "0.5.4",
+    "version": "0.5.5",
     "license": "GPL-3.0",
     "author": "EyeSeeTea team",
     "homepage": ".",
@@ -90,13 +90,14 @@
         "eslint-plugin-import": "^2.16.0",
         "eslint-plugin-jsx-a11y": "^6.2.0",
         "eslint-plugin-react": "^7.12.4",
+        "http-proxy-middleware": "1.3.1",
         "loglevel": "^1.6.1",
         "prettier": "1.16.3",
         "prop-types": "^15.6.0",
         "raw-loader": "^3.1.0",
         "sinon": "^7.1.1",
         "ts-jest": "^23.10.5",
-        "typescript": "3.2.4",
+        "typescript": "4.6.2",
         "wait-on": "^3.2.0"
     },
     "manifest.webapp": {
