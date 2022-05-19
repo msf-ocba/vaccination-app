@@ -418,6 +418,7 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
     };
 
     const tableElements = _(allTables)
+        .pickBy()
         .map((item, key) => [key, dataMapper(elementsMetadata, item.elements)])
         .fromPairs()
         .value();
