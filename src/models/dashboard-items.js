@@ -530,8 +530,6 @@ const chartConstructor = ({
         _.isEmpty(disaggregations) ? null : "dx",
     ]);
 
-    const series = _.isEmpty(disaggregations) ? "dx" : columns[0].id;
-
     let organisationUnitElements;
     let organisationUnitNames;
 
@@ -580,8 +578,6 @@ const chartConstructor = ({
         percentStackedValues: false,
         noSpaceBetweenColumns: false,
         hideTitle: false,
-        series,
-        category: rows[0],
         access: {
             read: true,
             update: true,
@@ -653,6 +649,32 @@ const chartConstructor = ({
         categoryDimensions,
         filters: filterDimensions.map(fd => ({ id: fd })),
         rows: rows.map(r => ({ id: r })),
+        colSubTotals: false,
+        colTotals: false,
+        columnDimensions: columns.map(column => column.id),
+        digitGroupSeparator: "SPACE",
+        displayDensity: "NORMAL",
+        fixColumnHeaders: false,
+        fixRowHeaders: false,
+        fontSize: "NORMAL",
+        hideEmptyColumns: false,
+        hideEmptyRows: false,
+        legend: { showKey: false },
+        optionalAxes: [],
+        regression: false,
+        reportingParams: {
+            grandParentOrganisationUnit: false,
+            organisationUnit: false,
+            parentOrganisationUnit: false,
+            reportingPeriod: false,
+        },
+        rowDimensions: rows,
+        rowSubTotals: false,
+        rowTotals: false,
+        seriesKey: { hidden: false },
+        showDimensionLabels: false,
+        showHierarchy: false,
+        skipRounding: false,
     };
 };
 
@@ -737,6 +759,7 @@ const tableConstructor = ({
 
     return {
         id,
+        type: "PIVOT_TABLE",
         name: buildDashboardItemsCode(
             datasetName,
             organisationUnitNames,
@@ -746,7 +769,6 @@ const tableConstructor = ({
         ),
         numberType: "VALUE",
         userOrganisationUnitChildren: false,
-        legendDisplayStyle: "FILL",
         hideEmptyColumns: false,
         subscribed: false,
         hideEmptyRows: false,
@@ -774,21 +796,20 @@ const tableConstructor = ({
         //...getTitleWithTranslations(title, {}),
         ...getTitleWithTranslations(title, { period: periodForTitle }),
         externalAccess: false,
-        legendDisplayStrategy: "BY_DATA_ITEM", //FIXED
         colSubTotals: showColumnSubTotals,
         //legendSet: legendId ? { id: legendId } : null,
         showHierarchy: false,
         rowTotals: false,
-        cumulative: false,
+        cumulativeValues: false,
         digitGroupSeparator: "NONE",
         hideTitle: false,
         regression: false,
         skipRounding: false,
-        reportParams: {
-            paramGrandParentOrganisationUnit: false,
-            paramReportingPeriod: false,
-            paramOrganisationUnit: false,
-            paramParentOrganisationUnit: false,
+        reportingParams: {
+            grandParentOrganisationUnit: false,
+            organisationUnit: false,
+            parentOrganisationUnit: false,
+            reportingPeriod: false,
         },
         access: {
             read: true,
@@ -867,5 +888,19 @@ const tableConstructor = ({
         filters: allFilters,
         rows: rows.map(r => ({ id: r })),
         rowDimensions: rows,
+        fixColumnHeaders: false,
+        fixRowHeaders: false,
+        hideLegend: false,
+        legend: {
+            showKey: false,
+            strategy: "FIXED",
+            style: "FILL",
+        },
+        noSpaceBetweenColumns: false,
+        optionalAxes: [],
+        percentStackedValues: false,
+        seriesKey: { hidden: false },
+        showData: false,
+        yearlySeries: [],
     };
 };
