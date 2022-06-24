@@ -121,6 +121,7 @@ const metadataConfig: MetadataConfig = {
             displayName: "RVC - Population",
             dataElements: [],
         },
+        ageGroupCocByName: {},
     },
     dataElements: [
         {

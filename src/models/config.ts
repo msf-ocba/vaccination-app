@@ -75,6 +75,7 @@ export interface MetadataConfig extends BaseConfig {
         ageDistributionDataElement: DataElement;
         populationByAgeDataElement: DataElement;
         ageGroupCategory: Category;
+        ageGroupCocByName: Record<string, { id: string }>;
     };
     dataElements: DataElement[];
     dataElementsDisaggregation: Array<{
@@ -264,11 +265,8 @@ function getAntigens(
     return antigensMetadata;
 }
 
-function getPopulationMetadata(
-    dataElements: DataElement[],
-    dataElementGroups: DataElementGroup[],
-    categories: Category[]
-): MetadataConfig["population"] {
+function getPopulationMetadata(metadata: RawMetadataConfig): MetadataConfig["population"] {
+    const { dataElements, dataElementGroups, categories } = metadata;
     const codes = [
         baseConfig.dataElementCodeForTotalPopulation,
         baseConfig.dataElementCodeForAgeDistribution,
@@ -289,12 +287,22 @@ function getPopulationMetadata(
         .keyBy("code")
         .getOrFail(baseConfig.dataElementGroupCodeForPopulation);
 
+    const ageGroupCategoryCombo = _(metadata.categoryCombos)
+        .keyBy("code")
+        .getOrFail(baseConfig.categoryComboCodeForAgeGroup);
+
+    const ageGroupCocByName = _(ageGroupCategoryCombo.categoryOptionCombos)
+        .map(coc => [coc.name, { id: coc.id }] as [string, { id: string }])
+        .fromPairs()
+        .value();
+
     return {
         totalPopulationDataElement,
         ageDistributionDataElement,
         populationByAgeDataElement,
         ageGroupCategory,
         dataElementGroup: populationGroup,
+        ageGroupCocByName,
     };
 }
 
@@ -344,7 +352,10 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
     const metadataParams = {
         attributes: {},
         categories: modelParams,
-        categoryCombos: modelParams,
+        categoryCombos: {
+            fields: { ":owner": true, "categoryOptionCombos[id,name]": true },
+            filters: [codeFilter],
+        },
         categoryOptionGroups: modelParams,
         categoryOptionCombos: { filters: ["name:eq:default"] },
         dataElementGroups: modelParams,
@@ -381,11 +392,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
             metadata.categories,
             metadata.categoryOptionGroups
         ),
-        population: getPopulationMetadata(
-            metadata.dataElements,
-            metadata.dataElementGroups,
-            metadata.categories
-        ),
+        population: getPopulationMetadata(metadata),
         userRoles: metadata.userRoles,
         legendSets: metadata.legendSets,
         indicators: metadata.indicators,
