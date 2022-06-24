@@ -306,18 +306,19 @@ export interface DataValue {
     comment?: string;
 }
 
-export interface DataValueRequest {
+export interface DataValueToPost {
     dataSet?: string;
-    completeDate?: string;
-    period?: string;
+    period: string;
     orgUnit: string;
+    dataElement: string;
     attributeOptionCombo?: string;
-    dataValues: Array<{
-        dataElement: string;
-        categoryOptionCombo?: string;
-        value: string;
-        comment?: string;
-    }>;
+    categoryOptionCombo?: string;
+    value: string;
+    comment?: string;
+}
+
+export interface DataValueRequest {
+    dataValues: DataValueToPost[];
 }
 
 export interface DataValueResponse {
