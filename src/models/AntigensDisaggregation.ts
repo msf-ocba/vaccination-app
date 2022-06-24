@@ -1,4 +1,4 @@
-import { DataElement, Maybe, Ref } from "./db.types";
+import { CampaignDisaggregation, DataElement, Maybe, Ref } from "./db.types";
 import _ from "lodash";
 const fp = require("lodash/fp");
 import { MetadataConfig, getCode } from "./config";
@@ -34,10 +34,12 @@ export interface AntigenDisaggregation {
 }
 
 export interface SectionForDisaggregation {
+    id: string;
     name: string;
     dataElements: Ref[];
     dataSet: { id: string };
     sortOrder: number;
+    disaggregation: Maybe<CampaignDisaggregation>;
     greyedFields: Array<{
         categoryOptionCombo: {
             id: string;
@@ -153,6 +155,15 @@ export class AntigensDisaggregation {
         section: Maybe<SectionForDisaggregation>
     ): AntigenDisaggregationCategoriesData {
         const categoriesByCode = _.keyBy(config.categories, "code");
+        const categoryOptionsById = _(config.categories)
+            .keyBy(category => category.id)
+            .mapValues(category =>
+                _(category.categoryOptions)
+                    .keyBy(co => co.id)
+                    .mapValues(co => co.displayName)
+                    .value()
+            )
+            .value();
 
         return dataElementConfig.categories.map(categoryRef => {
             const optional = categoryRef.optional;
@@ -176,11 +187,11 @@ export class AntigensDisaggregation {
                 groups = $categoryOptions.values.map(option => [[option]]);
             }
 
-            const categoryOptionsEnabled = _(section ? section.greyedFields : [])
+            const categoryOptionsEnabledFromGreyedFields = _(section ? section.greyedFields : [])
                 .flatMap(greyedField => {
                     return greyedField.categoryOptionCombo.categoryOptions.filter(
                         categoryOption => {
-                            return categoryOption.categories.some(
+                            return _(categoryOption.categories).some(
                                 greyedFieldCategory => greyedFieldCategory.id === category.id
                             );
                         }
@@ -189,6 +200,19 @@ export class AntigensDisaggregation {
                 .map(categoryOption => categoryOption.displayName)
                 .uniq()
                 .value();
+
+            const categoryOptionsEnabledFromDisaggregation =
+                section && section.disaggregation
+                    ? _(section.disaggregation)
+                          .filter(obj => obj.category === category.id)
+                          .map(obj => categoryOptionsById[obj.category][obj.categoryOption])
+                          .compact()
+                          .uniq()
+                          .value()
+                    : undefined;
+
+            const categoryOptionsEnabled =
+                categoryOptionsEnabledFromDisaggregation || categoryOptionsEnabledFromGreyedFields;
 
             const wasCategorySelected = !_(categoryOptionsEnabled).isEmpty();
 

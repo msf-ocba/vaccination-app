@@ -29,6 +29,12 @@ const metadataConfig: MetadataConfig = {
             displayName: "hideInTallySheet",
             valueType: "BOOLEAN",
         },
+        dataSetCampaignDisaggregation: {
+            id: "3",
+            code: "RVC_CAMPAIGN_DISAGGREGATION",
+            displayName: "Campaign disaggregation",
+            valueType: "TEXT",
+        },
     },
     categories: [],
     categoriesDisaggregation: [
