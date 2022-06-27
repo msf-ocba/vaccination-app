@@ -394,7 +394,7 @@ export default class DbD2 {
             .compact()
             .value();
 
-        const dataValuesChunks = _.chunk(dataValuesToPost, 10e3);
+        const dataValuesChunks = _.chunk(dataValuesToPost, 200);
 
         const responses = await promiseMap(dataValuesChunks, dataValuesChunk => {
             return this.api.post("dataValueSets", { dataValues: dataValuesChunk }) as Promise<
