@@ -228,13 +228,13 @@ function getTables({
     doseMetadata,
 }) {
     return _(tables)
+        .compact()
         .map((c, key) => {
             const teamMetadata = disaggregationMetadata.teams();
-
             const rows = c.rows.map(row => (row === "team" ? teamMetadata.categoryId : row));
             const teamRowRawDimension = _.some(c.rows, r => r === "team") ? teamMetadata : null;
-
             const legendId = c.legendCode ? legendsMetadata.get(c.legendCode) : null;
+
             return tableConstructor({
                 id: generateUid(),
                 antigen,
