@@ -375,6 +375,7 @@ export class TargetPopulation {
         organisationUnits: OrganisationUnit[],
         period: string
     ): Promise<{ [ouId: string]: PopulationTotal }> {
+        const { campaign } = this;
         const organisationUnitsForTotalPopulation: { [ouId: string]: OrganisationUnit } = _(
             organisationUnits
         )
@@ -389,15 +390,28 @@ export class TargetPopulation {
             .fromPairs()
             .value();
 
+        const orgUnitIds = _(organisationUnitsForTotalPopulation)
+            .values()
+            .map(ou => ou.id)
+            .value();
+
+        const { startDate, endDate } = campaign;
+
+        const dataValues = getLatestDataValueWithValue(
+            await this.db.getDataValues({
+                dataElementGroup: [this.config.population.dataElementGroup.id],
+                orgUnit: orgUnitIds,
+                ...(startDate && endDate ? { startDate, endDate } : { period: [period] }),
+            })
+        );
+
+        const { totalPopulationDataElement } = this.config.population;
+
         const { headers, rows } = await this.db.getAnalytics({
             dimension: [
-                "dx:" + this.config.population.totalPopulationDataElement.id,
+                "dx:" + totalPopulationDataElement.id,
                 "pe:" + period,
-                "ou:" +
-                    _(organisationUnitsForTotalPopulation)
-                        .values()
-                        .map(ou => ou.id)
-                        .join(";"),
+                "ou:" + orgUnitIds.join(";"),
             ],
         });
 
@@ -420,9 +434,15 @@ export class TargetPopulation {
             const prevValue = !_(existing).has(ouIdForPopulation)
                 ? undefined
                 : existing[ouIdForPopulation].populationTotal.value;
+            const dataValue = dataValues.find(
+                dv => dv.dataElement === totalPopulationDataElement.id && dv.orgUnit === ou.id
+            );
+            const valueFromDataValue =
+                dataValue && dataValue.value ? parseInt(dataValue.value) : undefined;
+
             return {
                 organisationUnit: ou,
-                value: oldValue || prevValue,
+                value: oldValue || prevValue || valueFromDataValue,
             };
         });
     }
@@ -435,6 +455,7 @@ export class TargetPopulation {
         populationDistributionsByOrgUnit: { [orgUnitId: string]: PopulationDistribution[] };
         ageDistributionByOrgUnit: AgeDistributionByOrgUnit;
     }> {
+        const { config } = this;
         const orgUnitsForAgeDistribution: { [ouId: string]: OrganisationUnit[] } = _(
             organisationUnits
         )
@@ -455,17 +476,29 @@ export class TargetPopulation {
 
         const { ageGroupCategory, ageDistributionDataElement } = this.config.population;
 
+        const orgUnitIds = _(orgUnitsForAgeDistribution)
+            .values()
+            .flatten()
+            .map(ou => ou.id)
+            .value();
+
+        // A bug in 2.37 returns empty analytics for data elements with aggregationType=LAST, so
+        // get values also from dataValues (startDate of campaign) to use if analytics is empty
+
+        const dataValues = getLatestDataValueWithValue(
+            await this.db.getDataValues({
+                dataElementGroup: [this.config.population.dataElementGroup.id],
+                orgUnit: orgUnitIds,
+                period: [period],
+            })
+        );
+
         const { headers, rows } = await this.db.getAnalytics({
             dimension: [
                 "dx:" + ageDistributionDataElement.id,
                 ageGroupCategory.id,
                 "pe:" + period,
-                "ou:" +
-                    _(orgUnitsForAgeDistribution)
-                        .values()
-                        .flatten()
-                        .map("id")
-                        .join(";"),
+                "ou:" + orgUnitIds.join(";"),
             ],
             skipRounding: true,
         });
@@ -473,7 +506,7 @@ export class TargetPopulation {
         const rowsByOrgUnit = _(rows)
             .map(row =>
                 _(headers)
-                    .map("name")
+                    .map(header => header.name)
                     .zip(row)
                     .fromPairs()
                     .value()
@@ -501,7 +534,7 @@ export class TargetPopulation {
         const ageDistributionByOrgUnit = _(orgUnitsForAgeDistribution)
             .values()
             .flatten()
-            .uniqBy("id")
+            .uniqBy(ou => ou.id)
             .map(orgUnit => {
                 const rows = _(rowsByOrgUnit).get(orgUnit.id);
                 const ageDistribution = _(rows)
@@ -510,7 +543,10 @@ export class TargetPopulation {
                         const categoryOption = _(ageGroupCategoryOptionById).getOrFail(
                             ageGroupCategoryOptionId
                         );
-                        return [categoryOption.displayName, parseFloat(row.value)];
+                        return [categoryOption.displayName, parseFloat(row.value)] as [
+                            string,
+                            number
+                        ];
                     })
                     .fromPairs()
                     .value();
@@ -522,7 +558,19 @@ export class TargetPopulation {
                                 ? distByOrgUnit[orgUnit.id][ageGroup]
                                 : undefined;
                         const oldValue = _(ageDistribution).get(ageGroup);
-                        return [ageGroup, oldValue || newValueExisting];
+
+                        const cocForAgeGroup = config.population.ageGroupCocByName[ageGroup];
+                        const dataValue = dataValues.find(
+                            dv =>
+                                dv.dataElement === ageDistributionDataElement.id &&
+                                dv.orgUnit === orgUnit.id &&
+                                (cocForAgeGroup && dv.categoryOptionCombo === cocForAgeGroup.id)
+                        );
+
+                        const valueFromDataValue =
+                            dataValue && dataValue.value ? parseFloat(dataValue.value) : undefined;
+
+                        return [ageGroup, oldValue || newValueExisting || valueFromDataValue];
                     })
                     .fromPairs()
                     .value();
@@ -574,5 +622,28 @@ export function groupTargetPopulationByArea(
         .values()
         .map(items => ({ area: items[0].organisationUnitArea, items }))
         .sortBy(({ area }) => area.displayName)
+        .value();
+}
+
+function getDataValueKeyWithoutPeriod(dataValue: DataValue): string {
+    return _.compact([
+        dataValue.orgUnit,
+        dataValue.dataElement,
+        dataValue.attributeOptionCombo,
+        dataValue.categoryOptionCombo,
+    ]).join(".");
+}
+
+function getLatestDataValueWithValue(dataValues: DataValue[]): DataValue[] {
+    return _(dataValues)
+        .groupBy(getDataValueKeyWithoutPeriod)
+        .values()
+        .map(dataValuesGroup =>
+            _(dataValuesGroup)
+                .sortBy(dv => dv.period)
+                .reverse()
+                .find(dv => Boolean(dv.value))
+        )
+        .compact()
         .value();
 }

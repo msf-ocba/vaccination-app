@@ -15,15 +15,12 @@ import { MetadataConfig } from "./config";
 
 type DashboardItem = {
     type: string;
+    visualization: Ref;
 };
 
-export interface ChartItem extends DashboardItem {
-    chart: Ref;
-}
+export interface ChartItem extends DashboardItem {}
 
-export interface ReportTableItem extends DashboardItem {
-    reportTable: Ref;
-}
+export interface ReportTableItem extends DashboardItem {}
 
 type DashboardData = {
     id: string;
@@ -32,7 +29,7 @@ type DashboardData = {
     dashboardItems: Array<ReportTableItem | ChartItem>;
 };
 
-type allDashboardElements = {
+type AllDashboardElements = {
     charts: Array<object>;
     reportTables: Array<object>;
     items: Array<ChartItem | ReportTableItem>;
@@ -40,8 +37,7 @@ type allDashboardElements = {
 
 export type DashboardMetadata = {
     dashboards: DashboardData[];
-    charts: object[];
-    reportTables: object[];
+    visualizations: object[];
 };
 
 export class Dashboard {
@@ -186,7 +182,7 @@ export class Dashboard {
             sharing
         );
 
-        const keys: Array<keyof allDashboardElements> = ["items", "charts", "reportTables"];
+        const keys: Array<keyof AllDashboardElements> = ["items", "charts", "reportTables"];
         const { items, charts, reportTables } = _(keys)
             .map(key => [key, _(dashboardItems).getOrFail(key)])
             .fromPairs()
@@ -200,7 +196,9 @@ export class Dashboard {
             ...sharing,
         };
 
-        return { dashboards: [dashboard], charts, reportTables };
+        const visualizations = _.concat(charts, reportTables);
+
+        return { dashboards: [dashboard], visualizations };
     }
 
     createDashboardItems(
@@ -209,7 +207,7 @@ export class Dashboard {
         endDate: Moment,
         dashboardItemsMetadata: Dictionary<any>,
         sharing: Sharing
-    ): allDashboardElements {
+    ): AllDashboardElements {
         const { organisationUnitsWithName, legendMetadata } = dashboardItemsMetadata;
         const organisationUnitsMetadata = organisationUnitsWithName.map(
             (ou: OrganisationUnitWithName) => ({
@@ -230,8 +228,9 @@ export class Dashboard {
             keyof typeof dashboardItemsElements
         >;
         const { antigenCategory, disaggregationMetadata, legendsMetadata, ...elements } = _(keys)
-            .map(key => [key, _(dashboardItemsElements).getOrFail(key)])
+            .map(key => [key, _(dashboardItemsElements).get(key, null)])
             .fromPairs()
+            .pickBy()
             .value();
 
         const dashboardItems = buildDashboardItems(
@@ -251,13 +250,13 @@ export class Dashboard {
         const reportTableIds = reportTables.map(table => table.id);
 
         const dashboardCharts = chartIds.map((id: string) => ({
-            type: "CHART",
-            chart: { id },
+            type: "VISUALIZATION",
+            visualization: { id },
         }));
 
         const dashboardTables = reportTableIds.map((id: string) => ({
-            type: "REPORT_TABLE",
-            reportTable: { id },
+            type: "VISUALIZATION",
+            visualization: { id },
         }));
 
         const dashboardData = {

@@ -6,13 +6,25 @@ import "../utils/lodash-mixins";
 
 import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
-import { Maybe, MetadataResponse, DataEntryForm, Section } from "./db.types";
+import {
+    Maybe,
+    MetadataResponse,
+    DataEntryForm,
+    Section,
+    CampaignDisaggregation,
+    getCampaignDisaggregationItemId,
+} from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
-import { getDataElements, CocMetadata } from "./AntigensDisaggregation";
+import {
+    getDataElements,
+    CocMetadata,
+    AntigenDisaggregationEnabled,
+} from "./AntigensDisaggregation";
 import { Dashboard, DashboardMetadata } from "./Dashboard";
 import { Teams, CategoryOptionTeam } from "./Teams";
-import { getDashboardCode, getByIndex } from "./config";
+import { getDashboardCode, getByIndex, MetadataConfig } from "./config";
+import { config } from "process";
 
 interface DataSetWithSections {
     sections: Array<{ id: string; name: string; dataSet: { id: string } }>;
@@ -20,8 +32,7 @@ interface DataSetWithSections {
 }
 
 interface PostSaveMetadata {
-    charts: object[];
-    reportTables: object[];
+    visualizations: object[];
     dashboards: object[];
     dataSets: DataSet[];
     dataEntryForms: DataEntryForm[];
@@ -125,6 +136,7 @@ export default class CampaignDb {
         const dataEntryForm = await this.getDataEntryForm(existingDataSet, metadataCoc);
         const sections = await this.getSections(db, dataSetId, existingDataSet, metadataCoc);
         const sharing = await campaign.getDataSetSharing();
+        const campaignDisaggregation = this.getCampaignDisaggregation(disaggregationData);
 
         const dataSet: DataSet = {
             id: dataSetId,
@@ -144,6 +156,10 @@ export default class CampaignDb {
             attributeValues: [
                 { value: "true", attribute: { id: metadataConfig.attributes.app.id } },
                 { value: "true", attribute: { id: metadataConfig.attributes.hideInTallySheet.id } },
+                {
+                    value: JSON.stringify(campaignDisaggregation),
+                    attribute: { id: metadataConfig.attributes.dataSetCampaignDisaggregation.id },
+                },
             ],
             dataEntryForm: { id: dataEntryForm.id },
             sections: sections.map(section => ({ id: section.id })),
@@ -163,6 +179,40 @@ export default class CampaignDb {
             },
             teamsToDelete
         );
+    }
+
+    private getCampaignDisaggregation(
+        disaggregationData: AntigenDisaggregationEnabled
+    ): CampaignDisaggregation {
+        const { config } = this.campaign;
+        const categoriesByCode = _.keyBy(config.categories, category => category.code);
+
+        const campaignDisaggregation = _.flatMap(disaggregationData, data => {
+            return _.flatMap(data.dataElements, dataElement => {
+                return _.flatMap(dataElement.categories, category => {
+                    const configCategory = categoriesByCode[category.code];
+
+                    if (!configCategory || category.code === config.categoryCodeForAntigens)
+                        return [];
+
+                    const categoryOptionIdsByName = _(configCategory.categoryOptions)
+                        .keyBy(co => co.displayName)
+                        .mapValues(co => co.id)
+                        .value();
+
+                    return category.categoryOptions.map(categoryOption => {
+                        return {
+                            antigen: data.antigen.id,
+                            dataElement: dataElement.id,
+                            category: configCategory.id,
+                            categoryOption: categoryOptionIdsByName[categoryOption],
+                        };
+                    });
+                });
+            });
+        });
+
+        return _.sortBy(campaignDisaggregation, getCampaignDisaggregationItemId);
     }
 
     public async saveTargetPopulation(): Promise<Response<string>> {
@@ -245,7 +295,7 @@ export default class CampaignDb {
         modelReferencesToDelete: ModelReference[]
     ): Promise<Response<string>> {
         const dashboardItems = _(modelReferencesToDelete)
-            .filter(o => _.includes(["charts", "reportTables"], o.model))
+            .filter(o => _.includes(["visualizations"], o.model))
             .value();
 
         return await db.deleteMany(dashboardItems);
@@ -268,32 +318,15 @@ export default class CampaignDb {
             const existingSection =
                 existingSectionsByName[sectionName] || existingSectionsByName["!" + sectionName];
 
-            const greyedFields = _(disaggregationData.dataElements)
-                .flatMap(dataElementDis => {
-                    const groups: string[][] = _.cartesianProduct(
-                        dataElementDis.categories.map(category => category.categoryOptions)
-                    );
-
-                    return groups.map(group => {
-                        const cocName = group.join(", ");
-                        const cocId = _(cocMetadata.cocIdByName).getOrFail(cocName);
-
-                        return {
-                            dataElement: { id: dataElementDis.id },
-                            categoryOptionCombo: { id: cocId },
-                        };
-                    });
-                })
-                .value();
-
             return {
                 id: existingSection ? existingSection.id : generateUid(),
                 dataSet: { id: dataSetId },
                 sortOrder: index,
                 name: sectionName,
                 dataElements: disaggregationData.dataElements.map(de => ({ id: de.id })),
-                // Use grey fields with inverted logic: set the used dataElement.cocId.
-                greyedFields,
+                // Previously we used greyedFields for disaggregation, but now we use a
+                // custom attribute instead
+                greyedFields: [],
             };
         });
 

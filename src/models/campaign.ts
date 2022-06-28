@@ -1,4 +1,11 @@
-import { OrganisationUnit, Maybe, Ref, MetadataResponse, Sharing } from "./db.types";
+import {
+    OrganisationUnit,
+    Maybe,
+    Ref,
+    MetadataResponse,
+    Sharing,
+    CampaignDisaggregation,
+} from "./db.types";
 import _, { Dictionary } from "lodash";
 import moment from "moment";
 
@@ -62,9 +69,7 @@ interface DashboardWithResources {
     name: string;
     dashboardItems: {
         id: string;
-        chart: Ref;
-        map: Ref;
-        reportTable: Ref;
+        visualization: Ref;
     };
 }
 
@@ -124,7 +129,8 @@ export default class Campaign {
                 description: string;
                 organisationUnits: Array<OrganisationUnitPathOnly>;
                 dataInputPeriods: Array<{ period: { id: string } }>;
-                sections: Array<SectionForDisaggregation>;
+                sections: SectionForDisaggregation[];
+                attributeValues: Array<{ attribute: { code: string }; value: string }>;
             }>;
             dashboards: Array<{
                 id: string;
@@ -137,6 +143,7 @@ export default class Campaign {
                     description: true,
                     organisationUnits: { id: true, path: true },
                     dataInputPeriods: { period: { id: true } },
+                    attributeValues: { attribute: { code: true }, value: true },
                     sections: {
                         id: true,
                         name: true,
@@ -177,7 +184,30 @@ export default class Campaign {
         );
 
         const { categoryComboCodeForTeams } = config;
-        const { name, sections } = dataSet;
+        const { name, attributeValues } = dataSet;
+        const attributeValue = _(attributeValues)
+            .keyBy(av => av.attribute.code)
+            .get(config.attributeCodeForDataSetsCampaignDisaggregation, null);
+
+        const campaignConfiguration: CampaignDisaggregation =
+            attributeValue && attributeValue.value ? JSON.parse(attributeValue.value) : undefined;
+
+        const sections = _(dataSet.sections)
+            .map(
+                (section): SectionForDisaggregation | undefined => {
+                    const antigen = antigensByCode[section.name];
+                    if (!antigen) return;
+
+                    const disaggregation = campaignConfiguration
+                        ? campaignConfiguration.filter(o => o.antigen === antigen.id)
+                        : undefined;
+
+                    return { ...section, disaggregation };
+                }
+            )
+            .compact()
+            .value();
+
         const ouIds = dataSet.organisationUnits.map(ou => ou.id);
         const teamsCategoyId = getByIndex(config.categories, "code", categoryComboCodeForTeams).id;
         const teamsMetadata = await getTeamsForCampaign(db, ouIds, teamsCategoyId, name);
@@ -235,6 +265,7 @@ export default class Campaign {
         // It does work, however, if we delete the objects in this order:
         // 1) Dashboards, 2) Everything else except Category options 3) Category options (teams),
         const keys = ["dashboards", "other", "teams"];
+
         const referencesGroups = _(modelReferencesToDelete)
             .groupBy(({ model }) => {
                 if (model === "dashboards") {
@@ -266,6 +297,7 @@ export default class Campaign {
             .compact()
             .unzip()
             .value();
+
         const sendNotification = () => {
             const notification = new CampaignNotification(db);
             return notification.sendOnUpdateOrDelete(dataSetsWithDataValues, "delete");
@@ -500,7 +532,7 @@ export default class Campaign {
         const targetPopulationForCampaign = await targetPopulation.update(
             this.organisationUnits,
             this.getEnabledAntigensDisaggregation(),
-            this.startDate ? moment(this.startDate).format("YYYYMMDD") : "TODAY"
+            moment(this.startDate || undefined).format("YYYYMMDD")
         );
 
         return this.update({
@@ -633,9 +665,7 @@ export default class Campaign {
                     name: true,
                     dashboardItems: {
                         id: true,
-                        chart: { id: true },
-                        map: { id: true },
-                        reportTable: { id: true },
+                        visualization: { id: true },
                     },
                 },
                 filters: [`code:in:[${codes.join(",")}]`],
@@ -658,11 +688,7 @@ export default class Campaign {
 
         const resources: { model: string; id: string }[] = _(dashboards)
             .flatMap(dashboard => dashboard.dashboardItems)
-            .flatMap(item => [
-                { model: "charts", ref: item.chart },
-                { model: "reportTables", ref: item.reportTable },
-                { model: "maps", ref: item.map },
-            ])
+            .flatMap(item => [{ model: "visualizations", ref: item.visualization }])
             .map(({ model, ref }) => (ref ? { model, id: ref.id } : null))
             .compact()
             .value();
