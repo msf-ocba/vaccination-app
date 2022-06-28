@@ -228,7 +228,7 @@ function getTables({
     doseMetadata,
 }) {
     return _(tables)
-        .compact()
+        .pickBy()
         .map((c, key) => {
             const teamMetadata = disaggregationMetadata.teams();
             const rows = c.rows.map(row => (row === "team" ? teamMetadata.categoryId : row));
