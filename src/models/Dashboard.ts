@@ -228,8 +228,9 @@ export class Dashboard {
             keyof typeof dashboardItemsElements
         >;
         const { antigenCategory, disaggregationMetadata, legendsMetadata, ...elements } = _(keys)
-            .map(key => [key, _(dashboardItemsElements).getOrFail(key)])
+            .map(key => [key, _(dashboardItemsElements).get(key, null)])
             .fromPairs()
+            .pickBy()
             .value();
 
         const dashboardItems = buildDashboardItems(

@@ -1,0 +1,64 @@
+{
+  "attributes": [
+    {
+      "code": "RVC_CAMPAIGN_DISAGGREGATION",
+      "lastUpdated": "2022-06-24T12:04:38.920",
+      "id": "FCHvbAVKvaY",
+      "created": "2022-06-24T11:22:45.364",
+      "name": "Campaign disaggregation",
+      "indicatorAttribute": false,
+      "trackedEntityTypeAttribute": false,
+      "indicatorGroupAttribute": false,
+      "userAttribute": false,
+      "userGroupAttribute": false,
+      "dataElementAttribute": false,
+      "mandatory": false,
+      "categoryOptionGroupAttribute": false,
+      "programStageAttribute": false,
+      "programAttribute": false,
+      "constantAttribute": false,
+      "categoryAttribute": false,
+      "valueType": "LONG_TEXT",
+      "categoryOptionComboAttribute": false,
+      "categoryOptionAttribute": false,
+      "optionSetAttribute": false,
+      "categoryOptionGroupSetAttribute": false,
+      "validationRuleAttribute": false,
+      "programIndicatorAttribute": false,
+      "organisationUnitGroupAttribute": false,
+      "sqlViewAttribute": false,
+      "dataElementGroupSetAttribute": false,
+      "legendSetAttribute": false,
+      "sharing": {
+        "owner": "Q7lEw9NnaKS",
+        "external": false,
+        "users": {},
+        "userGroups": {},
+        "public": "rw------"
+      },
+      "organisationUnitGroupSetAttribute": false,
+      "trackedEntityAttributeAttribute": false,
+      "organisationUnitAttribute": false,
+      "dataSetAttribute": true,
+      "documentAttribute": false,
+      "unique": false,
+      "validationRuleGroupAttribute": false,
+      "dataElementGroupAttribute": false,
+      "sectionAttribute": false,
+      "optionAttribute": false,
+      "lastUpdatedBy": {
+        "displayName": "admin admin",
+        "name": "admin admin",
+        "id": "Q7lEw9NnaKS",
+        "username": "admin"
+      },
+      "createdBy": {
+        "displayName": "admin admin",
+        "name": "admin admin",
+        "id": "Q7lEw9NnaKS",
+        "username": "admin"
+      },
+      "translations": []
+    }
+  ]
+}

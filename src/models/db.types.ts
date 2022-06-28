@@ -106,6 +106,7 @@ export interface CategoryCombo {
     code: string;
     displayName: string;
     categories: Ref[];
+    categoryOptionCombos: NamedRef[];
 }
 
 export interface CategoryOptionCombo {
@@ -149,6 +150,10 @@ export interface DataElementGroup {
 
 export interface Ref {
     id: string;
+}
+
+export interface NamedRef extends Ref {
+    name: string;
 }
 
 export interface Metadata {
@@ -301,18 +306,19 @@ export interface DataValue {
     comment?: string;
 }
 
-export interface DataValueRequest {
+export interface DataValueToPost {
     dataSet?: string;
-    completeDate?: string;
-    period?: string;
+    period: string;
     orgUnit: string;
+    dataElement: string;
     attributeOptionCombo?: string;
-    dataValues: Array<{
-        dataElement: string;
-        categoryOptionCombo?: string;
-        value: string;
-        comment?: string;
-    }>;
+    categoryOptionCombo?: string;
+    value: string;
+    comment?: string;
+}
+
+export interface DataValueRequest {
+    dataValues: DataValueToPost[];
 }
 
 export interface DataValueResponse {
@@ -386,4 +392,17 @@ export interface DashboardMetadataRequest {
     indicators: DataElementItemCustom[];
     categoryOptions: CategoryOptionsCustom[];
     organisationUnits: OrganisationUnitWithName[];
+}
+
+export type CampaignDisaggregation = CampaignDisaggregationItem[];
+
+export interface CampaignDisaggregationItem {
+    antigen: string;
+    dataElement: string;
+    category: string;
+    categoryOption: string;
+}
+
+export function getCampaignDisaggregationItemId(item: CampaignDisaggregationItem): string {
+    return [item.antigen, item.dataElement, item.category, item.categoryOption].join(".");
 }
