@@ -155,8 +155,7 @@ export interface Metadata {
     dataSets?: Array<DataSet>;
     dataEntryForms?: Array<DataEntryForm>;
     sections?: Array<Section>;
-    charts?: Array<Dictionary<any>>;
-    reportTables?: Array<Dictionary<any>>;
+    visualizations?: Array<Dictionary<any>>;
     dashboards?: Array<Dictionary<any>>;
 }
 

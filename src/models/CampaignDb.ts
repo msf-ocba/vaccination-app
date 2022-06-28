@@ -20,8 +20,7 @@ interface DataSetWithSections {
 }
 
 interface PostSaveMetadata {
-    charts: object[];
-    reportTables: object[];
+    visualizations: object[];
     dashboards: object[];
     dataSets: DataSet[];
     dataEntryForms: DataEntryForm[];
@@ -245,7 +244,7 @@ export default class CampaignDb {
         modelReferencesToDelete: ModelReference[]
     ): Promise<Response<string>> {
         const dashboardItems = _(modelReferencesToDelete)
-            .filter(o => _.includes(["charts", "reportTables"], o.model))
+            .filter(o => _.includes(["visualizations"], o.model))
             .value();
 
         return await db.deleteMany(dashboardItems);
