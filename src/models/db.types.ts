@@ -393,16 +393,3 @@ export interface DashboardMetadataRequest {
     categoryOptions: CategoryOptionsCustom[];
     organisationUnits: OrganisationUnitWithName[];
 }
-
-export type CampaignDisaggregation = CampaignDisaggregationItem[];
-
-export interface CampaignDisaggregationItem {
-    antigen: string;
-    dataElement: string;
-    category: string;
-    categoryOption: string;
-}
-
-export function getCampaignDisaggregationItemId(item: CampaignDisaggregationItem): string {
-    return [item.antigen, item.dataElement, item.category, item.categoryOption].join(".");
-}
