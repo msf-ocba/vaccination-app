@@ -106,7 +106,6 @@ export interface CategoryCombo {
     code: string;
     displayName: string;
     categories: Ref[];
-    categoryOptionCombos: NamedRef[];
 }
 
 export interface CategoryOptionCombo {
@@ -150,10 +149,6 @@ export interface DataElementGroup {
 
 export interface Ref {
     id: string;
-}
-
-export interface NamedRef extends Ref {
-    name: string;
 }
 
 export interface Metadata {
