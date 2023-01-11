@@ -200,15 +200,22 @@ export function filterTeamsByNames(
     teamCategoryId: string
 ): CategoryOptionTeam[] {
     if (_.isEmpty(teams)) return [];
-
-    const matchers = campaignNames.map(name => new RegExp(`^Team \\d+ - ${name}$`));
+    const nameMatches = (teamName: string, campaignName: string) => {
+        const splitStr = " - ";
+        const campaignNameFromTeam = teamName
+            .split(splitStr)
+            .slice(1)
+            .join(splitStr);
+        const prefixRegexp = new RegExp("^Team \\d+" + splitStr);
+        return Boolean(teamName.match(prefixRegexp) && campaignName === campaignNameFromTeam);
+    };
 
     const filteredTeams = teams.filter(
         (co: { categories: Array<{ id: string }>; name: string }) => {
             const categoryIds = co.categories.map(c => c.id);
             return (
                 _.includes(categoryIds, teamCategoryId) &&
-                matchers.some(matcher => matcher.test(co.name))
+                _(campaignNames).some(campaignName => nameMatches(co.name, campaignName))
             );
         }
     );
