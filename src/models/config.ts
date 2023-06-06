@@ -17,6 +17,15 @@ import {
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
 
+export const userRoles = {
+    app: "RVC App",
+    campaignManager: "RVC Campaign Manager",
+    feedback: "RVC Feedback",
+    fieldUser: "Field User",
+    medicalFocalPoint: "Medical Focal Point",
+    onlineDataEntry: "Online Data Entry",
+};
+
 export const baseConfig = {
     expirationDays: 8,
     categoryCodeForAntigens: "RVC_ANTIGEN",
@@ -37,9 +46,13 @@ export const baseConfig = {
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
     dataSetDashboardCodePrefix: "RVC_CAMPAIGN",
     userRoleNames: {
-        manager: ["RVC Campaign Manager"],
-        feedback: ["RVC Feedback"],
-        targetPopulation: ["Medical Focal Point", "Field User", "Online Data Entry"],
+        manager: [userRoles.campaignManager],
+        feedback: [userRoles.feedback],
+        targetPopulation: [
+            userRoles.medicalFocalPoint,
+            userRoles.fieldUser,
+            userRoles.onlineDataEntry,
+        ],
     },
 };
 
