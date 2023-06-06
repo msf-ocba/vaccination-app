@@ -18,12 +18,12 @@ import {
 import { sortAgeGroups } from "../utils/age-groups";
 
 export const userRoles = {
-    app: "RVC App",
-    campaignManager: "RVC Campaign Manager",
-    feedback: "RVC Feedback",
-    fieldUser: "Field User",
-    medicalFocalPoint: "Medical Focal Point",
-    onlineDataEntry: "Online Data Entry",
+    app: "RVC App: Access",
+    campaignManager: "RVC App: Campaign Manager",
+    feedback: "RVC App: Feedback",
+    fieldUser: "Position: Field User",
+    medicalFocalPoint: "Position: Medical Focal Point",
+    onlineDataEntry: "Data Entry: Online Edit",
 };
 
 export const baseConfig = {
