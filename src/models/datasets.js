@@ -45,7 +45,7 @@ export async function list(config, d2, filters, pagination) {
         `categoryCombo.code:eq:${config.categoryCodeForTeams}`,
     ]);
     const fields = (forcedFields || defaultListFields).concat(requiredFields).join(",");
-    const listOptions = { fields, filter, pageSize: 1000, order };
+    const listOptions = { fields, filter, pageSize: 1000, order, apiEndpoint: "/dataSets" };
 
     const dataSetsBase = await d2.models.dataSets
         .list(_.pickBy(listOptions, x => _.isNumber(x) || !_.isEmpty(x)))

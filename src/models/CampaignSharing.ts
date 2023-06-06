@@ -4,6 +4,7 @@ import { OrganisationUnitGroupSet, Access, Sharing } from "./db.types";
 import Campaign from "./campaign";
 import DbD2 from "./db-d2";
 import { promiseMap } from "../utils/promises";
+import { userRoles } from "./config";
 
 /*
     Return sharing object {publicAccess, externalAccess, userAccesses, userGroupAccesses} for
@@ -126,8 +127,12 @@ export default class CampaignSharing {
                     type: "usersByOrgUnits",
                     level: 4,
                     userRoles: [
-                        ["RVC App"],
-                        ["Medical Focal Point", "Field User", "Online Data Entry"],
+                        [userRoles.app],
+                        [
+                            userRoles.medicalFocalPoint,
+                            userRoles.fieldUser,
+                            userRoles.onlineDataEntry,
+                        ],
                     ],
                     permission: { metadata: "edit" },
                 },
