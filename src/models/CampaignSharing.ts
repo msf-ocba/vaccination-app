@@ -94,26 +94,8 @@ export default class CampaignSharing {
 
     sharings: { dataSet: SharingDefinition; dashboard: SharingDefinition } = {
         dataSet: {
-            publicPermission: { metadata: "edit", data: "view" },
-            filters: [
-                {
-                    type: "userGroups",
-                    userGroups: [
-                        "_DATASET_Field Training",
-                        "_DATASET_Field User",
-                        "_DATASET_HMIS Officer",
-                        "_DATASET_HQ Analyst",
-                        "_DATASET_MedCo",
-                        "_DATASET_Medical Focal Point",
-                        "_DATASET_Online Data Entry",
-                        "_DATASET_Super HMIS Officer",
-                        "_DATASET_Superuser",
-                        "_DATASET_TesaCo",
-                        "_DATASET_Training user",
-                    ],
-                    permission: { metadata: "view", data: "edit" },
-                },
-            ],
+            publicPermission: { metadata: "edit", data: "edit" },
+            filters: [],
         },
         dashboard: {
             publicPermission: { metadata: "none" },
