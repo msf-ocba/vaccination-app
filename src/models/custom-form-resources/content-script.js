@@ -86,15 +86,25 @@ var highlightDataElementRows = function() {
         .focusout(ev => setClass(ev, "focus", false));
 };
 
+const storageKey = "RVC_CURRENT_LOCALE";
+
+function getUserSettings() {
+    if (dhis2.de.isOffline) return;
+
+    return $.getJSON("../api/userSettings.json?key=keyDbLocale", function(data) {
+        console.log("User settings loaded:", data);
+        const locale = data.keyDbLocale || "";
+        localStorage[storageKey] = locale;
+    });
+}
+
 function getCurrentLocale() {
-    const userSettings = dhis2.de.storageManager.getUserSettings();
-    return userSettings ? userSettings.keyDbLocale : null;
+    return localStorage[storageKey] || "";
 }
 
 var translate = function(options) {
     const translations = options.translations;
     const currentLocale = getCurrentLocale();
-
     if (!currentLocale) return;
 
     $("*[data-translate='']")
@@ -193,7 +203,10 @@ function init(options) {
         applyChangesToForm(options);
         validateDataInputPeriods(options);
     });
+
     $(document).on("dhis2.de.event.dataValueSaved", runValidations.bind(null, options));
+
+    getUserSettings();
 }
 
 export {};

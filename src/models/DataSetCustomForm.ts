@@ -465,16 +465,18 @@ export class DataSetCustomForm {
             "Quality and safety indicators",
             "General Q&S",
         ])
-            .map(text => [i18n.t(text), text] as [string, string])
+            .map(text => [i18n.t(text), i18n.t(text, { lng: "en" })] as [string, string])
             .fromPairs()
             .value();
 
         const validationTranslations = {
             selectedPeriodNotInCampaignRange: i18n.t(
-                "Selected period ({selectedPeriod}) is not in the campaign period range ({periodStart} -> {periodEnd})"
+                "Selected period ({selectedPeriod}) is not in the campaign period range ({periodStart} -> {periodEnd})",
+                { lng: "en" }
             ),
             currentDateNotInCampaignEntryRange: i18n.t(
-                "Current date ({currentDate}) is not in the campaign entry range ({openingDate} -> {closingDate})"
+                "Current date ({currentDate}) is not in the campaign entry range ({openingDate} -> {closingDate})",
+                { lng: "en" }
             ),
         };
 
@@ -485,7 +487,7 @@ export class DataSetCustomForm {
             .map(([key, text]) => [
                 key,
                 _(locales)
-                    .map(locale => [locale, i18n.t(i18n.t(text, { lng: "en" }), { lng: locale })])
+                    .map(locale => [locale, i18n.t(text, { lng: locale })])
                     .fromPairs()
                     .value(),
             ])
@@ -493,10 +495,13 @@ export class DataSetCustomForm {
             .value();
 
         const categoryOptionsIdByName = _.keyBy(campaign.config.categoryOptions, "displayName");
-        const ids = [
+        const ids = _.uniq([
             ..._(disaggregations)
                 .flatMap(dis => dis.dataElements)
                 .map("id")
+                .value(),
+            ..._(disaggregations)
+                .map(dis => dis.antigen.id)
                 .value(),
             ..._(disaggregations)
                 .flatMap(dis => dis.dataElements)
@@ -505,7 +510,7 @@ export class DataSetCustomForm {
                 .map(co => _(categoryOptionsIdByName).get(co).id)
                 .uniq()
                 .value(),
-        ];
+        ]);
 
         const { categoryOptions, dataElements } = await campaign.db.getMetadata<{
             categoryOptions: ObjectWithTranslation[];
@@ -535,7 +540,7 @@ export class DataSetCustomForm {
             .fromPairs()
             .value();
 
-        return { ...interfaceTranslationsByLocale, ...metadataTranslationsByLocale };
+        return { ...metadataTranslationsByLocale, ...interfaceTranslationsByLocale };
     }
 
     generate(): string {
