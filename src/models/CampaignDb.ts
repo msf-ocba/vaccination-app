@@ -408,7 +408,7 @@ type DataSetWithDataInputPeriods = {
 
 type CampaignPeriods = { startDate: Date; endDate: Date };
 
-function getDataInputFromCampaign(campaign: Campaign): Maybe<DataInput> {
+export function getDataInputFromCampaign(campaign: Campaign): Maybe<DataInput> {
     if (!campaign.startDate || !campaign.endDate) return;
 
     return {
