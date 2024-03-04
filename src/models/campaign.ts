@@ -67,7 +67,7 @@ interface DashboardWithResources {
 }
 
 export default class Campaign {
-    public selectableLevels: number[] = [5];
+    public selectableLevels: number[] = [6];
     private maxNameLength = 140;
 
     validations: _.Dictionary<() => ValidationErrors | Promise<ValidationErrors>> = {
