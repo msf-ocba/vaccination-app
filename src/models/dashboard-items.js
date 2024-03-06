@@ -71,7 +71,7 @@ export const dashboardItemsConfig = {
         coverageByCampaign: {
             ...definitions.coverageByDosesAndPeriod,
             area: "campaign",
-            title: ns => i18n.t("Coverage by campaign {{- period}} (do not edit this chart)", ns),
+            title: ns => i18n.t("Coverage by Campaign {{- period}} (do not edit this chart)", ns),
             appendCode: "Coverage by campaign",
         },
     },
