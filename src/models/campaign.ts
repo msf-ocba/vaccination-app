@@ -199,6 +199,14 @@ export default class Campaign {
         return new Campaign(db, config, initialData);
     }
 
+    isLegacy(): boolean {
+        const getLevel = (ou: OrganisationUnitPathOnly) => ou.path.split("/").length - 1;
+
+        return _(this.organisationUnits).some(
+            ou => !_(this.selectableLevels).includes(getLevel(ou))
+        );
+    }
+
     public update(newData: Data) {
         return new Campaign(this.db, this.config, newData);
     }
