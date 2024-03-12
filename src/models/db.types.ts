@@ -180,6 +180,7 @@ export interface Section {
 export interface DataSet extends Sharing {
     id: string;
     name: string;
+    shortName: string;
     description: string;
     periodType: string;
     categoryCombo: Ref;
