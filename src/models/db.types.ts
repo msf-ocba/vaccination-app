@@ -316,10 +316,19 @@ export interface DataValueRequest {
     dataValues: DataValueToPost[];
 }
 
-export interface DataValueResponse {
+export type DataValueResponse = DataValuePreV40Response | DataValueNewPostV40Response;
+
+export interface DataValuePreV40Response {
     responseType: "ImportSummary";
     status: "SUCCESS" | "ERROR";
     description: string;
+}
+
+export interface DataValueNewPostV40Response {
+    status: "OK" | "ERROR";
+    httpStatus: "OK" | "ERROR";
+    httpStatusCode: number;
+    response: DataValuePreV40Response;
 }
 
 export type MetadataFields = { [key in ModelName]: ModelFields };
