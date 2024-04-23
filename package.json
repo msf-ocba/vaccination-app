@@ -101,13 +101,13 @@
         "wait-on": "^3.2.0"
     },
     "manifest.webapp": {
-        "name": "Reactive Vaccination",
+        "name": "Vaccination campaign",
         "description": "DHIS2 MSF Reactive Vaccination App",
         "icons": {
             "48": "icon.png"
         },
         "developer": {
-            "url": "https://www.eyeseetea.com/",
+            "url": "https://www.eyeseetea.com",
             "name": "EyeSeeTea team"
         },
         "activities": {
