@@ -75,9 +75,10 @@ class CampaignWizard extends React.Component {
                     `Choose a name for the campaign and define the period for which data entry will be enabled`
                 ),
                 help: i18n.t(
-                    `Give your campaign a name that makes it easy to recognize it in HMIS. The suggested format is "RVC {LOCATION} - {ANTIGEN1}/{ANTIGEN2}/... - {CAMPAIGN PERIOD}". Example -> "RVC Shabunda - Measles/Cholera - Jan-Mar 2019".  The maximum length of the campaign name is 140 characters.
+                    `Give your campaign a name that makes it easy to recognize it in HMIS. The format to be used is: "YY {year} - MM ({month}-PRE/REAC {Preventive or Reactive} - Name of the project". Example -> "24-05-PRE-Diffa". The maximum length of the campaign name is 140 characters.
 
-                    The start and end date should define the period for which you expect to enter data - i.e .the first and last day of your campaign. If you are not certain of the end date, enter a date a few weeks later than the expected date of completion (refer to your microplan). It is possible to edit the dates at any point in time.`
+                    The start and end date should define the period for which you expect to enter data - i.e .the first and last day of your campaign. If you are not certain of the end date, enter a date a few weeks later than the expected date of completion (refer to your microplan). It is possible to edit the dates at any point in time.`,
+                    { nsSeparator: false }
                 ),
             },
             {
