@@ -75,7 +75,7 @@ export interface MetadataConfig extends BaseConfig {
             | { kind: "fromAntigens" }
             | { kind: "fromAgeGroups" }
             | { kind: "fromDoses" }
-            | { kind: "values"; values: string[] };
+            | { kind: "values"; values: CategoryOption[] };
     }>;
     defaults: {
         categoryOptionCombo: CategoryOptionCombo;
@@ -100,10 +100,11 @@ export interface MetadataConfig extends BaseConfig {
     antigens: Array<{
         id: string;
         name: string;
+        displayName: string;
         code: string;
         dataElements: { id: string; code: string; optional: boolean; order: number }[];
-        ageGroups: Array<string[][]>;
-        doses: Array<{ id: string; name: string }>;
+        ageGroups: Array<CategoryOption[][]>;
+        doses: Array<{ id: string; code: string; name: string; displayName: string }>;
     }>;
     legendSets: Array<{
         id: string;
@@ -125,7 +126,7 @@ function getCategoriesDisaggregation(
         } else {
             $categoryOptions = {
                 kind: "values",
-                values: category.categoryOptions.map(co => co.displayName),
+                values: category.categoryOptions,
             };
         }
 
@@ -180,25 +181,27 @@ function getConfigDataElementsDisaggregation(
         dataElements
     );
 
-    return dataElementsForAntigens.map(dataElement => {
-        const getCategories = (typeString: string): Category[] => {
-            const code = getCode(["RVC_DE", dataElement.code]) + "_" + typeString;
-            const categoryRefs = (catCombosByCode[code] || { categories: [] }).categories;
-            return getFromRefs(categoryRefs, categories);
-        };
+    return dataElementsForAntigens.map(
+        (dataElement): MetadataConfig["dataElementsDisaggregation"][0] => {
+            const getCategories = (typeString: string): Category[] => {
+                const code = getCode(["RVC_DE", dataElement.code]) + "_" + typeString;
+                const categoryRefs = (catCombosByCode[code] || { categories: [] }).categories;
+                return getFromRefs(categoryRefs, categories);
+            };
 
-        const categoriesForAntigens = _.concat(
-            getCategories("REQUIRED").map(({ code }) => ({ code, optional: false })),
-            getCategories("OPTIONAL").map(({ code }) => ({ code, optional: true }))
-        );
+            const categoriesForAntigens = _.concat(
+                getCategories("REQUIRED").map(({ code }) => ({ code, optional: false })),
+                getCategories("OPTIONAL").map(({ code }) => ({ code, optional: true }))
+            );
 
-        return {
-            id: dataElement.id,
-            name: dataElement.displayName,
-            code: dataElement.code,
-            categories: categoriesForAntigens,
-        };
-    });
+            return {
+                id: dataElement.id,
+                name: dataElement.displayName,
+                code: dataElement.code,
+                categories: categoriesForAntigens,
+            };
+        }
+    );
 }
 
 function getAntigens(
@@ -213,66 +216,80 @@ function getAntigens(
     const dataElementGroupsByCode = _.keyBy(dataElementGroups, "code");
     const categoryOptionGroupsByCode = _.keyBy(categoryOptionGroups, "code");
 
-    const antigensMetadata = categoryOptions.map(categoryOption => {
-        const getDataElements = (typeString: string) => {
-            const code = getCode([categoryOption.code, typeString]);
-            const dataElementsForType = getFromRefs(
-                _(dataElementGroupsByCode).getOrFail(code).dataElements,
-                dataElements
+    const antigensMetadata = categoryOptions.map(
+        (categoryOption): MetadataConfig["antigens"][0] => {
+            const getDataElements = (typeString: string) => {
+                const code = getCode([categoryOption.code, typeString]);
+                const dataElementsForType = getFromRefs(
+                    _(dataElementGroupsByCode).getOrFail(code).dataElements,
+                    dataElements
+                );
+                return dataElementsForType.map(de => ({
+                    id: de.id,
+                    code: de.code,
+                    optional: typeString === "OPTIONAL",
+                    order: parseInt(de.formName.split(" - ")[1] || "0"), // formName: Name - INDEX
+                }));
+            };
+
+            const dataElementsForAntigens = _.concat(
+                getDataElements("REQUIRED"),
+                getDataElements("OPTIONAL")
             );
-            return dataElementsForType.map(de => ({
-                id: de.id,
-                code: de.code,
-                optional: typeString === "OPTIONAL",
-                order: parseInt(de.formName.split(" - ")[1] || "0"), // formName: Name - INDEX
-            }));
-        };
 
-        const dataElementsForAntigens = _.concat(
-            getDataElements("REQUIRED"),
-            getDataElements("OPTIONAL")
-        );
+            const dataElementSorted = _.orderBy(dataElementsForAntigens, "order");
 
-        const dataElementSorted = _.orderBy(dataElementsForAntigens, "order");
+            const mainAgeGroups = _(categoryOptionGroupsByCode).getOrFail(
+                getCode([categoryOption.code, "AGE_GROUP"])
+            ).categoryOptions;
 
-        const mainAgeGroups = _(categoryOptionGroupsByCode)
-            .getOrFail(getCode([categoryOption.code, "AGE_GROUP"]))
-            .categoryOptions.map(co => co.displayName);
+            const { categoryComboCodeForAgeGroup } = baseConfig;
+            const sortConfig = { categoryComboCodeForAgeGroup, categories };
 
-        const { categoryComboCodeForAgeGroup } = baseConfig;
-        const sortConfig = { categoryComboCodeForAgeGroup, categories };
+            const ageGroups = sortAgeGroups(sortConfig, mainAgeGroups).map(mainAgeGroup => {
+                const codePrefix = getCode([
+                    categoryOption.code,
+                    "AGE_GROUP",
+                    mainAgeGroup.displayName,
+                ]);
+                const disaggregatedAgeGroups = _(categoryOptionGroups)
+                    .filter(cog => cog.code.startsWith(codePrefix))
+                    .sortBy(cog => cog.code)
+                    .map(cog => sortAgeGroups(sortConfig, cog.categoryOptions))
+                    .value();
+                return [[mainAgeGroup], ...disaggregatedAgeGroups];
+            });
 
-        const ageGroups = sortAgeGroups(sortConfig, mainAgeGroups).map(mainAgeGroup => {
-            const codePrefix = getCode([categoryOption.code, "AGE_GROUP", mainAgeGroup]);
-            const disaggregatedAgeGroups = _(categoryOptionGroups)
-                .filter(cog => cog.code.startsWith(codePrefix))
-                .sortBy(cog => cog.code)
-                .map(cog =>
-                    sortAgeGroups(sortConfig, cog.categoryOptions.map(co => co.displayName))
+            const dosesIds = _(categoryOptionGroupsByCode)
+                .getOrFail(getCode([categoryOption.code, "DOSES"]))
+                .categoryOptions.map(co => co.id);
+            const allDoses = _(categoriesByCode).getOrFail(baseConfig.categoryCodeForDoses)
+                .categoryOptions;
+            const doses = _(allDoses)
+                .map(co =>
+                    _(dosesIds).includes(co.id)
+                        ? {
+                              id: co.id,
+                              code: co.code,
+                              name: co.displayName,
+                              displayName: co.displayName,
+                          }
+                        : null
                 )
+                .compact()
                 .value();
-            return [[mainAgeGroup], ...disaggregatedAgeGroups];
-        });
 
-        const dosesIds = _(categoryOptionGroupsByCode)
-            .getOrFail(getCode([categoryOption.code, "DOSES"]))
-            .categoryOptions.map(co => co.id);
-        const allDoses = _(categoriesByCode).getOrFail(baseConfig.categoryCodeForDoses)
-            .categoryOptions;
-        const doses = _(allDoses)
-            .map(co => (_(dosesIds).includes(co.id) ? { id: co.id, name: co.displayName } : null))
-            .compact()
-            .value();
-
-        return {
-            id: categoryOption.id,
-            name: categoryOption.displayName,
-            code: categoryOption.code,
-            dataElements: dataElementSorted,
-            ageGroups,
-            doses,
-        };
-    });
+            return {
+                id: categoryOption.id,
+                name: categoryOption.displayName,
+                displayName: categoryOption.displayName,
+                code: categoryOption.code,
+                dataElements: dataElementSorted,
+                ageGroups: ageGroups,
+                doses: doses,
+            };
+        }
+    );
 
     return antigensMetadata;
 }
@@ -377,7 +394,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         categories: metadata.categories,
         categoriesDisaggregation: getCategoriesDisaggregation(metadata.categories),
         categoryOptions: _(metadata.categories)
-            .flatMap("categoryOptions")
+            .flatMap(category => category.categoryOptions)
             .value(),
         categoryCombos: metadata.categoryCombos,
         dataElements: metadata.dataElements,

@@ -21,6 +21,7 @@ import {
     MetadataOptions,
     Message,
     DataValueToPost,
+    Ref,
 } from "./db.types";
 import "../utils/lodash-mixins";
 import { promiseMap } from "../utils/promises";
@@ -309,38 +310,25 @@ export default class DbD2 {
 
     public async getCocsByCategoryComboCode(
         codes: string[]
-    ): Promise<Array<{ id: string; categoryOptionNames: string[] }>> {
+    ): Promise<Array<{ id: string; categoryOptions: Ref[] }>> {
         const filter = `code:in:[${codes.join(",")}]`;
 
-        const { categoryOptionCombos, categoryCombos } = await this.getMetadata<{
+        const { categoryOptionCombos } = await this.getMetadata<{
             categoryOptionCombos: Array<{
                 id: string;
-                categoryCombo: { id: string };
                 categoryOptions: Array<{ id: string }>;
-            }>;
-            categoryCombos: Array<{
-                id: string;
-                categories: Array<{ categoryOptions: Array<{ id: string; name: string }> }>;
             }>;
         }>({
             categoryOptionCombos: {
                 fields: {
                     id: true,
-                    categoryCombo: { id: true },
                     categoryOptions: { id: true },
                 },
                 filters: [`categoryCombo.${filter}`],
             },
-            categoryCombos: {
-                fields: {
-                    id: true,
-                    categories: { categoryOptions: { id: true, name: true } },
-                },
-                filters: [filter],
-            },
         });
 
-        return getCocsWithUntranslatedOptionNames(categoryCombos, categoryOptionCombos);
+        return categoryOptionCombos;
     }
 
     public async postMetadata<Metadata>(
@@ -491,47 +479,6 @@ export default class DbD2 {
 
         return response.dataValues || [];
     }
-}
-
-/* DHIS2 uses the locale of the user that generates a category option combo to set its
-   name (that's a bug, names should be untranslated), so we will use coc.categoryOptions instead.
-   Note that coc.categoryOptions does not keep the original categories order, so we need
-   the associated category combos to perform that sorting.
-*/
-
-function getCocsWithUntranslatedOptionNames(
-    categoryCombos: {
-        id: string;
-        categories: { categoryOptions: { id: string; name: string }[] }[];
-    }[],
-    categoryOptionCombos: {
-        id: string;
-        categoryCombo: { id: string };
-        categoryOptions: { id: string }[];
-    }[]
-) {
-    const categoryOptionNameById = _(categoryCombos)
-        .flatMap(categoryCombo => categoryCombo.categories)
-        .flatMap(category => category.categoryOptions)
-        .uniqBy(categoryOption => categoryOption.id)
-        .map(categoryOption => [categoryOption.id, categoryOption.name] as [string, string])
-        .fromPairs()
-        .value();
-
-    const categoryCombosById = _.keyBy(categoryCombos, categoryCombo => categoryCombo.id);
-
-    return categoryOptionCombos.map(coc => {
-        const categoryOptions = _.sortBy(coc.categoryOptions, categoryOption => {
-            const categoryCombo = _(categoryCombosById).getOrFail(coc.categoryCombo.id);
-            const categoryOptionIndex = _(categoryCombo.categories).findIndex(category =>
-                _(category.categoryOptions).some(co => co.id === categoryOption.id)
-            );
-            if (categoryOptionIndex < 0) throw new Error("Cannot find index of category option");
-            return categoryOptionIndex;
-        });
-        const names = categoryOptions.map(co => _(categoryOptionNameById).getOrFail(co.id));
-        return { id: coc.id, categoryOptionNames: names };
-    });
 }
 
 export function toStatusResponse(response: ApiResponse<MetadataResponse>): Response<string> {

@@ -149,7 +149,9 @@ class SaveStep extends React.Component {
             "(",
             `${i18n.t("doses")}: ${antigen.doses.length}`,
             ", ",
-            `${i18n.t("age groups")}: ${ageGroups.join(", ")}`,
+            `${i18n.t("age groups")}: ${ageGroups
+                .map(ageGroup => ageGroup.displayName)
+                .join(", ")}`,
             ")",
         ].join("");
     }

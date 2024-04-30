@@ -26,15 +26,15 @@ const OptionGroup: SFC<OptionGroupProps> = props => {
                 {optionGroup.values[optionGroup.indexSelected].map((option, optionIdx) =>
                     !isEditing ? (
                         option.selected && (
-                            <span key={option.name} className={classes.optionValue}>
-                                {option.name}
+                            <span key={option.option.id} className={classes.optionValue}>
+                                {option.option.displayName}
                             </span>
                         )
                     ) : (
                         <SimpleCheckbox
-                            key={option.name}
+                            key={option.option.id}
                             checked={option.selected}
-                            label={option.name}
+                            label={option.option.displayName}
                             onChange={update([
                                 ...basePath,
                                 "values",
@@ -54,7 +54,7 @@ const OptionGroup: SFC<OptionGroupProps> = props => {
                             value={optionGroup.indexSelected.toString()}
                             onChange={update([...basePath, "indexSelected"])}
                             options={optionGroup.values.map((og, index) => ({
-                                text: og.map(o => o.name).join(" , "),
+                                text: og.map(o => o.option).join(" , "),
                                 value: index.toString(),
                             }))}
                         />

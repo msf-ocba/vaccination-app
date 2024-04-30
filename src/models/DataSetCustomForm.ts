@@ -6,6 +6,7 @@ import Campaign, { Antigen } from "./campaign";
 import { AntigenDisaggregationEnabled, CocMetadata } from "./AntigensDisaggregation";
 import i18n from "../locales";
 import "../utils/lodash-mixins";
+import { CategoryOption } from "./db.types";
 
 const contentScript = require("!raw-loader!./custom-form-resources/content-script.js").default;
 const cssContents = require("!raw-loader!./custom-form-resources/form.css").default;
@@ -49,7 +50,7 @@ function inputTd(dataElementId: string, cocId: string): string {
     );
 }
 
-function totalTh(categoryOptionGroups: string[][], isSplit: boolean): string {
+function totalTh(categoryOptionGroups: CategoryOption[][], isSplit: boolean): string {
     return h(
         "th",
         { rowspan: categoryOptionGroups.length, class: "data-header", "data-translate": true },
@@ -89,7 +90,7 @@ export class DataSetCustomForm {
         return new DataSetCustomForm(campaign, metadata, disaggregations, translations);
     }
 
-    renderHeaderForGroup(categoryOptionGroups: string[][], isSubTotal: boolean): Children {
+    renderHeaderForGroup(categoryOptionGroups: CategoryOption[][], isSubTotal: boolean): Children {
         const total =
             _(categoryOptionGroups)
                 .map(cos => cos.length)
@@ -128,7 +129,7 @@ export class DataSetCustomForm {
                                 class: "data-header",
                                 "data-translate": true,
                             },
-                            h("span", { align: "center" }, categoryOptionName)
+                            h("span", { align: "center" }, categoryOptionName.name)
                         )
                     ),
                     repeat
@@ -146,8 +147,8 @@ export class DataSetCustomForm {
     getCocIds(
         antigen: Maybe<Antigen>,
         dataElement: DataElement,
-        categoryOptionGroups: string[][],
-        options: { doseName?: string }
+        categoryOptionGroups: CategoryOption[][],
+        options: { doseName?: CategoryOption }
     ): string[] {
         const { doseName } = options;
         const categoryDoses = this.getDosesCategory(dataElement);
@@ -160,17 +161,18 @@ export class DataSetCustomForm {
         const categoryOptionGroupsAll = [...dosesNames, ...categoryOptionGroups];
 
         return _.cartesianProduct(categoryOptionGroupsAll).map(categoryOptionNames => {
-            const cocName = _([antigen ? antigen.name : null, ...categoryOptionNames])
-                .compact()
-                .join(", ");
-            return _(this.metadata.cocIdByName).getOrFail(cocName);
+            const disaggregation = _.compact([antigen, ...categoryOptionNames]);
+            const cocId = this.metadata.getByOptions(disaggregation);
+            if (!cocId) throw new Error(`coc not found: ${JSON.stringify(disaggregation)} `);
+
+            return cocId;
         });
     }
 
     renderDataElement(
         antigen: Maybe<Antigen>,
         dataElement: DataElement,
-        categoryOptionGroups: string[][],
+        categoryOptionGroups: CategoryOption[][],
         idx: number
     ): string[] {
         const trType = idx === 0 ? "primary" : "secondary";
@@ -178,7 +180,7 @@ export class DataSetCustomForm {
 
         // Doses are rendered as a separate data element rows
         const categoryDoses = this.getDosesCategory(dataElement);
-        const dosesNames: Array<string | undefined> = categoryDoses
+        const dosesNames: Array<CategoryOption | undefined> = categoryDoses
             ? categoryDoses.categoryOptions
             : [undefined];
         const showDoseName = dosesNames.length > 1;
@@ -192,7 +194,8 @@ export class DataSetCustomForm {
                 h("td", { class: "data-element", "data-translate": true }, [
                     h("span", { "data-translate": true }, dataElement.name),
                     showDoseName
-                        ? h("span", {}, " - ") + h("span", { "data-translate": true }, doseName)
+                        ? h("span", {}, " - ") +
+                          h("span", { "data-translate": true }, doseName ? doseName.name : "-")
                         : null,
                 ]),
                 ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
@@ -241,7 +244,7 @@ export class DataSetCustomForm {
         antigen: Maybe<Antigen>,
         data: {
             dataElements: DataElement[];
-            categoryOptionGroupsList: string[][][][];
+            categoryOptionGroupsList: CategoryOption[][][][];
         }
     ) {
         const { dataElements, categoryOptionGroupsList } = data;
@@ -294,7 +297,7 @@ export class DataSetCustomForm {
     private renderTotalTables(
         antigen: Maybe<Antigen>,
         dataElements: DataElement[],
-        categoryOptionGroupsArray: string[][][]
+        categoryOptionGroupsArray: CategoryOption[][][]
     ): Children {
         const areTablesSplit = categoryOptionGroupsArray.length > 1;
         const dataElementDoses = dataElements.find(de => !!this.getDosesCategory(de));
@@ -475,7 +478,7 @@ export class DataSetCustomForm {
             .fromPairs()
             .value();
 
-        const categoryOptionsIdByName = _.keyBy(campaign.config.categoryOptions, "displayName");
+        const categoryOptionsIdById = _.keyBy(campaign.config.categoryOptions, co => co.id);
         const ids = [
             ..._(disaggregations)
                 .flatMap(dis => dis.dataElements)
@@ -485,7 +488,7 @@ export class DataSetCustomForm {
                 .flatMap(dis => dis.dataElements)
                 .flatMap(dataElement => dataElement.categories)
                 .flatMap(category => category.categoryOptions)
-                .map(co => _(categoryOptionsIdByName).get(co).id)
+                .map(co => _(categoryOptionsIdById).get(co.id).id)
                 .uniq()
                 .value(),
         ];

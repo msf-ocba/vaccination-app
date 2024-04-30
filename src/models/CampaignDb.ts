@@ -6,7 +6,7 @@ import "../utils/lodash-mixins";
 
 import Campaign from "./campaign";
 import { DataSetCustomForm } from "./DataSetCustomForm";
-import { Maybe, MetadataResponse, DataEntryForm, Section } from "./db.types";
+import { Maybe, MetadataResponse, DataEntryForm, Section, CategoryOption } from "./db.types";
 import { Metadata, DataSet, Response } from "./db.types";
 import { getDaysRange, toISOStringNoTZ } from "../utils/date";
 import { getDataElements, CocMetadata } from "./AntigensDisaggregation";
@@ -270,13 +270,14 @@ export default class CampaignDb {
 
             const greyedFields = _(disaggregationData.dataElements)
                 .flatMap(dataElementDis => {
-                    const groups: string[][] = _.cartesianProduct(
+                    const groups: CategoryOption[][] = _.cartesianProduct(
                         dataElementDis.categories.map(category => category.categoryOptions)
                     );
 
-                    return groups.map(group => {
-                        const cocName = group.join(", ");
-                        const cocId = _(cocMetadata.cocIdByName).getOrFail(cocName);
+                    return groups.map(disaggregation => {
+                        const cocId = cocMetadata.getByOptions(disaggregation);
+                        if (!cocId)
+                            throw new Error(`coc not found: ${JSON.stringify(disaggregation)} `);
 
                         return {
                             dataElement: { id: dataElementDis.id },

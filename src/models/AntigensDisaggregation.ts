@@ -1,4 +1,4 @@
-import { DataElement, Maybe, Ref } from "./db.types";
+import { CategoryOption, DataElement, Maybe, NamedObject, Ref } from "./db.types";
 import _ from "lodash";
 const fp = require("lodash/fp");
 import { MetadataConfig, getCode } from "./config";
@@ -27,7 +27,7 @@ export interface AntigenDisaggregation {
 
             options: Array<{
                 indexSelected: number;
-                values: Array<Array<{ name: string; selected: boolean }>>;
+                values: Array<Array<{ option: CategoryOption; selected: boolean }>>;
             }>;
         }>;
     }>;
@@ -60,17 +60,26 @@ export type AntigenDisaggregationOptionGroup = AntigenDisaggregationCategoriesDa
 
 export type AntigenDisaggregationEnabled = Array<{
     antigen: Antigen;
-    ageGroups: Array<string>;
+    ageGroups: Array<CategoryOption>;
     dataElements: Array<{
         id: string;
         name: string;
         code: string;
-        categories: Array<{ code: string; categoryOptions: string[] }>;
+        categories: Array<{ code: string; categoryOptions: CategoryOption[] }>;
     }>;
 }>;
 
+/*
+export type CategoryOption = {
+    id: string;
+    code: string;
+    name: string;
+    category: NamedObject;
+};
+*/
+
 export type CocMetadata = {
-    cocIdByName: _.Dictionary<string>;
+    getByOptions(categoryOptions: Ref[]): Maybe<string>;
 };
 
 type AntigensDisaggregationData = {
@@ -154,87 +163,88 @@ export class AntigensDisaggregation {
     ): AntigenDisaggregationCategoriesData {
         const categoriesByCode = _.keyBy(config.categories, "code");
 
-        return dataElementConfig.categories.map(categoryRef => {
-            const optional = categoryRef.optional;
-            const category = _(categoriesByCode).getOrFail(categoryRef.code);
-            const isDosesCategory = category.code === config.categoryCodeForDoses;
-            const isAntigensCategory = category.code === config.categoryCodeForAntigens;
-            const { $categoryOptions, name: categoryName, ...categoryAttributes } = _(
-                config.categoriesDisaggregation
-            )
-                .keyBy("code")
-                .getOrFail(categoryRef.code);
+        return dataElementConfig.categories.map(
+            (categoryRef): AntigenDisaggregationCategoriesData[0] => {
+                const optional = categoryRef.optional;
+                const category = _(categoriesByCode).getOrFail(categoryRef.code);
+                const isDosesCategory = category.code === config.categoryCodeForDoses;
+                const isAntigensCategory = category.code === config.categoryCodeForAntigens;
+                const { $categoryOptions, name: categoryName, ...categoryAttributes } = _(
+                    config.categoriesDisaggregation
+                )
+                    .keyBy(category => category.code)
+                    .getOrFail(categoryRef.code);
 
-            let groups: string[][][];
-            if ($categoryOptions.kind === "fromAgeGroups") {
-                groups = antigenConfig.ageGroups;
-            } else if ($categoryOptions.kind === "fromAntigens") {
-                groups = config.antigens.map(antigen => [[antigen.name]]);
-            } else if ($categoryOptions.kind === "fromDoses") {
-                groups = antigenConfig.doses.map(dose => [[dose.name]]);
-            } else {
-                groups = $categoryOptions.values.map(option => [[option]]);
-            }
+                let groups: CategoryOption[][][];
+                if ($categoryOptions.kind === "fromAgeGroups") {
+                    groups = antigenConfig.ageGroups;
+                } else if ($categoryOptions.kind === "fromAntigens") {
+                    groups = config.antigens.map(antigen => [[antigen]]);
+                } else if ($categoryOptions.kind === "fromDoses") {
+                    groups = antigenConfig.doses.map(dose => [[dose]]);
+                } else {
+                    groups = $categoryOptions.values.map(option => [[option]]);
+                }
 
-            const categoryOptionsEnabled = _(section ? section.greyedFields : [])
-                .flatMap(greyedField => {
-                    return greyedField.categoryOptionCombo.categoryOptions.filter(
-                        categoryOption => {
-                            return categoryOption.categories.some(
-                                greyedFieldCategory => greyedFieldCategory.id === category.id
-                            );
-                        }
-                    );
-                })
-                .map(categoryOption => categoryOption.displayName)
-                .uniq()
-                .value();
+                const categoryOptionsEnabled = _(section ? section.greyedFields : [])
+                    .flatMap(greyedField => {
+                        return greyedField.categoryOptionCombo.categoryOptions.filter(
+                            categoryOption => {
+                                return categoryOption.categories.some(
+                                    greyedFieldCategory => greyedFieldCategory.id === category.id
+                                );
+                            }
+                        );
+                    })
+                    .uniq()
+                    .value();
 
-            const wasCategorySelected = !_(categoryOptionsEnabled).isEmpty();
+                const wasCategorySelected = !_(categoryOptionsEnabled).isEmpty();
 
-            const options = groups.map(optionGroup => {
-                const index = wasCategorySelected
-                    ? _(optionGroup).findIndex(
-                          options =>
-                              !_(options)
-                                  .intersection(categoryOptionsEnabled)
-                                  .isEmpty()
-                      )
-                    : 0;
-                const indexSelected = index >= 0 ? index : 0;
+                const options = groups.map(optionGroup => {
+                    const index = wasCategorySelected
+                        ? _(optionGroup).findIndex(
+                              options =>
+                                  !_(options)
+                                      .intersectionBy(categoryOptionsEnabled, co => co.id)
+                                      .isEmpty()
+                          )
+                        : 0;
+                    const indexSelected = index >= 0 ? index : 0;
+
+                    return {
+                        indexSelected,
+                        values: optionGroup.map((options, optionGroupIndex) => {
+                            const isOptionGroupSelected =
+                                wasCategorySelected && indexSelected === optionGroupIndex;
+                            return options.map(optionName => ({
+                                option: optionName,
+                                selected: isOptionGroupSelected
+                                    ? _(categoryOptionsEnabled).some(co => co.id === optionName.id)
+                                    : true,
+                            }));
+                        }),
+                    };
+                });
+
+                const selected = wasCategorySelected ? true : !optional;
+
+                // Example: _23.6 Displacement Status
+                const cleanCategoryName = categoryName
+                    .replace(/^[_\d.\s]+/, "")
+                    .replace("RVC", "")
+                    .trim();
 
                 return {
-                    indexSelected,
-                    values: optionGroup.map((options, optionGroupIndex) => {
-                        const isOptionGroupSelected =
-                            wasCategorySelected && indexSelected === optionGroupIndex;
-                        return options.map(optionName => ({
-                            name: optionName,
-                            selected: isOptionGroupSelected
-                                ? _(categoryOptionsEnabled).includes(optionName)
-                                : true,
-                        }));
-                    }),
+                    ...categoryAttributes,
+                    name: cleanCategoryName,
+                    optional: optional,
+                    selected: selected,
+                    options: options,
+                    visible: !(isDosesCategory || isAntigensCategory),
                 };
-            });
-
-            const selected = wasCategorySelected ? true : !optional;
-
-            // Example: _23.6 Displacement Status
-            const cleanCategoryName = categoryName
-                .replace(/^[_\d.\s]+/, "")
-                .replace("RVC", "")
-                .trim();
-
-            return {
-                ...categoryAttributes,
-                name: cleanCategoryName,
-                optional,
-                selected,
-                options,
-                visible: !(isDosesCategory || isAntigensCategory),
-            };
-        });
+            }
+        );
     }
 
     getEnabled(): AntigenDisaggregationEnabled {
@@ -243,47 +253,52 @@ export class AntigensDisaggregation {
             .compact()
             .value();
 
-        const enabled = antigenDisaggregations.map(antigenDisaggregation => {
-            const dataElements = _(antigenDisaggregation.dataElements)
-                .filter("selected")
-                .map(dataElement => {
-                    const categories = _(dataElement.categories)
-                        .filter("selected")
-                        .map(category => {
-                            const categoryOptions = _(category.options)
-                                .flatMap(({ values, indexSelected }) => values[indexSelected])
-                                .filter("selected")
-                                .map("name")
-                                .value();
-                            return { code: category.code, categoryOptions };
-                        })
-                        .value();
-                    return {
-                        id: dataElement.id,
-                        code: dataElement.code,
-                        name: dataElement.name,
-                        categories,
-                    };
-                })
-                .value();
+        const enabled = antigenDisaggregations.map(
+            (antigenDisaggregation): AntigenDisaggregationEnabled[0] => {
+                const dataElements = _(antigenDisaggregation.dataElements)
+                    .filter(dataElement => dataElement.selected)
+                    .map(dataElement => {
+                        const categories = _(dataElement.categories)
+                            .filter(category => category.selected)
+                            .map(category => {
+                                const categoryOptions = _(category.options)
+                                    .flatMap(({ values, indexSelected }) => values[indexSelected])
+                                    .filter(categoryOption => categoryOption.selected)
+                                    .value();
+                                return {
+                                    code: category.code,
+                                    categoryOptions: categoryOptions.map(obj => obj.option),
+                                };
+                            })
+                            .value();
 
-            const ageGroups = _(dataElements)
-                .flatMap(dataElement => dataElement.categories)
-                .filter(category => category.code === this.config.categoryCodeForAgeGroup)
-                .flatMap(category => category.categoryOptions)
-                .value();
+                        return {
+                            id: dataElement.id,
+                            code: dataElement.code,
+                            name: dataElement.name,
+                            categories: categories,
+                        };
+                    })
+                    .value();
 
-            return {
-                ageGroups: ageGroups,
-                antigen: {
-                    code: antigenDisaggregation.code,
-                    name: antigenDisaggregation.name,
-                    id: antigenDisaggregation.id,
-                    doses: antigenDisaggregation.doses,
-                },
-                dataElements,
-            };
-        });
+                const ageGroups = _(dataElements)
+                    .flatMap(dataElement => dataElement.categories)
+                    .filter(category => category.code === this.config.categoryCodeForAgeGroup)
+                    .flatMap(category => category.categoryOptions)
+                    .value();
+
+                return {
+                    ageGroups: ageGroups,
+                    antigen: {
+                        code: antigenDisaggregation.code,
+                        name: antigenDisaggregation.name,
+                        id: antigenDisaggregation.id,
+                        doses: antigenDisaggregation.doses,
+                    },
+                    dataElements: dataElements,
+                };
+            }
+        );
 
         return enabled;
     }
@@ -363,13 +378,21 @@ export class AntigensDisaggregation {
                 .join(", ");
         };
 
-        const categoryOptionCombosIdByName = _(categoryOptionCombos)
-            .map(coc => [getTranslatedCocName(coc.categoryOptionNames), coc.id])
+        const getKey = (categoryOptions: Ref[]) => {
+            return _.sortBy(categoryOptions.map(co => co.id)).join(".");
+        };
+        const cocsByOptionsKey = _(categoryOptionCombos)
+            .map(coc => [getKey(coc.categoryOptions), coc.id])
             .push(["", this.config.defaults.categoryOptionCombo.id])
             .fromPairs()
             .value();
 
-        return { cocIdByName: categoryOptionCombosIdByName };
+        function getCocIdByCategoryOptions(categoryOptions: Ref[]): Maybe<string> {
+            const key = getKey(categoryOptions);
+            return cocsByOptionsKey[key];
+        }
+
+        return { getByOptions: getCocIdByCategoryOptions };
     }
 }
 
