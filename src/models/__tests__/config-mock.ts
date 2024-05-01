@@ -1,7 +1,7 @@
 import { MetadataConfig, baseConfig } from "../config";
 import { CategoryOption } from "../db.types";
 
-function co(name: string): CategoryOption {
+export function co(name: string): CategoryOption {
     return {
         id: `id-${name}`,
         code: name,
@@ -195,53 +195,57 @@ const metadataConfig: MetadataConfig = {
             id: "1",
             name: "Vaccine doses administered",
             code: "RVC_DOSES_ADMINISTERED",
-            categories: [
-                { code: "RVC_AGE_GROUP", optional: false },
-                { code: "RVC_GENDER", optional: true },
-                { code: "RVC_DISPLACEMENT_STATUS", optional: true },
-            ],
+            categories: {
+                RVC_ANTIGEN_MEASLES: [
+                    { code: "RVC_AGE_GROUP", optional: false },
+                    { code: "RVC_GENDER", optional: true },
+                    { code: "RVC_DISPLACEMENT_STATUS", optional: true },
+                ],
+            },
         },
         {
             id: "2",
             name: "Vaccine doses used",
             code: "RVC_USED",
-            categories: [],
+            categories: {},
         },
         {
             id: "3",
             name: "ADS used",
             code: "RVC_ADS_USED",
-            categories: [],
+            categories: {},
         },
         {
             id: "4",
             name: "Syringes for dilution",
             code: "RVC_SYRINGES",
-            categories: [],
+            categories: {},
         },
         {
             id: "5",
             name: "Needles doses used",
             code: "RVC_NEEDLES",
-            categories: [],
+            categories: {},
         },
         {
             id: "6",
             name: "Safety boxes",
             code: "RVC_SAFETY_BOXES",
-            categories: [],
+            categories: {},
         },
         {
             id: "7",
             name: "Accidental Exposure to Blood (AEB)",
             code: "RVC_AEB",
-            categories: [],
+            categories: {},
         },
         {
             id: "8",
             name: "Adverse Event Following Immunization",
             code: "RVC_AEFI",
-            categories: [{ code: "RVC_SEVERITY", optional: true }],
+            categories: {
+                RVC_ANTIGEN_MEASLES: [{ code: "RVC_SEVERITY", optional: true }],
+            },
         },
     ],
     antigens: [

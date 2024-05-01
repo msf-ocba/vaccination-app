@@ -6,7 +6,7 @@ import Campaign, { Antigen } from "./campaign";
 import { AntigenDisaggregationEnabled, CocMetadata } from "./AntigensDisaggregation";
 import i18n from "../locales";
 import "../utils/lodash-mixins";
-import { CategoryOption } from "./db.types";
+import { CategoryOption, getCode, getId } from "./db.types";
 
 const contentScript = require("!raw-loader!./custom-form-resources/content-script.js").default;
 const cssContents = require("!raw-loader!./custom-form-resources/form.css").default;
@@ -25,14 +25,13 @@ interface ObjectWithTranslation {
     translations: Array<{ property: string; locale: string; value: string }>;
 }
 
+// Alternative: Model with metadata, using 2 coGroups + 1 coGroupSet.
+const combinationsToSkip = [["M", "PREGNANT"], ["M", "CHILDBEARING_AGE"]];
+
 function h(tagName: string, attributes: object = {}, children: string | string[] = []) {
     const attrs = Object.keys(attributes).length === 0 ? undefined : attributes;
     const args = typeof children === "string" ? [children] : _.compact(children);
     return createElement(tagName, attrs, ...args);
-}
-
-function repeatArray<T>(xs: T[], count: number): T[] {
-    return _.flatten(_.times(count, () => xs));
 }
 
 function td(children: string, attributes: object = {}): string {
@@ -50,10 +49,10 @@ function inputTd(dataElementId: string, cocId: string): string {
     );
 }
 
-function totalTh(categoryOptionGroups: CategoryOption[][], isSplit: boolean): string {
+function totalTh(rowSpan: number, isSplit: boolean): string {
     return h(
         "th",
-        { rowspan: categoryOptionGroups.length, class: "data-header", "data-translate": true },
+        { rowspan: rowSpan, class: "data-header", "data-translate": true },
         h("span", { align: "center" }, isSplit ? i18n.t("Subtotal") : i18n.t("Total"))
     );
 }
@@ -90,81 +89,38 @@ export class DataSetCustomForm {
         return new DataSetCustomForm(campaign, metadata, disaggregations, translations);
     }
 
-    renderHeaderForGroup(categoryOptionGroups: CategoryOption[][], isSubTotal: boolean): Children {
-        const total =
-            _(categoryOptionGroups)
-                .map(cos => cos.length)
-                .reduce(_.multiply) || 0;
+    getDisaggregationCombinations(options: {
+        categoryOptionGroups: CategoryOption[][];
+        antigen?: Antigen;
+        dataElement?: DataElement;
+        dose?: CategoryOption;
+    }): CategoryOption[][] {
+        const { antigen, dataElement, categoryOptionGroups, dose } = options;
+        const categoryDoses = dataElement ? this.getDosesCategory(dataElement) : undefined;
+        const doses =
+            categoryDoses && !dose ? [categoryDoses.categoryOptions] : dose ? [[dose]] : [];
+        const categoryOptionGroupsAll = [...doses, ...categoryOptionGroups];
 
-        if (total === 0) {
-            return [
-                h("td", { class: "header-first-column" }, "&nbsp;"),
-                h(
-                    "th",
-                    { colspan: "1", scope: "col", class: "data-header", "data-translate": true },
-                    i18n.t("Value")
-                ),
-            ];
-        }
+        const combinations = _.cartesianProduct(categoryOptionGroupsAll).map(categoryOptions => {
+            const disaggregation = _.compact([antigen, ...categoryOptions]);
 
-        const headers = _.flatten(categoryOptionGroups);
-        const initial: { trs: string[]; count: number; repeat: number } = {
-            trs: [],
-            count: total,
-            repeat: 1,
-        };
+            const codes = disaggregation.map(co => co.code);
+            const toSkip = combinationsToSkip.some(codesToSkip =>
+                _.isEmpty(_.difference(codesToSkip, codes))
+            );
+            return toSkip ? undefined : disaggregation;
+        });
 
-        return _(categoryOptionGroups).reduce(({ trs, count, repeat }, categoryOptions, idx) => {
-            const newCount = count / categoryOptions.length;
-            const showTotalField = headers.length > 1 && idx === 0;
-            const tr = h("tr", {}, [
-                h("td", { class: "header-first-column" }),
-                ...repeatArray(
-                    categoryOptions.map(categoryOptionName =>
-                        h(
-                            "th",
-                            {
-                                colspan: newCount,
-                                scope: "col",
-                                class: "data-header",
-                                "data-translate": true,
-                            },
-                            h("span", { align: "center" }, categoryOptionName.name)
-                        )
-                    ),
-                    repeat
-                ),
-                showTotalField ? totalTh(categoryOptionGroups, isSubTotal) : null,
-            ]);
-            return {
-                trs: trs.concat([tr]),
-                count: newCount,
-                repeat: repeat * categoryOptions.length,
-            };
-        }, initial).trs;
+        return _.compact(combinations);
     }
 
-    getCocIds(
-        antigen: Maybe<Antigen>,
-        dataElement: DataElement,
-        categoryOptionGroups: CategoryOption[][],
-        options: { doseName?: CategoryOption }
-    ): string[] {
-        const { doseName } = options;
-        const categoryDoses = this.getDosesCategory(dataElement);
-        const dosesNames =
-            categoryDoses && doseName === undefined
-                ? [categoryDoses.categoryOptions]
-                : doseName
-                ? [[doseName]]
-                : [];
-        const categoryOptionGroupsAll = [...dosesNames, ...categoryOptionGroups];
-
-        return _.cartesianProduct(categoryOptionGroupsAll).map(categoryOptionNames => {
-            const disaggregation = _.compact([antigen, ...categoryOptionNames]);
+    getCocIds(combinations: CategoryOption[][]): string[] {
+        return combinations.map(disaggregation => {
             const cocId = this.metadata.getByOptions(disaggregation);
-            if (!cocId) throw new Error(`coc not found: ${JSON.stringify(disaggregation)} `);
-
+            if (!cocId)
+                throw new Error(
+                    `[DataSetCustomForm] coc not found: ${JSON.stringify(disaggregation)} `
+                );
             return cocId;
         });
     }
@@ -186,7 +142,13 @@ export class DataSetCustomForm {
         const showDoseName = dosesNames.length > 1;
 
         return dosesNames.map(doseName => {
-            const cocIds = this.getCocIds(antigen, dataElement, categoryOptionGroups, { doseName });
+            const combinations = this.getDisaggregationCombinations({
+                antigen: antigen,
+                dataElement: dataElement,
+                categoryOptionGroups,
+                dose: doseName,
+            });
+            const cocIds = this.getCocIds(combinations);
             const dataElementId = dataElement.id;
             const renderTotalCell = cocIds.length > 1;
 
@@ -262,8 +224,10 @@ export class DataSetCustomForm {
                                 h(
                                     "thead",
                                     {},
-                                    this.renderHeaderForGroup(
-                                        categoryOptionGroups,
+                                    renderHeaderForGroup(
+                                        this.getDisaggregationCombinations({
+                                            categoryOptionGroups,
+                                        }),
                                         categoryOptionGroupsArray.length > 1
                                     )
                                 ),
@@ -324,7 +288,13 @@ export class DataSetCustomForm {
                         totalTd(
                             dataElement.id,
                             _.flatMap(categoryOptionGroupsArray, categoryOptionGroupsGroups =>
-                                this.getCocIds(antigen, dataElement, categoryOptionGroupsGroups, {})
+                                this.getCocIds(
+                                    this.getDisaggregationCombinations({
+                                        antigen: antigen,
+                                        dataElement: dataElement,
+                                        categoryOptionGroups: categoryOptionGroupsGroups,
+                                    })
+                                )
                             )
                         ),
                     ])
@@ -388,13 +358,13 @@ export class DataSetCustomForm {
     getGeneralDataElements(disaggregations: Disaggregations): DataElement[] {
         const hasAntigensDisaggregation = (dataElement: DataElement) =>
             !_(dataElement.categories)
-                .map("code")
+                .map(getCode)
                 .includes(this.config.dataElementGroupCodeForAntigens);
 
         return _(disaggregations)
             .flatMap("dataElements")
             .filter(hasAntigensDisaggregation)
-            .uniqBy("id")
+            .uniqBy(getId)
             .value();
     }
 
@@ -482,7 +452,7 @@ export class DataSetCustomForm {
         const ids = [
             ..._(disaggregations)
                 .flatMap(dis => dis.dataElements)
-                .map("id")
+                .map(getId)
                 .value(),
             ..._(disaggregations)
                 .flatMap(dis => dis.dataElements)
@@ -547,4 +517,74 @@ export class DataSetCustomForm {
             ]
         );
     }
+}
+
+export function renderHeaderForGroup(
+    categoryOptionGroups: CategoryOption[][],
+    isSubTotal: boolean
+): Children {
+    const firstCombination = _.first(categoryOptionGroups);
+    const noDisaggregation = _(categoryOptionGroups).sumBy(group => group.length) === 0;
+
+    if (!firstCombination || noDisaggregation) {
+        return [
+            h("td", { class: "header-first-column" }, "&nbsp;"),
+            h(
+                "th",
+                { colspan: "1", scope: "col", class: "data-header", "data-translate": true },
+                i18n.t("Value")
+            ),
+        ];
+    }
+
+    const rowsCount = firstCombination.length;
+
+    return _(0)
+        .range(rowsCount)
+        .map(rowIndex => {
+            const categoryOptionsForRow = categoryOptionGroups.map(categoryOptions => {
+                return categoryOptions.slice(0, rowIndex + 1);
+            });
+            const showTotalField = categoryOptionGroups.length > 1 && rowIndex === 0;
+
+            return h("tr", {}, [
+                h("td", { class: "header-first-column" }),
+                groupConsecutives(categoryOptionsForRow).map(groups => {
+                    const categoryOptions = groups.map(group => _.last(group));
+                    const categoryOption = _.first(categoryOptions);
+                    if (!categoryOption) throw new Error("categoryOption is undefined");
+
+                    return h(
+                        "th",
+                        {
+                            colspan: categoryOptions.length,
+                            scope: "col",
+                            class: "data-header",
+                            "data-translate": true,
+                        },
+                        h("span", { align: "center" }, categoryOption.displayName)
+                    );
+                }),
+                showTotalField ? totalTh(rowsCount, isSubTotal) : null,
+            ]);
+        })
+        .value();
+}
+
+function groupConsecutives<T>(items: T[]): T[][] {
+    return _.reduce(
+        items,
+        (result, values) => {
+            const lastGroup = _.last(result);
+            const lastInLastGroup = _.last(lastGroup);
+
+            if (lastGroup && lastInLastGroup && _.isEqual(lastInLastGroup, values)) {
+                lastGroup.push(values);
+            } else {
+                result.push([values]);
+            }
+            return result;
+        },
+        [] as T[][]
+    );
 }

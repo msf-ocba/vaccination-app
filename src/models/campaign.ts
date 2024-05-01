@@ -22,6 +22,7 @@ export type TargetPopulationData = TargetPopulationData_;
 
 export interface Antigen {
     id: string;
+    displayName: string;
     name: string;
     code: string;
     doses: { id: string; name: string }[];

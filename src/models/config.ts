@@ -14,6 +14,8 @@ import {
     Attribute,
     NamedObject,
     Indicator,
+    getId,
+    getCode,
 } from "./db.types";
 import { sortAgeGroups } from "../utils/age-groups";
 
@@ -94,7 +96,7 @@ export interface MetadataConfig extends BaseConfig {
         name: string;
         code: string;
         id: string;
-        categories: { code: string; optional: boolean }[];
+        categories: Record<AntigenCode, Array<{ code: string; optional: boolean }>>;
     }>;
     indicators: Indicator[];
     antigens: Array<{
@@ -141,8 +143,9 @@ function getCategoriesDisaggregation(
     });
 }
 
-export function getCode(parts: string[]): string {
-    const code = parts
+export function getRvcCode(parts: Array<string | undefined>): string {
+    const code = _(parts)
+        .compact()
         .map(part =>
             part
                 .replace(/\s*/g, "")
@@ -168,14 +171,17 @@ function getFromRefs<T>(refs: Ref[], objects: T[]): T[] {
     return refs.map(ref => _(objectsById).getOrFail(ref.id));
 }
 
+type Antigen = MetadataConfig["antigens"][number];
+
 function getConfigDataElementsDisaggregation(
+    antigens: MetadataConfig["antigens"],
     dataElementGroups: DataElementGroup[],
     dataElements: DataElement[],
     categoryCombos: CategoryCombo[],
     categories: Category[]
 ): MetadataConfig["dataElementsDisaggregation"] {
-    const groupsByCode = _.keyBy(dataElementGroups, "code");
-    const catCombosByCode = _.keyBy(categoryCombos, "code");
+    const groupsByCode = _.keyBy(dataElementGroups, getCode);
+    const catCombosByCode = _.keyBy(categoryCombos, getCode);
     const dataElementsForAntigens = getFromRefs(
         _(groupsByCode).getOrFail(baseConfig.dataElementGroupCodeForAntigens).dataElements,
         dataElements
@@ -183,22 +189,54 @@ function getConfigDataElementsDisaggregation(
 
     return dataElementsForAntigens.map(
         (dataElement): MetadataConfig["dataElementsDisaggregation"][0] => {
-            const getCategories = (typeString: string): Category[] => {
-                const code = getCode(["RVC_DE", dataElement.code]) + "_" + typeString;
-                const categoryRefs = (catCombosByCode[code] || { categories: [] }).categories;
-                return getFromRefs(categoryRefs, categories);
+            const getCategories = (
+                typeString: string,
+                options: { antigen?: Antigen } = {}
+            ): Category[] | undefined => {
+                const { antigen } = options;
+                const code = getRvcCode([
+                    "RVC_DE",
+                    dataElement.code,
+                    antigen ? antigen.code.replace(/ANTIGEN_/, "") : undefined,
+                    typeString,
+                ]);
+                const categoryCombo = catCombosByCode[code];
+                if (!categoryCombo) return undefined;
+
+                const categoryRefs = categoryCombo ? categoryCombo.categories : [];
+                const objectsById = _.keyBy(categories, getId);
+                return categoryRefs.map(ref => _(objectsById).getOrFail(ref.id));
             };
 
-            const categoriesForAntigens = _.concat(
-                getCategories("REQUIRED").map(({ code }) => ({ code, optional: false })),
-                getCategories("OPTIONAL").map(({ code }) => ({ code, optional: true }))
-            );
+            const requiredCategoriesDefault = getCategories("REQUIRED");
+            const optionalCategoriesDefault = getCategories("OPTIONAL");
+
+            const categoriesByAntigen = _(antigens)
+                .map(antigen => {
+                    const requiredCategories = _(
+                        getCategories("REQUIRED", { antigen }) || requiredCategoriesDefault
+                    )
+                        .map(category => ({ code: category.code, optional: false }))
+                        .value();
+
+                    const optionalCategories = _(
+                        getCategories("OPTIONAL", { antigen }) || optionalCategoriesDefault
+                    )
+                        .map(category => ({ code: category.code, optional: true }))
+                        .value();
+
+                    const categories = _.concat(requiredCategories, optionalCategories);
+
+                    return [antigen.code, categories] as [typeof antigen.code, typeof categories];
+                })
+                .fromPairs()
+                .value();
 
             return {
                 id: dataElement.id,
                 name: dataElement.displayName,
                 code: dataElement.code,
-                categories: categoriesForAntigens,
+                categories: categoriesByAntigen,
             };
         }
     );
@@ -219,7 +257,7 @@ function getAntigens(
     const antigensMetadata = categoryOptions.map(
         (categoryOption): MetadataConfig["antigens"][0] => {
             const getDataElements = (typeString: string) => {
-                const code = getCode([categoryOption.code, typeString]);
+                const code = getRvcCode([categoryOption.code, typeString]);
                 const dataElementsForType = getFromRefs(
                     _(dataElementGroupsByCode).getOrFail(code).dataElements,
                     dataElements
@@ -240,14 +278,14 @@ function getAntigens(
             const dataElementSorted = _.orderBy(dataElementsForAntigens, "order");
 
             const mainAgeGroups = _(categoryOptionGroupsByCode).getOrFail(
-                getCode([categoryOption.code, "AGE_GROUP"])
+                getRvcCode([categoryOption.code, "AGE_GROUP"])
             ).categoryOptions;
 
             const { categoryComboCodeForAgeGroup } = baseConfig;
             const sortConfig = { categoryComboCodeForAgeGroup, categories };
 
             const ageGroups = sortAgeGroups(sortConfig, mainAgeGroups).map(mainAgeGroup => {
-                const codePrefix = getCode([
+                const codePrefix = getRvcCode([
                     categoryOption.code,
                     "AGE_GROUP",
                     mainAgeGroup.displayName,
@@ -261,7 +299,7 @@ function getAntigens(
             });
 
             const dosesIds = _(categoryOptionGroupsByCode)
-                .getOrFail(getCode([categoryOption.code, "DOSES"]))
+                .getOrFail(getRvcCode([categoryOption.code, "DOSES"]))
                 .categoryOptions.map(co => co.id);
             const allDoses = _(categoriesByCode).getOrFail(baseConfig.categoryCodeForDoses)
                 .categoryOptions;
@@ -387,6 +425,12 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
 
     const metadata = await db.getMetadata<RawMetadataConfig>(metadataParams);
 
+    const antigens = getAntigens(
+        metadata.dataElementGroups,
+        metadata.dataElements,
+        metadata.categories,
+        metadata.categoryOptionGroups
+    );
     const metadataConfig = {
         ...baseConfig,
         attributes: getAttributes(metadata.attributes),
@@ -399,18 +443,14 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         categoryCombos: metadata.categoryCombos,
         dataElements: metadata.dataElements,
         dataElementsDisaggregation: getConfigDataElementsDisaggregation(
+            antigens,
             metadata.dataElementGroups,
             metadata.dataElements,
             metadata.categoryCombos,
             metadata.categories
         ),
         defaults: getDefaults(metadata),
-        antigens: getAntigens(
-            metadata.dataElementGroups,
-            metadata.dataElements,
-            metadata.categories,
-            metadata.categoryOptionGroups
-        ),
+        antigens: antigens,
         population: getPopulationMetadata(
             metadata.dataElements,
             metadata.dataElementGroups,
@@ -423,3 +463,5 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
 
     return metadataConfig;
 }
+
+type AntigenCode = string;

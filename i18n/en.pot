@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2022-03-23T10:31:50.107Z\n"
-"PO-Revision-Date: 2022-03-23T10:31:50.107Z\n"
+"POT-Creation-Date: 2024-05-01T11:17:43.649Z\n"
+"PO-Revision-Date: 2024-05-01T11:17:43.649Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -348,9 +348,6 @@ msgstr ""
 msgid "Total"
 msgstr ""
 
-msgid "Value"
-msgstr ""
-
 msgid "Doses administered"
 msgstr ""
 
@@ -358,6 +355,9 @@ msgid "Quality and safety indicators"
 msgstr ""
 
 msgid "General Q&S"
+msgstr ""
+
+msgid "Value"
 msgstr ""
 
 msgid ""

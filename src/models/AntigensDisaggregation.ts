@@ -1,7 +1,7 @@
-import { CategoryOption, DataElement, Maybe, NamedObject, Ref } from "./db.types";
+import { CategoryOption, DataElement, getCode, Maybe, NamedObject, Ref } from "./db.types";
 import _ from "lodash";
 const fp = require("lodash/fp");
-import { MetadataConfig, getCode } from "./config";
+import { MetadataConfig, getRvcCode } from "./config";
 import { Antigen } from "./campaign";
 import "../utils/lodash-mixins";
 import DbD2 from "./db-d2";
@@ -95,7 +95,7 @@ export class AntigensDisaggregation {
         antigens: Antigen[],
         sections: SectionForDisaggregation[]
     ): AntigensDisaggregation {
-        const antigensByCode = _.keyBy(config.antigens, "code");
+        const antigensByCode = _.keyBy(config.antigens, getCode);
         const disaggregation = _(sections)
             .sortBy(section => section.sortOrder)
             .map(section => {
@@ -118,9 +118,9 @@ export class AntigensDisaggregation {
     }
 
     public setAntigens(antigens: Antigen[]): AntigensDisaggregation {
-        const disaggregationByCode = _.keyBy(this.data.disaggregation, "code");
+        const disaggregationByCode = _.keyBy(this.data.disaggregation, getCode);
         const disaggregationUpdated = _(antigens)
-            .keyBy("code")
+            .keyBy(getCode)
             .mapValues(
                 antigen =>
                     disaggregationByCode[antigen.code] ||
@@ -161,9 +161,13 @@ export class AntigensDisaggregation {
         antigenConfig: MetadataConfig["antigens"][0],
         section: Maybe<SectionForDisaggregation>
     ): AntigenDisaggregationCategoriesData {
-        const categoriesByCode = _.keyBy(config.categories, "code");
+        const categoriesByCode = _.keyBy(config.categories, getCode);
 
-        return dataElementConfig.categories.map(
+        const categoriesForAntigen = dataElementConfig.categories[antigenConfig.code];
+        if (!categoriesForAntigen)
+            throw new Error(`No categories defined for antigen: ${antigenConfig.code}`);
+
+        return categoriesForAntigen.map(
             (categoryRef): AntigenDisaggregationCategoriesData[0] => {
                 const optional = categoryRef.optional;
                 const category = _(categoriesByCode).getOrFail(categoryRef.code);
@@ -172,7 +176,7 @@ export class AntigensDisaggregation {
                 const { $categoryOptions, name: categoryName, ...categoryAttributes } = _(
                     config.categoriesDisaggregation
                 )
-                    .keyBy(category => category.code)
+                    .keyBy(getCode)
                     .getOrFail(categoryRef.code);
 
                 let groups: CategoryOption[][][];
@@ -292,6 +296,7 @@ export class AntigensDisaggregation {
                     antigen: {
                         code: antigenDisaggregation.code,
                         name: antigenDisaggregation.name,
+                        displayName: antigenDisaggregation.name,
                         id: antigenDisaggregation.id,
                         doses: antigenDisaggregation.doses,
                     },
@@ -309,14 +314,14 @@ export class AntigensDisaggregation {
         section: Maybe<SectionForDisaggregation>
     ): AntigenDisaggregation {
         const antigenConfig = _(config.antigens)
-            .keyBy("code")
+            .keyBy(getCode)
             .get(antigenCode);
 
         if (!antigenConfig) throw `No configuration for antigen: ${antigenCode}`;
 
         const dataElementsProcessed = antigenConfig.dataElements.map(dataElementRef => {
             const dataElementConfig = _(config.dataElementsDisaggregation)
-                .keyBy("code")
+                .keyBy(getCode)
                 .getOrFail(dataElementRef.code);
 
             const categoriesDisaggregation = AntigensDisaggregation.getCategories(
@@ -355,7 +360,7 @@ export class AntigensDisaggregation {
         const categoryComboCodes = _(this.getEnabled())
             .flatMap(disaggregation => disaggregation.dataElements)
             .filter(dataElement => !_(dataElement.categories).isEmpty())
-            .map(dataElement => getCode(dataElement.categories.map(category => category.code)))
+            .map(dataElement => getRvcCode(dataElement.categories.map(category => category.code)))
             .uniq()
             .value();
 
@@ -371,12 +376,6 @@ export class AntigensDisaggregation {
             this.config.categoryComboCodeForAntigenDosesAgeGroup,
         ];
         const categoryOptionCombos = await db.getCocsByCategoryComboCode(allCategoryComboCodes);
-
-        const getTranslatedCocName: (coNames: string[]) => string = coNames => {
-            return coNames
-                .map(coName => _(categoryOptionsDisplayNameByName).getOrFail(coName))
-                .join(", ");
-        };
 
         const getKey = (categoryOptions: Ref[]) => {
             return _.sortBy(categoryOptions.map(co => co.id)).join(".");
@@ -400,7 +399,7 @@ export function getDataElements(
     config: MetadataConfig,
     disaggregationData: AntigenDisaggregationEnabled
 ): DataElement[] {
-    const dataElementsByCode = _(config.dataElements).keyBy("code");
+    const dataElementsByCode = _(config.dataElements).keyBy(getCode);
     return _(disaggregationData)
         .flatMap(dd => dd.dataElements.map(de => de.code))
         .uniq()
