@@ -4,7 +4,11 @@ import moment from "moment";
 
 import { PaginatedObjects, OrganisationUnitPathOnly, Response } from "./db.types";
 import DbD2, { ApiResponse, toStatusResponse } from "./db-d2";
-import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
+import {
+    AntigensDisaggregation,
+    CampaignType,
+    SectionForDisaggregation,
+} from "./AntigensDisaggregation";
 import { MetadataConfig, getDashboardCode, getByIndex } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import {

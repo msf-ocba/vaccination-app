@@ -99,7 +99,8 @@ export class DataSetCustomForm {
         const categoryDoses = dataElement ? this.getDosesCategory(dataElement) : undefined;
         const doses =
             categoryDoses && !dose ? [categoryDoses.categoryOptions] : dose ? [[dose]] : [];
-        const categoryOptionGroupsAll = [...doses, ...categoryOptionGroups];
+        const categoryOptionGroupsWithType = this.setTypeOnGroups(antigen, categoryOptionGroups);
+        const categoryOptionGroupsAll = [...doses, ...categoryOptionGroupsWithType];
 
         const combinations = _.cartesianProduct(categoryOptionGroupsAll).map(categoryOptions => {
             const disaggregation = _.compact([antigen, ...categoryOptions]);
@@ -114,12 +115,41 @@ export class DataSetCustomForm {
         return _.compact(combinations);
     }
 
+    private setTypeOnGroups(
+        antigen: Antigen | undefined,
+        categoryOptionGroups: CategoryOption[][]
+    ): CategoryOption[][] {
+        if (!antigen) return categoryOptionGroups;
+
+        const categoryType = this.config.categories.find(
+            category => category.code === this.config.categoryCodeForType
+        )!;
+        if (!categoryType) throw new Error("categoryType not found");
+
+        const disaggregation = this.campaign.antigensDisaggregation.forAntigen(antigen);
+        if (!disaggregation) return categoryOptionGroups;
+
+        const categoryOptionCodeForType =
+            disaggregation.type === "preventive"
+                ? this.config.categoryOptionCodePreventive
+                : this.config.categoryOptionCodeReactive;
+
+        return categoryOptionGroups.map(categoryOptions => {
+            const categoryOptionForType = categoryOptions.find(
+                categoryOption => categoryOption.code === categoryOptionCodeForType
+            );
+            return categoryOptionForType ? [categoryOptionForType] : categoryOptions;
+        });
+    }
+
     getCocIds(combinations: CategoryOption[][]): string[] {
         return combinations.map(disaggregation => {
             const cocId = this.metadata.getByOptions(disaggregation);
             if (!cocId)
                 throw new Error(
-                    `[DataSetCustomForm] coc not found: ${JSON.stringify(disaggregation)} `
+                    `[DataSetCustomForm] coc not found: ${disaggregation
+                        .map(co => co.name)
+                        .join(", ")}`
                 );
             return cocId;
         });

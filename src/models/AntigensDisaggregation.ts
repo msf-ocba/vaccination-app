@@ -6,11 +6,15 @@ import { Antigen } from "./campaign";
 import "../utils/lodash-mixins";
 import DbD2 from "./db-d2";
 
+export type CampaignType = "preventive" | "reactive";
+
 export interface AntigenDisaggregation {
     name: string;
     code: string;
     id: string;
     doses: Array<{ id: string; name: string }>;
+    isTypeSelectable: boolean;
+    type: CampaignType;
     dataElements: Array<{
         name: string;
         code: string;
@@ -68,15 +72,6 @@ export type AntigenDisaggregationEnabled = Array<{
         categories: Array<{ code: string; categoryOptions: CategoryOption[] }>;
     }>;
 }>;
-
-/*
-export type CategoryOption = {
-    id: string;
-    code: string;
-    name: string;
-    category: NamedObject;
-};
-*/
 
 export type CocMetadata = {
     getByOptions(categoryOptions: Ref[]): Maybe<string>;
@@ -137,6 +132,17 @@ export class AntigensDisaggregation {
 
     public set(path: (number | string)[], value: any): AntigensDisaggregation {
         const dataUpdated = fp.set(["disaggregation", ...path], value, this.data);
+        return new AntigensDisaggregation(this.config, dataUpdated);
+    }
+
+    public setCampaignType(antigen: Antigen, type: CampaignType): AntigensDisaggregation {
+        const dataUpdated: AntigensDisaggregationData = {
+            ...this.data,
+            disaggregation: _.mapValues(this.data.disaggregation, (disaggregation, code) => {
+                return code === antigen.code ? { ...disaggregation, type } : disaggregation;
+            }),
+        };
+
         return new AntigensDisaggregation(this.config, dataUpdated);
     }
 
@@ -345,15 +351,15 @@ export class AntigensDisaggregation {
             };
         });
 
-        const res = {
+        return {
             id: antigenConfig.id,
             name: antigenConfig.name,
             code: antigenConfig.code,
             dataElements: dataElementsProcessed,
             doses: antigenConfig.doses,
+            isTypeSelectable: antigenConfig.isTypeSelectable,
+            type: "reactive",
         };
-
-        return res;
     }
 
     public async getCocMetadata(db: DbD2): Promise<CocMetadata> {
@@ -362,11 +368,6 @@ export class AntigensDisaggregation {
             .filter(dataElement => !_(dataElement.categories).isEmpty())
             .map(dataElement => getRvcCode(dataElement.categories.map(category => category.code)))
             .uniq()
-            .value();
-
-        const categoryOptionsDisplayNameByName = _(this.config.categoryOptions)
-            .map(co => [co.name, co.displayName])
-            .fromPairs()
             .value();
 
         // Add age groups required by target population data values
