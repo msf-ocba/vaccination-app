@@ -1,10 +1,10 @@
 import { MetadataConfig } from "./config";
 import _ from "lodash";
 const { createElement } = require("typed-html");
+import i18n from "@dhis2/d2-i18n";
 
 import Campaign, { Antigen } from "./campaign";
 import { AntigenDisaggregationEnabled, CocMetadata } from "./AntigensDisaggregation";
-import i18n from "../locales";
 import "../utils/lodash-mixins";
 import { CategoryOption, getCode, getId } from "./db.types";
 
@@ -120,11 +120,6 @@ export class DataSetCustomForm {
         categoryOptionGroups: CategoryOption[][]
     ): CategoryOption[][] {
         if (!antigen) return categoryOptionGroups;
-
-        const categoryType = this.config.categories.find(
-            category => category.code === this.config.categoryCodeForType
-        )!;
-        if (!categoryType) throw new Error("categoryType not found");
 
         const disaggregation = this.campaign.antigensDisaggregation.forAntigen(antigen);
         if (!disaggregation) return categoryOptionGroups;
@@ -416,7 +411,17 @@ export class DataSetCustomForm {
         const generalDataElements = this.getGeneralDataElements(disaggregations);
 
         const tabs = _.compact([
-            ...disaggregations.map(({ antigen }) => ({ name: antigen.name, id: antigen.id })),
+            ...disaggregations.map(disaggregation => {
+                const { antigen } = disaggregation;
+
+                const type =
+                    disaggregation.type === "preventive"
+                        ? i18n.t("Preventive")
+                        : i18n.t("Reactive");
+
+                const name = `[${type}] ${antigen.name}`;
+                return { name: name, id: antigen.id };
+            }),
             !_(generalDataElements).isEmpty()
                 ? { name: i18n.t("General Q&S"), id: this.generalIndicatorsTabId }
                 : null,

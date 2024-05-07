@@ -63,6 +63,7 @@ export type AntigenDisaggregationCategoriesData = AntigenDisaggregation["dataEle
 export type AntigenDisaggregationOptionGroup = AntigenDisaggregationCategoriesData[0]["options"][0];
 
 export type AntigenDisaggregationEnabled = Array<{
+    type: CampaignType;
     antigen: Antigen;
     ageGroups: Array<CategoryOption>;
     dataElements: Array<{
@@ -299,6 +300,7 @@ export class AntigensDisaggregation {
 
                 return {
                     ageGroups: ageGroups,
+                    type: antigenDisaggregation.type,
                     antigen: {
                         code: antigenDisaggregation.code,
                         name: antigenDisaggregation.name,
