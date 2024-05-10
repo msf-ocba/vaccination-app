@@ -124,6 +124,7 @@ export default class CampaignDb {
         const dataEntryForm = await this.getDataEntryForm(existingDataSet, metadataCoc);
         const sections = await this.getSections(db, dataSetId, existingDataSet, metadataCoc);
         const sharing = await campaign.getDataSetSharing();
+        const campaignOrgUnitRefs = campaign.organisationUnits.map(ou => ({ id: ou.id }));
 
         const dataSet: DataSet = {
             id: dataSetId,
@@ -134,7 +135,7 @@ export default class CampaignDb {
             categoryCombo: { id: this.catComboIdForTeams },
             dataElementDecoration: true,
             renderAsTabs: true,
-            organisationUnits: campaign.organisationUnits.map(ou => ({ id: ou.id })),
+            organisationUnits: campaignOrgUnitRefs,
             dataSetElements,
             openFuturePeriods: 1,
             timelyDays: 0,
@@ -153,16 +154,45 @@ export default class CampaignDb {
         const teamIds = newTeams.map(t => t.id);
         const dashboardMetadata = await this.getDashboardMetadata(dataSetId, teamIds);
 
+        const extraDataSets = await this.getExtraDataSets();
+        const campaignOrgUnitIds = new Set(campaignOrgUnitRefs.map(ou => ou.id));
+
+        const extraDataSets2 = extraDataSets.map(dataSet => ({
+            ...dataSet,
+            organisationUnits: dataSet.organisationUnits
+                .filter(ou => campaignOrgUnitIds.has(ou.id))
+                .concat(
+                    campaign.extraDataSets.some(ds => ds.id === dataSet.id)
+                        ? campaignOrgUnitRefs
+                        : []
+                ),
+        }));
+
         return this.postSave(
             {
                 ...dashboardMetadata,
-                dataSets: [dataSet],
+                dataSets: [dataSet, ...extraDataSets2],
                 dataEntryForms: [dataEntryForm],
                 sections,
                 categoryOptions: newTeams,
             },
             teamsToDelete
         );
+    }
+
+    private async getExtraDataSets(): Promise<DataSet[]> {
+        const dataSetIds = this.campaign.config.dataSets.extraActivities.map(ds => ds.id);
+
+        const res = await this.campaign.db.getMetadata<{
+            dataSets: Array<DataSet>;
+        }>({
+            dataSets: {
+                filters: [`id:in:[${dataSetIds.join(",")}]`],
+                fields: { ":owner": true },
+            },
+        });
+
+        return res.dataSets;
     }
 
     public async saveTargetPopulation(): Promise<Response<string>> {

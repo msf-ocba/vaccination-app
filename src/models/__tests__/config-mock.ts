@@ -8,6 +8,12 @@ const metadataConfig: MetadataConfig = {
     categoryOptions: [],
     legendSets: [],
     indicators: [],
+    dataSets: {
+        extraActivities: [
+            { name: "Nutrition Surveillance - Daily", id: "AdRfEJo79yD" },
+            { name: "Complementary activities", id: "A08QnNJfcEI" },
+        ],
+    },
     defaults: {
         categoryOptionCombo: {
             displayName: "default",

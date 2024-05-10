@@ -16,6 +16,9 @@ import AntigenSection from "./AntigenSection";
 
 const { Sidebar } = require("@dhis2/d2-ui-core"); // Untyped
 import "./DisaggregationStep.css";
+import i18n from "../../../locales";
+import SimpleCheckbox from "../../forms/SimpleCheckBox";
+import { DataSet } from "../../../models/config";
 
 type Path = (number | string)[];
 
@@ -25,13 +28,15 @@ interface DisaggregationStepProps extends WithStyles<typeof styles> {
     onChange: (campaign: Campaign) => void;
 }
 
+type Current = { type: "antigen"; antigen: Antigen } | { type: "extra" };
+
 interface DisaggregationStepState {
-    currentAntigen: Antigen | null;
+    current: Current;
 }
 
 class DisaggregationStep extends React.Component<DisaggregationStepProps, DisaggregationStepState> {
     state: DisaggregationStepState = {
-        currentAntigen: this.props.campaign.antigens[0],
+        current: { type: "antigen", antigen: this.props.campaign.antigens[0] },
     };
 
     update = memoize((path: Path) => (newValue: any) => {
@@ -41,26 +46,40 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
         onChange(campaignUpdated);
     });
 
-    changeSection = (antigenCode: string): void => {
-        const antigen = _(this.props.campaign.antigens)
-            .keyBy("code")
-            .get(antigenCode);
-        this.setState({ currentAntigen: antigen });
+    changeSection = (tabCode: string): void => {
+        if (tabCode === "extra") {
+            this.setState({ current: { type: "extra" } });
+        } else {
+            const antigen = _(this.props.campaign.antigens)
+                .keyBy("code")
+                .get(tabCode);
+
+            this.setState({ current: { type: "antigen", antigen: antigen } });
+        }
+    };
+
+    setExtraDataSet = (dataSet: DataSet, options: { isEnabled: boolean }): void => {
+        const { campaign, onChange } = this.props;
+
+        onChange(campaign.setExtraDataSet(dataSet, options));
     };
 
     render() {
         const { classes, campaign } = this.props;
-        const { currentAntigen } = this.state;
-        if (!currentAntigen) return null;
+        const { current: current } = this.state;
 
         const antigenDisaggregation = campaign.antigensDisaggregation;
-        const currentAntigenDisaggregation = antigenDisaggregation.forAntigen(currentAntigen);
-        const sections = campaign.antigens.map(antigen => ({
-            label: antigen.name,
-            key: antigen.code,
-        }));
+        const currentAntigen =
+            current.type === "antigen" ? antigenDisaggregation.forAntigen(current.antigen) : null;
+        const sections = campaign.antigens
+            .map(antigen => ({
+                label: antigen.name,
+                key: antigen.code,
+            }))
+            .concat([{ label: i18n.t("Extra Activities"), key: "extra" }]);
 
-        if (_(sections).isEmpty() || !currentAntigenDisaggregation) return null;
+        console.log({ sections });
+        const extraActivitiesDataSets = campaign.config.dataSets.extraActivities;
 
         return (
             <MuiThemeProvider theme={materialTheme}>
@@ -69,13 +88,32 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
                         <Sidebar sections={sections} onChangeSection={this.changeSection} />
                     </div>
 
-                    <div className={classes.page}>
-                        <AntigenSection
-                            antigen={currentAntigenDisaggregation}
-                            antigenCode={currentAntigen.code}
-                            update={this.update}
-                        />
-                    </div>
+                    {currentAntigen ? (
+                        <div className={classes.page}>
+                            <AntigenSection
+                                antigen={currentAntigen}
+                                antigenCode={currentAntigen.code}
+                                update={this.update}
+                            />
+                        </div>
+                    ) : (
+                        <div className={classes.page}>
+                            {extraActivitiesDataSets.map(dataSet => (
+                                <div className={classes.extra}>
+                                    <SimpleCheckbox
+                                        key={dataSet.id}
+                                        checked={campaign.extraDataSets.some(
+                                            ds => ds.id === dataSet.id
+                                        )}
+                                        label={dataSet.name}
+                                        onChange={isChecked =>
+                                            this.setExtraDataSet(dataSet, { isEnabled: isChecked })
+                                        }
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </MuiThemeProvider>
         );
@@ -90,13 +128,18 @@ const styles = (_theme: Theme) =>
             height: "auto",
             boxShadow: "rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px",
             paddingRight: 20,
+            display: "flex",
+            alignItems: "flex-start",
         },
         leftBar: {
             position: "absolute",
-            height: "100%",
         },
         page: {
             paddingLeft: 295 + 8,
+        },
+        extra: {
+            marginTop: 20,
+            marginLeft: 30,
         },
     });
 

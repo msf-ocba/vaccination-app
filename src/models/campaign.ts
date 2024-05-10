@@ -5,7 +5,7 @@ import moment from "moment";
 import { PaginatedObjects, OrganisationUnitPathOnly, Response } from "./db.types";
 import DbD2, { ApiResponse, toStatusResponse } from "./db-d2";
 import { AntigensDisaggregation, SectionForDisaggregation } from "./AntigensDisaggregation";
-import { MetadataConfig, getDashboardCode, getByIndex } from "./config";
+import { MetadataConfig, getDashboardCode, getByIndex, DataSet } from "./config";
 import { AntigenDisaggregationEnabled } from "./AntigensDisaggregation";
 import {
     TargetPopulation,
@@ -35,6 +35,7 @@ export interface Data {
     startDate: Date | null;
     endDate: Date | null;
     antigens: Antigen[];
+    extraDataSets: DataSet[];
     antigensDisaggregation: AntigensDisaggregation;
     targetPopulation: Maybe<TargetPopulation>;
     teams: Maybe<number>;
@@ -83,6 +84,19 @@ export default class Campaign {
 
     constructor(public db: DbD2, public config: MetadataConfig, private data: Data) {}
 
+    public get extraDataSets() {
+        return this.data.extraDataSets;
+    }
+
+    public setExtraDataSet(dataSet: DataSet, options: { isEnabled: boolean }): Campaign {
+        const newDataSets = _(this.data.extraDataSets)
+            .filter(ds => ds.id !== dataSet.id)
+            .concat(options.isEnabled ? [dataSet] : [])
+            .value();
+
+        return this.update({ extraDataSets: newDataSets });
+    }
+
     public static create(config: MetadataConfig, db: DbD2): Campaign {
         const antigens: Antigen[] = [];
         const organisationUnits: OrganisationUnit[] = [];
@@ -102,6 +116,7 @@ export default class Campaign {
                 elements: [],
             },
             dashboardId: undefined,
+            extraDataSets: [],
         };
 
         return new Campaign(db, config, initialData);
@@ -194,13 +209,14 @@ export default class Campaign {
             teams: _.size(teamsMetadata),
             teamsMetadata: { elements: teamsMetadata },
             dashboardId: dashboard ? dashboard.id : undefined,
+            extraDataSets: [], // T-EMPORAL: Get assigned to orgunit
         };
 
         return new Campaign(db, config, initialData);
     }
 
-    public update(newData: Data) {
-        return new Campaign(this.db, this.config, newData);
+    public update(newData: Partial<Data>): Campaign {
+        return new Campaign(this.db, this.config, { ...this.data, ...newData });
     }
 
     public async notifyOnUpdateIfData(): Promise<boolean> {

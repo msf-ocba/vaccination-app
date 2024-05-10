@@ -45,6 +45,7 @@ export const baseConfig = {
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
     dataSetDashboardCodePrefix: "RVC_CAMPAIGN",
+    dataSetNotificationTemplateForExtra: "RVC_EXTRA",
     userRoleNames: {
         manager: [userRoles.campaignManager],
         feedback: [userRoles.feedback],
@@ -108,7 +109,12 @@ export interface MetadataConfig extends BaseConfig {
     legendSets: Array<{
         id: string;
     }>;
+    dataSets: {
+        extraActivities: DataSet[];
+    };
 }
+
+export type DataSet = { id: string; name: string };
 
 function getCategoriesDisaggregation(
     categories: Category[]
@@ -370,7 +376,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
 
     const metadata = await db.getMetadata<RawMetadataConfig>(metadataParams);
 
-    const metadataConfig = {
+    const metadataConfig: MetadataConfig = {
         ...baseConfig,
         attributes: getAttributes(metadata.attributes),
         organisationUnitLevels: metadata.organisationUnitLevels,
@@ -402,6 +408,12 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         userRoles: metadata.userRoles,
         legendSets: metadata.legendSets,
         indicators: metadata.indicators,
+        dataSets: {
+            extraActivities: [
+                { name: "Nutrition Surveillance - Daily", id: "AdRfEJo79yD" },
+                { name: "Complementary activities", id: "A08QnNJfcEI" },
+            ],
+        },
     };
 
     return metadataConfig;
