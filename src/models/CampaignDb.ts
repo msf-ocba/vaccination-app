@@ -151,27 +151,14 @@ export default class CampaignDb {
             ...sharing,
         };
 
-        const teamIds = newTeams.map(t => t.id);
+        const teamIds = newTeams.map(team => team.id);
         const dashboardMetadata = await this.getDashboardMetadata(dataSetId, teamIds);
-
         const extraDataSets = await this.getExtraDataSets();
-        const campaignOrgUnitIds = new Set(campaignOrgUnitRefs.map(ou => ou.id));
-
-        const extraDataSets2 = extraDataSets.map(dataSet => ({
-            ...dataSet,
-            organisationUnits: dataSet.organisationUnits
-                .filter(ou => campaignOrgUnitIds.has(ou.id))
-                .concat(
-                    campaign.extraDataSets.some(ds => ds.id === dataSet.id)
-                        ? campaignOrgUnitRefs
-                        : []
-                ),
-        }));
 
         return this.postSave(
             {
                 ...dashboardMetadata,
-                dataSets: [dataSet, ...extraDataSets2],
+                dataSets: [dataSet, ...extraDataSets],
                 dataEntryForms: [dataEntryForm],
                 sections,
                 categoryOptions: newTeams,
@@ -181,7 +168,9 @@ export default class CampaignDb {
     }
 
     private async getExtraDataSets(): Promise<DataSet[]> {
+        const { campaign } = this;
         const dataSetIds = this.campaign.config.dataSets.extraActivities.map(ds => ds.id);
+        const campaignOrgUnitRefs = campaign.organisationUnits.map(ou => ({ id: ou.id }));
 
         const res = await this.campaign.db.getMetadata<{
             dataSets: Array<DataSet>;
@@ -192,7 +181,20 @@ export default class CampaignDb {
             },
         });
 
-        return res.dataSets;
+        const extraDataSets = res.dataSets;
+        const campaignOrgUnitIds = new Set(campaignOrgUnitRefs.map(ou => ou.id));
+
+        return extraDataSets.map(dataSet => {
+            const isExtraDataSetSelected = campaign.extraDataSets.some(ds => ds.id === dataSet.id);
+
+            return {
+                ...dataSet,
+                organisationUnits: _(dataSet.organisationUnits)
+                    .reject(orgUnit => campaignOrgUnitIds.has(orgUnit.id))
+                    .concat(isExtraDataSetSelected ? campaignOrgUnitRefs : [])
+                    .value(),
+            };
+        });
     }
 
     public async saveTargetPopulation(): Promise<Response<string>> {

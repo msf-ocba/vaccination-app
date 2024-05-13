@@ -127,8 +127,10 @@ export default class Campaign {
         db: DbD2,
         dataSetId: string
     ): Promise<Campaign> {
+        const extraDataSetIds = config.dataSets.extraActivities.map(ds => ds.id);
+
         const {
-            dataSets: [dataSet],
+            dataSets,
             dashboards: [dashboard],
         } = await db.getMetadata<{
             dataSets: Array<{
@@ -170,13 +172,17 @@ export default class Campaign {
                         },
                     },
                 },
-                filters: [`id:eq:${dataSetId}`],
+                filters: [`id:in:[${[dataSetId, ...extraDataSetIds].join(",")}]`],
             },
             dashboards: {
                 fields: { id: true },
                 filters: [`code:eq:${getDashboardCode(config, dataSetId)}`],
             },
         });
+
+        const [dataSets0, extraDataSets] = _.partition(dataSets, ds => ds.id === dataSetId);
+        const dataSet = dataSets0[0];
+
         if (!dataSet) throw new Error(`Dataset id=${dataSetId} not found`);
 
         const antigensByCode = _.keyBy(config.antigens, "code");
@@ -196,7 +202,7 @@ export default class Campaign {
         const teamsMetadata = await getTeamsForCampaign(db, ouIds, teamsCategoyId, name);
         const antigensDisaggregation = AntigensDisaggregation.build(config, antigens, sections);
 
-        const initialData = {
+        const initialData: Data = {
             id: dataSet.id,
             name: dataSet.name,
             description: dataSet.description,
@@ -209,7 +215,12 @@ export default class Campaign {
             teams: _.size(teamsMetadata),
             teamsMetadata: { elements: teamsMetadata },
             dashboardId: dashboard ? dashboard.id : undefined,
-            extraDataSets: [], // T-EMPORAL: Get assigned to orgunit
+            extraDataSets: extraDataSets.filter(
+                extraDataSet =>
+                    _(extraDataSet.organisationUnits)
+                        .intersectionBy(dataSet.organisationUnits, ou => ou.id)
+                        .size() > 0
+            ),
         };
 
         return new Campaign(db, config, initialData);

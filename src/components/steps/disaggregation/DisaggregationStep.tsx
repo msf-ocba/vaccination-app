@@ -28,15 +28,15 @@ interface DisaggregationStepProps extends WithStyles<typeof styles> {
     onChange: (campaign: Campaign) => void;
 }
 
-type Current = { type: "antigen"; antigen: Antigen } | { type: "extra" };
+type Tab = { type: "antigen"; antigen: Antigen } | { type: "extra" };
 
 interface DisaggregationStepState {
-    current: Current;
+    currentTab: Tab;
 }
 
 class DisaggregationStep extends React.Component<DisaggregationStepProps, DisaggregationStepState> {
     state: DisaggregationStepState = {
-        current: { type: "antigen", antigen: this.props.campaign.antigens[0] },
+        currentTab: { type: "antigen", antigen: this.props.campaign.antigens[0] },
     };
 
     update = memoize((path: Path) => (newValue: any) => {
@@ -48,13 +48,13 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
 
     changeSection = (tabCode: string): void => {
         if (tabCode === "extra") {
-            this.setState({ current: { type: "extra" } });
+            this.setState({ currentTab: { type: "extra" } });
         } else {
             const antigen = _(this.props.campaign.antigens)
                 .keyBy("code")
                 .get(tabCode);
 
-            this.setState({ current: { type: "antigen", antigen: antigen } });
+            this.setState({ currentTab: { type: "antigen", antigen: antigen } });
         }
     };
 
@@ -66,7 +66,7 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
 
     render() {
         const { classes, campaign } = this.props;
-        const { current: current } = this.state;
+        const { currentTab: current } = this.state;
 
         const antigenDisaggregation = campaign.antigensDisaggregation;
         const currentAntigen =
@@ -78,7 +78,6 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
             }))
             .concat([{ label: i18n.t("Extra Activities"), key: "extra" }]);
 
-        console.log({ sections });
         const extraActivitiesDataSets = campaign.config.dataSets.extraActivities;
 
         return (

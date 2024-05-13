@@ -45,7 +45,6 @@ export const baseConfig = {
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
     dataSetDashboardCodePrefix: "RVC_CAMPAIGN",
-    dataSetNotificationTemplateForExtra: "RVC_EXTRA",
     userRoleNames: {
         manager: [userRoles.campaignManager],
         feedback: [userRoles.feedback],
@@ -411,7 +410,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         dataSets: {
             extraActivities: [
                 { name: "Nutrition Surveillance - Daily", id: "AdRfEJo79yD" },
-                { name: "Complementary activities", id: "A08QnNJfcEI" },
+                { name: "Complementary activities", id: "IkPU3de2gHG" },
             ],
         },
     };
