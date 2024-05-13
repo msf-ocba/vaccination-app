@@ -136,6 +136,7 @@ export default class Campaign {
             dataSets: Array<{
                 id: string;
                 name: string;
+                code: string;
                 description: string;
                 organisationUnits: Array<OrganisationUnitPathOnly>;
                 dataInputPeriods: Array<{ period: { id: string } }>;
@@ -155,6 +156,7 @@ export default class Campaign {
                     sections: {
                         id: true,
                         name: true,
+                        code: true,
                         dataSet: { id: true },
                         dataElements: { id: true },
                         sortOrder: true,
