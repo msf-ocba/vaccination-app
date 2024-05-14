@@ -103,7 +103,6 @@ export class DataSetCustomForm {
 
         const combinations = _.cartesianProduct(categoryOptionGroupsAll).map(categoryOptions => {
             const disaggregation = _.compact([antigen, ...categoryOptions]);
-
             const codes = disaggregation.map(co => co.code);
             const toSkip = combinationsToSkip.some(codesToSkip =>
                 _.isEmpty(_.difference(codesToSkip, codes))
@@ -136,17 +135,17 @@ export class DataSetCustomForm {
 
         // Doses are rendered as a separate data element rows
         const categoryDoses = this.getDosesCategory(dataElement);
-        const dosesNames: Array<CategoryOption | undefined> = categoryDoses
+        const doses: Array<CategoryOption | undefined> = categoryDoses
             ? categoryDoses.categoryOptions
             : [undefined];
-        const showDoseName = dosesNames.length > 1;
+        const showDoseName = doses.length > 1;
 
-        return dosesNames.map(doseName => {
+        return doses.map(dose => {
             const combinations = this.getDisaggregationCombinations({
                 antigen: antigen,
                 dataElement: dataElement,
                 categoryOptionGroups,
-                dose: doseName,
+                dose: dose,
             });
             const cocIds = this.getCocIds(combinations);
             const dataElementId = dataElement.id;
@@ -157,7 +156,7 @@ export class DataSetCustomForm {
                     h("span", { "data-translate": true }, dataElement.name),
                     showDoseName
                         ? h("span", {}, " - ") +
-                          h("span", { "data-translate": true }, doseName ? doseName.name : "-")
+                          h("span", { "data-translate": true }, dose ? dose.name : "-")
                         : null,
                 ]),
                 ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
@@ -539,6 +538,8 @@ export function renderHeaderForGroup(
 
     const rowsCount = firstCombination.length;
 
+    // To build the header merging, group consecutive categoryOptions up until the level
+    // being rendered, and use the count as the colspan.
     return _(0)
         .range(rowsCount)
         .map(rowIndex => {

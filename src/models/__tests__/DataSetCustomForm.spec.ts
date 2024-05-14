@@ -55,5 +55,3 @@ function expectSameHtml(html1: string, html2: string): void {
     const html2p = prettyPrint(html2);
     expect(html1p).toEqual(html2p);
 }
-
-export {};
