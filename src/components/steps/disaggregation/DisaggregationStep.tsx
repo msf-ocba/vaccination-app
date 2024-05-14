@@ -72,10 +72,7 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
         const currentAntigen =
             current.type === "antigen" ? antigenDisaggregation.forAntigen(current.antigen) : null;
         const sections = campaign.antigens
-            .map(antigen => ({
-                label: antigen.name,
-                key: antigen.code,
-            }))
+            .map(antigen => ({ label: antigen.name, key: antigen.code }))
             .concat([{ label: i18n.t("Extra Activities"), key: "extra" }]);
 
         const extraActivitiesDataSets = campaign.config.dataSets.extraActivities;
@@ -102,7 +99,7 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
                                     <SimpleCheckbox
                                         key={dataSet.id}
                                         checked={campaign.extraDataSets.some(
-                                            ds => ds.id === dataSet.id
+                                            dataSet => dataSet.id === dataSet.id
                                         )}
                                         label={dataSet.name}
                                         onChange={isChecked =>

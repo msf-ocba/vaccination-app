@@ -90,7 +90,7 @@ export default class Campaign {
 
     public setExtraDataSet(dataSet: DataSet, options: { isEnabled: boolean }): Campaign {
         const newDataSets = _(this.data.extraDataSets)
-            .filter(ds => ds.id !== dataSet.id)
+            .reject(ds => ds.id === dataSet.id)
             .concat(options.isEnabled ? [dataSet] : [])
             .value();
 
@@ -150,13 +150,13 @@ export default class Campaign {
                 fields: {
                     id: true,
                     name: true,
+                    code: true,
                     description: true,
                     organisationUnits: { id: true, path: true },
                     dataInputPeriods: { period: { id: true } },
                     sections: {
                         id: true,
                         name: true,
-                        code: true,
                         dataSet: { id: true },
                         dataElements: { id: true },
                         sortOrder: true,
@@ -182,8 +182,8 @@ export default class Campaign {
             },
         });
 
-        const [dataSets0, extraDataSets] = _.partition(dataSets, ds => ds.id === dataSetId);
-        const dataSet = dataSets0[0];
+        const [campaignDataSets, extraDataSets] = _.partition(dataSets, ds => ds.id === dataSetId);
+        const dataSet = campaignDataSets[0];
 
         if (!dataSet) throw new Error(`Dataset id=${dataSetId} not found`);
 
@@ -217,12 +217,7 @@ export default class Campaign {
             teams: _.size(teamsMetadata),
             teamsMetadata: { elements: teamsMetadata },
             dashboardId: dashboard ? dashboard.id : undefined,
-            extraDataSets: extraDataSets.filter(
-                extraDataSet =>
-                    _(extraDataSet.organisationUnits)
-                        .intersectionBy(dataSet.organisationUnits, ou => ou.id)
-                        .size() > 0
-            ),
+            extraDataSets: getExtraDataSetsIntersectingWithCampaignOrgUnits(extraDataSets, dataSet),
         };
 
         return new Campaign(db, config, initialData);
@@ -700,4 +695,15 @@ export default class Campaign {
             filteredTeams.map((team: Ref) => ({ model: "categoryOptions", id: team.id }))
         );
     }
+}
+
+function getExtraDataSetsIntersectingWithCampaignOrgUnits<
+    DataSet extends { organisationUnits: Ref[] }
+>(extraDataSets: DataSet[], campaignDataSet: DataSet): DataSet[] {
+    return extraDataSets.filter(
+        extraDataSet =>
+            _(extraDataSet.organisationUnits)
+                .intersectionBy(campaignDataSet.organisationUnits, ou => ou.id)
+                .size() > 0
+    );
 }
