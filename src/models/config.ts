@@ -60,6 +60,7 @@ export const baseConfig = {
 type BaseConfig = typeof baseConfig;
 
 export interface MetadataConfig extends BaseConfig {
+    currentUser: User;
     userRoles: NamedObject[];
     attributes: {
         app: Attribute;
@@ -111,6 +112,11 @@ export interface MetadataConfig extends BaseConfig {
         id: string;
     }>;
 }
+
+export type User = {
+    id: string;
+    name: string;
+};
 
 function getCategoriesDisaggregation(
     categories: Category[]
@@ -375,6 +381,7 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
 
     const metadataConfig: MetadataConfig = {
         ...baseConfig,
+        currentUser: await db.getCurrentUser(),
         attributes: getAttributes(metadata.attributes),
         organisationUnitLevels: metadata.organisationUnitLevels,
         categories: metadata.categories,
