@@ -7,6 +7,7 @@ import Campaign, { Antigen } from "./campaign";
 import { AntigenDisaggregationEnabled, CocMetadata } from "./AntigensDisaggregation";
 import "../utils/lodash-mixins";
 import { CategoryOption, getCode, getId } from "./db.types";
+import { DataInput, getDataInputFromCampaign } from "./CampaignDb";
 
 const contentScript = require("!raw-loader!./custom-form-resources/content-script.js").default;
 const cssContents = require("!raw-loader!./custom-form-resources/form.css").default;
@@ -104,7 +105,6 @@ export class DataSetCustomForm {
 
         const combinations = _.cartesianProduct(categoryOptionGroupsAll).map(categoryOptions => {
             const disaggregation = _.compact([antigen, ...categoryOptions]);
-
             const codes = disaggregation.map(co => co.code);
             const toSkip = combinationsToSkip.some(codesToSkip =>
                 _.isEmpty(_.difference(codesToSkip, codes))
@@ -161,17 +161,17 @@ export class DataSetCustomForm {
 
         // Doses are rendered as a separate data element rows
         const categoryDoses = this.getDosesCategory(dataElement);
-        const dosesNames: Array<CategoryOption | undefined> = categoryDoses
+        const doses: Array<CategoryOption | undefined> = categoryDoses
             ? categoryDoses.categoryOptions
             : [undefined];
-        const showDoseName = dosesNames.length > 1;
+        const showDoseName = doses.length > 1;
 
-        return dosesNames.map(doseName => {
+        return doses.map(dose => {
             const combinations = this.getDisaggregationCombinations({
                 antigen: antigen,
                 dataElement: dataElement,
                 categoryOptionGroups,
-                dose: doseName,
+                dose: dose,
             });
             const cocIds = this.getCocIds(combinations);
             const dataElementId = dataElement.id;
@@ -182,7 +182,7 @@ export class DataSetCustomForm {
                     h("span", { "data-translate": true }, dataElement.name),
                     showDoseName
                         ? h("span", {}, " - ") +
-                          h("span", { "data-translate": true }, doseName ? doseName.name : "-")
+                          h("span", { "data-translate": true }, dose ? dose.name : "-")
                         : null,
                 ]),
                 ...cocIds.map(cocId => inputTd(dataElementId, cocId)),
@@ -462,21 +462,39 @@ export class DataSetCustomForm {
         campaign: Campaign,
         disaggregations: Disaggregations
     ): Promise<Translations> {
-        const i18nTranslations = [
+        const locales = Object.keys(i18n.store.data);
+
+        const generalTranslations = _([
             "Subtotal",
             "Total",
             "Value",
             "Doses administered",
             "Quality and safety indicators",
             "General Q&S",
-        ];
+        ])
+            .map(text => [i18n.t(text), i18n.t(text, { lng: "en" })] as [string, string])
+            .fromPairs()
+            .value();
 
-        const locales = Object.keys(i18n.store.data);
-        const i18nTranslations_ = _(i18nTranslations)
-            .map(text => [
-                i18n.t(text),
+        const validationTranslations = {
+            selectedPeriodNotInCampaignRange: i18n.t(
+                "Selected period ({selectedPeriod}) is not in the campaign period range ({periodStart} -> {periodEnd})",
+                { lng: "en" }
+            ),
+            currentDateNotInCampaignEntryRange: i18n.t(
+                "Current date ({currentDate}) is not in the campaign entry range ({openingDate} -> {closingDate})",
+                { lng: "en" }
+            ),
+        };
+
+        const interfaceTranslations = { ...generalTranslations, ...validationTranslations };
+
+        const interfaceTranslationsByLocale = _(interfaceTranslations)
+            .toPairs()
+            .map(([key, text]) => [
+                key,
                 _(locales)
-                    .map(locale => [locale, i18n.t(i18n.t(text, { lng: "en" }), { lng: locale })])
+                    .map(locale => [locale, i18n.t(text, { lng: locale })])
                     .fromPairs()
                     .value(),
             ])
@@ -484,10 +502,13 @@ export class DataSetCustomForm {
             .value();
 
         const categoryOptionsIdById = _.keyBy(campaign.config.categoryOptions, co => co.id);
-        const ids = [
+        const ids = _.uniq([
             ..._(disaggregations)
                 .flatMap(dis => dis.dataElements)
                 .map(getId)
+                .value(),
+            ..._(disaggregations)
+                .map(dis => dis.antigen.id)
                 .value(),
             ..._(disaggregations)
                 .flatMap(dis => dis.dataElements)
@@ -496,7 +517,7 @@ export class DataSetCustomForm {
                 .map(co => _(categoryOptionsIdById).get(co.id).id)
                 .uniq()
                 .value(),
-        ];
+        ]);
 
         const { categoryOptions, dataElements } = await campaign.db.getMetadata<{
             categoryOptions: ObjectWithTranslation[];
@@ -508,7 +529,7 @@ export class DataSetCustomForm {
             },
         });
 
-        const metadataTranslations = _(categoryOptions)
+        const metadataTranslationsByLocale = _(categoryOptions)
             .concat(dataElements)
             .map(object => [
                 object.displayName,
@@ -526,13 +547,14 @@ export class DataSetCustomForm {
             .fromPairs()
             .value();
 
-        return { ...i18nTranslations_, ...metadataTranslations };
+        return { ...metadataTranslationsByLocale, ...interfaceTranslationsByLocale };
     }
 
     generate(): string {
-        const options = {
+        const options: CustomFormOptions = {
             translations: this.translations,
             dataElements: _.fromPairs(this.config.dataElements.map(de => [de.id, de.code])),
+            dataInput: getDataInputFromCampaign(this.campaign),
         };
         const toJSON = (obj: any) => JSON.stringify(obj, null, 2);
         // Remove the empty export (it's required by the linter, but does not work on a browser)
@@ -574,6 +596,8 @@ export function renderHeaderForGroup(
 
     const rowsCount = firstCombination.length;
 
+    // To build the header merging, group consecutive categoryOptions up until the level
+    // being rendered, and use the count as the colspan.
     return _(0)
         .range(rowsCount)
         .map(rowIndex => {
@@ -622,4 +646,13 @@ function groupConsecutives<T>(items: T[]): T[][] {
         },
         [] as T[][]
     );
+}
+
+type Id = string;
+type Code = string;
+
+interface CustomFormOptions {
+    translations: object;
+    dataElements: Record<Id, Code>;
+    dataInput: Maybe<DataInput>;
 }
