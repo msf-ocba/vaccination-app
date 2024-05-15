@@ -19,6 +19,7 @@ import "./DisaggregationStep.css";
 import i18n from "../../../locales";
 import SimpleCheckbox from "../../forms/SimpleCheckBox";
 import { DataSet } from "../../../models/config";
+import { CampaignType } from "../../../models/AntigensDisaggregation";
 
 type Path = (number | string)[];
 
@@ -64,6 +65,15 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
         onChange(campaign.setExtraDataSet(dataSet, options));
     };
 
+    setCampaignType = (type: CampaignType): void => {
+        const { campaign, onChange } = this.props;
+        const tab = this.state.currentTab;
+        if (!tab || tab.type !== "antigen") return;
+        const updated = campaign.antigensDisaggregation.setCampaignType(tab.antigen, type);
+        const campaignUpdated = campaign.setAntigensDisaggregation(updated);
+        onChange(campaignUpdated);
+    };
+
     render() {
         const { classes, campaign } = this.props;
         const { currentTab: current } = this.state;
@@ -90,6 +100,7 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
                                 antigen={currentAntigen}
                                 antigenCode={currentAntigen.code}
                                 update={this.update}
+                                setCampaignType={this.setCampaignType}
                             />
                         </div>
                     ) : (
