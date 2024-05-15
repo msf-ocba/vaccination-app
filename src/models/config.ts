@@ -43,6 +43,7 @@ export const baseConfig = {
     legendSetsCode: "RVC_LEGEND_ZERO",
     attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     attributeNameForHideInTallySheet: "hideInTallySheet",
+    attributeCodeForDataInputPeriods: "RVC_DATA_INPUT_PERIODS",
     dataElementCodeForTotalPopulation: "RVC_TOTAL_POPULATION",
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
@@ -61,10 +62,12 @@ export const baseConfig = {
 type BaseConfig = typeof baseConfig;
 
 export interface MetadataConfig extends BaseConfig {
+    currentUser: User;
     userRoles: NamedObject[];
     attributes: {
         app: Attribute;
         hideInTallySheet: Attribute;
+        dataInputPeriods: Attribute;
     };
     organisationUnitLevels: OrganisationUnitLevel[];
     categories: Category[];
@@ -112,6 +115,11 @@ export interface MetadataConfig extends BaseConfig {
         id: string;
     }>;
 }
+
+export type User = {
+    id: string;
+    name: string;
+};
 
 function getCategoriesDisaggregation(
     categories: Category[]
@@ -373,6 +381,7 @@ function getAttributes(attributes: Attribute[]) {
     return {
         app: attributesByCode.getOrFail(baseConfig.attributeCodeForApp),
         hideInTallySheet: attributesByName.getOrFail(baseConfig.attributeNameForHideInTallySheet),
+        dataInputPeriods: attributesByCode.getOrFail(baseConfig.attributeCodeForDataInputPeriods),
     };
 }
 
@@ -431,8 +440,9 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         metadata.categories,
         metadata.categoryOptionGroups
     );
-    const metadataConfig = {
+    const metadataConfig: MetadataConfig = {
         ...baseConfig,
+        currentUser: await db.getCurrentUser(),
         attributes: getAttributes(metadata.attributes),
         organisationUnitLevels: metadata.organisationUnitLevels,
         categories: metadata.categories,

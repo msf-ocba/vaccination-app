@@ -12,6 +12,7 @@ export function co(name: string): CategoryOption {
 
 const metadataConfig: MetadataConfig = {
     ...baseConfig,
+    currentUser: { id: "u1", name: "Current User" },
     userRoles: [],
     organisationUnitLevels: [],
     categoryCombos: [],
@@ -38,6 +39,12 @@ const metadataConfig: MetadataConfig = {
             code: "",
             displayName: "hideInTallySheet",
             valueType: "BOOLEAN",
+        },
+        dataInputPeriods: {
+            id: "3",
+            code: "RVC_DATA_INPUT_PERIODS",
+            displayName: "Data Input Periods",
+            valueType: "TEXT",
         },
     },
     categories: [],
