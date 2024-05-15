@@ -1,10 +1,10 @@
 import { MetadataConfig } from "./config";
 import _ from "lodash";
 const { createElement } = require("typed-html");
+import i18n from "@dhis2/d2-i18n";
 
 import Campaign, { Antigen } from "./campaign";
 import { AntigenDisaggregationEnabled, CocMetadata } from "./AntigensDisaggregation";
-import i18n from "../locales";
 import "../utils/lodash-mixins";
 import { CategoryOption, getCode, getId } from "./db.types";
 import { DataInput, getDataInputFromCampaign } from "./CampaignDb";
@@ -100,7 +100,8 @@ export class DataSetCustomForm {
         const categoryDoses = dataElement ? this.getDosesCategory(dataElement) : undefined;
         const doses =
             categoryDoses && !dose ? [categoryDoses.categoryOptions] : dose ? [[dose]] : [];
-        const categoryOptionGroupsAll = [...doses, ...categoryOptionGroups];
+        const categoryOptionGroupsWithType = this.setTypeOnGroups(antigen, categoryOptionGroups);
+        const categoryOptionGroupsAll = [...doses, ...categoryOptionGroupsWithType];
 
         const combinations = _.cartesianProduct(categoryOptionGroupsAll).map(categoryOptions => {
             const disaggregation = _.compact([antigen, ...categoryOptions]);
@@ -114,12 +115,36 @@ export class DataSetCustomForm {
         return _.compact(combinations);
     }
 
+    private setTypeOnGroups(
+        antigen: Antigen | undefined,
+        categoryOptionGroups: CategoryOption[][]
+    ): CategoryOption[][] {
+        if (!antigen) return categoryOptionGroups;
+
+        const disaggregation = this.campaign.antigensDisaggregation.forAntigen(antigen);
+        if (!disaggregation) return categoryOptionGroups;
+
+        const categoryOptionCodeForType =
+            disaggregation.type === "preventive"
+                ? this.config.categoryOptionCodePreventive
+                : this.config.categoryOptionCodeReactive;
+
+        return categoryOptionGroups.map(categoryOptions => {
+            const categoryOptionForType = categoryOptions.find(
+                categoryOption => categoryOption.code === categoryOptionCodeForType
+            );
+            return categoryOptionForType ? [categoryOptionForType] : categoryOptions;
+        });
+    }
+
     getCocIds(combinations: CategoryOption[][]): string[] {
         return combinations.map(disaggregation => {
             const cocId = this.metadata.getByOptions(disaggregation);
             if (!cocId)
                 throw new Error(
-                    `[DataSetCustomForm] coc not found: ${JSON.stringify(disaggregation)} `
+                    `[DataSetCustomForm] coc not found: ${disaggregation
+                        .map(co => co.name)
+                        .join(", ")}`
                 );
             return cocId;
         });
@@ -386,7 +411,17 @@ export class DataSetCustomForm {
         const generalDataElements = this.getGeneralDataElements(disaggregations);
 
         const tabs = _.compact([
-            ...disaggregations.map(({ antigen }) => ({ name: antigen.name, id: antigen.id })),
+            ...disaggregations.map(disaggregation => {
+                const { antigen } = disaggregation;
+
+                const type =
+                    disaggregation.type === "preventive"
+                        ? i18n.t("Preventive")
+                        : i18n.t("Reactive");
+
+                const name = `[${type}] ${antigen.name}`;
+                return { name: name, id: antigen.id };
+            }),
             !_(generalDataElements).isEmpty()
                 ? { name: i18n.t("General Q&S"), id: this.generalIndicatorsTabId }
                 : null,

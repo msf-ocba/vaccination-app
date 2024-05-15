@@ -16,6 +16,7 @@ import AntigenSection from "./AntigenSection";
 
 const { Sidebar } = require("@dhis2/d2-ui-core"); // Untyped
 import "./DisaggregationStep.css";
+import { CampaignType } from "../../../models/AntigensDisaggregation";
 
 type Path = (number | string)[];
 
@@ -48,6 +49,15 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
         this.setState({ currentAntigen: antigen });
     };
 
+    setCampaignType = (type: CampaignType): void => {
+        const { campaign, onChange } = this.props;
+        const antigen = this.state.currentAntigen;
+        if (!antigen) return;
+        const updated = campaign.antigensDisaggregation.setCampaignType(antigen, type);
+        const campaignUpdated = campaign.setAntigensDisaggregation(updated);
+        onChange(campaignUpdated);
+    };
+
     render() {
         const { classes, campaign } = this.props;
         const { currentAntigen } = this.state;
@@ -74,6 +84,7 @@ class DisaggregationStep extends React.Component<DisaggregationStepProps, Disagg
                             antigen={currentAntigenDisaggregation}
                             antigenCode={currentAntigen.code}
                             update={this.update}
+                            setCampaignType={this.setCampaignType}
                         />
                     </div>
                 </div>

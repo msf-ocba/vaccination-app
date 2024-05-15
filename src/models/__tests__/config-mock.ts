@@ -278,6 +278,7 @@ const metadataConfig: MetadataConfig = {
                 [[co("12 - 59 m")], [co("12 - 23 m"), co("24 - 59 m")]],
                 [[co("5 - 14 y")], [co("5 - 9 y"), co("5 - 12 y")]],
             ],
+            isTypeSelectable: false,
         },
         {
             id: "2",
@@ -296,9 +297,11 @@ const metadataConfig: MetadataConfig = {
                 { id: "8", code: "RVC_AEFI", optional: false, order: 1 },
             ],
             ageGroups: [[[co("2 - 4 y")]], [[co("5 - 14 y")]], [[co("15 - 29 y")]]],
+            isTypeSelectable: false,
         },
         {
             id: "3",
+            isTypeSelectable: false,
             name: "Meningitis Conjugate",
             displayName: "Meningitis Conjugate",
             code: "RVC_MENCONJ",
@@ -321,6 +324,7 @@ const metadataConfig: MetadataConfig = {
         },
         {
             id: "4",
+            isTypeSelectable: false,
             name: "Cholera",
             displayName: "Cholera",
             code: "RVC_CHOLERA",
@@ -338,6 +342,7 @@ const metadataConfig: MetadataConfig = {
         },
         {
             id: "5",
+            isTypeSelectable: false,
             name: "PCV",
             displayName: "PCV",
             code: "RVC_PCV",
@@ -359,6 +364,7 @@ const metadataConfig: MetadataConfig = {
         },
         {
             id: "6",
+            isTypeSelectable: false,
             name: "Pertussis Penta",
             displayName: "Pertussis Penta",
             code: "RVC_PERTPENTA",
@@ -380,6 +386,7 @@ const metadataConfig: MetadataConfig = {
         },
         {
             id: "7",
+            isTypeSelectable: false,
             name: "Yellow Fever",
             displayName: "Yellow Fever",
             code: "RVC_YELLOW_FEVER",
@@ -408,6 +415,7 @@ const metadataConfig: MetadataConfig = {
         },
         {
             id: "8",
+            isTypeSelectable: false,
             name: "Japanese Encephalitis",
             displayName: "Japanese Encephalitis",
             code: "RVC_JPENC",
@@ -431,6 +439,7 @@ const metadataConfig: MetadataConfig = {
         },
         {
             id: "9",
+            isTypeSelectable: false,
             name: "Dengue",
             displayName: "Dengue",
             code: "RVC_DENGUE",
@@ -449,6 +458,7 @@ const metadataConfig: MetadataConfig = {
         },
         {
             id: "10",
+            isTypeSelectable: false,
             name: "Typhoid Fever",
             displayName: "Typhoid Fever",
             code: "RVC_TYPHOID_FEVER",

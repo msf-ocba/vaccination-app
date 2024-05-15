@@ -32,14 +32,19 @@ export const baseConfig = {
     expirationDays: 8,
     categoryCodeForAntigens: "RVC_ANTIGEN",
     categoryCodeForAgeGroup: "RVC_AGE_GROUP",
+    categoryCodeForCampaignType: "RVC_TYPE",
     categoryCodeForDoses: "RVC_DOSE",
     categoryComboCodeForAgeGroup: "RVC_AGE_GROUP",
     categoryComboCodeForAntigenAgeGroup: "RVC_ANTIGEN_AGE_GROUP",
     categoryComboCodeForAntigenDosesAgeGroup: "RVC_ANTIGEN_DOSE_AGE_GROUP",
+    categoryComboCodeForAntigenDosesAgeGroupType: "RVC_ANTIGEN_DOSE_AGE_GROUP_TYPE",
     dataElementGroupCodeForAntigens: "RVC_ANTIGEN",
     dataElementGroupCodeForPopulation: "RVC_POPULATION",
     categoryComboCodeForTeams: "RVC_TEAM",
     categoryCodeForTeams: "RVC_TEAM",
+    categoryOptionCodeReactive: "RVC_REACTIVE",
+    categoryOptionCodePreventive: "RVC_PREVENTIVE",
+    categoryOptionGroupOfAntigensWithSelectableType: "RVC_ANTIGEN_TYPE_SELECTABLE",
     legendSetsCode: "RVC_LEGEND_ZERO",
     attributeCodeForApp: "RVC_CREATED_BY_VACCINATION_APP",
     attributeNameForHideInTallySheet: "hideInTallySheet",
@@ -110,6 +115,7 @@ export interface MetadataConfig extends BaseConfig {
         dataElements: { id: string; code: string; optional: boolean; order: number }[];
         ageGroups: Array<CategoryOption[][]>;
         doses: Array<{ id: string; code: string; name: string; displayName: string }>;
+        isTypeSelectable: boolean;
     }>;
     legendSets: Array<{
         id: string;
@@ -262,6 +268,12 @@ function getAntigens(
     const dataElementGroupsByCode = _.keyBy(dataElementGroups, "code");
     const categoryOptionGroupsByCode = _.keyBy(categoryOptionGroups, "code");
 
+    const antigenIdsSelectable = new Set(
+        _(categoryOptionGroupsByCode)
+            .getOrFail(baseConfig.categoryOptionGroupOfAntigensWithSelectableType)
+            .categoryOptions.map(co => co.id)
+    );
+
     const antigensMetadata = categoryOptions.map(
         (categoryOption): MetadataConfig["antigens"][0] => {
             const getDataElements = (typeString: string) => {
@@ -333,6 +345,7 @@ function getAntigens(
                 dataElements: dataElementSorted,
                 ageGroups: ageGroups,
                 doses: doses,
+                isTypeSelectable: antigenIdsSelectable.has(categoryOption.id),
             };
         }
     );
