@@ -146,6 +146,9 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
+msgid "This campaign is not editable, please contact the administrator."
+msgstr ""
+
 msgid "General info"
 msgstr ""
 
@@ -361,6 +364,16 @@ msgid "General Q&S"
 msgstr ""
 
 msgid ""
+"Selected period ({selectedPeriod}) is not in the campaign period range "
+"({periodStart} -> {periodEnd})"
+msgstr ""
+
+msgid ""
+"Current date ({currentDate}) is not in the campaign entry range "
+"({openingDate} -> {closingDate})"
+msgstr ""
+
+msgid ""
 "Campaign teams (category options) could not be deleted, probably there are "
 "associated data values"
 msgstr ""
@@ -369,6 +382,9 @@ msgid "Coverage by Site {{- period}} (do not edit this chart)"
 msgstr ""
 
 msgid "Coverage by Area {{- period}} (do not edit this chart)"
+msgstr ""
+
+msgid "Coverage by Campaign {{- period}} (do not edit this chart)"
 msgstr ""
 
 msgid "Global QS Indicators {{- period}}"
@@ -380,13 +396,22 @@ msgstr ""
 msgid "Campaign Coverage by area and dose {{- period}} (do not edit this table)"
 msgstr ""
 
+msgid "Campaign Coverage by campaign and dose {{- period}} (do not edit this table)"
+msgstr ""
+
 msgid "Cumulative Campaign Coverage by area (do not edit this table)"
+msgstr ""
+
+msgid "Cumulative Campaign Coverage by campaign (do not edit this table)"
 msgstr ""
 
 msgid "QS Indicators"
 msgstr ""
 
 msgid "Vaccines Per Area"
+msgstr ""
+
+msgid "Vaccines Per Campaign"
 msgstr ""
 
 msgid "Vaccines Per Team"
