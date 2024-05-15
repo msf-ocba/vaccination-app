@@ -189,6 +189,15 @@ class SaveStep extends React.Component {
                             )}
                         </LiEntry>
 
+                        <LiEntry label={i18n.t("Extra activities")}>
+                            [{campaign.extraDataSets.length}]
+                            <ul>
+                                {campaign.extraDataSets.map(dataSet => (
+                                    <LiEntry key={dataSet.id} label={dataSet.name} />
+                                ))}
+                            </ul>
+                        </LiEntry>
+
                         <LiEntry label={i18n.t("Antigens")}>
                             [{disaggregation.length}]
                             <ul>

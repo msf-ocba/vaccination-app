@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-05-07T07:43:08.641Z\n"
-"PO-Revision-Date: 2024-05-07T07:43:08.641Z\n"
+"POT-Creation-Date: 2024-05-13T12:48:50.024Z\n"
+"PO-Revision-Date: 2024-05-13T12:48:50.024Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -274,6 +274,9 @@ msgstr ""
 msgid "Disaggregation"
 msgstr ""
 
+msgid "Extra Activities"
+msgstr ""
+
 msgid "Field cannot be blank"
 msgstr ""
 
@@ -305,6 +308,9 @@ msgid "age groups"
 msgstr ""
 
 msgid "Period dates"
+msgstr ""
+
+msgid "Extra activities"
 msgstr ""
 
 msgid "Antigens"

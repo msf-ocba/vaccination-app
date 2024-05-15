@@ -53,6 +53,7 @@ export const baseConfig = {
     dataElementCodeForAgeDistribution: "RVC_AGE_DISTRIBUTION",
     dataElementCodeForPopulationByAge: "RVC_POPULATION_BY_AGE",
     dataSetDashboardCodePrefix: "RVC_CAMPAIGN",
+    dataSetExtraCodes: ["DS_NSd_3"],
     userRoleNames: {
         manager: [userRoles.campaignManager],
         feedback: [userRoles.feedback],
@@ -120,7 +121,12 @@ export interface MetadataConfig extends BaseConfig {
     legendSets: Array<{
         id: string;
     }>;
+    dataSets: {
+        extraActivities: DataSet[];
+    };
 }
+
+export type DataSet = { id: string; name: string; code: string };
 
 export type User = {
     id: string;
@@ -414,6 +420,7 @@ interface RawMetadataConfig {
     categoryOptionGroups: CategoryOptionGroup[];
     dataElementGroups: DataElementGroup[];
     dataElements: DataElement[];
+    dataSets: DataSet[];
     indicators: Indicator[];
     organisationUnitLevels: OrganisationUnitLevel[];
     userRoles: NamedObject[];
@@ -440,6 +447,10 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         dataElementGroups: modelParams,
         dataElements: modelParams,
         indicators: { fields: { id: true, code: true }, filters: [codeFilter] },
+        dataSets: {
+            fields: { id: true, name: true, code: true },
+            filters: [`code:in:[${baseConfig.dataSetExtraCodes.join(",")}]`],
+        },
         legendSets: { fields: { id: true, code: true }, filters: [codeFilter] },
         organisationUnitLevels: {},
         userRoles: { fields: namedObjectFields, filters: [userRolesFilter] },
@@ -482,6 +493,11 @@ export async function getMetadataConfig(db: DbD2): Promise<MetadataConfig> {
         userRoles: metadata.userRoles,
         legendSets: metadata.legendSets,
         indicators: metadata.indicators,
+        dataSets: {
+            extraActivities: metadata.dataSets.filter(dataSet =>
+                _(baseConfig.dataSetExtraCodes).includes(dataSet.code)
+            ),
+        },
     };
 
     return metadataConfig;
