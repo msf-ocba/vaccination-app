@@ -6,7 +6,13 @@ import {
     itemsMetadataConstructor,
     buildDashboardItems,
 } from "./dashboard-items";
-import { Ref, OrganisationUnitPathOnly, OrganisationUnitWithName, Sharing } from "./db.types";
+import {
+    Ref,
+    OrganisationUnitPathOnly,
+    OrganisationUnitWithName,
+    Sharing,
+    CategoryOption,
+} from "./db.types";
 import { Antigen } from "./campaign";
 import { Moment } from "moment";
 import { getDaysRange } from "../utils/date";
@@ -84,8 +90,8 @@ export class Dashboard {
             .fromPairs()
             .value();
 
-        const ageGroupsToId = (ageGroups: string[]): string[] =>
-            _.map(ageGroups, ag => categoryOptionsByName[ag]);
+        const ageGroupsToId = (ageGroups: CategoryOption[]): string[] =>
+            _.map(ageGroups, ag => categoryOptionsByName[ag.displayName]);
 
         const ageGroupsByAntigen: _.Dictionary<string[]> = _(antigensDisaggregation)
             .map(d => [d.antigen.id, ageGroupsToId(d.ageGroups)])

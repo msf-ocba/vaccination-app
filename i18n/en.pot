@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-04-23T08:51:52.994Z\n"
-"PO-Revision-Date: 2024-04-23T08:51:52.994Z\n"
+"POT-Creation-Date: 2024-05-15T11:45:24.684Z\n"
+"PO-Revision-Date: 2024-05-15T11:45:24.684Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -351,9 +351,6 @@ msgstr ""
 msgid "Total"
 msgstr ""
 
-msgid "Value"
-msgstr ""
-
 msgid "Doses administered"
 msgstr ""
 
@@ -371,6 +368,9 @@ msgstr ""
 msgid ""
 "Current date ({currentDate}) is not in the campaign entry range "
 "({openingDate} -> {closingDate})"
+msgstr ""
+
+msgid "Value"
 msgstr ""
 
 msgid ""

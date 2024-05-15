@@ -120,8 +120,8 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
                             <TableCell className={classes.orgUnitColumn} />
 
                             {ageGroups.map(ageGroup => (
-                                <TableCell key={ageGroup} className={classes.tableHead}>
-                                    {ageGroup}
+                                <TableCell key={ageGroup.id} className={classes.tableHead}>
+                                    {ageGroup.displayName}
                                 </TableCell>
                             ))}
                             <TableCell className={classes.tableActions}>{/* Actions */}</TableCell>
@@ -134,7 +134,7 @@ class PopulationDistributionComponent extends React.Component<PopulationDistribu
                             antigen={antigen}
                             key={antigen.id}
                             distribution={populationDistribution}
-                            ageGroups={ageGroups}
+                            ageGroups={ageGroups.map(group => group.displayName)}
                         />
 
                         <TableRow className={classes.separatorRow}>
