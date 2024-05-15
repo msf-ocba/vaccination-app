@@ -1,20 +1,20 @@
 import { CategoryOption, DataElement, getCode, Maybe, NamedObject, Ref } from "./db.types";
 import _ from "lodash";
 const fp = require("lodash/fp");
-import { MetadataConfig, getRvcCode } from "./config";
+import { MetadataConfig, getRvcCode, baseConfig } from "./config";
 import { Antigen } from "./campaign";
 import "../utils/lodash-mixins";
 import DbD2 from "./db-d2";
+import { Struct } from "./Struct";
 
 export type CampaignType = "preventive" | "reactive";
 
-export interface AntigenDisaggregation {
+interface AntigenDisaggregationData {
     name: string;
     code: string;
     id: string;
     doses: Array<{ id: string; name: string }>;
     isTypeSelectable: boolean;
-    type: CampaignType;
     dataElements: Array<{
         name: string;
         code: string;
@@ -35,6 +35,54 @@ export interface AntigenDisaggregation {
             }>;
         }>;
     }>;
+}
+
+type Code = string;
+
+export class AntigenDisaggregation extends Struct<AntigenDisaggregationData>() {
+    codeMapping: Record<CampaignType, Code> = {
+        preventive: baseConfig.categoryOptionCodePreventive,
+        reactive: baseConfig.categoryOptionCodeReactive,
+    };
+
+    get type(): CampaignType {
+        const selected = _(this.dataElements)
+            .filter(de => de.code === "RVC_DOSES_ADMINISTERED")
+            .flatMap(de => de.categories.filter(category => category.code === "RVC_TYPE"))
+            .flatMap(category => category.options)
+            .flatMap(options => options.values)
+            .flatten()
+            .find(value => value.selected);
+
+        const selectedCode = selected ? selected.option.code : undefined;
+        return selectedCode === baseConfig.categoryOptionCodePreventive ? "preventive" : "reactive";
+    }
+
+    updateCampaignType(type: CampaignType): AntigenDisaggregation {
+        const codeToSet = this.codeMapping[type];
+
+        const dataElementsUpdated = this.dataElements.map(dataElement => ({
+            ...dataElement,
+            categories: dataElement.categories.map(category => {
+                if (category.code !== baseConfig.categoryCodeForCampaignType) return category;
+
+                return {
+                    ...category,
+                    options: category.options.map(optionGroup => ({
+                        ...optionGroup,
+                        values: optionGroup.values.map(values =>
+                            values.map(value => ({
+                                ...value,
+                                selected: value.option.code === codeToSet,
+                            }))
+                        ),
+                    })),
+                };
+            }),
+        }));
+
+        return this._update({ dataElements: dataElementsUpdated });
+    }
 }
 
 export interface SectionForDisaggregation {
@@ -139,8 +187,10 @@ export class AntigensDisaggregation {
     public setCampaignType(antigen: Antigen, type: CampaignType): AntigensDisaggregation {
         const dataUpdated: AntigensDisaggregationData = {
             ...this.data,
-            disaggregation: _.mapValues(this.data.disaggregation, (disaggregation, code) => {
-                return code === antigen.code ? { ...disaggregation, type } : disaggregation;
+            disaggregation: _.mapValues(this.data.disaggregation, (disaggregation, antigenCode) => {
+                return antigenCode !== antigen.code
+                    ? disaggregation
+                    : disaggregation.updateCampaignType(type);
             }),
         };
 
@@ -180,6 +230,7 @@ export class AntigensDisaggregation {
                 const category = _(categoriesByCode).getOrFail(categoryRef.code);
                 const isDosesCategory = category.code === config.categoryCodeForDoses;
                 const isAntigensCategory = category.code === config.categoryCodeForAntigens;
+                const isCampaignTypeCategory = category.code === config.categoryCodeForCampaignType;
                 const { $categoryOptions, name: categoryName, ...categoryAttributes } = _(
                     config.categoriesDisaggregation
                 )
@@ -228,10 +279,10 @@ export class AntigensDisaggregation {
                         values: optionGroup.map((options, optionGroupIndex) => {
                             const isOptionGroupSelected =
                                 wasCategorySelected && indexSelected === optionGroupIndex;
-                            return options.map(optionName => ({
-                                option: optionName,
+                            return options.map(option => ({
+                                option: option,
                                 selected: isOptionGroupSelected
-                                    ? _(categoryOptionsEnabled).some(co => co.id === optionName.id)
+                                    ? _(categoryOptionsEnabled).some(co => co.id === option.id)
                                     : true,
                             }));
                         }),
@@ -252,7 +303,7 @@ export class AntigensDisaggregation {
                     optional: optional,
                     selected: selected,
                     options: options,
-                    visible: !(isDosesCategory || isAntigensCategory),
+                    visible: !(isDosesCategory || isAntigensCategory || isCampaignTypeCategory),
                 };
             }
         );
@@ -353,15 +404,14 @@ export class AntigensDisaggregation {
             };
         });
 
-        return {
+        return AntigenDisaggregation.create({
             id: antigenConfig.id,
             name: antigenConfig.name,
             code: antigenConfig.code,
             dataElements: dataElementsProcessed,
             doses: antigenConfig.doses,
             isTypeSelectable: antigenConfig.isTypeSelectable,
-            type: "reactive",
-        };
+        });
     }
 
     public async getCocMetadata(db: DbD2): Promise<CocMetadata> {
@@ -377,6 +427,7 @@ export class AntigensDisaggregation {
             ...categoryComboCodes,
             this.config.categoryCodeForAgeGroup,
             this.config.categoryComboCodeForAntigenDosesAgeGroup,
+            this.config.categoryComboCodeForAntigenDosesAgeGroupType,
         ];
         const categoryOptionCombos = await db.getCocsByCategoryComboCode(allCategoryComboCodes);
 

@@ -54,12 +54,6 @@ class AntigenSection extends React.Component<AntigenSectionProps, Disaggregation
 
         return (
             <Table className={classes.table}>
-                <TableHead>
-                    <TableRow>
-                        <TableCell className={classes.nameTableCell}>{i18n.t("Name")}</TableCell>
-                    </TableRow>
-                </TableHead>
-
                 <TableBody>
                     {isTypeSelectable && (
                         <TypeSelect antigen={antigen} setCampaignType={setCampaignType} />

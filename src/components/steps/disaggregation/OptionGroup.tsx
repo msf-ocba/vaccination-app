@@ -54,7 +54,7 @@ const OptionGroup: SFC<OptionGroupProps> = props => {
                             value={optionGroup.indexSelected.toString()}
                             onChange={update([...basePath, "indexSelected"])}
                             options={optionGroup.values.map((og, index) => ({
-                                text: og.map(o => o.option).join(" , "),
+                                text: og.map(o => o.option.displayName).join(" , "),
                                 value: index.toString(),
                             }))}
                         />

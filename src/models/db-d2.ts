@@ -313,22 +313,38 @@ export default class DbD2 {
     ): Promise<Array<{ id: string; categoryOptions: Ref[] }>> {
         const filter = `code:in:[${codes.join(",")}]`;
 
-        const { categoryOptionCombos } = await this.getMetadata<{
-            categoryOptionCombos: Array<{
-                id: string;
-                categoryOptions: Array<{ id: string }>;
+        const { categoryCombos } = await this.getMetadata<{
+            categoryCombos: Array<{
+                code: string;
+                categoryOptionCombos: Array<{
+                    id: string;
+                    categoryOptions: Array<{ id: string }>;
+                }>;
             }>;
         }>({
-            categoryOptionCombos: {
+            categoryCombos: {
                 fields: {
-                    id: true,
-                    categoryOptions: { id: true },
+                    code: true,
+                    categoryOptionCombos: {
+                        id: true,
+                        categoryOptions: { id: true },
+                    },
                 },
-                filters: [`categoryCombo.${filter}`],
+                filters: [filter],
             },
         });
 
-        return categoryOptionCombos;
+        const missingCodes = _(codes)
+            .difference(categoryCombos.map(cc => cc.code))
+            .value();
+
+        if (!_(missingCodes).isEmpty()) {
+            console.error(`categoryCombo codes not found: ${missingCodes.join(", ")}`);
+        }
+
+        return _(categoryCombos)
+            .flatMap(categoryCombo => categoryCombo.categoryOptionCombos)
+            .value();
     }
 
     public async postMetadata<Metadata>(
