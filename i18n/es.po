@@ -1,7 +1,11 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2024-03-06T08:52:06.116Z\n"
+=======
+"POT-Creation-Date: 2022-03-23T10:31:50.107Z\n"
+>>>>>>> origin/development
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -436,6 +440,20 @@ msgstr "Indicadores de calidad y seguridad"
 
 msgid "General Q&S"
 msgstr "Q&S General"
+
+msgid ""
+"Selected period ({selectedPeriod}) is not in the campaign period range "
+"({periodStart} -> {periodEnd})"
+msgstr ""
+"El periodo seleccionado ({selectedPeriod}) no está en el rango de entrada de "
+"datos de la campaña ({periodStart} -> {periodEnd})"
+
+msgid ""
+"Current date ({currentDate}) is not in the campaign entry range "
+"({openingDate} -> {closingDate})"
+msgstr ""
+"La fecha actual ({currentDate}) no está en el rango de entrada de datos de "
+"la campaña ({openingDate} -> {closingDate})"
 
 msgid ""
 "Campaign teams (category options) could not be deleted, probably there are "

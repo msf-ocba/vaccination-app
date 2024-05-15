@@ -364,6 +364,16 @@ msgid "General Q&S"
 msgstr ""
 
 msgid ""
+"Selected period ({selectedPeriod}) is not in the campaign period range "
+"({periodStart} -> {periodEnd})"
+msgstr ""
+
+msgid ""
+"Current date ({currentDate}) is not in the campaign entry range "
+"({openingDate} -> {closingDate})"
+msgstr ""
+
+msgid ""
 "Campaign teams (category options) could not be deleted, probably there are "
 "associated data values"
 msgstr ""
