@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-10-07T15:11:15.076Z\n"
-"PO-Revision-Date: 2019-10-07T15:11:15.076Z\n"
+"POT-Creation-Date: 2022-03-23T10:31:50.107Z\n"
+"PO-Revision-Date: 2022-03-23T10:31:50.107Z\n"
 
 msgid "Campaigns"
 msgstr ""
@@ -371,13 +371,13 @@ msgstr ""
 msgid "Coverage by Area {{- period}} (do not edit this chart)"
 msgstr ""
 
-msgid "Global QS Indicators"
+msgid "Global QS Indicators {{- period}}"
 msgstr ""
 
-msgid "AEFI and AEB indicators"
+msgid "AEFI and AEB indicators {{- period}}"
 msgstr ""
 
-msgid "Campaign Coverage by area and dose (do not edit this table)"
+msgid "Campaign Coverage by area and dose {{- period}} (do not edit this table)"
 msgstr ""
 
 msgid "Cumulative Campaign Coverage by area (do not edit this table)"

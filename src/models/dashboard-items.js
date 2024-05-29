@@ -24,7 +24,7 @@ export const dashboardItemsConfig = {
             filterDataBy: ["pe"],
             area: false,
             title: ns => i18n.t("Coverage by Site {{- period}} (do not edit this chart)", ns),
-            appendCode: "coverageBySiteChart",
+            appendCode: "Coverage by site", //coverageBySiteChart
         },
         coverageByArea: {
             elements: ["RVC_CAMPAIGN_COVERAGE"],
@@ -34,7 +34,7 @@ export const dashboardItemsConfig = {
             filterDataBy: ["pe"],
             area: true,
             title: ns => i18n.t("Coverage by Area {{- period}} (do not edit this chart)", ns),
-            appendCode: "coverageByAreaChart",
+            appendCode: "Coverage by area", //coverageByAreaChart
         },
     },
     globalTables: {
@@ -44,8 +44,8 @@ export const dashboardItemsConfig = {
             filterDataBy: ["pe"],
             disaggregatedBy: [],
             area: true,
-            title: ns => i18n.t("Global QS Indicators", ns),
-            appendCode: "globalQsTable",
+            title: ns => i18n.t("Global QS Indicators {{- period}}", ns),
+            appendCode: "Global quality indicators", //globalQsTable
         },
         aefiAEB: {
             elements: ["RVC_AEB", "RVC_AEFI"],
@@ -53,9 +53,9 @@ export const dashboardItemsConfig = {
             filterDataBy: ["ou"],
             disaggregatedBy: [],
             area: false,
-            title: ns => i18n.t("AEFI and AEB indicators", ns),
-            appendCode: "adverseEvents",
-            legendCode: "RVC_LEGEND_ZERO",
+            title: ns => i18n.t("AEFI and AEB indicators {{- period}}", ns),
+            appendCode: "AEFI and AEB indicators", //adverseEvents
+            //legendCode: "RVC_LEGEND_ZERO",
         },
     },
     tablesByAntigenAndDose: {
@@ -65,8 +65,12 @@ export const dashboardItemsConfig = {
             filterDataBy: ["pe"],
             disaggregatedBy: ["ageGroup"],
             area: true,
-            title: ns => i18n.t("Campaign Coverage by area and dose (do not edit this table)", ns),
-            appendCode: "coverageByAreaTable",
+            title: ns =>
+                i18n.t(
+                    "Campaign Coverage by area and dose {{- period}} (do not edit this table)",
+                    ns
+                ),
+            appendCode: "Coverage by area and dose", //coverageByAreaTable
             showColumnTotals: false,
             showRowSubTotals: true,
             showColumnSubTotals: false,
@@ -81,7 +85,7 @@ export const dashboardItemsConfig = {
             area: true,
             title: ns =>
                 i18n.t("Cumulative Campaign Coverage by area (do not edit this table)", ns),
-            appendCode: "coverageByAreaTotal",
+            appendCode: "Coverage by area total", //coverageByAreaTotal
             showRowSubTotals: false,
             showColumnSubTotals: false,
             showColumnTotals: false,
@@ -93,7 +97,7 @@ export const dashboardItemsConfig = {
             disaggregatedBy: [],
             area: false,
             title: ns => i18n.t("QS Indicators", ns),
-            appendCode: "qsIndicatorsTable",
+            appendCode: "Quality indicators", //qsIndicatorsTable
         },
         vaccinesPerArea: {
             elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED", "RVC_VACCINE_UTILIZATION"],
@@ -102,7 +106,7 @@ export const dashboardItemsConfig = {
             disaggregatedBy: [],
             area: true,
             title: ns => i18n.t("Vaccines Per Area", ns),
-            appendCode: "vaccinesPerArea",
+            appendCode: "Vaccines per area", //vaccinesPerArea
         },
         vaccinesPerDateTeam: {
             elements: ["RVC_DOSES_ADMINISTERED", "RVC_DOSES_USED", "RVC_VACCINE_UTILIZATION"],
@@ -111,7 +115,7 @@ export const dashboardItemsConfig = {
             disaggregatedBy: [],
             area: false,
             title: ns => i18n.t("Vaccines Per Team", ns),
-            appendCode: "vaccinesPerDateTeam",
+            appendCode: "Vaccines per date and team", //vaccinesPerDateTeam
         },
         coverageByCampaignAgeRangeAndDose: {
             elements: ["RVC_DOSES_ADMINISTERED", "RVC_CAMPAIGN_COVERAGE"],
@@ -121,7 +125,7 @@ export const dashboardItemsConfig = {
             area: false,
             title: ns =>
                 i18n.t("Campaign Coverage by age range and dose (do not edit this table)", ns),
-            appendCode: "coverageByCampaignAgeRangeAndDose",
+            appendCode: "Coverage by age range and dose ", //coverageByCampaignAgeRangeAndDose
             showRowSubTotals: false,
             showColumnTotals: false,
         },
@@ -134,7 +138,7 @@ export const dashboardItemsConfig = {
             disaggregatedBy: ["ageGroup", "doses"],
             area: false,
             title: ns => i18n.t("Campaign Coverage by day (do not edit this table)", ns),
-            appendCode: "coverageByPeriod",
+            appendCode: "Coverage by period", //coverageByPeriod
             showRowSubTotals: false,
             showColumnTotals: false,
         },
@@ -224,13 +228,13 @@ function getTables({
     doseMetadata,
 }) {
     return _(tables)
+        .pickBy()
         .map((c, key) => {
             const teamMetadata = disaggregationMetadata.teams();
-
             const rows = c.rows.map(row => (row === "team" ? teamMetadata.categoryId : row));
             const teamRowRawDimension = _.some(c.rows, r => r === "team") ? teamMetadata : null;
-
             const legendId = c.legendCode ? legendsMetadata.get(c.legendCode) : null;
+
             return tableConstructor({
                 id: generateUid(),
                 antigen,
@@ -278,9 +282,15 @@ export function buildDashboardItems(
         chartsByAntigen: chartsByAntigenMetadata,
     } = dashboardItemsConfig;
 
+    var qsPerAntigen2 = tablesByAntigenMetadata["qsPerAntigen"];
     const tablesByAntigen = _(antigensMeta)
-        .flatMap(antigen =>
-            getTables({
+        .flatMap(antigen => {
+            tablesByAntigenMetadata["qsPerAntigen"] = qsPerAntigen2;
+            if (antigenNoDiluted(antigen)) {
+                delete tablesByAntigenMetadata["qsPerAntigen"];
+            }
+
+            return getTables({
                 tables: tablesByAntigenMetadata,
                 antigen,
                 elements,
@@ -288,8 +298,8 @@ export function buildDashboardItems(
                 itemsMetadata,
                 disaggregationMetadata,
                 legendsMetadata,
-            })
-        )
+            });
+        })
         .value();
 
     const tablesByAntigenAndSite = _(antigensMeta)
@@ -408,6 +418,7 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
     };
 
     const tableElements = _(allTables)
+        .pickBy()
         .map((item, key) => [key, dataMapper(elementsMetadata, item.elements)])
         .fromPairs()
         .value();
@@ -426,6 +437,17 @@ export function itemsMetadataConstructor(dashboardItemsMetadata) {
     return dashboardItemsElements;
 }
 
+function antigenNoDiluted(antigen) {
+    if (
+        antigen.code === "RVC_ANTIGEN_ROTAVIRUS" ||
+        antigen.code === "RVC_ANTIGEN_PCV" ||
+        antigen.code === "RVC_ANTIGEN_PERTPENTA" ||
+        antigen.code === "RVC_ANTIGEN_CHOLERA" ||
+        antigen.code === "RVC_ANTIGEN_POLIO_ORAL"
+    ) {
+        return true;
+    }
+}
 function getDimensions(disaggregations, antigen, antigenCategory) {
     const antigenCategoryDimension = antigen
         ? {
@@ -508,11 +530,14 @@ const chartConstructor = ({
         _.isEmpty(disaggregations) ? null : "dx",
     ]);
 
-    const series = _.isEmpty(disaggregations) ? "dx" : columns[0].id;
-
     let organisationUnitElements;
-    const organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
+    let organisationUnitNames;
 
+    if (organisationUnits.length > 1) {
+        organisationUnitNames = "";
+    } else {
+        organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
+    }
     if (area) {
         const organisationUnitParents = organisationUnits.map(ou => ou.parents[ou.id].split("/"));
         organisationUnitElements = organisationUnitParents.map(pArray => ({
@@ -553,8 +578,6 @@ const chartConstructor = ({
         percentStackedValues: false,
         noSpaceBetweenColumns: false,
         hideTitle: false,
-        series,
-        category: rows[0],
         access: {
             read: true,
             update: true,
@@ -626,6 +649,32 @@ const chartConstructor = ({
         categoryDimensions,
         filters: filterDimensions.map(fd => ({ id: fd })),
         rows: rows.map(r => ({ id: r })),
+        colSubTotals: false,
+        colTotals: false,
+        columnDimensions: columns.map(column => column.id),
+        digitGroupSeparator: "SPACE",
+        displayDensity: "NORMAL",
+        fixColumnHeaders: false,
+        fixRowHeaders: false,
+        fontSize: "NORMAL",
+        hideEmptyColumns: false,
+        hideEmptyRows: false,
+        legend: { showKey: false },
+        optionalAxes: [],
+        regression: false,
+        reportingParams: {
+            grandParentOrganisationUnit: false,
+            organisationUnit: false,
+            parentOrganisationUnit: false,
+            reportingPeriod: false,
+        },
+        rowDimensions: rows,
+        rowSubTotals: false,
+        rowTotals: false,
+        seriesKey: { hidden: false },
+        showDimensionLabels: false,
+        showHierarchy: false,
+        skipRounding: false,
     };
 };
 
@@ -643,7 +692,7 @@ const tableConstructor = ({
     filterDataBy,
     area,
     title,
-    legendId,
+    //  legendId,
     teamRowRawDimension = null,
     showRowSubTotals = true,
     showColumnTotals = true,
@@ -655,6 +704,9 @@ const tableConstructor = ({
         antigen,
         antigenCategory
     );
+    const periodForTitle = `${moment(periodItems[0].id).format("DD/MM/YYYY")} - ${moment(
+        _.last(periodItems).id
+    ).format("DD/MM/YYYY")}`;
 
     const categoryDimensionsWithTeams = teamRowRawDimension
         ? [
@@ -681,8 +733,12 @@ const tableConstructor = ({
         : categoryDimensionsWithTeams;
 
     let organisationUnitElements;
-    const organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
-
+    let organisationUnitNames;
+    if (organisationUnits.length > 1) {
+        organisationUnitNames = "";
+    } else {
+        organisationUnitNames = organisationUnits.map(ou => ou.name).join("-");
+    }
     // Converts selected OrganisationUnits into their parents (Sites => Areas)
     if (area) {
         const organisationUnitParents = organisationUnits.map(ou => ou.parents[ou.id].split("/"));
@@ -694,7 +750,6 @@ const tableConstructor = ({
     }
 
     const subName = antigen ? antigen.name : "Global";
-
     const filters = filterDataBy.map(f => ({ id: f }));
     const allFilters = _.compact([
         ...filters,
@@ -704,6 +759,7 @@ const tableConstructor = ({
 
     return {
         id,
+        type: "PIVOT_TABLE",
         name: buildDashboardItemsCode(
             datasetName,
             organisationUnitNames,
@@ -713,7 +769,6 @@ const tableConstructor = ({
         ),
         numberType: "VALUE",
         userOrganisationUnitChildren: false,
-        legendDisplayStyle: "FILL",
         hideEmptyColumns: false,
         subscribed: false,
         hideEmptyRows: false,
@@ -738,23 +793,23 @@ const tableConstructor = ({
             dose
         ),
         hideSubtitle: true,
-        ...getTitleWithTranslations(title, {}),
+        //...getTitleWithTranslations(title, {}),
+        ...getTitleWithTranslations(title, { period: periodForTitle }),
         externalAccess: false,
-        legendDisplayStrategy: "FIXED",
         colSubTotals: showColumnSubTotals,
-        legendSet: legendId ? { id: legendId } : null,
+        //legendSet: legendId ? { id: legendId } : null,
         showHierarchy: false,
         rowTotals: false,
-        cumulative: false,
+        cumulativeValues: false,
         digitGroupSeparator: "NONE",
         hideTitle: false,
         regression: false,
         skipRounding: false,
-        reportParams: {
-            paramGrandParentOrganisationUnit: false,
-            paramReportingPeriod: false,
-            paramOrganisationUnit: false,
-            paramParentOrganisationUnit: false,
+        reportingParams: {
+            grandParentOrganisationUnit: false,
+            organisationUnit: false,
+            parentOrganisationUnit: false,
+            reportingPeriod: false,
         },
         access: {
             read: true,
@@ -833,5 +888,19 @@ const tableConstructor = ({
         filters: allFilters,
         rows: rows.map(r => ({ id: r })),
         rowDimensions: rows,
+        fixColumnHeaders: false,
+        fixRowHeaders: false,
+        hideLegend: false,
+        legend: {
+            showKey: false,
+            strategy: "FIXED",
+            style: "FILL",
+        },
+        noSpaceBetweenColumns: false,
+        optionalAxes: [],
+        percentStackedValues: false,
+        seriesKey: { hidden: false },
+        showData: false,
+        yearlySeries: [],
     };
 };

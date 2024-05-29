@@ -62,9 +62,7 @@ interface DashboardWithResources {
     name: string;
     dashboardItems: {
         id: string;
-        chart: Ref;
-        map: Ref;
-        reportTable: Ref;
+        visualization: Ref;
     };
 }
 
@@ -235,6 +233,7 @@ export default class Campaign {
         // It does work, however, if we delete the objects in this order:
         // 1) Dashboards, 2) Everything else except Category options 3) Category options (teams),
         const keys = ["dashboards", "other", "teams"];
+
         const referencesGroups = _(modelReferencesToDelete)
             .groupBy(({ model }) => {
                 if (model === "dashboards") {
@@ -266,6 +265,7 @@ export default class Campaign {
             .compact()
             .unzip()
             .value();
+
         const sendNotification = () => {
             const notification = new CampaignNotification(db);
             return notification.sendOnUpdateOrDelete(dataSetsWithDataValues, "delete");
@@ -633,9 +633,7 @@ export default class Campaign {
                     name: true,
                     dashboardItems: {
                         id: true,
-                        chart: { id: true },
-                        map: { id: true },
-                        reportTable: { id: true },
+                        visualization: { id: true },
                     },
                 },
                 filters: [`code:in:[${codes.join(",")}]`],
@@ -658,11 +656,7 @@ export default class Campaign {
 
         const resources: { model: string; id: string }[] = _(dashboards)
             .flatMap(dashboard => dashboard.dashboardItems)
-            .flatMap(item => [
-                { model: "charts", ref: item.chart },
-                { model: "reportTables", ref: item.reportTable },
-                { model: "maps", ref: item.map },
-            ])
+            .flatMap(item => [{ model: "visualizations", ref: item.visualization }])
             .map(({ model, ref }) => (ref ? { model, id: ref.id } : null))
             .compact()
             .value();

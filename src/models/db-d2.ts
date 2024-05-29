@@ -20,6 +20,7 @@ import {
     DataValue,
     MetadataOptions,
     Message,
+    DataValueToPost,
 } from "./db.types";
 import "../utils/lodash-mixins";
 import { promiseMap } from "../utils/promises";
@@ -358,7 +359,8 @@ export default class DbD2 {
                 metadata
             )) as MetadataResponse;
             return { status: true, value: response };
-        } catch (err) {
+        } catch (err0) {
+            const err = err0 as any;
             return { status: false, error: err.message || err.toString() };
         }
     }
@@ -373,38 +375,31 @@ export default class DbD2 {
     }
 
     public async postDataValues(dataValues: DataValue[]): Promise<Response<object>> {
-        const dataValueRequests: DataValueRequest[] = _(dataValues)
-            .groupBy(dv => {
-                const parts = [
-                    dv.dataSet,
-                    dv.completeDate,
-                    dv.period,
-                    dv.orgUnit,
-                    dv.attributeOptionCombo,
-                ];
-                return parts.join("-");
-            })
-            .values()
-            .map(group => {
-                const dv0 = group[0];
+        const dataValuesToPost: DataValueToPost[] = _(dataValues)
+            .map(dv => {
+                if (!dv.period) return;
+
                 return {
-                    dataSet: dv0.dataSet,
-                    completeDate: dv0.completeDate,
-                    period: dv0.period,
-                    orgUnit: dv0.orgUnit,
-                    attributeOptionCombo: dv0.attributeOptionCombo,
-                    dataValues: group.map(dv => ({
-                        dataElement: dv.dataElement,
-                        categoryOptionCombo: dv.categoryOptionCombo,
-                        value: dv.value,
-                        comment: dv.comment,
-                    })),
+                    dataSet: dv.dataSet,
+                    completeDate: dv.completeDate,
+                    period: dv.period,
+                    orgUnit: dv.orgUnit,
+                    attributeOptionCombo: dv.attributeOptionCombo,
+                    dataElement: dv.dataElement,
+                    categoryOptionCombo: dv.categoryOptionCombo,
+                    value: dv.value,
+                    comment: dv.comment,
                 };
             })
+            .compact()
             .value();
 
-        const responses = await promiseMap(dataValueRequests, dataValueRequest => {
-            return this.api.post("dataValueSets", dataValueRequest) as Promise<DataValueResponse>;
+        const dataValuesChunks = _.chunk(dataValuesToPost, 200);
+
+        const responses = await promiseMap(dataValuesChunks, dataValuesChunk => {
+            return this.api.post("dataValueSets", { dataValues: dataValuesChunk }) as Promise<
+                DataValueResponse
+            >;
         });
         const errorResponses = responses.filter(response => response.status !== "SUCCESS");
 

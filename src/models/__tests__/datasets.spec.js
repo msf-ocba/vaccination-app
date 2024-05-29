@@ -29,6 +29,7 @@ describe("DataSets", () => {
                 await list(metadataConfig, d2, {}, {});
 
                 expect(d2.models.dataSets.list).toHaveBeenCalledWith({
+                    apiEndpoint: "/dataSets",
                     fields: expectedFields.join(","),
                     pageSize: 1000,
                     filter: createdByAppFilters,
@@ -53,6 +54,7 @@ describe("DataSets", () => {
                 await list(metadataConfig, d2, filters, pagination);
 
                 expect(d2.models.dataSets.list).toHaveBeenCalledWith({
+                    apiEndpoint: "/dataSets",
                     fields: expectedFields.join(","),
                     pageSize: 1000,
                     filter: ["displayName:ilike:abc", ...createdByAppFilters],

@@ -4,6 +4,7 @@ import { OrganisationUnitGroupSet, Access, Sharing } from "./db.types";
 import Campaign from "./campaign";
 import DbD2 from "./db-d2";
 import { promiseMap } from "../utils/promises";
+import { userRoles } from "./config";
 
 /*
     Return sharing object {publicAccess, externalAccess, userAccesses, userGroupAccesses} for
@@ -93,26 +94,8 @@ export default class CampaignSharing {
 
     sharings: { dataSet: SharingDefinition; dashboard: SharingDefinition } = {
         dataSet: {
-            publicPermission: { metadata: "edit", data: "view" },
-            filters: [
-                {
-                    type: "userGroups",
-                    userGroups: [
-                        "_DATASET_Field Training",
-                        "_DATASET_Field User",
-                        "_DATASET_HMIS Officer",
-                        "_DATASET_HQ Analyst",
-                        "_DATASET_MedCo",
-                        "_DATASET_Medical Focal Point",
-                        "_DATASET_Online Data Entry",
-                        "_DATASET_Super HMIS Officer",
-                        "_DATASET_Superuser",
-                        "_DATASET_TesaCo",
-                        "_DATASET_Training user",
-                    ],
-                    permission: { metadata: "view", data: "edit" },
-                },
-            ],
+            publicPermission: { metadata: "edit", data: "edit" },
+            filters: [],
         },
         dashboard: {
             publicPermission: { metadata: "none" },
@@ -126,8 +109,12 @@ export default class CampaignSharing {
                     type: "usersByOrgUnits",
                     level: 4,
                     userRoles: [
-                        ["RVC App"],
-                        ["Medical Focal Point", "Field User", "Online Data Entry"],
+                        [userRoles.app],
+                        [
+                            userRoles.medicalFocalPoint,
+                            userRoles.fieldUser,
+                            userRoles.onlineDataEntry,
+                        ],
                     ],
                     permission: { metadata: "edit" },
                 },
@@ -140,7 +127,7 @@ export default class CampaignSharing {
                 {
                     type: "usersByOrgUnitsInGroupSet",
                     level: 3,
-                    organisationUnitGroupSetName: "8. Operational Cells",
+                    organisationUnitGroupSetName: "4. Operational Cells",
                     userRoles: [["TesaCo"]],
                     permission: { metadata: "edit" },
                 },

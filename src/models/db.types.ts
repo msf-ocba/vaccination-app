@@ -1,4 +1,3 @@
-import { Metadata } from "./db.types";
 import { Dictionary } from "lodash";
 export type Maybe<T> = T | undefined;
 
@@ -156,8 +155,7 @@ export interface Metadata {
     dataSets?: Array<DataSet>;
     dataEntryForms?: Array<DataEntryForm>;
     sections?: Array<Section>;
-    charts?: Array<Dictionary<any>>;
-    reportTables?: Array<Dictionary<any>>;
+    visualizations?: Array<Dictionary<any>>;
     dashboards?: Array<Dictionary<any>>;
 }
 
@@ -193,6 +191,7 @@ export interface DataSet extends Sharing {
     timelyDays: number;
     expiryDays: number;
     sections: Ref[];
+    //COMENTAR
     dataInputPeriods: DataInputPeriod[];
     attributeValues: AttributeValue[];
     formType: "DEFAULT" | "CUSTOM";
@@ -302,18 +301,19 @@ export interface DataValue {
     comment?: string;
 }
 
-export interface DataValueRequest {
+export interface DataValueToPost {
     dataSet?: string;
-    completeDate?: string;
-    period?: string;
+    period: string;
     orgUnit: string;
+    dataElement: string;
     attributeOptionCombo?: string;
-    dataValues: Array<{
-        dataElement: string;
-        categoryOptionCombo?: string;
-        value: string;
-        comment?: string;
-    }>;
+    categoryOptionCombo?: string;
+    value: string;
+    comment?: string;
+}
+
+export interface DataValueRequest {
+    dataValues: DataValueToPost[];
 }
 
 export interface DataValueResponse {

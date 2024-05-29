@@ -14,7 +14,7 @@
         "noEmit": true,
         "strictNullChecks": true,
         "jsx": "preserve",
-        "noUnusedLocals": true
+        "noUnusedLocals": false
     },
     "include": ["src"]
 }

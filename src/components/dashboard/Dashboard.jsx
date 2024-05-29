@@ -59,7 +59,7 @@ class Dashboard extends React.Component {
                 if (iframeDocument.querySelector(selector)) {
                     resolve();
                 } else {
-                    setTimeout(check, 1000);
+                    setTimeout(check, 100);
                 }
             };
 
@@ -69,24 +69,13 @@ class Dashboard extends React.Component {
 
     async setDashboardStyling(iframe, dataSetId) {
         const iframeDocument = iframe.contentWindow.document;
-
-        await this.waitforElementToLoad(iframeDocument, ".app-wrapper");
-        const iFrameRoot = iframeDocument.querySelector("#root");
-        const iFrameWrapper = iframeDocument.querySelector(".app-wrapper");
-        const pageContainer = iframeDocument.querySelector(".page-container-top-margin");
-        const controlBar = iframeDocument.querySelector(".d2-ui-control-bar");
-
-        iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
-        pageContainer.style.marginTop = "0px";
-        iFrameRoot.style.marginTop = "0px";
-        controlBar.style.top = 0;
+        await this.waitforElementToLoad(iframeDocument, "[data-test='title-bar']");
+        remove(iframeDocument, "header");
 
         if (dataSetId) {
-            iFrameWrapper.removeChild(iFrameWrapper.firstChild).remove();
-
-            await this.waitforElementToLoad(iframeDocument, ".titlebar-wrapper");
-            const editButton = iframeDocument.querySelector(".titlebar-wrapper a[href*='edit']");
-            if (editButton) editButton.remove();
+            remove(iframeDocument, "[data-test='dashboards-bar']");
+            remove(iframeDocument, "[data-test='title-bar'] > div > div > span");
+            remove(iframeDocument, "[data-test='title-bar'] > div > div > div");
 
             iframeDocument.querySelectorAll("a").forEach(link => {
                 link.setAttribute("target", "_blank");
@@ -174,7 +163,12 @@ class Dashboard extends React.Component {
 }
 
 const styles = {
-    iframe: { width: "100%", height: 1000 },
+    iframe: { width: "100%", height: "calc(100vh - 140px)" },
 };
+
+function remove(document, selector) {
+    const el = document.querySelector(selector);
+    if (el) el.remove();
+}
 
 export default withLoading(withSnackbar(withPageVisited(Dashboard, "dashboard")));
